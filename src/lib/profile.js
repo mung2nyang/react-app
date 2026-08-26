@@ -1,5 +1,5 @@
 import { readJsonKey } from '../store/persist.js'
-import { commitProfile } from '../store/app-store.js'
+import { commitProfile } from '../store/commitHelpers.js'
 
 const emptyProfile = {
   bizName: '',

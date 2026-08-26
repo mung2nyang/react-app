@@ -9,7 +9,7 @@ import {
   SETTLEMENT_MODES,
   upsertCar,
 } from '../lib/cars.js'
-import { deleteVehicleFromSupabase } from '../lib/cloudSync.js'
+import { blockedReasonForCloudWrite, deleteVehicleFromSupabase } from '../lib/cloudSync.js'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
 import { formatCurrencyInput, formatPercentInput } from '../lib/money.js'
 
@@ -80,6 +80,16 @@ export default function CarManagementPage({ ownerKey = 'guest', onBack, showToas
   function confirmRemove() {
     const car = pendingDelete
     if (!car) return
+    // 감사 보완 3차: 서버에 반영해야 할 삭제(supabaseId가 있는 차량)는 로컬을 먼저
+    // 지우기 *전에* 클라우드 쓰기 준비 상태부터 확인한다. 로그인은 했는데 hydrate가
+    // 아직 안 됐거나 실패했으면 로컬 삭제까지 통째로 중단 — 로컬은 지워졌는데 서버는
+    // 그대로인 상태를 만들지 않는다.
+    const blocked = blockedReasonForCloudWrite(car.supabaseId)
+    if (blocked) {
+      setPendingDelete(null)
+      showToast?.(blocked)
+      return
+    }
     persist(removeCar(cars, car.id))
     setPendingDelete(null)
     showToast?.('차량을 삭제했습니다.')

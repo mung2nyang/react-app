@@ -2,7 +2,7 @@
 // I/O(loadInvoices/saveInvoices)만 남기고, 기존 임포트 경로('../lib/invoices.js')를 유지하는
 // 배럴로 domain/invoices.js를 재수출한다.
 import { readJsonKey } from '../store/persist.js'
-import { commitInvoices } from '../store/app-store.js'
+import { commitInvoices } from '../store/commitHelpers.js'
 
 export function loadInvoices(ownerKey = 'guest') {
   const parsed = readJsonKey('invoices', ownerKey, [])

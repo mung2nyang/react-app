@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { loadCars } from '../lib/cars.js'
 import {
+  blockedReasonForCloudWrite,
   deleteDriverLinkOnSupabase,
   isCloudSession,
   saveDriverInviteToCloud,
@@ -83,6 +84,13 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
 
   function changeStatus(id, status) {
     const driver = drivers.find((item) => item.id === id)
+    // 감사 보완 3차: 서버에 반영해야 할 상태변경(supabaseId가 있는 기사 링크)은
+    // 로컬을 먼저 바꾸기 전에 클라우드 쓰기 준비 상태부터 확인한다.
+    const blocked = cloud ? blockedReasonForCloudWrite(driver?.supabaseId) : null
+    if (blocked) {
+      showToast?.(blocked)
+      return
+    }
     persist(setDriverStatus(drivers, id, status))
     if (cloud && driver?.supabaseId) {
       updateDriverLinkStatusOnSupabase(driver.supabaseId, status === 'linked' ? 'linked' : 'pending').catch((error) => {
@@ -94,6 +102,11 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
 
   function remove(id) {
     const driver = drivers.find((item) => item.id === id)
+    const blocked = cloud ? blockedReasonForCloudWrite(driver?.supabaseId) : null
+    if (blocked) {
+      showToast?.(blocked)
+      return
+    }
     persist(removeDriver(drivers, id))
     if (cloud && driver?.supabaseId) {
       deleteDriverLinkOnSupabase(driver.supabaseId).catch((error) => console.error(error))

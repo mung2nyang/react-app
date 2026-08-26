@@ -6,7 +6,7 @@ import { loadWorkData } from './workData.js'
 import { buildFinanceSettings, loadWorkDataByLogId } from './ownerFinance.js'
 import { getReceivableItems } from './finance.js'
 import { readJsonKey } from '../store/persist.js'
-import { commitDismissedNotifications } from '../store/app-store.js'
+import { commitDismissedNotifications } from '../store/commitHelpers.js'
 
 function loadDismissed(ownerKey) {
   const parsed = readJsonKey('dismissedNotifications', ownerKey, [])

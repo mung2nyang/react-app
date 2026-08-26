@@ -1,8 +1,10 @@
-// Step 0-4 감사 보완 2차 — 커밋 전 자체 교차검증(사용자 지시)에서 발견한 결함의
-// 회귀 테스트. commitBatch가 여러 도메인을 localStorage에 쓰는 도중 하나가 실패하면
-// (용량 초과, 순환 참조로 인한 JSON.stringify 실패 등) 이미 쓴 항목이 서버 값으로
-// 남고 나머지는 그대로인 "부분 반영" 상태가 될 수 있었다 — writeAllOrNothing이
-// 이걸 막는다.
+// Step 0-4 감사 보완 2차/3차 — 커밋 전 자체 교차검증(사용자 지시)에서 발견한 결함의
+// 회귀 테스트. commitBatch가 여러 localStorage 키를 쓰는 도중 하나가 실패하면
+// (용량 초과, 순환 참조로 인한 JSON.stringify 실패 등) 이미 쓴 키가 새 값으로 남고
+// 나머지는 그대로인 "부분 반영" 상태가 될 수 있었다 — writeAllOrNothing이 이걸 막는다.
+// 3차 보완에서 (domain, ownerKey, value) 대신 (key, value) 쌍을 직접 받도록
+// 바뀌었다(도메인 값과 dirty journal 값을 같은 배열에 섞어 넣을 수 있어야 해서 —
+// journal 키는 persist.js의 9개 도메인 계약 밖이라 storageKeyFor로 못 만든다).
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
@@ -26,11 +28,11 @@ function withFailingSetItem(shouldFail, fn) {
 }
 
 describe('writeAllOrNothing — 전부 성공', () => {
-  test('여러 도메인을 한 번에 쓰면 전부 반영된다', () => {
+  test('여러 키를 한 번에 쓰면 전부 반영된다', () => {
     const owner = 'atomic-ok'
     writeAllOrNothing([
-      { domain: 'cars', ownerKey: owner, value: [{ id: 'car-a' }] },
-      { domain: 'profile', ownerKey: owner, value: { name: '정상' } },
+      { key: storageKeyFor('cars', owner), value: [{ id: 'car-a' }] },
+      { key: storageKeyFor('profile', owner), value: { name: '정상' } },
     ])
     assert.deepEqual(readJsonKey('cars', owner, []), [{ id: 'car-a' }])
     assert.deepEqual(readJsonKey('profile', owner, {}), { name: '정상' })
@@ -45,8 +47,8 @@ describe('writeAllOrNothing — 직렬화 실패(순환 참조)는 아무것도 
     circular.self = circular
 
     assert.throws(() => writeAllOrNothing([
-      { domain: 'cars', ownerKey: owner, value: [{ id: 'should-not-write' }] },
-      { domain: 'profile', ownerKey: owner, value: circular },
+      { key: storageKeyFor('cars', owner), value: [{ id: 'should-not-write' }] },
+      { key: storageKeyFor('profile', owner), value: circular },
     ]))
 
     assert.deepEqual(readJsonKey('cars', owner, []), [{ id: 'seed' }], 'stringify 단계에서 전부 실패해야 하므로 cars도 안 바뀌어야 한다')
@@ -63,8 +65,8 @@ describe('writeAllOrNothing — 쓰기 도중 실패는 이미 쓴 항목을 원
     withFailingSetItem((key) => key === profileKey, () => {
       assert.throws(
         () => writeAllOrNothing([
-          { domain: 'cars', ownerKey: owner, value: [{ id: 'new-cars' }] },
-          { domain: 'profile', ownerKey: owner, value: { name: 'new-profile' } },
+          { key: storageKeyFor('cars', owner), value: [{ id: 'new-cars' }] },
+          { key: profileKey, value: { name: 'new-profile' } },
         ]),
         /quota exceeded/,
       )
@@ -80,11 +82,26 @@ describe('writeAllOrNothing — 쓰기 도중 실패는 이미 쓴 항목을 원
 
     withFailingSetItem((key) => key === profileKey, () => {
       assert.throws(() => writeAllOrNothing([
-        { domain: 'cars', ownerKey: owner, value: [{ id: 'brand-new' }] },
-        { domain: 'profile', ownerKey: owner, value: { name: 'x' } },
+        { key: storageKeyFor('cars', owner), value: [{ id: 'brand-new' }] },
+        { key: profileKey, value: { name: 'x' } },
       ]))
     })
 
     assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), null, '실패 전 처음 쓴 키는 원래 없었으니 롤백 후 다시 없어야 한다')
+  })
+
+  test('임의의 key(예: dirty journal 키)도 도메인 키와 함께 섞어 쓸 수 있다', () => {
+    const owner = 'atomic-mixed-key'
+    const journalKey = `reactPracticeDirtyJournal:${owner}`
+
+    withFailingSetItem((key) => key === journalKey, () => {
+      assert.throws(() => writeAllOrNothing([
+        { key: storageKeyFor('cars', owner), value: [{ id: 'should-rollback' }] },
+        { key: journalKey, value: { cars: 1 } },
+      ]))
+    })
+
+    assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), null, 'journal 실패 시 도메인 키도 함께 롤백돼야 한다')
+    assert.equal(localStorage.getItem(journalKey), null, 'journal 자체도 안 쓰여야 한다')
   })
 })

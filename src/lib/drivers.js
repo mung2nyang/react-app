@@ -2,7 +2,7 @@
 // I/O(loadDrivers/saveDrivers)만 남기고, 기존 임포트 경로('../lib/drivers.js')를 유지하는
 // 배럴로 domain/drivers.js를 재수출한다.
 import { readJsonKey } from '../store/persist.js'
-import { commitDrivers } from '../store/app-store.js'
+import { commitDrivers } from '../store/commitHelpers.js'
 
 export function loadDrivers(ownerKey = 'guest') {
   const parsed = readJsonKey('drivers', ownerKey, [])

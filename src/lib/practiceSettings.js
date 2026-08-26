@@ -3,7 +3,7 @@
 // 남기고, 기존 임포트 경로('../lib/practiceSettings.js')를 유지하는 배럴로
 // domain/practiceSettings.js를 재수출한다.
 import { readJsonKey } from '../store/persist.js'
-import { commitSettings } from '../store/app-store.js'
+import { commitSettings } from '../store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 
 export function loadPracticeSettings(ownerKey = 'guest') {

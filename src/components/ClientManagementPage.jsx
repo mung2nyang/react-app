@@ -11,7 +11,7 @@ import {
   saveClients,
   upsertClient,
 } from '../lib/clients.js'
-import { deleteClientFromSupabase } from '../lib/cloudSync.js'
+import { blockedReasonForCloudWrite, deleteClientFromSupabase } from '../lib/cloudSync.js'
 
 const emptyDraft = {
   companyName: '',
@@ -86,6 +86,14 @@ export default function ClientManagementPage({ ownerKey = 'guest', onBack, showT
   function confirmRemove() {
     const client = pendingDelete
     if (!client) return
+    // 감사 보완 3차: 서버에 반영해야 할 삭제(supabaseId가 있는 거래처)는 로컬을
+    // 먼저 지우기 전에 클라우드 쓰기 준비 상태부터 확인한다.
+    const blocked = blockedReasonForCloudWrite(client.supabaseId)
+    if (blocked) {
+      setPendingDelete(null)
+      showToast?.(blocked)
+      return
+    }
     persist(removeClient(clients, client.id))
     setPendingDelete(null)
     showToast?.('거래처를 삭제했습니다.')

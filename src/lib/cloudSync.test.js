@@ -65,11 +65,16 @@ const fakeSupabase = {
 mock.module('../supabaseClient.js', { exports: { supabase: fakeSupabase } })
 
 const {
+  blockedReasonForCloudWrite,
+  deleteClientFromSupabase,
+  deleteDriverLinkOnSupabase,
+  deleteVehicleFromSupabase,
   endCloudSession,
   flushCloudSync,
   hydrateFromSupabase,
   retryHydrate,
   scheduleCloudSync,
+  updateDriverLinkStatusOnSupabase,
 } = await import('./cloudSync.js')
 const { getState } = await import('../store/app-store.js')
 const { markDirty, hasDirty, getDirtyDomains } = await import('./dirtyJournal.js')
@@ -338,6 +343,111 @@ describe('flushCloudSync — in-flight 재실행(dirty)', () => {
 
     assert.ok(countOf('profiles', 'upsert') >= 1)
     assert.ok(elapsed < 500, `flushCloudSync는 디바운스를 기다리지 않고 즉시 돌아야 한다(경과 ${elapsed}ms)`)
+    endCloudSession()
+  })
+})
+
+describe('blockedReasonForCloudWrite — UI가 로컬 변경을 시작하기 전에 판정한다', () => {
+  test('cloudId(supabaseId)가 없으면(로컬 전용 레코드) 항상 허용한다 — hydrate 상태와 무관', () => {
+    assert.equal(blockedReasonForCloudWrite(null), null)
+    assert.equal(blockedReasonForCloudWrite(undefined), null)
+    assert.equal(blockedReasonForCloudWrite(''), null)
+  })
+
+  test('cloudId가 있고 hydrate가 ready면 허용(null)한다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    await hydrateFromSupabase('user-blocked-ready', 'audit3-blocked-ready')
+    assert.equal(blockedReasonForCloudWrite('vehicle-123'), null)
+    endCloudSession()
+  })
+
+  test('cloudId가 있는데 hydrate가 실패/로그아웃 상태면 메시지를 돌려준다(진행 금지)', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    handlers.profiles.select = () => ({ data: null, error: { message: 'boom' } })
+    await assert.rejects(() => hydrateFromSupabase('user-blocked-failed', 'audit3-blocked-failed'))
+    assert.equal(getState().hydration.status, 'failed')
+    assert.ok(blockedReasonForCloudWrite('vehicle-123'), 'failed 상태면 진행을 막아야 한다')
+
+    endCloudSession()
+    assert.ok(blockedReasonForCloudWrite('vehicle-123'), '로그아웃(세션 없음) 상태에서도 cloudId가 있으면 막아야 한다')
+  })
+})
+
+describe('failed 상태에서는 UI가 직접 부르는 mutation이 서버를 전혀 호출하지 않는다 (감사 지적 2번 최소 회귀)', () => {
+  async function makeFailedSession(userId, ownerKey) {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    handlers.profiles.select = () => ({ data: null, error: { message: 'boom' } })
+    await assert.rejects(() => hydrateFromSupabase(userId, ownerKey))
+    assert.equal(getState().hydration.status, 'failed')
+  }
+
+  test('failed 상태에서 차량 삭제 시도 시 로컬 차량은 유지되고(코드상 보장) 서버 호출은 0회다', async () => {
+    await makeFailedSession('user-fail-delvehicle', 'audit3-fail-delvehicle')
+    // UI 컴포넌트는 confirmRemove()에서 blockedReasonForCloudWrite로 이 지점에 오기
+    // *전에* 로컬 삭제를 건너뛴다 — 여기서는 그 가정이 실제로 성립하는지, 즉
+    // deleteVehicleFromSupabase 자체가 어떤 테이블도 건드리지 않고 즉시 거부하는지를
+    // 직접 검증한다(로컬 상태는 React 컴포넌트 밖이라 이 파일에서 렌더 테스트는 못
+    // 하지만, confirmRemove()가 이 함수보다 먼저 실행되지 않는 이상 로컬 삭제로
+    // 이어지지 않는다는 것은 코드 리뷰로 확인됨 — CarManagementPage.jsx 참고).
+    await assert.rejects(() => deleteVehicleFromSupabase('vehicle-999'), /준비되지 않았습니다/)
+    assert.equal(countOf('vehicles', 'delete'), 0)
+    assert.equal(countOf('transport_details', 'delete'), 0)
+    assert.equal(countOf('daily_logs', 'delete'), 0)
+    endCloudSession()
+  })
+
+  test('failed 상태에서 거래처 삭제 시도 시 서버 호출은 0회다', async () => {
+    await makeFailedSession('user-fail-delclient', 'audit3-fail-delclient')
+    await assert.rejects(() => deleteClientFromSupabase('client-999'), /준비되지 않았습니다/)
+    assert.equal(countOf('clients', 'delete'), 0)
+    assert.equal(countOf('transport_details', 'update'), 0)
+    endCloudSession()
+  })
+
+  test('failed 상태에서 기사 상태변경 시도 시 서버 호출은 0회다', async () => {
+    await makeFailedSession('user-fail-driverstatus', 'audit3-fail-driverstatus')
+    await assert.rejects(() => updateDriverLinkStatusOnSupabase('link-999', 'linked'), /준비되지 않았습니다/)
+    assert.equal(countOf('driver_links', 'update'), 0)
+    endCloudSession()
+  })
+
+  test('failed 상태에서 기사 삭제 시도 시 서버 호출은 0회다', async () => {
+    await makeFailedSession('user-fail-driverdelete', 'audit3-fail-driverdelete')
+    await assert.rejects(() => deleteDriverLinkOnSupabase('link-999'), /준비되지 않았습니다/)
+    assert.equal(countOf('driver_links', 'delete'), 0)
+    endCloudSession()
+  })
+})
+
+describe('retry 성공 후 다시 시도하면 로컬·서버 모두 반영된다 (감사 지적 2번 4번째 요구)', () => {
+  test('실패 상태에서는 막히고, retryHydrate 성공 이후 같은 작업을 다시 하면 서버 호출이 나간다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit3-retry-then-delete'
+    const userId = 'user-retry-then-delete'
+
+    // 1) 첫 시도는 실패시킨다.
+    handlers.vehicles = { select: () => ({ data: null, error: { message: 'first attempt fails' } }) }
+    await assert.rejects(() => hydrateFromSupabase(userId, ownerKey))
+    assert.equal(getState().hydration.status, 'failed')
+
+    // 2) failed 상태에서는 UI 가드가 막고, 실제로 서버 삭제 함수도 호출되면 안 된다.
+    assert.ok(blockedReasonForCloudWrite('vehicle-1'), 'failed면 UI가 로컬 삭제 전에 막아야 한다')
+    await assert.rejects(() => deleteVehicleFromSupabase('vehicle-1'))
+    assert.equal(countOf('vehicles', 'delete'), 0)
+
+    // 3) 재시도가 성공한다.
+    handlers.vehicles = { select: () => ({ data: [], error: null }) }
+    await retryHydrate()
+    assert.equal(getState().hydration.status, 'ready')
+
+    // 4) 이제 같은 작업을 사용자가 다시 수행하면 — UI 가드는 통과시키고, 서버 호출도 나간다.
+    assert.equal(blockedReasonForCloudWrite('vehicle-1'), null, 'ready가 되면 UI 가드가 더 이상 막으면 안 된다')
+    await deleteVehicleFromSupabase('vehicle-1')
+    assert.equal(countOf('vehicles', 'delete'), 1, '재시도 성공 후에는 서버 호출이 정상적으로 나가야 한다')
     endCloudSession()
   })
 })

@@ -214,6 +214,33 @@ export function assertCloudWriteReady() {
 }
 
 /**
+ * Step 0-4 감사 보완 3차: assertCloudWriteReady()를 로컬 persist *이후*(삭제 화면들이
+ * 낙관적으로 먼저 로컬을 지우고 그 다음 서버 삭제를 부르던 순서)에 호출하던 게 문제였다
+ * — hydrate가 안 준비됐을 때도 로컬은 이미 지워진 채로 남아, 서버 호출만 나중에
+ * 실패(또는 아예 안 나가고)해서 로컬·서버가 갈라졌다. 이 함수는 UI가 **로컬 변경을
+ * 시작하기 전에** 동기적으로 부를 수 있는 판정판이다 — cloudId(그 레코드의
+ * supabaseId)가 없으면 애초에 서버에 보낼 게 없으니 항상 허용(null)한다. cloudId가
+ * 있는데 준비 안 됐으면 사용자에게 보여줄 메시지를 돌려준다(throw 대신 반환값으로
+ * 판단하게 해서 호출부가 try/catch 없이 조기 리턴할 수 있게 한다).
+ *
+ * durable mutation/tombstone 큐(실패한 삭제를 저장해 뒀다가 자동 재시도)는 이번
+ * 라운드에서 구현하지 않았다 — "작업 전체를 중단하고 사용자가 다시 시도한다" 쪽을
+ * 택했다. 반쪽짜리 durable 큐(예: 삭제만 큐잉하고 기사 상태변경은 안 하는 식)를 만드는
+ * 것보다, 범위를 명확히 좁혀 알려진 한계로 남기는 게 더 정직하다고 판단했다.
+ * @param {string|null|undefined} cloudId
+ * @returns {string|null} 진행을 막아야 하면 사용자에게 보여줄 메시지, 허용하면 null.
+ */
+export function blockedReasonForCloudWrite(cloudId) {
+  if (!cloudId) return null
+  try {
+    assertCloudWriteReady()
+    return null
+  } catch (error) {
+    return error.message
+  }
+}
+
+/**
  * runningPromise가 있으면 그 실행에 "한 번 더 돌아야 한다"는 표시(dirty)만 남기고 그
  * 실행을 그대로 돌려준다 — flushCloudSync가 pagehide에서 이 Promise를 await하면
  * "지금 도는 것 + 그 사이 생긴 변경"까지 다 반영된 뒤에야 resolve된다. 원본 코드는

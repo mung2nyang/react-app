@@ -9,8 +9,8 @@
 // initializeOwnerFromPersist/replaceOwnerState는 owner-state.js로 분리했다(200줄 제한).
 
 import { writeAllOrNothing } from './atomicPersist.js'
+import { buildBatchWrites } from './batchWrites.js'
 import { scheduleCloudSync } from '../lib/cloudSync.js'
-import { markDirty } from '../lib/dirtyJournal.js'
 
 /**
  * @typedef {'idle'|'hydrating'|'ready'|'failed'} HydrationStatus
@@ -103,90 +103,35 @@ function applyDomainToState(domain, ownerKey, value) {
  * hydrate 결과 반영처럼 "방금 서버에서 받은 걸 다시 서버로 되쏘지 않아야" 할 때 쓴다 —
  * 이때는 dirty journal에도 안 남긴다(서버와 이미 같은 값이라 보낼 게 없다).
  *
- * persist 단계는 atomicPersist.js의 writeAllOrNothing을 거친다 — localStorage 쓰기
- * 도중(용량 초과 등) 하나라도 실패하면 이미 쓴 항목까지 원래 값으로 되돌리고 던진다.
- * 이 예외가 여기서 위로 전파되면 state 반영(applyDomainToState)/notify는 아예
- * 실행되지 않으므로, "persist 일부만 성공 + state는 갱신 안 됨" 같은 불일치가 없다.
+ * 감사 보완 3차: 도메인 값 쓰기와 dirty journal 쓰기를 batchWrites.js가 "하나의" 쓰기
+ * 목록으로 미리 계산해 주고, 여기서는 그 목록을 writeAllOrNothing 한 번으로 쓴다.
+ * 예전엔 markDirty()가 도메인 값을 다 쓴 *뒤에* 자기 localStorage.setItem을 또 불러서,
+ * 그 호출만 실패해도(용량 초과 등) "도메인은 새 값인데 journal은 갱신 안 됨" 같은
+ * 불일치가 생길 수 있었다. 이제 이 전체 쓰기(도메인 + journal)가 하나라도 실패하면
+ * writeAllOrNothing이 이미 쓴 것까지 전부 되돌리고 던지므로, state 반영
+ * (applyDomainToState)/notify는 그 경우 아예 실행되지 않는다.
  * @param {Array<BatchEntry>} entries
  * @param {{ persist?: boolean, syncToCloud?: boolean }} [options]
  * @returns {Array<*>}
  */
 export function commitBatch(entries, options = {}) {
   const { persist = true, syncToCloud = true } = options
-  if (persist) writeAllOrNothing(entries)
+
+  const writes = buildBatchWrites(entries, { persist, syncToCloud })
+  if (writes.length) writeAllOrNothing(writes)
+
   entries.forEach(({ domain, ownerKey, value }) => {
     applyDomainToState(domain, ownerKey, value)
-    if (syncToCloud) markDirty(ownerKey, domain)
   })
   notify()
   if (syncToCloud && entries.length) scheduleCloudSync()
   return entries.map((entry) => entry.value)
 }
 
-/**
- * @template T
- * @param {import('./persist.js').PersistDomain} domain
- * @param {string} ownerKey
- * @param {T} value
- * @param {{ syncToCloud?: boolean }} [options]
- * @returns {T}
- */
-function commit(domain, ownerKey, value, options = {}) {
-  const [result] = commitBatch([{ domain, ownerKey, value }], options)
-  return result
-}
-
-/** @param {string} ownerKey @param {object} data 날짜별 운행 기록 @param {{ syncToCloud?: boolean }} [options] */
-export function commitWorkData(ownerKey, data, options = {}) {
-  return commit('workData', ownerKey, data, options)
-}
-
-/** @param {string} ownerKey @param {Array<object>} cars @param {{ syncToCloud?: boolean }} [options] */
-export function commitCars(ownerKey, cars, options = {}) {
-  return commit('cars', ownerKey, cars, options)
-}
-
-/** @param {string} ownerKey @param {Array<object>} clients @param {{ syncToCloud?: boolean }} [options] */
-export function commitClients(ownerKey, clients, options = {}) {
-  return commit('clients', ownerKey, clients, options)
-}
-
-/** @param {string} ownerKey @param {object} settings 이미 normalizeSettings를 거친 값 @param {{ syncToCloud?: boolean }} [options] */
-export function commitSettings(ownerKey, settings, options = {}) {
-  return commit('settings', ownerKey, settings, options)
-}
-
-/** @param {string} ownerKey @param {Array<object>} items @param {{ syncToCloud?: boolean }} [options] */
-export function commitExpenses(ownerKey, items, options = {}) {
-  return commit('expenses', ownerKey, items, options)
-}
-
-/** @param {string} ownerKey @param {Array<object>} items @param {{ syncToCloud?: boolean }} [options] */
-export function commitInvoices(ownerKey, items, options = {}) {
-  return commit('invoices', ownerKey, items, options)
-}
-
-/** @param {string} ownerKey @param {Array<object>} items @param {{ syncToCloud?: boolean }} [options] */
-export function commitDrivers(ownerKey, items, options = {}) {
-  return commit('drivers', ownerKey, items, options)
-}
-
-/** @param {string} ownerKey @param {object} profile 이미 emptyProfile과 병합된 값 @param {{ syncToCloud?: boolean }} [options] */
-export function commitProfile(ownerKey, profile, options = {}) {
-  return commit('profile', ownerKey, profile, options)
-}
-
-/**
- * 무시한 알림 id 목록. 바닐라/클라우드 계약(KEYS)에 없는 로컬 전용 값이라
- * 클라우드 동기화는 예약하지 않는다(기존 dismissNotification과 동일한 동작이라
- * syncToCloud 오버라이드를 허용하지 않는다).
- * @param {string} ownerKey
- * @param {Array<string>} ids
- * @returns {Array<string>}
- */
-export function commitDismissedNotifications(ownerKey, ids) {
-  return commit('dismissedNotifications', ownerKey, ids, { syncToCloud: false })
-}
+// commitWorkData/commitCars/.../commitDismissedNotifications — 도메인별 commitBatch
+// 얇은 래퍼들은 commitHelpers.js로 옮겼다(200줄 제한). commitHelpers.js가 이 파일의
+// commitBatch를 가져다 쓰므로, 여기서 다시 배럴로 재수출하면 순환 참조가 생긴다 —
+// 대신 그 함수들을 쓰던 lib/*.js 9곳의 import 경로를 commitHelpers.js로 직접 옮겼다.
 
 /**
  * cloudSync.js의 hydrateFromSupabase/endCloudSession이 부르는 단일 경로.

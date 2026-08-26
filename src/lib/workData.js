@@ -3,7 +3,7 @@
 // 전부 domain/으로 옮겼다. 이 파일은 기존 임포트 경로('../lib/workData.js')를 그대로
 // 유지하는 배럴이다 — 호출부는 한 곳도 바꿀 필요 없다.
 import { readJsonKey } from '../store/persist.js'
-import { commitWorkData } from '../store/app-store.js'
+import { commitWorkData } from '../store/commitHelpers.js'
 
 export function loadWorkData(ownerKey = 'guest') {
   const parsed = readJsonKey('workData', ownerKey, {})

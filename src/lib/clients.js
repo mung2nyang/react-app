@@ -2,7 +2,7 @@
 // I/O(loadClients/saveClients)만 남기고, 기존 임포트 경로('../lib/clients.js')를 유지하는
 // 배럴로 domain/clients.js를 재수출한다.
 import { readJsonKey } from '../store/persist.js'
-import { commitClients } from '../store/app-store.js'
+import { commitClients } from '../store/commitHelpers.js'
 
 export function loadClients(ownerKey = 'guest') {
   const parsed = readJsonKey('clients', ownerKey, [])
