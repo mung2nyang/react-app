@@ -1,6 +1,18 @@
 import { supabase } from '../supabaseClient.js'
 import { getState, setHydration } from '../store/app-store.js'
 import { replaceOwnerState } from '../store/owner-state.js'
+import { getDirtyDomains, hasDirty, clearDirty } from './dirtyJournal.js'
+import { singleFlight } from './singleFlight.js'
+import {
+  throwIfAnyHydrateError,
+  mergeProfileRow,
+  mergeCarsFromRows,
+  mergeClientsFromRows,
+  mergeDriversFromRows,
+  findMainCar,
+  mergeWorkDataFromRows,
+  mergeExpenseKind,
+} from './hydrateMerge.js'
 import {
   buildFuelRecordRow,
   expenseFromFuelRecord,
@@ -42,17 +54,23 @@ const KEYS = {
 let cloudUserId = null
 let cloudOwnerKey = null
 let syncTimer = null
+// hydrateFromSupabase 호출마다 올라가는 세대 카운터. owner가 바뀌는 순간(로그아웃 후
+// 다른 계정으로 재로그인 등) 이전 owner의 hydrate가 늦게 끝나더라도 "내가 시작했을 때
+// 최신이었던 세대"와 다르면 결과를 버린다 — 늦게 도착한 이전 요청이 최신 상태를 덮어
+// 쓰는 사고를 막는다.
+let hydrateGeneration = 0
 
 // Step 0-4 감사 보완: syncing boolean 하나로는 "지금 도는 동기화가 끝나면 한 번 더 돌아야
 // 하는지"를 표현할 수 없었다(끝나기 전에 들어온 변경은 새 600ms 타이머로만 재예약됐고,
 // pagehide처럼 타이머가 살아남지 못하는 상황에서는 그 변경이 그냥 유실됐다). runningPromise +
 // dirty로 바꿔서 flushCloudSync가 "지금 도는 것"과 "그 사이 생긴 추가 변경"을 전부 기다린
-// 뒤에만 resolve하게 한다. pendingWhileBlocked는 hydrate가 idle/hydrating/failed라 원격
-// 쓰기가 막혀 있는 동안 생긴 변경 — hydrate가 ready가 되면 자동으로 한 번 플러시한다.
+// 뒤에만 resolve하게 한다. hydrate가 idle/hydrating/failed라 원격 쓰기가 막혀 있는 동안의
+// 변경은 (2차 감사 보완) 이 메모리 전용 플래그가 아니라 dirtyJournal.js의 durable
+// per-owner 저널이 담당한다 — 새로고침해도 "아직 서버에 못 보낸 게 있다"는 사실이
+// 남는다. hydrate가 ready가 되면 hasDirty()로 확인해 자동으로 한 번 플러시한다.
 const syncQueue = {
   runningPromise: null,
   dirty: false,
-  pendingWhileBlocked: false,
 }
 
 function readJson(storageKey, fallback) {
@@ -166,7 +184,6 @@ export function endCloudSession() {
   cloudOwnerKey = null
   if (syncTimer) clearTimeout(syncTimer)
   syncQueue.dirty = false
-  syncQueue.pendingWhileBlocked = false
   // 로그아웃/게스트는 기다릴 hydrate가 없으므로 'idle' — UI 잠금은 'hydrating'일 때만
   // 걸리므로 idle도 failed와 마찬가지로 잠금 해제 상태다.
   setHydration({ status: 'idle', userId: null, ownerKey: null })
@@ -174,6 +191,20 @@ export function endCloudSession() {
 
 function isHydrationReady() {
   return getState().hydration.status === 'ready'
+}
+
+/**
+ * Step 0-4 감사 보완 2차: queueSync/scheduleCloudSync 큐를 거치지 않고 UI에서 직접
+ * 부르는 Supabase mutation(차량/거래처 삭제, 기사 링크 CRUD)이 공통으로 거치는 관문.
+ * hydrate가 ready가 아니면(아직 안 됐거나 실패했으면) 던진다 — 호출부는 이미 모두
+ * .catch()로 실패를 잡아 토스트만 띄우고 로컬 상태는 그대로 두므로, 여기서 던지는 것만
+ * 으로 안전하게 "서버가 아직 준비 안 됐을 때는 아예 쏘지 않는다"를 보장할 수 있다.
+ * durable retry(재시도 큐에 넣고 나중에 자동 재전송)는 이 라운드 범위 밖이다 — 실패하면
+ * 사용자가 다시 시도해야 한다는 걸 감사 보고서에 명시한다.
+ */
+export function assertCloudWriteReady() {
+  if (!cloudUserId || !cloudOwnerKey) throw new Error('로그인이 필요합니다.')
+  if (!isHydrationReady()) throw new Error('클라우드 동기화가 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.')
 }
 
 /**
@@ -197,6 +228,10 @@ function queueSync(userId, ownerKey) {
         syncQueue.dirty = false
         await syncAll(userId, ownerKey)
       } while (syncQueue.dirty)
+      // 여기 도달했다는 건 마지막 syncAll이 성공했고 그 사이 새 dirty도 안 생겼다는
+      // 뜻이다 — 지금 로컬은 서버와 같으므로 저널을 비운다. 실패했으면 위 await가
+      // 던지고 여기 도달하지 않으므로 저널은 그대로 남는다(다음 재시도 대상).
+      clearDirty(ownerKey)
     } finally {
       syncQueue.runningPromise = null
     }
@@ -206,9 +241,10 @@ function queueSync(userId, ownerKey) {
 
 export function scheduleCloudSync() {
   if (!isHydrationReady() || !cloudUserId || !cloudOwnerKey) {
-    // hydrate가 idle/hydrating/failed인 동안의 변경은 서버로 보내지 않는다. 대신 dirty
-    // queue에 남겨 뒀다가, hydrate가 (재시도로) ready가 되는 순간 자동으로 한 번 플러시한다.
-    syncQueue.pendingWhileBlocked = true
+    // hydrate가 idle/hydrating/failed인 동안의 변경은 서버로 보내지 않는다. 이 변경은
+    // 이미 호출부(app-store.js의 commitBatch)가 dirtyJournal.markDirty()로 durable하게
+    // 남겨 놨으므로 여기서 더 할 일이 없다 — hydrate가 (재시도로) ready가 되면
+    // hasDirty()를 보고 자동으로 한 번 플러시한다.
     return
   }
   if (syncQueue.runningPromise) {
@@ -224,244 +260,183 @@ export function scheduleCloudSync() {
   }, 600)
 }
 
-export async function hydrateFromSupabase(userId, ownerKey) {
+/**
+ * Step 0-4 감사 보완 2차 — hydrate 전체 재작성.
+ *
+ * 이전 구현은 profiles/vehicles/clients/driver_links, daily_logs/transport_details/
+ * fuel/maintenance/misc 각 조회 실패를 console.warn으로 "부드럽게" 넘기고 나머지는
+ * 계속 진행했다. 특히 transport_details 조회가 실패해도 daily_logs만 성공하면
+ * callDetails: []로 매일 기록을 만들어 로컬의 실제 콜상세를 지워 버리는 사고가 있었다
+ * (감사 지적 2번). 이번 재작성은:
+ *   1) 필요한 조회를 전부 마친 뒤 error를 한꺼번에 판정한다 — 하나라도 실패하면
+ *      즉시 던지고, 그때까지 아무 것도 localStorage/store에 쓰지 않는다(all-or-nothing).
+ *   2) 병합은 전부 메모리에서(hydrateMerge.js) 계산하고, 성공했을 때만 마지막에
+ *      replaceOwnerState() 한 번으로 커밋한다.
+ *   3) 커밋 직전, 이 owner에 아직 서버로 못 보낸 로컬 변경(dirtyJournal)이 있는 도메인은
+ *      방금 받은 서버 값 대신 "지금 이 순간의" 로컬 값을 그대로 남긴다 — 실패 후 편집 →
+ *      재시도 흐름에서 로컬 편집이 유실되지 않는다(감사 지적 5번).
+ *   4) owner별 single-flight + 전역 세대 카운터로 StrictMode 중복 호출/오래된 요청의
+ *      결과가 최신 상태를 덮어쓰는 사고를 막는다(감사 지적 8번).
+ * @param {string} userId
+ * @param {string} ownerKey
+ * @returns {Promise<object>}
+ */
+export function hydrateFromSupabase(userId, ownerKey) {
   cloudUserId = userId
   cloudOwnerKey = ownerKey
+  return singleFlight(`hydrate:${ownerKey}`, () => {
+    hydrateGeneration += 1
+    return performHydrate(userId, ownerKey, hydrateGeneration)
+  })
+}
+
+async function performHydrate(userId, ownerKey, myGeneration) {
   // 스토어 hydration 상태를 'hydrating'으로 켠다. PersonalInfoPage/AppSettingsPage가
   // useHydrationLock()으로 구독해서 이 구간에는 입력을 막는다 (Step 2). 아래 catch가
-  // 실패를 'failed'로 남기고, finally 없이 명시적으로 성공(ready)/실패(failed) 양쪽
-  // 다 status를 정확히 남긴다 — "실패했는데 ready로 보인다" 같은 불일치를 막기 위해서다.
+  // 실패를 'failed'로 남기고, 성공(ready)/실패(failed) 양쪽 다 status를 정확히 남긴다.
   setHydration({ status: 'hydrating', userId, ownerKey })
 
   try {
-    const [{ data: profile, error: profileError }, { data: vehicles, error: vehiclesError }, { data: clientsRows, error: clientsError }, { data: links, error: linksError }] = await Promise.all([
+    const [profileRes, vehiclesRes, clientsRes, linksRes] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('vehicles').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
       supabase.from('clients').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
       supabase.from('driver_links').select('*').eq('owner_id', userId),
     ])
-
-    if (profileError) console.warn('[Supabase] profiles 조회 실패, 로컬을 유지합니다.', profileError)
-    const settingsJson = (!profileError && profile?.settings && typeof profile.settings === 'object') ? profile.settings : {}
-    const snapshot = settingsJson.practiceSnapshot || {}
-    const previousExpenses = readJson(keyFor(KEYS.expenses, ownerKey), [])
-    applyPracticeSnapshot(ownerKey, snapshot)
-
-    const localProfile = readJson(keyFor(KEYS.profile, ownerKey), {})
-    writeJson(keyFor(KEYS.profile, ownerKey), {
-      ...localProfile,
-      name: profile?.name || localProfile.name || '',
-      phone: profile?.phone || localProfile.phone || '',
-      bizName: profile?.business_name || localProfile.bizName || '',
-      bizNumber: profile?.business_number || localProfile.bizNumber || '',
-      bizAddress: profile?.business_address || localProfile.bizAddress || '',
-      bizType: profile?.business_type || localProfile.bizType || '',
-      bizItem: profile?.business_item || localProfile.bizItem || '',
-      bizEmail: profile?.business_email || localProfile.bizEmail || '',
-      bankName: profile?.bank_name || localProfile.bankName || '',
-      accountNumber: profile?.account_number || localProfile.accountNumber || '',
+    throwIfAnyHydrateError({
+      profiles: profileRes.error,
+      vehicles: vehiclesRes.error,
+      clients: clientsRes.error,
+      driver_links: linksRes.error,
     })
 
-    if (!vehiclesError && Array.isArray(vehicles) && vehicles.length) {
-      const cars = vehicles.map((row) => {
-        const raw = row.raw && typeof row.raw === 'object' ? row.raw : {}
-        return {
-          ...raw,
-          id: raw.id || `car-${row.id}`,
-          number: row.number || '',
-          type: row.type || 'main',
-          tonnage: row.tonnage || '',
-          supabaseId: row.id,
-          driverName: row.driver_name ?? raw.driverName ?? '',
-          settlementMode: row.settlement_mode ?? raw.settlementMode ?? null,
-          commEnabled: row.comm_enabled ?? !!raw.commEnabled,
-          commType: row.comm_type ?? raw.commType ?? null,
-          commission: row.comm_value ?? raw.commission ?? '',
-        }
+    const localSnapshot = collectPracticeSnapshot(ownerKey)
+    const settingsJson = (profileRes.data?.settings && typeof profileRes.data.settings === 'object') ? profileRes.data.settings : {}
+    const profileSnapshot = settingsJson.practiceSnapshot || {}
+
+    // applyPracticeSnapshot이 하던 "프로필에 백업된 스냅샷을 기본값으로 깔아 준다" 역할을
+    // 메모리에서 재현한다 — 이후 각 도메인 전용 테이블 병합이 있으면 이 값을 덮어쓴다.
+    let nextWorkData = (profileSnapshot.workData && typeof profileSnapshot.workData === 'object') ? profileSnapshot.workData : localSnapshot.workData
+    let nextCars = Array.isArray(profileSnapshot.cars) ? profileSnapshot.cars : localSnapshot.cars
+    let nextClients = Array.isArray(profileSnapshot.clients) ? profileSnapshot.clients : localSnapshot.clients
+    let nextDrivers = Array.isArray(profileSnapshot.drivers) ? profileSnapshot.drivers : localSnapshot.drivers
+    const nextSettings = (profileSnapshot.settings && typeof profileSnapshot.settings === 'object') ? profileSnapshot.settings : localSnapshot.settings
+    let nextExpenses = Array.isArray(profileSnapshot.expenses) ? profileSnapshot.expenses : localSnapshot.expenses
+    let nextInvoices = Array.isArray(profileSnapshot.invoices) ? profileSnapshot.invoices : localSnapshot.invoices
+
+    const nextProfile = mergeProfileRow(localSnapshot.profile, profileRes.data)
+    nextCars = mergeCarsFromRows(nextCars, vehiclesRes.data)
+    nextClients = mergeClientsFromRows(nextClients, clientsRes.data)
+    nextDrivers = mergeDriversFromRows(nextDrivers, nextCars, linksRes.data)
+
+    const mainCar = findMainCar(nextCars)
+    if (mainCar?.supabaseId) {
+      const [dailyRes, transportRes, fuelRes, maintRes, miscRes] = await Promise.all([
+        supabase.from('daily_logs').select('*').eq('vehicle_id', mainCar.supabaseId),
+        supabase.from('transport_details').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
+        supabase.from('fuel_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
+        supabase.from('maintenance_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
+        supabase.from('misc_expense_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
+      ])
+      // transport_details 실패를 반드시 검사한다 — 이걸 빼먹은 게 콜상세를 지우던
+      // 원래 버그였다(감사 지적 2번). 5개 중 하나라도 실패하면 workData/expenses를
+      // 아예 다시 만들지 않고 전체 hydrate를 실패시킨다.
+      throwIfAnyHydrateError({
+        daily_logs: dailyRes.error,
+        transport_details: transportRes.error,
+        fuel_records: fuelRes.error,
+        maintenance_records: maintRes.error,
+        misc_expense_records: miscRes.error,
       })
-      const previous = readJson(keyFor(KEYS.cars, ownerKey), [])
-      const unsynced = previous.filter((car) => car && !car.supabaseId)
-      writeJson(keyFor(KEYS.cars, ownerKey), [...cars, ...unsynced])
-    }
 
-    if (!clientsError && Array.isArray(clientsRows) && clientsRows.length) {
-      const clients = clientsRows.map((row) => ({
-        ...(row.raw && typeof row.raw === 'object' ? row.raw : {}),
-        companyName: row.company_name,
-        id: row.legacy_client_id || row.id,
-        supabaseId: row.id,
-        isPinned: row.is_pinned ?? !!(row.raw && row.raw.isPinned),
-      }))
-      const previous = readJson(keyFor(KEYS.clients, ownerKey), [])
-      const unsynced = previous.filter((client) => client && !client.supabaseId)
-      writeJson(keyFor(KEYS.clients, ownerKey), [...clients, ...unsynced])
-    }
-
-    const cars = readJson(keyFor(KEYS.cars, ownerKey), [])
-    const localDrivers = readJson(keyFor(KEYS.drivers, ownerKey), [])
-    if (!linksError && Array.isArray(links)) {
-      const byCode = new Map(localDrivers.map((item) => [item.inviteCode, item]))
-      const merged = links.filter((row) => row.status !== 'disconnected').map((row) => {
-        const car = cars.find((item) => item.supabaseId === row.vehicle_id)
-        const local = byCode.get(row.invite_code) || localDrivers.find((item) => item.supabaseId === row.id) || {}
-        return {
-          ...local,
-          id: local.id || row.id,
-          supabaseId: row.id,
-          inviteCode: row.invite_code,
-          vehicleNumber: car?.number || local.vehicleNumber || '',
-          startDate: row.assignment_start || '',
-          endDate: row.assignment_end || '',
-          status: row.status === 'linked' ? 'linked' : 'pending',
-          name: local.name || local.driverName || '기사',
-          phone: local.phone || '',
-        }
+      nextWorkData = mergeWorkDataFromRows(nextWorkData, {
+        dailyRows: dailyRes.data,
+        transportRows: transportRes.data,
+        fuelRows: fuelRes.data,
+        maintRows: maintRes.data,
+        miscRows: miscRes.data,
       })
-      if (merged.length) writeJson(keyFor(KEYS.drivers, ownerKey), merged)
+
+      nextExpenses = mergeExpenseKind({
+        kind: 'fuel',
+        currentExpenses: nextExpenses,
+        snapshotExpenses: profileSnapshot.expenses,
+        previousExpenses: localSnapshot.expenses,
+        rows: fuelRes.data,
+        mapRow: expenseFromFuelRecord,
+        replace: replaceFuelExpenses,
+      })
+      nextExpenses = mergeExpenseKind({
+        kind: 'maint',
+        currentExpenses: nextExpenses,
+        snapshotExpenses: profileSnapshot.expenses,
+        previousExpenses: localSnapshot.expenses,
+        rows: maintRes.data,
+        mapRow: expenseFromMaintenanceRecord,
+        replace: replaceMaintExpenses,
+      })
+      nextExpenses = mergeExpenseKind({
+        kind: 'misc',
+        currentExpenses: nextExpenses,
+        snapshotExpenses: profileSnapshot.expenses,
+        previousExpenses: localSnapshot.expenses,
+        rows: miscRes.data,
+        mapRow: expenseFromMiscRecord,
+        replace: replaceMiscExpenses,
+      })
     }
 
-    const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
-    const emptyChild = { data: [], error: null }
-    const { fuelRes, maintRes, miscRes } = mainCar?.supabaseId
-      ? await hydrateWorkData(ownerKey, mainCar.supabaseId)
-      : { fuelRes: emptyChild, maintRes: emptyChild, miscRes: emptyChild }
+    const taxInvoicesRes = await supabase.from('tax_invoices').select('*').eq('user_id', userId)
+    throwIfAnyHydrateError({ tax_invoices: taxInvoicesRes.error })
+    nextInvoices = mergeTaxInvoiceRecords(nextInvoices, taxInvoicesRes.data || [])
 
-    applyHydratedExpenses({
-      ownerKey,
-      table: 'fuel_records',
-      kind: 'fuel',
-      result: fuelRes,
-      snapshot,
-      previousExpenses,
-      mapRow: expenseFromFuelRecord,
-      replace: replaceFuelExpenses,
-    })
-    applyHydratedExpenses({
-      ownerKey,
-      table: 'maintenance_records',
-      kind: 'maint',
-      result: maintRes,
-      snapshot,
-      previousExpenses,
-      mapRow: expenseFromMaintenanceRecord,
-      replace: replaceMaintExpenses,
-    })
-    applyHydratedExpenses({
-      ownerKey,
-      table: 'misc_expense_records',
-      kind: 'misc',
-      result: miscRes,
-      snapshot,
-      previousExpenses,
-      mapRow: expenseFromMiscRecord,
-      replace: replaceMiscExpenses,
-    })
-
-    await hydrateTaxInvoices(ownerKey, userId)
-
-    // 위 블록 전체가 localStorage에 직접 썼다(applyPracticeSnapshot/writeJson 등) — 그
-    // 최종 결과를 store에도 반영해서 store가 persist와 어긋나지 않게 한다. sync:false가
-    // 핵심이다: 방금 서버에서 받아온 걸 그대로 다시 서버로 올리는 핑퐁을 막는다.
-    const finalSnapshot = collectPracticeSnapshot(ownerKey)
-    replaceOwnerState(ownerKey, finalSnapshot, { sync: false })
-
-    setHydration({ status: 'ready', userId: cloudUserId, ownerKey: cloudOwnerKey })
-    if (syncQueue.pendingWhileBlocked) {
-      syncQueue.pendingWhileBlocked = false
-      scheduleCloudSync()
+    const nextSnapshot = {
+      workData: nextWorkData,
+      cars: nextCars,
+      clients: nextClients,
+      drivers: nextDrivers,
+      profile: nextProfile,
+      settings: nextSettings,
+      expenses: nextExpenses,
+      invoices: nextInvoices,
     }
-    return finalSnapshot
+
+    // 감사 지적 5번: 지금 이 owner에 아직 서버로 못 보낸 로컬 변경이 남아 있는 도메인은
+    // 방금 받은 서버 값으로 덮지 않는다 — hydrate 도중/실패 후 재시도 사이에 들어온
+    // 로컬 편집을 보호한다. "지금 이 순간의" 로컬 값을 다시 읽어서 쓴다(위 fetch가 도는
+    // 동안 편집이 더 있었을 수 있으므로 localSnapshot이 아니라 새로 읽는다).
+    const dirtyDomains = getDirtyDomains(ownerKey)
+    if (dirtyDomains.length) {
+      const freshLocal = collectPracticeSnapshot(ownerKey)
+      dirtyDomains.forEach((domain) => {
+        if (domain in nextSnapshot) nextSnapshot[domain] = freshLocal[domain]
+      })
+    }
+
+    if (myGeneration !== hydrateGeneration) return nextSnapshot // 더 최신 hydrate가 이미 있다 — 조용히 버린다.
+
+    // sync:false가 핵심이다: 방금 서버에서 받아온 걸 그대로 다시 서버로 올리는 핑퐁을
+    // 막는다. replaceOwnerState가 localStorage 쓰기 + state 갱신 + notify(1회)를
+    // 원자적으로 처리한다.
+    replaceOwnerState(ownerKey, nextSnapshot, { sync: false })
+    setHydration({ status: 'ready', userId, ownerKey })
+    if (hasDirty(ownerKey)) scheduleCloudSync()
+    return nextSnapshot
   } catch (error) {
-    setHydration({ status: 'failed', userId: cloudUserId, ownerKey: cloudOwnerKey })
+    if (myGeneration === hydrateGeneration) setHydration({ status: 'failed', userId, ownerKey })
     throw error
   }
 }
 
 /**
  * 실패한 hydrate를 명시적으로 다시 시도한다. cloudUserId/cloudOwnerKey가 없으면(로그인
- * 상태가 아니면) 아무것도 하지 않는다 — 재시도 대상 자체가 없다.
+ * 상태가 아니면) 아무것도 하지 않는다 — 재시도 대상 자체가 없다. 같은 owner의 hydrate가
+ * 이미 도는 중이면(singleFlight) 새로 쏘지 않고 그 결과를 그대로 기다린다.
  * @returns {Promise<object|undefined>}
  */
 export async function retryHydrate() {
   if (!cloudUserId || !cloudOwnerKey) return undefined
   return hydrateFromSupabase(cloudUserId, cloudOwnerKey)
-}
-
-function applyHydratedExpenses({ ownerKey, table, kind, result, snapshot, previousExpenses, mapRow, replace }) {
-  if (result?.error) {
-    console.warn(`[Supabase] ${table} 조회 실패, 로컬 내역을 유지합니다.`, result.error)
-    return
-  }
-  const current = readJson(keyFor(KEYS.expenses, ownerKey), [])
-  if ((result?.data || []).length) {
-    writeJson(keyFor(KEYS.expenses, ownerKey), replace(current, result.data.map((row, index) => mapRow(row, index))))
-    return
-  }
-  const snapshotKind = (snapshot.expenses || []).filter((item) => item.kind === kind)
-  const localKind = (previousExpenses || []).filter((item) => item.kind === kind)
-  const keep = snapshotKind.length ? snapshotKind : localKind
-  writeJson(keyFor(KEYS.expenses, ownerKey), replace(current, keep))
-}
-
-async function hydrateTaxInvoices(ownerKey, userId) {
-  const { data, error } = await supabase.from('tax_invoices').select('*').eq('user_id', userId)
-  if (error) {
-    console.warn('[Supabase] tax_invoices 조회 실패, 로컬 세금계산서를 유지합니다.', error)
-    return
-  }
-  const local = readJson(keyFor(KEYS.invoices, ownerKey), [])
-  writeJson(keyFor(KEYS.invoices, ownerKey), mergeTaxInvoiceRecords(local, data || []))
-}
-
-async function hydrateWorkData(ownerKey, vehicleId) {
-  const [dailyRes, transportRes, fuelRes, maintRes, miscRes] = await Promise.all([
-    supabase.from('daily_logs').select('*').eq('vehicle_id', vehicleId),
-    supabase.from('transport_details').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
-    supabase.from('fuel_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
-    supabase.from('maintenance_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
-    supabase.from('misc_expense_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
-  ])
-  if (dailyRes.error) {
-    console.warn('[Supabase] daily_logs 조회 실패, 로컬 운행기록을 유지합니다.', dailyRes.error)
-    return { fuelRes, maintRes, miscRes }
-  }
-  const byDate = {}
-  ;(dailyRes.data || []).forEach((row) => {
-    byDate[row.work_date] = {
-      ...(row.raw && typeof row.raw === 'object' ? row.raw : {}),
-      isOff: !!row.is_off,
-      fixedCount: row.fixed_count || 0,
-      callDetails: [],
-      fuelItems: [],
-      maintItems: [],
-      miscItems: [],
-    }
-  })
-  ;(transportRes.data || []).forEach((row) => {
-    if (!byDate[row.work_date]) return
-    byDate[row.work_date].callDetails.push(row.raw && typeof row.raw === 'object' ? row.raw : {})
-  })
-  if (!fuelRes.error) {
-    ;(fuelRes.data || []).forEach((row) => {
-      if (!byDate[row.work_date]) return
-      byDate[row.work_date].fuelItems.push(row.raw && typeof row.raw === 'object' ? row.raw : expenseFromFuelRecord(row))
-    })
-  }
-  if (!maintRes.error) {
-    ;(maintRes.data || []).forEach((row) => {
-      if (!byDate[row.work_date]) return
-      byDate[row.work_date].maintItems.push(row.raw && typeof row.raw === 'object' ? row.raw : expenseFromMaintenanceRecord(row))
-    })
-  }
-  if (!miscRes.error) {
-    ;(miscRes.data || []).forEach((row) => {
-      if (!byDate[row.work_date]) return
-      byDate[row.work_date].miscItems.push(row.raw && typeof row.raw === 'object' ? row.raw : expenseFromMiscRecord(row))
-    })
-  }
-  const localExisting = readJson(keyFor(KEYS.work, ownerKey), {})
-  writeJson(keyFor(KEYS.work, ownerKey), { ...localExisting, ...byDate })
-  return { fuelRes, maintRes, miscRes }
 }
 
 async function syncVehicles(userId, ownerKey) {
@@ -769,6 +744,7 @@ async function syncAll(userId, ownerKey) {
 
 export async function deleteVehicleFromSupabase(vehicleSupabaseId) {
   if (!vehicleSupabaseId) return
+  assertCloudWriteReady()
   const childResults = await Promise.all([
     supabase.from('transport_details').delete().eq('vehicle_id', vehicleSupabaseId),
     supabase.from('maintenance_records').delete().eq('vehicle_id', vehicleSupabaseId),
@@ -785,6 +761,7 @@ export async function deleteVehicleFromSupabase(vehicleSupabaseId) {
 
 export async function deleteClientFromSupabase(clientSupabaseId) {
   if (!clientSupabaseId) return
+  assertCloudWriteReady()
   const unlinkResults = await Promise.all([
     supabase.from('transport_details').update({ client_id: null }).eq('client_id', clientSupabaseId),
     supabase.from('tax_invoices').update({ client_id: null }).eq('client_id', clientSupabaseId),
@@ -796,6 +773,7 @@ export async function deleteClientFromSupabase(clientSupabaseId) {
 }
 
 export async function findOverlappingDriverLinkOnSupabase(vehicleId, start, end, excludeSupabaseId) {
+  assertCloudWriteReady()
   const { data, error } = await supabase
     .from('driver_links')
     .select('id, assignment_start, assignment_end, status, driver_id')
@@ -810,10 +788,9 @@ export async function findOverlappingDriverLinkOnSupabase(vehicleId, start, end,
 }
 
 export async function upsertDriverLinkOnSupabase({ supabaseId, vehicleId, inviteCode, assignmentStart, assignmentEnd }) {
-  const user = cloudUserId
-  if (!user) throw new Error('로그인이 필요합니다.')
+  assertCloudWriteReady()
   const baseRow = {
-    owner_id: user,
+    owner_id: cloudUserId,
     vehicle_id: vehicleId,
     assignment_start: assignmentStart,
     assignment_end: assignmentEnd || null,
@@ -841,18 +818,24 @@ export async function upsertDriverLinkOnSupabase({ supabaseId, vehicleId, invite
 
 export async function updateDriverLinkStatusOnSupabase(supabaseId, status) {
   if (!supabaseId) return
+  assertCloudWriteReady()
   const { error } = await supabase.from('driver_links').update({ status, updated_at: new Date().toISOString() }).eq('id', supabaseId)
   if (error) throw error
 }
 
 export async function deleteDriverLinkOnSupabase(supabaseId) {
   if (!supabaseId) return
+  assertCloudWriteReady()
   const { error } = await supabase.from('driver_links').delete().eq('id', supabaseId)
   if (error) throw error
 }
 
 export async function saveDriverInviteToCloud(items, editingId, cars) {
+  // 게스트/비로그인은 클라우드 자체가 없다 — 에러가 아니라 "조용히 건너뛴다"가 맞는
+  // 기존 동작이라 그대로 둔다. 로그인은 했는데 hydrate가 준비 안 된 경우만
+  // assertCloudWriteReady()가 던져서 호출부(.catch)가 토스트로 알려 준다.
   if (!cloudUserId || !cloudOwnerKey) return { items }
+  assertCloudWriteReady()
   await syncVehicles(cloudUserId, cloudOwnerKey)
   const latestCars = readJson(keyFor(KEYS.cars, cloudOwnerKey), cars)
   const idx = items.findIndex((item) => item.id === editingId) >= 0

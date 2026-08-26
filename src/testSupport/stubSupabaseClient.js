@@ -6,16 +6,29 @@
 // --experimental-test-module-mocks 플래그가 있어야 동작한다(package.json의 test 스크립트).
 import { mock } from 'node:test'
 
+// Step 0-4 감사 보완 2차(9번): "sync:false면 원격 쓰기가 없어야 한다" 같은 테스트가
+// 최종 state만 보고 넘어가지 않도록, 이 스텁을 거친 select/upsert/insert/update/delete
+// 호출 횟수를 여기 담아 둔다. 테스트가 import해서 직접 spy할 수 있다.
+export const stubSupabaseCallCounts = {}
+
+export function resetStubSupabaseCallCounts() {
+  Object.keys(stubSupabaseCallCounts).forEach((key) => delete stubSupabaseCallCounts[key])
+}
+
+function bumpStubCall(method) {
+  stubSupabaseCallCounts[method] = (stubSupabaseCallCounts[method] || 0) + 1
+}
+
 mock.module('../supabaseClient.js', {
   exports: {
     supabase: {
       from() {
         return {
-          select: () => Promise.resolve({ data: [], error: null }),
-          upsert: () => Promise.resolve({ data: null, error: null }),
-          insert: () => Promise.resolve({ data: null, error: null }),
-          update: () => Promise.resolve({ data: null, error: null }),
-          delete: () => Promise.resolve({ data: null, error: null }),
+          select: () => { bumpStubCall('select'); return Promise.resolve({ data: [], error: null }) },
+          upsert: () => { bumpStubCall('upsert'); return Promise.resolve({ data: null, error: null }) },
+          insert: () => { bumpStubCall('insert'); return Promise.resolve({ data: null, error: null }) },
+          update: () => { bumpStubCall('update'); return Promise.resolve({ data: null, error: null }) },
+          delete: () => { bumpStubCall('delete'); return Promise.resolve({ data: null, error: null }) },
         }
       },
       auth: { signOut: async () => ({ error: null }) },

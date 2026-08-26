@@ -10,6 +10,7 @@ import { collectNotifications, dismissNotification } from '../lib/notifications.
 import { todayWorkLogSelection } from '../lib/calendar.js'
 import MainPageRoute from './MainPageRoute.jsx'
 import ComingSoonRoute from './ComingSoonRoute.jsx'
+import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import {
   AppSettingsPage,
   CarManagementPage,
@@ -88,6 +89,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
 
   return (
     <div className="container main-app-container">
+      <HydrationRetryBanner showToast={showToast} />
       <Suspense fallback={<div className="page">불러오는 중...</div>}>
         <Routes>
           <Route

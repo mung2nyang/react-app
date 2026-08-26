@@ -4,6 +4,7 @@
 // 게스트/로그아웃 동작은 전혀 바꾸지 않는다.
 import { supabase } from '../supabaseClient.js'
 import { hydrateFromSupabase } from '../lib/cloudSync.js'
+import { singleFlight } from '../lib/singleFlight.js'
 
 /**
  * @typedef {Object} RestoredSession
@@ -42,7 +43,14 @@ async function fetchAccountProfile(userId) {
  *   활성 Supabase 세션이 없으면 null. 있으면 세션 정보 + hydrate 성공 여부.
  *   hydrate가 실패해도 세션 자체는 돌려준다 — App.jsx가 로그인은 유지한 채 토스트만 띄운다.
  */
-export async function restoreSessionOnBoot() {
+export function restoreSessionOnBoot() {
+  // Step 0-4 감사 보완 2차(8번): React StrictMode가 App.jsx의 부트 이펙트를 두 번
+  // 실행해도 세션 조회 + hydrate가 실제로는 한 번만 나가게 한다. 두 번째 호출은 첫
+  // 번째가 반환한 같은 Promise를 그대로 받는다.
+  return singleFlight('boot:restoreSession', performRestoreSessionOnBoot)
+}
+
+async function performRestoreSessionOnBoot() {
   let authUser
   try {
     const { data, error } = await supabase.auth.getSession()
