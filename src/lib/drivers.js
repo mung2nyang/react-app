@@ -1,20 +1,13 @@
-import { scheduleCloudSync } from './cloudSync.js'
-
-const STORAGE_PREFIX = 'reactPracticeDrivers'
+import { readJsonKey } from '../store/persist.js'
+import { commitDrivers } from '../store/app-store.js'
 
 export function loadDrivers(ownerKey = 'guest') {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}:${ownerKey}`)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readJsonKey('drivers', ownerKey, [])
+  return Array.isArray(parsed) ? parsed : []
 }
 
 export function saveDrivers(ownerKey, items) {
-  localStorage.setItem(`${STORAGE_PREFIX}:${ownerKey}`, JSON.stringify(items))
-  scheduleCloudSync()
+  commitDrivers(ownerKey, items)
 }
 
 export function generateInviteCode(items = []) {

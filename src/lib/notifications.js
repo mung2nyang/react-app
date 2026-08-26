@@ -5,23 +5,18 @@ import { loadDrivers } from './drivers.js'
 import { loadWorkData } from './workData.js'
 import { buildFinanceSettings, loadWorkDataByLogId } from './ownerFinance.js'
 import { getReceivableItems } from './finance.js'
-
-const DISMISS_PREFIX = 'reactPracticeDismissedNotifs'
+import { readJsonKey } from '../store/persist.js'
+import { commitDismissedNotifications } from '../store/app-store.js'
 
 function loadDismissed(ownerKey) {
-  try {
-    const raw = localStorage.getItem(`${DISMISS_PREFIX}:${ownerKey}`)
-    const parsed = raw ? JSON.parse(raw) : []
-    return new Set(Array.isArray(parsed) ? parsed : [])
-  } catch {
-    return new Set()
-  }
+  const parsed = readJsonKey('dismissedNotifications', ownerKey, [])
+  return new Set(Array.isArray(parsed) ? parsed : [])
 }
 
 export function dismissNotification(ownerKey, id) {
   const next = loadDismissed(ownerKey)
   next.add(id)
-  localStorage.setItem(`${DISMISS_PREFIX}:${ownerKey}`, JSON.stringify([...next]))
+  commitDismissedNotifications(ownerKey, [...next])
 }
 
 export function collectNotifications(ownerKey = 'guest') {

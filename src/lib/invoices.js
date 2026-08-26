@@ -4,9 +4,8 @@ import {
   getTaxInvoiceSupplierBiz,
   listTaxInvoiceEntries,
 } from './finance.js'
-import { scheduleCloudSync } from './cloudSync.js'
-
-const STORAGE_PREFIX = 'reactPracticeInvoices'
+import { readJsonKey } from '../store/persist.js'
+import { commitInvoices } from '../store/app-store.js'
 
 export function currentMonthKey() {
   const d = new Date()
@@ -14,18 +13,12 @@ export function currentMonthKey() {
 }
 
 export function loadInvoices(ownerKey = 'guest') {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}:${ownerKey}`)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readJsonKey('invoices', ownerKey, [])
+  return Array.isArray(parsed) ? parsed : []
 }
 
 export function saveInvoices(ownerKey, items) {
-  localStorage.setItem(`${STORAGE_PREFIX}:${ownerKey}`, JSON.stringify(items))
-  scheduleCloudSync()
+  commitInvoices(ownerKey, items)
 }
 
 export function persistInvoiceRecord(records, item) {

@@ -1,6 +1,5 @@
-import { scheduleCloudSync } from './cloudSync.js'
-
-const STORAGE_PREFIX = 'reactPracticeExpenses'
+import { readJsonKey } from '../store/persist.js'
+import { commitExpenses } from '../store/app-store.js'
 
 export const KINDS = [
   { value: 'maint', label: '정비' },
@@ -18,18 +17,12 @@ export function todayKey() {
 }
 
 export function loadExpenses(ownerKey = 'guest') {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}:${ownerKey}`)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readJsonKey('expenses', ownerKey, [])
+  return Array.isArray(parsed) ? parsed : []
 }
 
 export function saveExpenses(ownerKey, items) {
-  localStorage.setItem(`${STORAGE_PREFIX}:${ownerKey}`, JSON.stringify(items))
-  scheduleCloudSync()
+  commitExpenses(ownerKey, items)
 }
 
 export function monthPrefix(year, monthIndex) {

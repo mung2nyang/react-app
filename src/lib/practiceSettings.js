@@ -1,6 +1,6 @@
-import { scheduleCloudSync } from './cloudSync.js'
+import { readJsonKey } from '../store/persist.js'
+import { commitSettings } from '../store/app-store.js'
 
-const STORAGE_PREFIX = 'reactPracticeSettings'
 export const RUN_COUNT_PRESET_MAX = 10
 export const FIXED_ROUTE_PRESET_MAX = 10
 
@@ -69,13 +69,7 @@ export function normalizeFixedRoutePresets(value) {
 }
 
 export function loadPracticeSettings(ownerKey = 'guest') {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}:${ownerKey}`)
-    const parsed = raw ? JSON.parse(raw) : {}
-    return normalizeSettings(parsed)
-  } catch {
-    return { ...defaults }
-  }
+  return normalizeSettings(readJsonKey('settings', ownerKey, {}))
 }
 
 export function normalizeSettings(raw = {}) {
@@ -108,9 +102,7 @@ export function normalizeSettings(raw = {}) {
 
 export function savePracticeSettings(ownerKey, patch) {
   const next = normalizeSettings({ ...loadPracticeSettings(ownerKey), ...(patch || {}) })
-  localStorage.setItem(`${STORAGE_PREFIX}:${ownerKey}`, JSON.stringify(next))
-  scheduleCloudSync()
-  return next
+  return commitSettings(ownerKey, next)
 }
 
 export function applyTheme(theme) {

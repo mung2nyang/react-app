@@ -1,6 +1,5 @@
-import { scheduleCloudSync } from './cloudSync.js'
-
-const STORAGE_PREFIX = 'reactPracticeClients'
+import { readJsonKey } from '../store/persist.js'
+import { commitClients } from '../store/app-store.js'
 
 export const PAYMENT_TERMS = [
   { value: 'same_day', label: '당일·수시 정산' },
@@ -12,18 +11,12 @@ export const PAYMENT_TERMS = [
 ]
 
 export function loadClients(ownerKey = 'guest') {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}:${ownerKey}`)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readJsonKey('clients', ownerKey, [])
+  return Array.isArray(parsed) ? parsed : []
 }
 
 export function saveClients(ownerKey, clients) {
-  localStorage.setItem(`${STORAGE_PREFIX}:${ownerKey}`, JSON.stringify(clients))
-  scheduleCloudSync()
+  commitClients(ownerKey, clients)
 }
 
 export function needsPaymentTermValue(term) {

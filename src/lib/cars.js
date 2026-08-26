@@ -1,20 +1,13 @@
-import { scheduleCloudSync } from './cloudSync.js'
-
-const STORAGE_PREFIX = 'reactPracticeCars'
+import { readJsonKey } from '../store/persist.js'
+import { commitCars } from '../store/app-store.js'
 
 export function loadCars(ownerKey = 'guest') {
-  try {
-    const raw = localStorage.getItem(`${STORAGE_PREFIX}:${ownerKey}`)
-    const parsed = raw ? JSON.parse(raw) : []
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
+  const parsed = readJsonKey('cars', ownerKey, [])
+  return Array.isArray(parsed) ? parsed : []
 }
 
 export function saveCars(ownerKey, cars) {
-  localStorage.setItem(`${STORAGE_PREFIX}:${ownerKey}`, JSON.stringify(cars))
-  scheduleCloudSync()
+  commitCars(ownerKey, cars)
 }
 
 export const SETTLEMENT_MODES = [
