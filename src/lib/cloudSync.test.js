@@ -244,6 +244,32 @@ describe('hydrateFromSupabase — single-flight + stale 세대 보호', () => {
   })
 })
 
+describe('endCloudSession — 로그아웃이 지연 응답 중인 hydrate를 무효화한다 (커밋 전 자체 교차검증에서 발견)', () => {
+  test('로그아웃 도중 이전 hydrate가 나중에 성공해도 idle 상태와 로그아웃 이전 store 값을 덮어쓰지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit2-logout-stale'
+    const userId = 'user-logout-stale'
+
+    let releaseProfiles
+    const gate = new Promise((resolve) => { releaseProfiles = resolve })
+    handlers.profiles.select = () => gate.then(() => ({ data: { id: userId, name: '로그아웃 이후 도착한 서버 이름', settings: {} }, error: null }))
+
+    const hydratePromise = hydrateFromSupabase(userId, ownerKey)
+    await wait(10) // profiles 게이트에 걸릴 때까지 양보
+    assert.equal(getState().hydration.status, 'hydrating')
+
+    endCloudSession() // 로그아웃 — hydrateGeneration을 올려서 이 hydrate를 stale로 만들어야 한다
+    assert.equal(getState().hydration.status, 'idle')
+
+    releaseProfiles() // 지연됐던 응답이 이제 도착 — 나머지 조회는 전부 성공(emptyOkHandlers)
+    await hydratePromise
+
+    assert.equal(getState().hydration.status, 'idle', '로그아웃 이후 늦게 끝난 hydrate가 idle을 ready로 덮으면 안 된다')
+    assert.equal(readJsonKey('profile', ownerKey, {}).name, undefined, '로그아웃 이후 도착한 서버 값이 localStorage에 반영되면 안 된다')
+  })
+})
+
 describe('hydrateFromSupabase — 성공 시 ready + dirty 상태 자동 플러시(scheduleCloudSync 호출 횟수 spy)', () => {
   test('idle일 때 생긴 로컬 변경(dirty)은 hydrate가 ready가 되는 순간 자동으로 한 번 플러시된다', async () => {
     resetHandlers()

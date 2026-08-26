@@ -184,6 +184,12 @@ export function endCloudSession() {
   cloudOwnerKey = null
   if (syncTimer) clearTimeout(syncTimer)
   syncQueue.dirty = false
+  // 커밋 전 자체 교차검증(사용자 지시)에서 발견: 로그아웃 시점에 이전 계정의 hydrate가
+  // 아직 응답을 기다리는 중이었다면, generation을 안 올릴 경우 그 hydrate가 로그아웃
+  // *이후*에 성공하면서 여전히 "최신 세대"로 통과해 로그아웃한 계정의 데이터를 store에
+  // 다시 반영해 버릴 수 있었다(게스트 화면에 이전 계정 데이터가 뒤늦게 나타남). 로그아웃도
+  // "이전 요청은 전부 오래된 것"으로 만드는 이벤트이므로 세대를 올린다.
+  hydrateGeneration += 1
   // 로그아웃/게스트는 기다릴 hydrate가 없으므로 'idle' — UI 잠금은 'hydrating'일 때만
   // 걸리므로 idle도 failed와 마찬가지로 잠금 해제 상태다.
   setHydration({ status: 'idle', userId: null, ownerKey: null })

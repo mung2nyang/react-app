@@ -8,7 +8,7 @@
 // 서브 차량 workLogs는 아직 다루지 않는다 — 항상 'main' 한 칸.
 // initializeOwnerFromPersist/replaceOwnerState는 owner-state.js로 분리했다(200줄 제한).
 
-import { writeJsonKey } from './persist.js'
+import { writeAllOrNothing } from './atomicPersist.js'
 import { scheduleCloudSync } from '../lib/cloudSync.js'
 import { markDirty } from '../lib/dirtyJournal.js'
 
@@ -102,14 +102,19 @@ function applyDomainToState(domain, ownerKey, value) {
  * 있는 값을 state로 옮겨 담기만" 할 때 쓴다(다시 쓸 필요 없음). `syncToCloud:false`는
  * hydrate 결과 반영처럼 "방금 서버에서 받은 걸 다시 서버로 되쏘지 않아야" 할 때 쓴다 —
  * 이때는 dirty journal에도 안 남긴다(서버와 이미 같은 값이라 보낼 게 없다).
+ *
+ * persist 단계는 atomicPersist.js의 writeAllOrNothing을 거친다 — localStorage 쓰기
+ * 도중(용량 초과 등) 하나라도 실패하면 이미 쓴 항목까지 원래 값으로 되돌리고 던진다.
+ * 이 예외가 여기서 위로 전파되면 state 반영(applyDomainToState)/notify는 아예
+ * 실행되지 않으므로, "persist 일부만 성공 + state는 갱신 안 됨" 같은 불일치가 없다.
  * @param {Array<BatchEntry>} entries
  * @param {{ persist?: boolean, syncToCloud?: boolean }} [options]
  * @returns {Array<*>}
  */
 export function commitBatch(entries, options = {}) {
   const { persist = true, syncToCloud = true } = options
+  if (persist) writeAllOrNothing(entries)
   entries.forEach(({ domain, ownerKey, value }) => {
-    if (persist) writeJsonKey(domain, ownerKey, value)
     applyDomainToState(domain, ownerKey, value)
     if (syncToCloud) markDirty(ownerKey, domain)
   })
