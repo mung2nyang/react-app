@@ -14,8 +14,12 @@
   z-index: 100;
 }
 
-.top-menu-btn {
-  box-shadow: var(--shadow-md);
+.top-menu-btn.icon-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 50%;
+  color: var(--icon-color, #4a5568);
 }
 
 .side-menu-overlay {
@@ -1056,7 +1060,11 @@
   left: 15px;
   z-index: 100;
   overflow: visible;
-  box-shadow: var(--shadow-md);
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 50%;
+  color: var(--icon-color, #4a5568);
 }
 
 .notification-count-badge {
@@ -1075,9 +1083,22 @@
   text-align: center;
 }
 
+.top-notification-btn.icon-btn,
+.top-menu-btn.icon-btn {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
 .top-notification-btn.icon-btn {
   position: fixed;
   display: grid;
+}
+
+.top-notification-btn.icon-btn:hover,
+.top-menu-btn.icon-btn:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-color);
 }
 
 .notification-panel-overlay {

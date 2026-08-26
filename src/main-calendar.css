@@ -319,7 +319,9 @@ body:not(.account-flow-active) {
 .work-log-page .modal-section {
   margin-top: 10px;
   padding: 13px 14px 14px;
+  border: 1px solid var(--border-color);
   border-radius: 18px;
+  background-color: var(--card-bg);
   box-shadow: var(--shadow-sm);
 }
 
