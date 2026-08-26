@@ -1,0 +1,51 @@
+.shell {
+  max-width: 40rem;
+  margin: 4rem auto;
+  padding: 0 1.5rem;
+  font-family: sans-serif;
+  line-height: 1.6;
+}
+
+.shell h1 {
+  font-size: 1.5rem;
+}
+
+.open-btn,
+.close-btn {
+  cursor: pointer;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+}
+
+.open-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+.close-btn {
+  background: #e5e7eb;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  width: min(90vw, 22rem);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal p {
+  margin: 0.5rem 0 1rem;
+  color: #4b5563;
+}
