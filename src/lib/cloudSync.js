@@ -5,19 +5,19 @@ import {
   expenseFromFuelRecord,
   groupFuelExpensesByDate,
   replaceFuelExpenses,
-} from './fuelRecords.js'
+} from '../domain/fuelRecords.js'
 import {
   buildMaintenanceRecordRow,
   expenseFromMaintenanceRecord,
   groupMaintExpensesByDate,
   replaceMaintExpenses,
-} from './maintenanceRecords.js'
+} from '../domain/maintenanceRecords.js'
 import {
   buildMiscExpenseRecordRow,
   expenseFromMiscRecord,
   groupMiscExpensesByDate,
   replaceMiscExpenses,
-} from './miscExpenseRecords.js'
+} from '../domain/miscExpenseRecords.js'
 import {
   applyInsertedTaxInvoiceId,
   buildTaxInvoiceRow,
@@ -25,7 +25,7 @@ import {
   matchTaxInvoiceClientId,
   resolveTaxInvoiceVehicleId,
   TAX_INVOICE_VEHICLE_RETRY_ERROR,
-} from './taxInvoices.js'
+} from '../domain/taxInvoices.js'
 
 const KEYS = {
   work: 'reactPracticeWorkData',

@@ -11,10 +11,10 @@ import {
   listTaxInvoiceEntries,
 } from './finance.js'
 import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
-import { applyOriginalFixture, loadOriginalWindow } from './originalWindow.js'
+import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
 import { dueSoonItems, groupByClientMonth, groupItems } from './receivables.js'
-import { addPartialPayment, markReceivableItemPaid } from './workData.js'
-import { markMonthlyReceivablesPaid } from './ownerFinance.js'
+import { addPartialPayment, markReceivableItemPaid } from './payments.js'
+import { markMonthlyReceivablesPaid } from '../lib/ownerFinance.js'
 
 function same(a, b) {
   assert.equal(JSON.stringify(a), JSON.stringify(b))

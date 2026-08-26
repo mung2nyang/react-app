@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { OVERLAP_LINKS, FIXTURE_SETTINGS, FIXTURE_WORK } from './finance.fixtures.js'
-import { applyOriginalFixture, loadOriginalWindow } from './originalWindow.js'
+import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
 import {
   driversToLinks,
   findOverlappingDriverLink,
   overlapConflictMessage,
   upsertDriver,
 } from './drivers.js'
-import { buildClientRow, buildVehicleRow, deleteClientFromSupabase, deleteVehicleFromSupabase } from './cloudSync.js'
+import { buildClientRow, buildVehicleRow, deleteClientFromSupabase, deleteVehicleFromSupabase } from '../lib/cloudSync.js'
 
 const original = loadOriginalWindow()
 applyOriginalFixture(original, FIXTURE_SETTINGS, FIXTURE_WORK)

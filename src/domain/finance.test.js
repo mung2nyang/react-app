@@ -21,7 +21,7 @@ import {
 } from './finance.js'
 import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY, OVERLAP_LINKS } from './finance.fixtures.js'
 import { parseCurrencyValue } from './money.js'
-import { applyOriginalFixture, loadOriginalWindow } from './originalWindow.js'
+import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
 
 function same(a, b) {
   assert.equal(JSON.stringify(a), JSON.stringify(b))

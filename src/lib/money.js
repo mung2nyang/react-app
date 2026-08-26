@@ -1,32 +1,4 @@
-export function parseCurrencyValue(str) {
-  if (!str) return 0
-  return parseInt(String(str).replace(/[^0-9]/g, ''), 10) || 0
-}
-
-export function calcSupplyVat(supplyAmount, vatExempt = false) {
-  if (vatExempt) return 0
-  return Math.round(Number(supplyAmount) * 0.1)
-}
-
-export function formatWon(amount) {
-  return `${Math.max(0, Number(amount) || 0).toLocaleString('ko-KR')} 원`
-}
-
-export function formatCurrencyInput(value) {
-  const n = parseCurrencyValue(value)
-  return n ? n.toLocaleString('ko-KR') : ''
-}
-
-export function formatPercentInput(value) {
-  let next = String(value || '').replace(/[^0-9.]/g, '')
-  if (parseFloat(next) > 100) next = '100'
-  return next
-}
-
-export function monthFareSummary(tripCount, unitPrice) {
-  const trips = Math.max(0, parseInt(tripCount, 10) || 0)
-  const unit = Math.max(0, parseCurrencyValue(unitPrice))
-  const fare = trips * unit
-  const vat = Math.round(fare * 0.1)
-  return { fare, vat, total: fare + vat }
-}
+// Step 4 도메인 폴더 이동: 실제 구현은 domain/money.js로 옮겼다. 이 파일은 기존
+// `from '../lib/money.js'` 임포트 경로를 쓰는 컴포넌트들이 안 깨지게 두는 얇은 재수출
+// shim이다 — Step 5~10에서 각 화면을 다시 짤 때 domain/ 경로로 직접 바꾸면 지울 수 있다.
+export * from '../domain/money.js'
