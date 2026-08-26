@@ -9,7 +9,8 @@ import { applyTheme, loadPracticeSettings } from '../lib/practiceSettings.js'
 import { endCloudSession, flushCloudSync, hydrateFromSupabase } from '../lib/cloudSync.js'
 import { supabase } from '../supabaseClient.js'
 import { restoreSessionOnBoot } from './boot.js'
-import { SyncFlushBridge } from './providers.jsx'
+import { AccountFlowBodyClass, SyncFlushBridge } from './providers.jsx'
+import { initializeOwnerFromPersist } from '../store/owner-state.js'
 import AuthRoute from './AuthRoute.jsx'
 import AppShell from './AppShell.jsx'
 import RequireSession from './RequireSession.jsx'
@@ -57,10 +58,12 @@ export default function App() {
     return () => { cancelled = true }
   }, [goHome])
 
+  // Step 0-4 감사 보완: ownerKey가 정해질 때마다(게스트든 로그인이든) store를 persist된
+  // 값으로 채운다. hydrate는 그 위에 서버 값을 덮어쓸 뿐 — 이 초기화 없이는 hydrate가
+  // 없는 게스트 세션에서 store가 계속 비어 있게 된다.
   useEffect(() => {
-    document.body.classList.toggle('account-flow-active', inAccountFlow)
-    return () => document.body.classList.remove('account-flow-active')
-  }, [inAccountFlow])
+    initializeOwnerFromPersist(ownerKey)
+  }, [ownerKey])
 
   useEffect(() => {
     applyTheme(loadPracticeSettings(ownerKey).theme)
@@ -85,6 +88,7 @@ export default function App() {
   return (
     <>
       <SyncFlushBridge />
+      <AccountFlowBodyClass active={inAccountFlow} />
 
       <Routes>
         <Route

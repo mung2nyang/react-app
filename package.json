@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "node --test src/domain/finance.test.js src/domain/workData.test.js src/domain/practiceSettings.test.js src/domain/receivables-invoices.test.js src/domain/drivers-cloud.test.js src/domain/fuelRecords.test.js src/domain/maintenanceRecords.test.js src/domain/miscExpenseRecords.test.js src/domain/taxInvoices.test.js src/domain/cars.test.js src/domain/clients.test.js src/domain/expenses.test.js"
+    "test": "node --experimental-test-module-mocks --test src/domain/finance.test.js src/domain/workData.test.js src/domain/practiceSettings.test.js src/domain/receivables-invoices.test.js src/domain/drivers-cloud.test.js src/domain/fuelRecords.test.js src/domain/maintenanceRecords.test.js src/domain/miscExpenseRecords.test.js src/domain/taxInvoices.test.js src/domain/cars.test.js src/domain/clients.test.js src/domain/expenses.test.js src/domain/calendar.test.js src/store/persist.test.js src/store/app-store.test.js src/store/owner-state.test.js src/lib/cloudSync.test.js src/app/syncFlushListeners.test.js src/app/sessionGate.test.js src/app/workLogNavigation.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",

@@ -1,5 +1,6 @@
 import { supabase } from '../supabaseClient.js'
-import { setHydration } from '../store/app-store.js'
+import { getState, setHydration } from '../store/app-store.js'
+import { replaceOwnerState } from '../store/owner-state.js'
 import {
   buildFuelRecordRow,
   expenseFromFuelRecord,
@@ -40,9 +41,19 @@ const KEYS = {
 
 let cloudUserId = null
 let cloudOwnerKey = null
-let hydrationCompleted = false
 let syncTimer = null
-let syncing = false
+
+// Step 0-4 감사 보완: syncing boolean 하나로는 "지금 도는 동기화가 끝나면 한 번 더 돌아야
+// 하는지"를 표현할 수 없었다(끝나기 전에 들어온 변경은 새 600ms 타이머로만 재예약됐고,
+// pagehide처럼 타이머가 살아남지 못하는 상황에서는 그 변경이 그냥 유실됐다). runningPromise +
+// dirty로 바꿔서 flushCloudSync가 "지금 도는 것"과 "그 사이 생긴 추가 변경"을 전부 기다린
+// 뒤에만 resolve하게 한다. pendingWhileBlocked는 hydrate가 idle/hydrating/failed라 원격
+// 쓰기가 막혀 있는 동안 생긴 변경 — hydrate가 ready가 되면 자동으로 한 번 플러시한다.
+const syncQueue = {
+  runningPromise: null,
+  dirty: false,
+  pendingWhileBlocked: false,
+}
 
 function readJson(storageKey, fallback) {
   try {
@@ -153,29 +164,74 @@ export function buildClientRow(userId, client, index) {
 export function endCloudSession() {
   cloudUserId = null
   cloudOwnerKey = null
-  hydrationCompleted = false
   if (syncTimer) clearTimeout(syncTimer)
-  // 스토어 쪽 hydration lock은 "완료돼서 잠금 해제" 의미로 true를 쓴다 — 로그아웃/게스트는
-  // 애초에 기다릴 hydrate가 없으므로 잠글 이유가 없다 (Step 2, migration-audit-plan.md).
-  setHydration({ completed: true, userId: null, ownerKey: null })
+  syncQueue.dirty = false
+  syncQueue.pendingWhileBlocked = false
+  // 로그아웃/게스트는 기다릴 hydrate가 없으므로 'idle' — UI 잠금은 'hydrating'일 때만
+  // 걸리므로 idle도 failed와 마찬가지로 잠금 해제 상태다.
+  setHydration({ status: 'idle', userId: null, ownerKey: null })
+}
+
+function isHydrationReady() {
+  return getState().hydration.status === 'ready'
+}
+
+/**
+ * runningPromise가 있으면 그 실행에 "한 번 더 돌아야 한다"는 표시(dirty)만 남기고 그
+ * 실행을 그대로 돌려준다 — flushCloudSync가 pagehide에서 이 Promise를 await하면
+ * "지금 도는 것 + 그 사이 생긴 변경"까지 다 반영된 뒤에야 resolve된다. 원본 코드는
+ * 이 경우 scheduleCloudSync()로 새 600ms 타이머만 잡았는데, pagehide 중에는 그 타이머가
+ * 살아남지 못해 변경이 유실될 수 있었다.
+ * @param {string} userId
+ * @param {string} ownerKey
+ * @returns {Promise<void>}
+ */
+function queueSync(userId, ownerKey) {
+  if (syncQueue.runningPromise) {
+    syncQueue.dirty = true
+    return syncQueue.runningPromise
+  }
+  syncQueue.runningPromise = (async () => {
+    try {
+      do {
+        syncQueue.dirty = false
+        await syncAll(userId, ownerKey)
+      } while (syncQueue.dirty)
+    } finally {
+      syncQueue.runningPromise = null
+    }
+  })()
+  return syncQueue.runningPromise
 }
 
 export function scheduleCloudSync() {
-  if (!hydrationCompleted || !cloudUserId || !cloudOwnerKey) return
+  if (!isHydrationReady() || !cloudUserId || !cloudOwnerKey) {
+    // hydrate가 idle/hydrating/failed인 동안의 변경은 서버로 보내지 않는다. 대신 dirty
+    // queue에 남겨 뒀다가, hydrate가 (재시도로) ready가 되는 순간 자동으로 한 번 플러시한다.
+    syncQueue.pendingWhileBlocked = true
+    return
+  }
+  if (syncQueue.runningPromise) {
+    syncQueue.dirty = true
+    return
+  }
   if (syncTimer) clearTimeout(syncTimer)
+  const userId = cloudUserId
+  const ownerKey = cloudOwnerKey
   syncTimer = setTimeout(() => {
-    syncAll(cloudUserId, cloudOwnerKey).catch((error) => console.error('클라우드 동기화 실패:', error))
+    syncTimer = null
+    queueSync(userId, ownerKey).catch((error) => console.error('클라우드 동기화 실패:', error))
   }, 600)
 }
 
 export async function hydrateFromSupabase(userId, ownerKey) {
   cloudUserId = userId
   cloudOwnerKey = ownerKey
-  hydrationCompleted = false
-  // 스토어 hydration lock을 켠다. PersonalInfoPage/AppSettingsPage가 useHydrationLock()으로
-  // 구독해서 이 구간에는 입력을 막는다 (Step 2). 아래 try/finally가 성공/실패 어느 쪽이든
-  // 끝나면 잠금을 반드시 풀도록 보장한다 — 잠긴 채로 남는 것이 무한 lock보다 나쁘다.
-  setHydration({ completed: false, userId, ownerKey })
+  // 스토어 hydration 상태를 'hydrating'으로 켠다. PersonalInfoPage/AppSettingsPage가
+  // useHydrationLock()으로 구독해서 이 구간에는 입력을 막는다 (Step 2). 아래 catch가
+  // 실패를 'failed'로 남기고, finally 없이 명시적으로 성공(ready)/실패(failed) 양쪽
+  // 다 status를 정확히 남긴다 — "실패했는데 ready로 보인다" 같은 불일치를 막기 위해서다.
+  setHydration({ status: 'hydrating', userId, ownerKey })
 
   try {
     const [{ data: profile, error: profileError }, { data: vehicles, error: vehiclesError }, { data: clientsRows, error: clientsError }, { data: links, error: linksError }] = await Promise.all([
@@ -303,11 +359,32 @@ export async function hydrateFromSupabase(userId, ownerKey) {
 
     await hydrateTaxInvoices(ownerKey, userId)
 
-    hydrationCompleted = true
-    return collectPracticeSnapshot(ownerKey)
-  } finally {
-    setHydration({ completed: true, userId: cloudUserId, ownerKey: cloudOwnerKey })
+    // 위 블록 전체가 localStorage에 직접 썼다(applyPracticeSnapshot/writeJson 등) — 그
+    // 최종 결과를 store에도 반영해서 store가 persist와 어긋나지 않게 한다. sync:false가
+    // 핵심이다: 방금 서버에서 받아온 걸 그대로 다시 서버로 올리는 핑퐁을 막는다.
+    const finalSnapshot = collectPracticeSnapshot(ownerKey)
+    replaceOwnerState(ownerKey, finalSnapshot, { sync: false })
+
+    setHydration({ status: 'ready', userId: cloudUserId, ownerKey: cloudOwnerKey })
+    if (syncQueue.pendingWhileBlocked) {
+      syncQueue.pendingWhileBlocked = false
+      scheduleCloudSync()
+    }
+    return finalSnapshot
+  } catch (error) {
+    setHydration({ status: 'failed', userId: cloudUserId, ownerKey: cloudOwnerKey })
+    throw error
   }
+}
+
+/**
+ * 실패한 hydrate를 명시적으로 다시 시도한다. cloudUserId/cloudOwnerKey가 없으면(로그인
+ * 상태가 아니면) 아무것도 하지 않는다 — 재시도 대상 자체가 없다.
+ * @returns {Promise<object|undefined>}
+ */
+export async function retryHydrate() {
+  if (!cloudUserId || !cloudOwnerKey) return undefined
+  return hydrateFromSupabase(cloudUserId, cloudOwnerKey)
 }
 
 function applyHydratedExpenses({ ownerKey, table, kind, result, snapshot, previousExpenses, mapRow, replace }) {
@@ -655,46 +732,39 @@ async function syncTaxInvoices(userId, ownerKey, cars, clients) {
   }
 }
 
+// 동시 실행 방지는 queueSync()의 runningPromise 게이트가 전담한다(이 함수를 직접 부르는
+// 곳은 queueSync 하나뿐이라 여기서 또 막을 필요가 없다 — Step 0-4 감사 보완으로 정리).
 async function syncAll(userId, ownerKey) {
-  if (syncing) {
-    scheduleCloudSync()
-    return
-  }
-  syncing = true
-  try {
-    const snapshot = collectPracticeSnapshot(ownerKey)
-    const profile = snapshot.profile || {}
-    const settings = snapshot.settings || {}
-    const { error: profileError } = await supabase.from('profiles').upsert({
-      id: userId,
-      name: profile.name || null,
-      phone: profile.phone || null,
-      business_name: profile.bizName || null,
-      business_number: profile.bizNumber || null,
-      business_address: profile.bizAddress || null,
-      business_type: profile.bizType || null,
-      business_item: profile.bizItem || null,
-      business_email: profile.bizEmail || null,
-      bank_name: profile.bankName || null,
-      account_number: profile.accountNumber || null,
-      settings: {
-        ...settings,
-        practiceSnapshot: practiceSnapshotForProfile(snapshot),
-      },
-      updated_at: new Date().toISOString(),
-    })
-    if (profileError) throw profileError
+  const snapshot = collectPracticeSnapshot(ownerKey)
+  const profile = snapshot.profile || {}
+  const settings = snapshot.settings || {}
+  const { error: profileError } = await supabase.from('profiles').upsert({
+    id: userId,
+    name: profile.name || null,
+    phone: profile.phone || null,
+    business_name: profile.bizName || null,
+    business_number: profile.bizNumber || null,
+    business_address: profile.bizAddress || null,
+    business_type: profile.bizType || null,
+    business_item: profile.bizItem || null,
+    business_email: profile.bizEmail || null,
+    bank_name: profile.bankName || null,
+    account_number: profile.accountNumber || null,
+    settings: {
+      ...settings,
+      practiceSnapshot: practiceSnapshotForProfile(snapshot),
+    },
+    updated_at: new Date().toISOString(),
+  })
+  if (profileError) throw profileError
 
-    const cars = await syncVehicles(userId, ownerKey)
-    const clients = await syncClients(userId, ownerKey)
-    await syncWorkData(userId, ownerKey, cars, clients)
-    await syncFuelRecords(userId, ownerKey, cars)
-    await syncMaintenanceRecords(userId, ownerKey, cars)
-    await syncMiscExpenseRecords(userId, ownerKey, cars)
-    await syncTaxInvoices(userId, ownerKey, cars, clients)
-  } finally {
-    syncing = false
-  }
+  const cars = await syncVehicles(userId, ownerKey)
+  const clients = await syncClients(userId, ownerKey)
+  await syncWorkData(userId, ownerKey, cars, clients)
+  await syncFuelRecords(userId, ownerKey, cars)
+  await syncMaintenanceRecords(userId, ownerKey, cars)
+  await syncMiscExpenseRecords(userId, ownerKey, cars)
+  await syncTaxInvoices(userId, ownerKey, cars, clients)
 }
 
 export async function deleteVehicleFromSupabase(vehicleSupabaseId) {
@@ -821,8 +891,14 @@ export async function saveDriverInviteToCloud(items, editingId, cars) {
   return { items: next }
 }
 
+/**
+ * pagehide/visibilitychange/online에서 부른다. 이미 도는 동기화가 있으면 그 실행이
+ * "이번에 필요한 내용까지" 반영하고 끝날 때까지 기다린다(queueSync의 dirty 재실행) —
+ * 600ms 디바운스 타이머를 새로 잡고 빠져나가지 않는다. pagehide 중에는 그 타이머가
+ * 살아남는다는 보장이 없기 때문이다.
+ */
 export async function flushCloudSync() {
-  if (!hydrationCompleted || !cloudUserId || !cloudOwnerKey) return
-  if (syncTimer) clearTimeout(syncTimer)
-  await syncAll(cloudUserId, cloudOwnerKey)
+  if (!isHydrationReady() || !cloudUserId || !cloudOwnerKey) return
+  if (syncTimer) { clearTimeout(syncTimer); syncTimer = null }
+  await queueSync(cloudUserId, cloudOwnerKey)
 }
