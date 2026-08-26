@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import AuthPage from './components/AuthPage.jsx'
+import ForgotPasswordModal from './components/ForgotPasswordModal.jsx'
 import OnboardingPage from './components/OnboardingPage.jsx'
 import MainPage from './components/MainPage.jsx'
 import SideMenu from './components/SideMenu.jsx'
@@ -10,6 +11,8 @@ import { collectNotifications, dismissNotification } from './lib/notifications.j
 import { applyTheme, loadPracticeSettings } from './lib/practiceSettings.js'
 import { endCloudSession, flushCloudSync, hydrateFromSupabase } from './lib/cloudSync.js'
 import { supabase } from './supabaseClient.js'
+import { restoreSessionOnBoot } from './app/boot.js'
+import { SyncFlushBridge } from './app/providers.jsx'
 import './account-flow.css'
 import './side-menu.css'
 
@@ -38,10 +41,28 @@ export default function App() {
   const [session, setSession] = useState(null)
   const [toast, setToast] = useState('')
   const [forgotOpen, setForgotOpen] = useState(false)
+  const [booting, setBooting] = useState(true)
 
   const ownerKey = session?.userId || (session?.guestMode ? 'guest' : session?.phone) || 'guest'
   const inAccountFlow = screen === 'auth' || screen === 'onboarding'
   const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick])
+
+  // Step 2 부트: 새로고침 시 Supabase 세션을 복원한다. 로그인 상태가 아니면 그대로
+  // screen='auth'에 남는다 — 게스트/로그아웃 동작은 바뀌지 않는다 (migration-audit-plan.md Step 2).
+  useEffect(() => {
+    let cancelled = false
+    restoreSessionOnBoot().then((restored) => {
+      if (cancelled) return
+      if (restored) {
+        goHome(
+          restored.session,
+          restored.hydrateError ? '로그인은 유지됐지만 클라우드 데이터를 일부 못 불러왔습니다.' : undefined,
+        )
+      }
+      setBooting(false)
+    })
+    return () => { cancelled = true }
+  }, [])
 
   useEffect(() => {
     document.body.classList.toggle('account-flow-active', inAccountFlow)
@@ -123,7 +144,15 @@ export default function App() {
 
   return (
     <>
-      {screen === 'auth' && (
+      <SyncFlushBridge />
+
+      {booting && screen === 'auth' && (
+        <div className="container account-flow-container">
+          <div className="page">불러오는 중...</div>
+        </div>
+      )}
+
+      {!booting && screen === 'auth' && (
         <div className="container account-flow-container">
           <AuthPage
             showToast={showToast}
@@ -313,20 +342,7 @@ export default function App() {
         </div>
       )}
 
-      {forgotOpen && (
-        <div className="modal-overlay" onClick={() => setForgotOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-title">비밀번호 찾기</div>
-            <p style={{ fontSize: '0.95rem', marginBottom: 24, whiteSpace: 'pre-wrap', lineHeight: 1.4, color: 'var(--text-color)' }}>
-              {'비밀번호를 분실하셨나요?\n\n소속 기사님의 경우 사장님을 통해 임시 비밀번호를 재발급받으실 수 있습니다.\n기타 문의는 고객센터 1:1 문의를 이용해 주세요.'}
-            </p>
-            <div className="modal-btns">
-              <button type="button" className="modal-btn cancel" onClick={() => setForgotOpen(false)}>닫기</button>
-              <button type="button" className="modal-btn confirm" onClick={() => setForgotOpen(false)}>확인</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {forgotOpen && <ForgotPasswordModal onClose={() => setForgotOpen(false)} />}
 
       {toast && <div className="toast-message" role="status">{toast}</div>}
     </>

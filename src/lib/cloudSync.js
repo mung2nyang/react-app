@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient.js'
+import { setHydration } from '../store/app-store.js'
 import {
   buildFuelRecordRow,
   expenseFromFuelRecord,
@@ -154,6 +155,9 @@ export function endCloudSession() {
   cloudOwnerKey = null
   hydrationCompleted = false
   if (syncTimer) clearTimeout(syncTimer)
+  // 스토어 쪽 hydration lock은 "완료돼서 잠금 해제" 의미로 true를 쓴다 — 로그아웃/게스트는
+  // 애초에 기다릴 hydrate가 없으므로 잠글 이유가 없다 (Step 2, migration-audit-plan.md).
+  setHydration({ completed: true, userId: null, ownerKey: null })
 }
 
 export function scheduleCloudSync() {
@@ -168,134 +172,142 @@ export async function hydrateFromSupabase(userId, ownerKey) {
   cloudUserId = userId
   cloudOwnerKey = ownerKey
   hydrationCompleted = false
+  // 스토어 hydration lock을 켠다. PersonalInfoPage/AppSettingsPage가 useHydrationLock()으로
+  // 구독해서 이 구간에는 입력을 막는다 (Step 2). 아래 try/finally가 성공/실패 어느 쪽이든
+  // 끝나면 잠금을 반드시 풀도록 보장한다 — 잠긴 채로 남는 것이 무한 lock보다 나쁘다.
+  setHydration({ completed: false, userId, ownerKey })
 
-  const [{ data: profile, error: profileError }, { data: vehicles, error: vehiclesError }, { data: clientsRows, error: clientsError }, { data: links, error: linksError }] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-    supabase.from('vehicles').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
-    supabase.from('clients').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
-    supabase.from('driver_links').select('*').eq('owner_id', userId),
-  ])
+  try {
+    const [{ data: profile, error: profileError }, { data: vehicles, error: vehiclesError }, { data: clientsRows, error: clientsError }, { data: links, error: linksError }] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+      supabase.from('vehicles').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
+      supabase.from('clients').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
+      supabase.from('driver_links').select('*').eq('owner_id', userId),
+    ])
 
-  if (profileError) console.warn('[Supabase] profiles 조회 실패, 로컬을 유지합니다.', profileError)
-  const settingsJson = (!profileError && profile?.settings && typeof profile.settings === 'object') ? profile.settings : {}
-  const snapshot = settingsJson.practiceSnapshot || {}
-  const previousExpenses = readJson(keyFor(KEYS.expenses, ownerKey), [])
-  applyPracticeSnapshot(ownerKey, snapshot)
+    if (profileError) console.warn('[Supabase] profiles 조회 실패, 로컬을 유지합니다.', profileError)
+    const settingsJson = (!profileError && profile?.settings && typeof profile.settings === 'object') ? profile.settings : {}
+    const snapshot = settingsJson.practiceSnapshot || {}
+    const previousExpenses = readJson(keyFor(KEYS.expenses, ownerKey), [])
+    applyPracticeSnapshot(ownerKey, snapshot)
 
-  const localProfile = readJson(keyFor(KEYS.profile, ownerKey), {})
-  writeJson(keyFor(KEYS.profile, ownerKey), {
-    ...localProfile,
-    name: profile?.name || localProfile.name || '',
-    phone: profile?.phone || localProfile.phone || '',
-    bizName: profile?.business_name || localProfile.bizName || '',
-    bizNumber: profile?.business_number || localProfile.bizNumber || '',
-    bizAddress: profile?.business_address || localProfile.bizAddress || '',
-    bizType: profile?.business_type || localProfile.bizType || '',
-    bizItem: profile?.business_item || localProfile.bizItem || '',
-    bizEmail: profile?.business_email || localProfile.bizEmail || '',
-    bankName: profile?.bank_name || localProfile.bankName || '',
-    accountNumber: profile?.account_number || localProfile.accountNumber || '',
-  })
-
-  if (!vehiclesError && Array.isArray(vehicles) && vehicles.length) {
-    const cars = vehicles.map((row) => {
-      const raw = row.raw && typeof row.raw === 'object' ? row.raw : {}
-      return {
-        ...raw,
-        id: raw.id || `car-${row.id}`,
-        number: row.number || '',
-        type: row.type || 'main',
-        tonnage: row.tonnage || '',
-        supabaseId: row.id,
-        driverName: row.driver_name ?? raw.driverName ?? '',
-        settlementMode: row.settlement_mode ?? raw.settlementMode ?? null,
-        commEnabled: row.comm_enabled ?? !!raw.commEnabled,
-        commType: row.comm_type ?? raw.commType ?? null,
-        commission: row.comm_value ?? raw.commission ?? '',
-      }
+    const localProfile = readJson(keyFor(KEYS.profile, ownerKey), {})
+    writeJson(keyFor(KEYS.profile, ownerKey), {
+      ...localProfile,
+      name: profile?.name || localProfile.name || '',
+      phone: profile?.phone || localProfile.phone || '',
+      bizName: profile?.business_name || localProfile.bizName || '',
+      bizNumber: profile?.business_number || localProfile.bizNumber || '',
+      bizAddress: profile?.business_address || localProfile.bizAddress || '',
+      bizType: profile?.business_type || localProfile.bizType || '',
+      bizItem: profile?.business_item || localProfile.bizItem || '',
+      bizEmail: profile?.business_email || localProfile.bizEmail || '',
+      bankName: profile?.bank_name || localProfile.bankName || '',
+      accountNumber: profile?.account_number || localProfile.accountNumber || '',
     })
-    const previous = readJson(keyFor(KEYS.cars, ownerKey), [])
-    const unsynced = previous.filter((car) => car && !car.supabaseId)
-    writeJson(keyFor(KEYS.cars, ownerKey), [...cars, ...unsynced])
-  }
 
-  if (!clientsError && Array.isArray(clientsRows) && clientsRows.length) {
-    const clients = clientsRows.map((row) => ({
-      ...(row.raw && typeof row.raw === 'object' ? row.raw : {}),
-      companyName: row.company_name,
-      id: row.legacy_client_id || row.id,
-      supabaseId: row.id,
-      isPinned: row.is_pinned ?? !!(row.raw && row.raw.isPinned),
-    }))
-    const previous = readJson(keyFor(KEYS.clients, ownerKey), [])
-    const unsynced = previous.filter((client) => client && !client.supabaseId)
-    writeJson(keyFor(KEYS.clients, ownerKey), [...clients, ...unsynced])
-  }
+    if (!vehiclesError && Array.isArray(vehicles) && vehicles.length) {
+      const cars = vehicles.map((row) => {
+        const raw = row.raw && typeof row.raw === 'object' ? row.raw : {}
+        return {
+          ...raw,
+          id: raw.id || `car-${row.id}`,
+          number: row.number || '',
+          type: row.type || 'main',
+          tonnage: row.tonnage || '',
+          supabaseId: row.id,
+          driverName: row.driver_name ?? raw.driverName ?? '',
+          settlementMode: row.settlement_mode ?? raw.settlementMode ?? null,
+          commEnabled: row.comm_enabled ?? !!raw.commEnabled,
+          commType: row.comm_type ?? raw.commType ?? null,
+          commission: row.comm_value ?? raw.commission ?? '',
+        }
+      })
+      const previous = readJson(keyFor(KEYS.cars, ownerKey), [])
+      const unsynced = previous.filter((car) => car && !car.supabaseId)
+      writeJson(keyFor(KEYS.cars, ownerKey), [...cars, ...unsynced])
+    }
 
-  const cars = readJson(keyFor(KEYS.cars, ownerKey), [])
-  const localDrivers = readJson(keyFor(KEYS.drivers, ownerKey), [])
-  if (!linksError && Array.isArray(links)) {
-    const byCode = new Map(localDrivers.map((item) => [item.inviteCode, item]))
-    const merged = links.filter((row) => row.status !== 'disconnected').map((row) => {
-      const car = cars.find((item) => item.supabaseId === row.vehicle_id)
-      const local = byCode.get(row.invite_code) || localDrivers.find((item) => item.supabaseId === row.id) || {}
-      return {
-        ...local,
-        id: local.id || row.id,
+    if (!clientsError && Array.isArray(clientsRows) && clientsRows.length) {
+      const clients = clientsRows.map((row) => ({
+        ...(row.raw && typeof row.raw === 'object' ? row.raw : {}),
+        companyName: row.company_name,
+        id: row.legacy_client_id || row.id,
         supabaseId: row.id,
-        inviteCode: row.invite_code,
-        vehicleNumber: car?.number || local.vehicleNumber || '',
-        startDate: row.assignment_start || '',
-        endDate: row.assignment_end || '',
-        status: row.status === 'linked' ? 'linked' : 'pending',
-        name: local.name || local.driverName || '기사',
-        phone: local.phone || '',
-      }
+        isPinned: row.is_pinned ?? !!(row.raw && row.raw.isPinned),
+      }))
+      const previous = readJson(keyFor(KEYS.clients, ownerKey), [])
+      const unsynced = previous.filter((client) => client && !client.supabaseId)
+      writeJson(keyFor(KEYS.clients, ownerKey), [...clients, ...unsynced])
+    }
+
+    const cars = readJson(keyFor(KEYS.cars, ownerKey), [])
+    const localDrivers = readJson(keyFor(KEYS.drivers, ownerKey), [])
+    if (!linksError && Array.isArray(links)) {
+      const byCode = new Map(localDrivers.map((item) => [item.inviteCode, item]))
+      const merged = links.filter((row) => row.status !== 'disconnected').map((row) => {
+        const car = cars.find((item) => item.supabaseId === row.vehicle_id)
+        const local = byCode.get(row.invite_code) || localDrivers.find((item) => item.supabaseId === row.id) || {}
+        return {
+          ...local,
+          id: local.id || row.id,
+          supabaseId: row.id,
+          inviteCode: row.invite_code,
+          vehicleNumber: car?.number || local.vehicleNumber || '',
+          startDate: row.assignment_start || '',
+          endDate: row.assignment_end || '',
+          status: row.status === 'linked' ? 'linked' : 'pending',
+          name: local.name || local.driverName || '기사',
+          phone: local.phone || '',
+        }
+      })
+      if (merged.length) writeJson(keyFor(KEYS.drivers, ownerKey), merged)
+    }
+
+    const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
+    const emptyChild = { data: [], error: null }
+    const { fuelRes, maintRes, miscRes } = mainCar?.supabaseId
+      ? await hydrateWorkData(ownerKey, mainCar.supabaseId)
+      : { fuelRes: emptyChild, maintRes: emptyChild, miscRes: emptyChild }
+
+    applyHydratedExpenses({
+      ownerKey,
+      table: 'fuel_records',
+      kind: 'fuel',
+      result: fuelRes,
+      snapshot,
+      previousExpenses,
+      mapRow: expenseFromFuelRecord,
+      replace: replaceFuelExpenses,
     })
-    if (merged.length) writeJson(keyFor(KEYS.drivers, ownerKey), merged)
+    applyHydratedExpenses({
+      ownerKey,
+      table: 'maintenance_records',
+      kind: 'maint',
+      result: maintRes,
+      snapshot,
+      previousExpenses,
+      mapRow: expenseFromMaintenanceRecord,
+      replace: replaceMaintExpenses,
+    })
+    applyHydratedExpenses({
+      ownerKey,
+      table: 'misc_expense_records',
+      kind: 'misc',
+      result: miscRes,
+      snapshot,
+      previousExpenses,
+      mapRow: expenseFromMiscRecord,
+      replace: replaceMiscExpenses,
+    })
+
+    await hydrateTaxInvoices(ownerKey, userId)
+
+    hydrationCompleted = true
+    return collectPracticeSnapshot(ownerKey)
+  } finally {
+    setHydration({ completed: true, userId: cloudUserId, ownerKey: cloudOwnerKey })
   }
-
-  const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
-  const emptyChild = { data: [], error: null }
-  const { fuelRes, maintRes, miscRes } = mainCar?.supabaseId
-    ? await hydrateWorkData(ownerKey, mainCar.supabaseId)
-    : { fuelRes: emptyChild, maintRes: emptyChild, miscRes: emptyChild }
-
-  applyHydratedExpenses({
-    ownerKey,
-    table: 'fuel_records',
-    kind: 'fuel',
-    result: fuelRes,
-    snapshot,
-    previousExpenses,
-    mapRow: expenseFromFuelRecord,
-    replace: replaceFuelExpenses,
-  })
-  applyHydratedExpenses({
-    ownerKey,
-    table: 'maintenance_records',
-    kind: 'maint',
-    result: maintRes,
-    snapshot,
-    previousExpenses,
-    mapRow: expenseFromMaintenanceRecord,
-    replace: replaceMaintExpenses,
-  })
-  applyHydratedExpenses({
-    ownerKey,
-    table: 'misc_expense_records',
-    kind: 'misc',
-    result: miscRes,
-    snapshot,
-    previousExpenses,
-    mapRow: expenseFromMiscRecord,
-    replace: replaceMiscExpenses,
-  })
-
-  await hydrateTaxInvoices(ownerKey, userId)
-
-  hydrationCompleted = true
-  return collectPracticeSnapshot(ownerKey)
 }
 
 function applyHydratedExpenses({ ownerKey, table, kind, result, snapshot, previousExpenses, mapRow, replace }) {

@@ -1,16 +1,26 @@
-// Step 1 스토어 껍데기: UI는 아직 이 스토어를 구독하지 않는다 (migration-plan.md 1.3의
+// Step 1에서 만든 스토어 껍데기 + Step 2 부트/hydration lock 확장.
+// UI는 아직 workLogs/cars/... 도메인 슬라이스를 구독하지 않는다 (migration-plan.md 1.3의
 // "쓰지 말 것" 대상은 여전히 페이지 useState). 이 파일의 목적은 src/lib/*.js 의 save*
 // 함수들이 "localStorage 기록 + 클라우드 동기화 예약"을 각자 반복하던 것을 하나의
-// commit* 경로로 모으는 것뿐이다 (migration-audit-plan.md Step 1).
+// commit* 경로로 모으는 것과, hydration(클라우드 데이터 로딩) 진행 여부를 컴포넌트가
+// 구독할 수 있는 곳에 두는 것이다 (migration-audit-plan.md Step 1~2).
 //
-// 다음 Step(부트/플러시/hydration lock, 라우터)부터 컴포넌트가 getState/subscribe를
-// 직접 구독하도록 확장한다. 서브 차량 workLogs는 아직 다루지 않는다 — 항상 'main' 한 칸.
+// 서브 차량 workLogs는 아직 다루지 않는다 — 항상 'main' 한 칸.
 
 import { writeJsonKey } from './persist.js'
 import { scheduleCloudSync } from '../lib/cloudSync.js'
 
 /**
+ * @typedef {Object} HydrationState
+ * @property {boolean} completed  true면 편집 잠금 해제. 게스트/로그아웃 상태의 기본값도 true —
+ *   실제로 클라우드에서 불러오는 짧은 구간에서만 false로 내려간다.
+ * @property {string|null} userId
+ * @property {string|null} ownerKey
+ */
+
+/**
  * @typedef {Object} AppStoreState
+ * @property {HydrationState} hydration
  * @property {Record<string, Record<string, object>>} workLogs          ownerKey -> { main: object }
  * @property {Record<string, Array<object>>} cars                       ownerKey -> Car[]
  * @property {Record<string, Array<object>>} clients                    ownerKey -> Client[]
@@ -24,6 +34,7 @@ import { scheduleCloudSync } from '../lib/cloudSync.js'
 
 /** @type {AppStoreState} */
 const state = {
+  hydration: { completed: true, userId: null, ownerKey: null },
   workLogs: {},
   cars: {},
   clients: {},
@@ -157,4 +168,14 @@ export function commitProfile(ownerKey, profile) {
  */
 export function commitDismissedNotifications(ownerKey, ids) {
   return commit('dismissedNotifications', ownerKey, ids, { syncToCloud: false })
+}
+
+/**
+ * cloudSync.js의 hydrateFromSupabase/endCloudSession이 부르는 단일 경로.
+ * localStorage에는 쓰지 않는다 — hydration은 진행 상태일 뿐 저장 대상이 아니다.
+ * @param {Partial<HydrationState>} patch
+ */
+export function setHydration(patch) {
+  state.hydration = { ...state.hydration, ...patch }
+  notify()
 }

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
 import { loadProfile, saveProfile } from '../lib/profile.js'
+import { useHydrationLock } from '../app/useHydrationLock.js'
 
 export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast }) {
+  const locked = useHydrationLock()
   const [profile, setProfile] = useState(() => {
     const loaded = loadProfile(ownerKey)
     if (!loaded.name && session?.name && session.name !== '비회원') loaded.name = session.name
@@ -34,7 +36,13 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
         <p>입력하면 바로 저장됩니다. 소속 연결은 나중에 붙입니다.</p>
       </div>
 
-      <div className="personal-card-grid">
+      {locked && (
+        <p id="settingsHydrationLockNotice" className="car-type-hint">
+          클라우드 동기화 중입니다. 잠시 후 다시 시도해 주세요.
+        </p>
+      )}
+
+      <fieldset className="personal-card-grid" disabled={locked} style={{ border: 0, margin: 0, padding: 0 }}>
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">01</span>
@@ -129,7 +137,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
             </button>
           )}
         </section>
-      </div>
+      </fieldset>
     </div>
   )
 }
