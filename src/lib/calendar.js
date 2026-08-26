@@ -60,3 +60,18 @@ export function todayWorkLogSelection(date = new Date()) {
     day,
   }
 }
+
+/**
+ * `/app/day/:date` 라우트 파라미터(`YYYY-MM-DD`)를 MainPage의 `selected` 모양으로 바꾼다.
+ * Step 3 라우터 도입 — 값이 아니면 null(달력 표시)을 돌려준다.
+ * @param {string | undefined} dateKey
+ * @returns {{ dateKey: string, month: number, day: number } | null}
+ */
+export function parseDateKeySelection(dateKey) {
+  if (!dateKey || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return null
+  return {
+    dateKey,
+    month: Number(dateKey.slice(5, 7)),
+    day: Number(dateKey.slice(8, 10)),
+  }
+}
