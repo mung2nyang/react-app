@@ -13,9 +13,14 @@
 // 배열에 담아 넘긴다.
 
 /**
+ * JSON.stringify로 직렬화 가능한 값 — any/unknown 대신 재귀적으로 정확히 표현한다.
+ * @typedef {string|number|boolean|null|Array<JsonValue>|{[key: string]: JsonValue}} JsonValue
+ */
+
+/**
  * @typedef {Object} KeyedWrite
  * @property {string} key 실제 localStorage 키
- * @property {*} value 저장할 값(JSON 직렬화됨)
+ * @property {JsonValue} value 저장할 값(JSON 직렬화됨)
  */
 
 /**

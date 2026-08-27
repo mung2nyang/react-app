@@ -14,13 +14,13 @@ import { planDirtyWrite } from '../lib/dirtyJournal.js'
  * @typedef {Object} BatchEntry
  * @property {import('./persist.js').PersistDomain} domain
  * @property {string} ownerKey
- * @property {*} value
+ * @property {import('./app-store.js').DomainValue} value
  */
 
 /**
  * @param {Array<BatchEntry>} entries
  * @param {{ persist: boolean, syncToCloud: boolean }} options
- * @returns {Array<{ key: string, value: * }>}
+ * @returns {Array<import('./atomicPersist.js').KeyedWrite>}
  */
 export function buildBatchWrites(entries, { persist, syncToCloud }) {
   const writes = []

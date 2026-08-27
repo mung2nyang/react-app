@@ -3,7 +3,7 @@
 // 한 번만 부른다. 로그인 상태가 아니면 null을 돌려줘 기존처럼 screen='auth'로 남는다 —
 // 게스트/로그아웃 동작은 전혀 바꾸지 않는다.
 import { supabase } from '../supabaseClient.js'
-import { hydrateFromSupabase } from '../lib/cloudSync.js'
+import { hydrateFromSupabase } from '../lib/hydrate.js'
 import { singleFlight } from '../lib/singleFlight.js'
 
 /**

@@ -10,7 +10,7 @@
 
 import { writeAllOrNothing } from './atomicPersist.js'
 import { buildBatchWrites } from './batchWrites.js'
-import { scheduleCloudSync } from '../lib/cloudSync.js'
+import { scheduleCloudSync } from '../lib/syncQueue.js'
 
 /**
  * @typedef {'idle'|'hydrating'|'ready'|'failed'} HydrationStatus
@@ -88,10 +88,16 @@ function applyDomainToState(domain, ownerKey, value) {
 }
 
 /**
+ * 9개 persist 도메인이 실제로 갖는 값 모양 — object(workData/settings/profile) 또는
+ * 배열(cars/clients/drivers/expenses/invoices/dismissedNotifications) 중 하나다.
+ * @typedef {object|Array<object>|Array<string>} DomainValue
+ */
+
+/**
  * @typedef {Object} BatchEntry
  * @property {import('./persist.js').PersistDomain} domain
  * @property {string} ownerKey
- * @property {*} value
+ * @property {DomainValue} value
  */
 
 /**
@@ -112,7 +118,7 @@ function applyDomainToState(domain, ownerKey, value) {
  * (applyDomainToState)/notify는 그 경우 아예 실행되지 않는다.
  * @param {Array<BatchEntry>} entries
  * @param {{ persist?: boolean, syncToCloud?: boolean }} [options]
- * @returns {Array<*>}
+ * @returns {Array<DomainValue>}
  */
 export function commitBatch(entries, options = {}) {
   const { persist = true, syncToCloud = true } = options

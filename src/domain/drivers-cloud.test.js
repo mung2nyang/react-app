@@ -8,7 +8,8 @@ import {
   overlapConflictMessage,
   upsertDriver,
 } from './drivers.js'
-import { buildClientRow, buildVehicleRow, deleteClientFromSupabase, deleteVehicleFromSupabase } from '../lib/cloudSync.js'
+import { buildClientRow, buildVehicleRow } from '../lib/cloudStorage.js'
+import { deleteClientFromSupabase, deleteVehicleFromSupabase } from '../lib/directMutations.js'
 
 const original = loadOriginalWindow()
 applyOriginalFixture(original, FIXTURE_SETTINGS, FIXTURE_WORK)

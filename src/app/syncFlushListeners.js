@@ -2,7 +2,7 @@
 // 뺐다 — React 없이도 "등록한 것과 정리하는 것이 실제로 짝이 맞는지"(StrictMode 마운트→
 // 언마운트→재마운트에서 리스너가 누적되지 않는지)를 테스트할 수 있다. 컴포넌트와 같은
 // 파일에 두면 Fast Refresh 경계가 깨져서(oxlint react(only-export-components)) 분리했다.
-import { flushCloudSync } from '../lib/cloudSync.js'
+import { flushCloudSync } from '../lib/syncQueue.js'
 
 /**
  * online / visibilitychange(hidden) / pagehide 리스너를 등록하고, 그 3개를 정확히

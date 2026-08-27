@@ -5,9 +5,15 @@
 // (cloudSync.js)가 전부 성공적으로 병합된 뒤에만 한 번에 커밋한다.
 
 /**
+ * Supabase 쿼리 결과의 error 필드 — 실패하면 보통 { message, code? }나 Error 인스턴스,
+ * 성공하면 null이다. any/unknown 대신 이 코드베이스가 실제로 읽는 필드만 적는다.
+ * @typedef {{ message: string, code?: string }|Error|null} SupabaseQueryError
+ */
+
+/**
  * labeled 조회 결과 중 error가 있는 게 하나라도 있으면 던진다. 부분 성공을 허용하지
  * 않는다 — hydrate 전체가 all-or-nothing이어야 부분 snapshot이 로컬을 덮어쓰지 않는다.
- * @param {Record<string, unknown>} labeledErrors { 테이블이름: error 또는 null }
+ * @param {Record<string, SupabaseQueryError>} labeledErrors { 테이블이름: error 또는 null }
  */
 export function throwIfAnyHydrateError(labeledErrors) {
   const failed = Object.entries(labeledErrors).filter(([, error]) => error)

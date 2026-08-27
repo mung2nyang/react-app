@@ -1,11 +1,11 @@
 // Step 0-4 감사 보완 2차(5번): hydrate가 실패(status:'failed')하면 배너로 알리고
 // retryHydrate()를 직접 부를 수 있게 한다. 이전에는 실패해도 UI에 신호가 전혀 없어서
 // 사용자가 "동기화가 막혀 있다"는 사실 자체를 몰랐다 — 로컬 편집은 계속되지만 서버로는
-// 영영 안 나갈 수 있었다. 재시도 중 로컬 편집을 보호하는 실제 방어는 cloudSync.js의
-// hydrateFromSupabase가 dirtyJournal을 확인해 처리한다(여기서는 버튼과 상태 표시만).
+// 영영 안 나갈 수 있었다. 재시도 중 로컬 편집을 보호하는 실제 방어는 hydrate.js의
+// hydrateFromSupabase가 dirtyJournal/outbox를 확인해 처리한다(여기서는 버튼과 상태 표시만).
 import { useEffect, useState } from 'react'
 import { getState, subscribe } from '../store/app-store.js'
-import { retryHydrate } from '../lib/cloudSync.js'
+import { retryHydrate } from '../lib/hydrate.js'
 
 const bannerStyle = {
   display: 'flex',
