@@ -1,7 +1,10 @@
+// @ts-check
 // Step 0-4 감사 보완 4차: 저장/상태변경/삭제 오케스트레이션을 lib/directMutationActions.js
 // 로 뺐다(사용자 지시 6번) — 이제 durable mutation outbox를 거쳐 로컬+서버가 원자적으로
 // 반영되고, 실패해도 outbox에 남아 자동 재시도된다. 폼 모달은 DriverFormModal.jsx로
 // 분리했다(200줄 제한).
+/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
 import { useState } from 'react'
 import { loadCars } from '../lib/cars.js'
 import { getCloudUserId, isCloudSession } from '../lib/cloudSession.js'
@@ -15,16 +18,20 @@ import DriverFormModal from './DriverFormModal.jsx'
 
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }
 
+/**
+ * @param {{ ownerKey?: string, session: AppSession|null, onBack: () => void, showToast?: (message: string) => void }} props
+ */
 export default function DriverConnectionPage({ ownerKey = 'guest', session, onBack, showToast }) {
-  const [drivers, setDrivers] = useState(() => loadDrivers(ownerKey))
+  const [drivers, setDrivers] = useState(() => /** @type {Array<DriverRecord>} */ (loadDrivers(ownerKey)))
   const [cars] = useState(() => loadCars(ownerKey))
   const [modalOpen, setModalOpen] = useState(false)
-  const [editingId, setEditingId] = useState(null)
+  const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
 
   const counts = countByStatus(drivers)
   const cloud = isCloudSession(session)
   const assignableCars = cars.filter((car) => car.type !== 'main')
+  const cloudUserId = getCloudUserId() ?? ''
 
   function openAdd() {
     setEditingId(null)
@@ -32,6 +39,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
     setModalOpen(true)
   }
 
+  /** @param {DriverRecord} driver */
   function openEdit(driver) {
     setEditingId(driver.id)
     setDraft({
@@ -42,7 +50,11 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
   }
 
   async function save() {
-    const result = upsertDriver(drivers, draft, editingId, cars)
+    // domain/drivers.js는 이번 라운드(Step 0-4 보완) 범위 밖이라 아직 @ts-check 대상이
+    // 아니다 — `editingId = null` 기본값만으로 타입이 추론돼 upsertDriver의 3번째
+    // 매개변수가 실제로는 string도 받는데 `null|undefined`로만 좁게 추론된다. Step 11
+    // (전체 JS→TS 전환)에서 domain/drivers.js에 JSDoc을 달면 이 단언은 필요 없어진다.
+    const result = upsertDriver(drivers, draft, /** @type {null|undefined} */ (editingId), cars)
     if (result.error) {
       showToast?.(result.error)
       return
@@ -57,25 +69,27 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
     // editingId를 그대로 넘긴다(newId로 바꿔치기하지 않는다) — requestDriverInviteSave
     // 내부의 idx 조회가 "id로 못 찾으면 마지막 항목"으로 이미 신규 생성 케이스를
     // 처리하고, 토스트 문구(수정 vs 저장)도 이 원래 editingId(신규면 null)로 갈린다.
-    const saveResult = await requestDriverInviteSave({ ownerKey, userId: getCloudUserId(), items: result.items, editingId, cars })
+    const saveResult = await requestDriverInviteSave({ ownerKey, userId: cloudUserId, items: result.items, editingId, cars, previousItems: drivers })
     if (saveResult.blocked) {
       showToast?.(saveResult.blocked)
       return
     }
-    setDrivers(saveResult.items)
+    setDrivers(/** @type {Array<DriverRecord>} */ (saveResult.items))
     setModalOpen(false)
     if (saveResult.toast) showToast?.(saveResult.toast)
   }
 
+  /** @param {string} id @param {'pending'|'linked'} status */
   async function changeStatus(id, status) {
-    const result = await requestDriverStatusChange({ ownerKey, userId: getCloudUserId(), drivers, driverId: id, status, cloud })
-    setDrivers(result.drivers)
+    const result = await requestDriverStatusChange({ ownerKey, userId: cloudUserId, drivers, driverId: id, status, cloud })
+    setDrivers(/** @type {Array<DriverRecord>} */ (result.drivers))
     if (result.toast) showToast?.(result.toast)
   }
 
+  /** @param {string} id */
   async function remove(id) {
-    const result = await requestDriverDeletion({ ownerKey, userId: getCloudUserId(), drivers, driverId: id, cloud })
-    setDrivers(result.drivers)
+    const result = await requestDriverDeletion({ ownerKey, userId: cloudUserId, drivers, driverId: id, cloud })
+    setDrivers(/** @type {Array<DriverRecord>} */ (result.drivers))
     if (result.toast) showToast?.(result.toast)
   }
 

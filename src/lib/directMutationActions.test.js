@@ -5,7 +5,7 @@
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
+import { createFakeSupabase, wait } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
 mock.module('../supabaseClient.js', { exports: { supabase: fakeSupabase } })
@@ -369,6 +369,43 @@ describe('requestDriverInviteSave — 생성/수정도 outbox를 거친다', () 
     })
     assert.match(result.toast, /실패했습니다/)
     endCloudSession()
+  })
+
+  // 재감사 항목 2: 사전 겹침 조회 대기 중 로그아웃하면 Store/localStorage/outbox/
+  // 이후 원격 호출이 전부 0이어야 한다 — session은 조회 시작 전에 캡처해 두고,
+  // 조회 내부의 await 직후 재검증한다.
+  test('재감사 2번 — 겹침 조회 대기 중 로그아웃하면 Store/localStorage/outbox/이후 원격 호출이 전부 0이다', async () => {
+    const ownerKey = 'dma-invite-epoch-logout'
+    beginReady('user-1', ownerKey)
+    const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 900 }]
+    const existingDriver = { id: 'driver-1', name: '기사', vehicleNumber: '11가1111', startDate: '2026-08-01', endDate: '', inviteCode: '123456', status: 'pending', supabaseId: 500 }
+    writeJsonKey('drivers', ownerKey, [existingDriver])
+    const items = [{ ...existingDriver, startDate: '2026-08-10' }] // 호출부가 이미 낙관적으로 편집해 넘긴 배열.
+
+    let releaseSelect
+    const gate = new Promise((resolve) => { releaseSelect = resolve })
+    handlers.driver_links = { select: () => gate.then(() => ({ data: [], error: null })) }
+
+    const savePromise = requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: 'driver-1', cars, previousItems: [existingDriver] })
+    await wait(10)
+    assert.equal(countOf('driver_links', 'select'), 1, '겹침 조회가 이미 나갔어야 한다')
+
+    endCloudSession() // 조회 응답을 기다리는 도중 로그아웃한다.
+    // notify 카운트는 로그아웃(hydration 상태 변경) 자체가 아니라, 그 *이후* 이
+    // 저장 시도가 drivers 도메인에 뭔가를 반영하는지만 본다.
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
+    releaseSelect()
+    await savePromise
+    unsubscribe()
+
+    assert.equal(notifyCount, 0, '로그아웃 이후 이 저장 시도가 Store에 아무 반영도 하면 안 된다(notify 0회)')
+    assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), [existingDriver], 'localStorage도 원래 값 그대로여야 한다')
+    assert.equal(hasPendingOps(ownerKey), false, 'outbox에도 아무것도 안 남아야 한다')
+    assert.equal(countOf('driver_links', 'insert'), 0, '이후 원격 insert가 없어야 한다')
+    assert.equal(countOf('driver_links', 'update'), 0, '이후 원격 update가 없어야 한다')
+    assert.equal(countOf('vehicles', 'select'), 0, '이후 다른 원격 호출도 없어야 한다')
   })
 })
 

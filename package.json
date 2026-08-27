@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "node --experimental-test-module-mocks --test src/domain/finance.test.js src/domain/workData.test.js src/domain/practiceSettings.test.js src/domain/receivables-invoices.test.js src/domain/drivers-cloud.test.js src/domain/fuelRecords.test.js src/domain/maintenanceRecords.test.js src/domain/miscExpenseRecords.test.js src/domain/taxInvoices.test.js src/domain/cars.test.js src/domain/clients.test.js src/domain/expenses.test.js src/domain/calendar.test.js src/store/persist.test.js src/store/atomicPersist.test.js src/store/app-store.test.js src/store/owner-state.test.js src/lib/singleFlight.test.js src/lib/dirtyJournal.test.js src/lib/hydrateMerge.test.js src/lib/cloudSession.test.js src/lib/mutationOutbox.test.js src/lib/hydrate.test.js src/lib/outboxFlush.test.js src/lib/syncQueue.test.js src/lib/directMutationActions.test.js src/app/syncFlushListeners.test.js src/app/sessionGate.test.js src/app/workLogNavigation.test.js"
+    "typecheck": "tsc --noEmit",
+    "typecheck:strict-inventory": "tsc -p tsconfig.strict-inventory.json --noEmit",
+    "test": "node --experimental-test-module-mocks --test src/domain/finance.test.js src/domain/workData.test.js src/domain/practiceSettings.test.js src/domain/receivables-invoices.test.js src/domain/drivers-cloud.test.js src/domain/fuelRecords.test.js src/domain/maintenanceRecords.test.js src/domain/miscExpenseRecords.test.js src/domain/taxInvoices.test.js src/domain/cars.test.js src/domain/clients.test.js src/domain/expenses.test.js src/domain/calendar.test.js src/store/persist.test.js src/store/atomicPersist.test.js src/store/app-store.test.js src/store/owner-state.test.js src/lib/singleFlight.test.js src/lib/dirtyJournal.test.js src/lib/hydrateMerge.test.js src/lib/cloudSession.test.js src/lib/mutationOutbox.test.js src/lib/hydrate.test.js src/lib/outboxFlush.test.js src/lib/syncQueue.test.js src/lib/directMutationActions.test.js src/app/syncFlushListeners.test.js src/app/sessionGate.test.js src/app/workLogNavigation.test.js src/app/App.test.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
@@ -16,11 +18,15 @@
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
+    "@types/jsdom": "^30.0.0",
+    "@types/node": "^26.4.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "esbuild": "^0.28.2",
     "jsdom": "^30.0.1",
     "oxlint": "^1.75.0",
+    "typescript": "^7.0.2",
     "vite": "^8.2.0"
   }
 }

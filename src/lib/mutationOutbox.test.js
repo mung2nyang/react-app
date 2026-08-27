@@ -63,6 +63,50 @@ describe('mergeOutboxOp — 순수 병합 규칙', () => {
     const merged = mergeOutboxOp([opA], opB)
     assert.equal(merged.length, 2)
   })
+
+  // 재감사 항목 1: driverLink/upsert끼리는 "latest wins"의 예외 — 확정 전 여러 번
+  // 편집돼도(A→B→C) 롤백 앵커(최초 op의 id + previousDriverSnapshot)는 최초 것을
+  // 그대로 이어받아야 한다. 그래야 나중에 확정 실패가 나면 마지막 낙관적 값(B)이
+  // 아니라 진짜 확정된 원래 상태(A)로 복원된다.
+  test('driverLink/upsert가 A→B→C로 연속 병합돼도 최초 op의 id/previousDriverSnapshot을 그대로 이어받는다', () => {
+    const A = { id: 'd1', name: '기사', vehicleNumber: '11가1111', startDate: '2026-08-01', endDate: '', inviteCode: '111111', status: 'pending' }
+    const B = { ...A, startDate: '2026-08-05' }
+    const opAB = buildMutationOp({
+      ownerKey: 'o', userId: 'u', resourceType: 'driverLink', resourceId: 'd1', operation: 'upsert',
+      payload: { supabaseId: 500, vehicleNumber: '11가1111', startDate: '2026-08-05', endDate: '', inviteCode: '111111', previousDriverSnapshot: A },
+      sessionEpoch: 1,
+    })
+    const afterFirstEdit = mergeOutboxOp([], opAB)
+    assert.equal(afterFirstEdit[0].id, opAB.id)
+    assert.deepEqual(afterFirstEdit[0].payload.previousDriverSnapshot, A)
+
+    // 두 번째 편집(B→C) — 이 시점에 실제 코드라면 previousDriverSnapshot을 B로
+    // 계산해서 넘긴다(직전 낙관적 값). 병합 결과는 그래도 A를 유지해야 한다.
+    const opBC = buildMutationOp({
+      ownerKey: 'o', userId: 'u', resourceType: 'driverLink', resourceId: 'd1', operation: 'upsert',
+      payload: { supabaseId: 500, vehicleNumber: '11가1111', startDate: '2026-08-10', endDate: '', inviteCode: '111111', previousDriverSnapshot: B },
+      sessionEpoch: 1,
+    })
+    const afterSecondEdit = mergeOutboxOp(afterFirstEdit, opBC)
+    assert.equal(afterSecondEdit.length, 1)
+    assert.equal(afterSecondEdit[0].id, opAB.id, '최초(첫 번째) op의 id를 그대로 이어받아야 한다')
+    assert.deepEqual(afterSecondEdit[0].payload.previousDriverSnapshot, A, '롤백 앵커는 최초 A를 유지해야 한다(B로 바뀌면 안 된다)')
+    assert.equal(afterSecondEdit[0].payload.startDate, '2026-08-10', '실제 배정 내용(화면에 보이는 값)은 최신(C)으로 갱신돼야 한다')
+  })
+
+  test('driverLink/upsert가 아닌 다른 리소스 조합은 병합에서 예외를 타지 않는다(latest wins 유지)', () => {
+    // resourceType이 다르면(예: vehicle delete와 섞이는 상황은 실제로 안 생기지만)
+    // mergeDriverUpsert가 그냥 통과시켜야 한다 — driverLink/upsert끼리만 특별 취급.
+    const del = buildTombstoneOp({ ownerKey: 'o', userId: 'u', resourceType: 'driverLink', resourceId: 'd2', operation: 'delete', sessionEpoch: 1 })
+    const upsert = buildMutationOp({
+      ownerKey: 'o', userId: 'u', resourceType: 'driverLink', resourceId: 'd2', operation: 'upsert',
+      payload: { supabaseId: null, vehicleNumber: '99자9999', startDate: '2026-08-01', endDate: '', inviteCode: '222222', previousDriverSnapshot: null },
+      sessionEpoch: 1,
+    })
+    // tombstone이 이미 있으면 upsert는 그냥 버려진다(기존 규칙) — mergeDriverUpsert 예외와 무관.
+    const merged = mergeOutboxOp([del], upsert)
+    assert.equal(merged[0].kind, 'tombstone')
+  })
 })
 
 describe('planOutboxAppend — 계산만 하고 쓰지 않는다', () => {

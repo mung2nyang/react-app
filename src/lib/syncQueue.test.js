@@ -11,6 +11,7 @@ const { endCloudSession } = await import('./cloudSession.js')
 const { flushCloudSync, scheduleCloudSync } = await import('./syncQueue.js')
 const { getState } = await import('../store/app-store.js')
 const { markDirty, hasDirty } = await import('./dirtyJournal.js')
+const { writeJsonKey } = await import('../store/persist.js')
 
 describe('failed 상태에서는 scheduleCloudSync/flushCloudSync가 원격 upsert를 시도하지 않는다', () => {
   test('hydrate가 실패하면 이후 scheduleCloudSync/flushCloudSync 둘 다 아무 것도 안 한다', async () => {
@@ -125,6 +126,42 @@ describe('실패 주입 — syncQueue 실행 중 로그아웃/owner 전환 (사�
     await flushPromise
 
     assert.equal(hasDirty(ownerKey), true, '로그아웃 이후에 도착한 성공 응답으로 clearDirty가 불리면 안 된다(다음 재로그인이 다시 판단해야 한다)')
+  })
+
+  // 4차 재작업(사용자 지시 3번): syncAll() 내부도 profile upsert 직후부터 각 도메인
+  // sync 직후까지 매 단계 세션을 재검증해야 한다 — profile 응답을 기다리는 동안
+  // 로그아웃하면 vehicles 이하는 아예 호출되면 안 된다(이전에는 profile 성공 후
+  // 무조건 vehicles/clients로 넘어갔다).
+  test('profile 응답을 기다리는 도중 로그아웃하면 vehicles/clients 이하 호출이 0회이고 dirty가 유지된다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'syncqueue-epoch-profile-wait'
+    writeJsonKey('cars', ownerKey, [{ id: 'car-1', number: '12가1234', type: 'sub' }]) // supabaseId 없음 — syncVehicles가 실제로 원격 호출을 낸다.
+    writeJsonKey('clients', ownerKey, [{ id: 'client-1', companyName: '테스트거래처' }])
+
+    let releaseUpsert
+    const gate = new Promise((resolve) => { releaseUpsert = resolve })
+    handlers.profiles.upsert = () => gate.then(() => ({ data: null, error: null }))
+
+    await hydrateFromSupabase('user-epoch-profile-wait', ownerKey) // hydrate 자체도 vehicles.select를 한 번 부른다 — 그 이후를 기준선으로 삼는다.
+    const baselineVehiclesSelect = countOf('vehicles', 'select')
+    markDirty(ownerKey, 'cars')
+
+    const flushPromise = flushCloudSync()
+    try {
+      await wait(10)
+      assert.equal(countOf('profiles', 'upsert'), 1, 'profile upsert는 이미 나갔어야 한다')
+      assert.equal(countOf('vehicles', 'select'), baselineVehiclesSelect, 'vehicles 이하는 아직 시작하면 안 된다')
+    } finally {
+      endCloudSession() // profile 응답이 오기 전에 로그아웃한다.
+      releaseUpsert()
+      await flushPromise // 실패 여부와 무관하게 항상 게이트를 풀고 끝까지 기다려야, 다음 테스트가 이 flush의 잔여 상태를 물려받지 않는다.
+    }
+
+    assert.equal(countOf('vehicles', 'select'), baselineVehiclesSelect, '로그아웃 이후에는 vehicles 조회가 아예 나가면 안 된다')
+    assert.equal(countOf('vehicles', 'insert'), 0)
+    assert.equal(countOf('clients', 'insert'), 0, 'clients 이하도 마찬가지로 0회여야 한다')
+    assert.equal(hasDirty(ownerKey), true, '중단됐으니 dirty가 그대로 남아야 한다')
   })
 
   test('syncAll이 도는 도중 다른 owner로 전환되면, 원래 owner의 dirty 표시는 지워지지 않는다', async () => {
