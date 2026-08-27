@@ -90,6 +90,17 @@ export function monthWorkFareSummary(data, year, month, unitPrice) {
   return { trips, callTrips, fixedFare, callFare, fare, vat, total: fare + vat }
 }
 
+// Step 5(달력 홈 재작성) 재감사 4번: MainPageRoute.jsx(@ts-check)가 이 함수를
+// 정확한 타입으로 호출할 수 있도록 매개변수 모양만 문서화했다 — 로직은 그대로다.
+// 이 파일 전체에 // @ts-check를 붙이지 않았으므로(다른 기존 함수들의 선행 타입
+// 부채가 그대로 드러난다, 실측 확인함) 이 주석은 여전히 검사 대상이 아니지만,
+// 소비하는 쪽에서는 이 선언대로 타입이 좁혀진다.
+/**
+ * @param {Record<string, object>} data
+ * @param {string} dateKey
+ * @param {{ isOff?: boolean, fixedCount?: number, callDetails?: Array<object>, fixedRouteCounts?: Record<string, number> }} [patch]
+ * @returns {Record<string, object>}
+ */
 export function saveDayRecord(data, dateKey, { isOff = false, fixedCount = 0, callDetails, fixedRouteCounts } = {}) {
   const next = { ...data }
   const off = !!isOff
@@ -135,3 +146,9 @@ export function monthWorkTotal(data, year, month) {
   }
   return total
 }
+
+// Step 5(달력 홈 재작성) 재감사 3번: 하루치 뱃지 계산(dayFareTotal/dayWorkBadgeLabel/
+// dayHasUnpaid)은 calendarBadges.js로 옮겼다 — 이 파일은 아직 // @ts-check가 없고,
+// checkJs:true(typecheck:strict-inventory)로 실측해 보니 붙이면 기존 함수들의
+// 선행 타입 부채(암묵적 any 등 37개)가 그대로 드러난다. 신규 로직만 별도 타입 모듈로
+// 분리해서 그 부채를 넓히지 않았다.

@@ -65,7 +65,6 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast 
               </button>
             </div>
           </div>
-          <p className="car-type-hint">금액 표시는 달력에 나중에 붙입니다. 지금은 저장만 됩니다.</p>
         </section>
 
         <section className="setting-section">

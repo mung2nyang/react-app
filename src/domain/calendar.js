@@ -61,9 +61,13 @@ export function todayWorkLogSelection(date = new Date()) {
   }
 }
 
+// viewDateFromSearchParams/searchParamsForViewDate(달력 월을 URL 쿼리에 두는 왕복
+// 함수)는 calendarViewDate.js로 옮겼다(Step 5 재감사 3번 — 타입 전용 모듈 분리, 이
+// 파일은 아직 // @ts-check 없음).
+
 /**
- * `/app/day/:date` 라우트 파라미터(`YYYY-MM-DD`)를 MainPage의 `selected` 모양으로 바꾼다.
- * Step 3 라우터 도입 — 값이 아니면 null(달력 표시)을 돌려준다.
+ * `/app/day/:date` 라우트 파라미터(`YYYY-MM-DD`)를 MainPageRoute의 `selected` 모양으로
+ * 바꾼다. Step 3 라우터 도입 — 값이 아니면 null(달력 표시)을 돌려준다.
  * @param {string | undefined} dateKey
  * @returns {{ dateKey: string, month: number, day: number } | null}
  */

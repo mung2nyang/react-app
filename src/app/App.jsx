@@ -14,6 +14,7 @@ import { supabase } from '../supabaseClient.js'
 import { restoreSessionOnBoot } from './boot.js'
 import { AccountFlowBodyClass, SyncFlushBridge } from './providers.jsx'
 import { initializeOwnerFromPersist } from '../store/owner-state.js'
+import { isAlreadyInAppOnBoot } from './bootHomeGuard.js'
 import AuthRoute from './AuthRoute.jsx'
 import AppShell from './AppShell.jsx'
 import RequireSession from './RequireSession.jsx'
@@ -39,20 +40,12 @@ export default function App() {
     setToast(message)
   }
 
-  // 4차 재작업(사용자 지시 5번) — 정정: 위 옛 주석("navigate는 참조 안정성을
-  // 보장")은 틀렸다. `<BrowserRouter>`(데이터 라우터 아님)의 `useNavigate()`는
-  // `useNavigateUnstable()` 경로를 타는데, 이 구현은 `navigate` 함수를
-  // `location.pathname`이 바뀔 때마다 새로 만든다(react-router 소스 확인).
-  // 예전 코드는 `goHome`을 `useCallback(fn, [navigate])`로 감싸고 부트 이펙트를
-  // `useEffect(fn, [goHome])`로 묶어서, "navigate 안정성"에 기대 마운트 시 한 번만
-  // 돈다고 가정했지만 실제로는 **매 라우트 전환마다 goHome이 재생성되고 부트
-  // 이펙트가 다시 실행**됐다 — 로그인 계정은 어떤 탭으로 이동해도 재실행된
-  // restoreSessionOnBoot()의 goHome()이 다시 `/app`으로 되돌려 보내는 치명적
-  // 버그였다(게스트는 restoreSessionOnBoot()이 null을 돌려줘 goHome을 안 불러서
-  // 증상이 없었다 — 그래서 게스트 경로 검증에서는 안 드러났다).
-  //
-  // 수정: navigate 자체를 ref로 감싸 항상 최신 함수를 가리키게 하고, goHome/부트
-  // 이펙트 둘 다 진짜 빈 의존성 배열([])로 마운트 시 딱 한 번만 실행되게 한다.
+  // 4차 재작업(사용자 지시 5번): `<BrowserRouter>`의 `useNavigate()`는
+  // `location.pathname`이 바뀔 때마다 새 함수를 반환한다 — `goHome`을
+  // `useCallback(fn, [navigate])`로 감쌌더니 매 라우트 전환마다 재생성되고 부트
+  // 이펙트가 다시 돌아, 로그인 계정이 어떤 탭으로 이동해도 재실행된 goHome()이
+  // `/app`으로 되돌려 보냈다(게스트는 restoreSessionOnBoot()이 null이라 안 드러났다).
+  // navigate를 ref로 감싸 goHome/부트 이펙트를 진짜 빈 의존성 배열로 고정한다.
   const navigateRef = useRef(navigate)
   useEffect(() => { navigateRef.current = navigate }) // 의존성 배열 없음 — 매 렌더 후 최신 navigate로 갱신.
 
@@ -67,16 +60,24 @@ export default function App() {
   )
 
   // Step 2 부트: 새로고침 시 Supabase 세션을 복원한다. 로그인 상태가 아니면 그대로
-  // /auth에 남는다 — 게스트/로그아웃 동작은 바뀌지 않는다.
+  // /auth에 남는다 — 게스트/로그아웃 동작은 바뀌지 않는다. 이미 /app(또는
+  // /onboarding)에 진입해 있었으면(=새로고침/딥링크) goHome()을 건너뛴다 — 그
+  // 판단·이유는 bootHomeGuard.js(재감사 6번, 완료 조건 "새로고침 후 같은 달").
+  const homePathRef = useRef(location.pathname)
+  useEffect(() => { homePathRef.current = location.pathname })
+
   useEffect(() => {
     let cancelled = false
     restoreSessionOnBoot().then((restored) => {
       if (cancelled) return
       if (restored) {
-        goHome(
-          restored.session,
-          restored.hydrateError ? '로그인은 유지됐지만 클라우드 데이터를 일부 못 불러왔습니다.' : undefined,
-        )
+        const message = restored.hydrateError ? '로그인은 유지됐지만 클라우드 데이터를 일부 못 불러왔습니다.' : undefined
+        if (isAlreadyInAppOnBoot(homePathRef.current)) {
+          setSession(restored.session)
+          if (message) setToast(message)
+        } else {
+          goHome(restored.session, message)
+        }
       }
       setBooting(false)
     })

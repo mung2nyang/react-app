@@ -23,6 +23,9 @@ export function formatPercentInput(value) {
   return next
 }
 
+// formatFareShort(달력 셀 fare 뱃지용 짧은 금액 표기)는 calendarBadges.js로 옮겼다
+// (Step 5 재감사 3번 — 타입 전용 모듈 분리, 이 파일은 아직 // @ts-check 없음).
+
 export function monthFareSummary(tripCount, unitPrice) {
   const trips = Math.max(0, parseInt(tripCount, 10) || 0)
   const unit = Math.max(0, parseCurrencyValue(unitPrice))

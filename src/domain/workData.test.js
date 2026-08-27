@@ -151,3 +151,7 @@ describe('입금 예정일', () => {
     assert.equal(dueDateForClient('2026-01-31', { paymentTerm: 'next_month_end' }), '2026-02-28')
   })
 })
+
+// Step 5(달력 홈 재작성) 재감사 3번: dayFareTotal/dayWorkBadgeLabel/dayHasUnpaid는
+// calendarBadges.js(타입 전용 모듈)로 옮겼다 — 그 테스트도 calendarBadges.test.js로
+// 함께 옮겼다.

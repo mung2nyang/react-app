@@ -1,0 +1,22 @@
+/* Step 5(달력 홈 재작성) 재감사 6번: main-calendar.css(1284줄, 여러 화면이 공유하는
+   기존 대형 스타일시트)를 건드리지 않고, 이 Step에서 새로 추가한 스타일만 담는
+   calendar/ 전용 파일이다. CalendarPage.jsx가 main-calendar.css 다음에 이 파일을
+   import해서, 아래 .date-cell 오버라이드가 CSS 캐스케이드로 정상 적용된다. */
+
+/* .unpaid-dot(position:absolute)이 셀 좌상단에 정확히 앉으려면 부모(.date-cell)가
+   위치 기준점이어야 한다 — main-calendar.css의 원래 .date-cell엔 position이 없다. */
+.date-cell {
+  position: relative;
+}
+
+/* 바닐라 style.css의 .unpaid-dot을 그대로 옮긴다 — 당일에 미수 콜상세가 있으면
+   셀 좌상단에 표시하는 점. */
+.unpaid-dot {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+  background-color: var(--sunday-color);
+  border-radius: 50%;
+}
