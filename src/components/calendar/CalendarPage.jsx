@@ -10,9 +10,11 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../domain/calendarViewDate.js'
+import { getFixedRouteClient, resolveFixedUnitPrice, updateClientFixedUnitPrice } from '../../domain/clients.js'
 import { monthCallUnpaidTotal, monthWorkFareSummary } from '../../domain/day-record.js'
+import { saveClients } from '../../lib/clients.js'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
-import { useOwnerSettings, useOwnerWorkData } from '../../store/ownerDataHooks.js'
+import { useOwnerClients, useOwnerSettings, useOwnerWorkData } from '../../store/ownerDataHooks.js'
 import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
@@ -43,9 +45,17 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
 
   const workData = useOwnerWorkData(ownerKey)
   const settings = useOwnerSettings(ownerKey)
+  // 재감사 2차(FAIL 지적) — 달력의 "1회 단가"를 finance.js(매출·계산서)와 같은
+  // 창구(resolveFixedUnitPrice)로 계산한다 — 고정노선 연결 거래처가 있으면 그
+  // fixedUnitPrice, 없으면(Step 7 전 지금 대부분의 상태) settings.unitPrice로
+  // fallback한다. 재감사 3차(FAIL 지적 3번) — clients도 이제 store를 구독한다
+  // (useOwnerClients) — 거래처 단가를 이 화면에서 직접 고친 직후에도(아래
+  // saveUnitPrice) 같은 렌더 사이클에서 최신값을 받는다.
+  const clients = useOwnerClients(ownerKey)
+  const fixedRouteClient = getFixedRouteClient({ clients })
+  const unitPrice = resolveFixedUnitPrice({ clients, unitPrice: settings.unitPrice })
 
   const cells = useMemo(() => buildCalendarCells(viewDate), [viewDate])
-  const unitPrice = settings.unitPrice
   const fareSummary = /** @type {FareSummary} */ (useMemo(
     () => monthWorkFareSummary(workData, year, month, unitPrice),
     [workData, year, month, unitPrice],
@@ -57,9 +67,18 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
     setSearchParams(searchParamsForViewDate(new Date(nextYear, nextMonth, 1)), { replace: true })
   }
 
+  // 재감사 3차(FAIL 지적 3번) — 연결된 고정노선 거래처가 있으면 그 거래처의
+  // fixedUnitPrice를 원자적으로 고친다(updateClientFixedUnitPrice + saveClients =
+  // commitClients = commitBatch, 다른 거래처 편집과 완전히 같은 원자적 쓰기 경로).
+  // fallback settings.unitPrice는 연결된 거래처가 없을 때만 건드린다 — "몰래
+  // fallback만 고치는" 이전 동작을 없앴다.
   /** @param {number} nextPrice */
   function saveUnitPrice(nextPrice) {
-    savePracticeSettings(ownerKey, { unitPrice: nextPrice })
+    if (fixedRouteClient) {
+      saveClients(ownerKey, updateClientFixedUnitPrice(clients, fixedRouteClient.id, nextPrice))
+    } else {
+      savePracticeSettings(ownerKey, { unitPrice: nextPrice })
+    }
   }
 
   return (
@@ -89,6 +108,7 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
         unpaidTotal={unpaidTotal}
         fareSummary={fareSummary}
         unitPrice={unitPrice}
+        linkedClientName={fixedRouteClient?.companyName || null}
         onSaveUnitPrice={saveUnitPrice}
       />
 

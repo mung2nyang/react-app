@@ -1,36 +1,26 @@
 // @ts-check
 // Step 3 라우터 셸: `/app`(달력)와 `/app/day/:date`(일지)를 한 라우트 그룹으로 묶는다.
 // Step 5(달력 홈 재작성) — 달력 쪽(`selected`가 없을 때)은 CalendarPage로 분할했다
-// (MainPage.jsx 폐기). 일지 쪽(WorkLogPage)은 Step 6 몫이라 이번엔 손대지 않았다 — 그
-// 콜백(onCountChange 등)만 MainPage.jsx에서 그대로 옮겨 왔다.
-//
-// 재감사 4번: 일지 화면이 보는 workData도 로컬 스냅샷(useState(() => loadWorkData(...)))이
-// 아니라 CalendarPage와 같은 store 구독 훅(useOwnerWorkData/useOwnerSettings —
-// store/ownerDataHooks.js)을 쓴다 — 단일 진실 공급원. saveDay는 그 훅이 아니라
-// getState()로 커밋 직전 최신값을 다시 읽어서 commit한다(React 렌더 타이밍에
-// 기대지 않고, saveWorkData 호출 자체가 store를 갱신 + 구독자에게 알린다 — 별도
-// setWorkData 이중 상태를 두지 않는다).
+// (MainPage.jsx 폐기).
+// Step 6(일지 재작성) — 일지 쪽은 `DayLogPage`(WorkLogPage.jsx/InlineExpandHost.jsx
+// 폐기)로 바뀌었다. `DayLogPage`는 store 구독(useDayDraft)으로 자기 workData를 직접
+// 읽고 디바운스 커밋까지 스스로 하므로, 이 라우터는 이제 `record`/`count`/`isOff`/
+// `saveDay` 같은 걸 더 들고 있지 않는다 — `dateKey`/`ownerKey`만 넘겨주면 된다
+// (재감사 4번에서 만든 `store/ownerDataHooks.js`의 `useOwnerSettings`는 여전히
+// 여기서 settings를 구독해 두 화면에 같은 값을 준다).
 //
 // Step 0-4 감사 보완: 달력 셀 클릭으로 들어왔다는 표시(location.state.from)를 남겨서,
 // 일지를 닫을 때 진짜 뒤로가기(navigate(-1))와 직접 진입 시의 교체 이동을 구분한다
 // (resolveWorkLogCloseTarget — workLogNavigation.js).
+import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import CalendarPage from '../components/calendar/CalendarPage.jsx'
+import DayLogPage from '../components/day-log/DayLogPage.jsx'
 import { parseDateKeySelection } from '../lib/calendar.js'
-import { getCallDetails, getFixedCount, isOffDay, saveDayRecord, saveWorkData } from '../lib/workData.js'
 import { loadClients } from '../lib/clients.js'
-import { readOwnerWorkData, useOwnerSettings, useOwnerWorkData } from '../store/ownerDataHooks.js'
+import { useOwnerSettings } from '../store/ownerDataHooks.js'
+import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
-import { TypedWorkLogPage } from './typedWorkLogPage.js'
-
-/** @typedef {import('../domain/calendarBadges.js').DayRecordLike} DayRecordLike */
-/**
- * @typedef {Object} DayPatch
- * @property {boolean} [isOff]
- * @property {number} [fixedCount]
- * @property {Array<import('../domain/calendarBadges.js').CallDetailLike>} [callDetails]
- * @property {Record<string, number>} [fixedRouteCounts]
- */
 
 /**
  * @param {Object} props
@@ -57,26 +47,16 @@ export default function MainPageRoute({
   const navigate = useNavigate()
   const location = useLocation()
   const selected = parseDateKeySelection(date)
-
-  const workData = useOwnerWorkData(ownerKey)
   const settings = useOwnerSettings(ownerKey)
 
-  /** @param {string} dateKey @param {DayPatch} patch */
-  function saveDay(dateKey, patch) {
-    // 최신 store workData를 커밋 직전에 다시 읽는다 — 위 workData(훅 결과)는 이
-    // 컴포넌트가 마지막으로 렌더된 시점 값이라 이론상 한 틱 뒤처질 수 있고, 이
-    // 함수는 이벤트 핸들러 안에서만 불려 React 렌더와 동기화를 보장할 수 없다.
-    const latest = readOwnerWorkData(ownerKey)
-    const current = latest[dateKey] || {}
-    const next = saveDayRecord(latest, dateKey, {
-      isOff: patch.isOff ?? isOffDay(current),
-      fixedCount: patch.fixedCount ?? getFixedCount(current),
-      callDetails: patch.callDetails ?? getCallDetails(current),
-      fixedRouteCounts: patch.fixedRouteCounts,
-    })
-    saveWorkData(ownerKey, next)
-    onWorkChanged?.()
-  }
+  // 재감사 9차(FAIL 지적 4번) — `date`는 있는데(=/app/day/:date 경로) 실제 달력
+  // 날짜로 검증되지 않으면(parseDateKeySelection이 null) DayLogPage를 렌더하거나
+  // 편집을 저장하는 대신 /app으로 안전하게 replace한다 — 아래 렌더 자체는 이미
+  // CalendarPage로 떨어지지만(그 자체로 DayLogPage/저장은 막힌다), URL을 깨진
+  // 채로 남겨 두지 않는다.
+  useEffect(() => {
+    if (date && !selected) navigate('/app', { replace: true })
+  }, [date, selected, navigate])
 
   function closeWorkLog() {
     const target = resolveWorkLogCloseTarget(location.state)
@@ -85,24 +65,27 @@ export default function MainPageRoute({
   }
 
   if (selected) {
-    /** @type {DayRecordLike|undefined} */
-    const record = workData[selected.dateKey]
     return (
-      <TypedWorkLogPage
+      <DayLogPage
+        // 재감사 1번(FAIL 지적) — react-router는 같은 Route(`day/:date`) 안에서
+        // date 파라미터만 바뀌면 MainPageRoute/DayLogPage를 언마운트하지 않고
+        // 재사용한다. useDayDraft의 useReducer 초기값은 "마운트 시 한 번만" 계산되므로,
+        // key 없이는 A 날짜의 draft가 B 날짜로 넘어와 그대로 남고, 이미 걸려 있던
+        // 디바운스 타이머가 B의 dateKey로 A의 데이터를 커밋해 버리는 데이터 오염이
+        // 생겼다(실측: 하단 "일일운행" 탭으로 과거 일지 → 오늘 날짜 직행 시 재현).
+        // key를 dateKey(+ownerKey)로 주면 날짜가 바뀔 때마다 React가 이 서브트리를
+        // 완전히 새로 마운트한다 — 기존(이미 실측 검증된) 언마운트 flush effect가
+        // "옛 인스턴스"에서 정확히 한 번 실행돼 A의 밀린 편집을 A에 flush하고,
+        // "새 인스턴스"는 B의 데이터로 완전히 새로 초기화된다.
+        key={`${ownerKey}:${selected.dateKey}`}
         month={selected.month}
         day={selected.day}
         dateKey={selected.dateKey}
-        count={getFixedCount(record)}
-        isOff={isOffDay(record)}
-        record={record}
-        clients={loadClients(ownerKey)}
         ownerKey={ownerKey}
+        clients={loadClients(ownerKey)}
         settings={settings}
         showToast={showToast}
-        onCountChange={(count) => saveDay(selected.dateKey, { isOff: false, fixedCount: count })}
-        onOffChange={(off) => saveDay(selected.dateKey, { isOff: off, fixedCount: off ? 0 : getFixedCount(record) })}
-        onCallDetailsChange={(callDetails) => saveDay(selected.dateKey, { callDetails })}
-        onRouteCountsChange={(fixedRouteCounts, fixedCount) => saveDay(selected.dateKey, { isOff: false, fixedCount, fixedRouteCounts })}
+        onWorkChanged={onWorkChanged}
         onClose={closeWorkLog}
       />
     )
@@ -116,7 +99,14 @@ export default function MainPageRoute({
       onOpenMenu={onOpenMenu}
       onOpenNotifs={onOpenNotifs}
       onBackToAuth={onBackToAuth}
-      onSelectDay={(sel) => navigate(`/app/day/${sel.dateKey}`, { state: { from: 'calendar' } })}
+      // closeWorkLog(DayLogPage 헤더 "뒤로가기")는 DayLogPage.jsx의 handleClose가
+      // 이미 confirmLeaveIfUnsafe()로 감싸서 부른다 — 여기서 또 감싸면 같은 이동에
+      // confirm이 두 번 뜬다. 달력→일지 진입은 그 경로가 아니라서(어디서도 아직
+      // 확인 안 함) 여기서 직접 가드한다(재감사 4차 FAIL 지적 3번 — 전역 이동 경로).
+      onSelectDay={(sel) => {
+        if (!confirmLeaveIfUnsafe()) return
+        navigate(`/app/day/${sel.dateKey}`, { state: { from: 'calendar' } })
+      }}
     />
   )
 }

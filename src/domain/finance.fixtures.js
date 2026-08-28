@@ -1,3 +1,5 @@
+// @ts-check
+// 재감사 10차(FAIL 지적 4번) — 이 파일도 이제 // @ts-check 대상이다.
 export const MONTH_KEY = '2026-05'
 
 export const FIXTURE_SETTINGS = {
@@ -93,6 +95,11 @@ export const FIXTURE_WORK = {
           linkedLoadIndex: '0',
         },
       ],
+      // maintItems/fuelItems/miscItems는 더 이상 finance.js가 안 읽는다(재감사 FAIL
+      // 지적 2번 — 비용은 canonical expenses 배열이 정본이다, 아래 FIXTURE_EXPENSES).
+      // 그래도 여기 남겨 둔 이유: hydrateMerge.test.js 등 다른 곳에서 여전히 "클라우드
+      // hydrate가 day record에 이 필드를 채워 넣는다"는 별개 계약을 테스트하고,
+      // FIXTURE_WORK 자체가 그 계약의 예시 데이터이기도 하다.
       maintItems: [{ name: '오일', fare: '30,000' }],
       fuelItems: [{ type: '주유', cost: '80,000', subsidy: '5,000', liter: 40 }],
       miscItems: [{ name: '통행료', fare: '8,000' }],
@@ -120,6 +127,18 @@ export const FIXTURE_WORK = {
     },
   },
 }
+
+// 재감사(FAIL 지적 2번) — getOwnerMonthlyFinanceDetail이 비용을 읽는 canonical
+// expenses 배열. 위 FIXTURE_WORK.main의 maintItems/fuelItems/miscItems와 같은 날짜·
+// 금액으로 맞춰 뒀다(부기: finance.js는 더 이상 그 필드들을 안 읽는다 — 여기서
+// 값이 같은 건 "합계가 같아야 정상"이라는 걸 테스트가 확인하기 위해서일 뿐,
+// finance.js가 두 곳을 같이 읽는다는 뜻이 아니다).
+export const FIXTURE_EXPENSES = [
+  { id: 'fx-maint-1', kind: 'maint', date: '2026-05-10', name: '오일', cost: 30000 },
+  { id: 'fx-fuel-1', kind: 'fuel', date: '2026-05-10', fuelType: '주유', cost: 80000, subsidy: 5000, liters: 40 },
+  { id: 'fx-misc-1', kind: 'misc', date: '2026-05-10', name: '통행료', cost: 8000 },
+  { id: 'fx-maint-2', kind: 'maint', date: '2026-05-11', name: '정비', cost: 20000 },
+]
 
 export const OVERLAP_LINKS = [
   {

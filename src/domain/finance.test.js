@@ -19,7 +19,7 @@ import {
   getReceivableItems,
   getTaxInvoiceSourceGroups,
 } from './finance.js'
-import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY, OVERLAP_LINKS } from './finance.fixtures.js'
+import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY, OVERLAP_LINKS } from './finance.fixtures.js'
 import { parseCurrencyValue } from './money.js'
 import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
 
@@ -106,7 +106,13 @@ describe('같은 운행 픽스처 — 원본 vs react-app', () => {
   })
 
   test('차주 월 손익', () => {
-    const ours = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK)
+    // 재감사(FAIL 지적 2번) — 비용(maint/fuel/misc)은 이제 canonical expenses 배열에서
+    // 읽는다(record.maintItems/fuelItems/miscItems가 아니라). vanilla(theirs)는 여전히
+    // day record에 박힌 필드를 읽으므로 입력 데이터 모양은 다르지만, FIXTURE_EXPENSES를
+    // FIXTURE_WORK의 같은 필드와 같은 금액으로 맞춰 뒀기 때문에(finance.fixtures.js)
+    // 합계는 여전히 같아야 한다 — 그 "숫자가 같다"만 확인한다(이건 계획적 이탈이지
+    // 실수가 아니다).
+    const ours = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, FIXTURE_EXPENSES)
     const theirs = original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner')
     assert.equal(ours.tripCount, theirs.tripCount)
     assert.equal(ours.vatAmount, theirs.vatAmount)
@@ -187,6 +193,60 @@ describe('같은 운행 픽스처 — 원본 vs react-app', () => {
   })
 })
 
+// Step 6 재감사(FAIL 지적 2번) — 비용 단일 계약: canonical expenses가 정본이고,
+// record.maintItems/fuelItems/miscItems는 더 이상 안 읽는다(이중 저장 금지).
+describe('getOwnerMonthlyFinanceDetail — 비용은 canonical expenses에서만 읽는다', () => {
+  test('record.maintItems/fuelItems/miscItems가 있어도 무시하고 expenses만 합산한다(중복 0건)', () => {
+    // FIXTURE_WORK.main['2026-05-10']에는 여전히 maintItems(30,000)/fuelItems(80,000)/
+    // miscItems(8,000)가 박혀 있다 — 클라우드 hydrate가 채우는 값과 같은 모양을 흉내낸
+    // 것이다. FIXTURE_EXPENSES는 일부러 "다른" 금액을 주고, 결과가 expenses 쪽
+    // 금액과만 일치하는지(=record 쪽을 더해서 두 배가 되지 않는지) 확인한다.
+    const differentExpenses = [{ id: 'x1', kind: 'maint', date: '2026-05-10', name: '오일', cost: 11111 }]
+    const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, differentExpenses)
+    assert.equal(detail.expense.maint.total, 11111, 'expenses 쪽 금액만 반영돼야 한다')
+    assert.notEqual(detail.expense.maint.total, 30000 + 11111, 'record.maintItems와 합산돼서 중복 계산되면 안 된다')
+  })
+
+  test('expenses가 비어 있으면(로컬 편집이 아직 없음) 비용은 0이다 — record 쪽을 fallback으로 쓰지 않는다', () => {
+    const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, [])
+    assert.equal(detail.expense.total, 0)
+    assert.equal(detail.income.fuelSubsidy.total, 0)
+  })
+
+  test('월이 다른 expenses 항목은 제외된다', () => {
+    const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, [
+      { id: 'other-month', kind: 'maint', date: '2026-06-01', name: '엉뚱한 달', cost: 99999 },
+    ])
+    assert.equal(detail.expense.total, 0)
+  })
+
+  test('일지에서 방금 추가한 비용이 즉시 반영된다(새로고침 없이) — expenses 배열에 넣기만 하면 된다', () => {
+    // useExpenseForm.js의 save()가 하는 일과 동일하게, expenses 배열에 새 항목을
+    // 추가하는 것만으로 다음 getOwnerMonthlyFinanceDetail 호출에 바로 잡혀야 한다
+    // (별도의 hydrate/새로고침 없이) — 이게 "즉시 반영" 요구사항의 핵심이다.
+    const before = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, [])
+    assert.equal(before.expense.misc.total, 0)
+    const afterAdd = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, [
+      { id: 'new-1', kind: 'misc', date: '2026-05-15', name: '주차비', cost: 5000 },
+    ])
+    assert.equal(afterAdd.expense.misc.total, 5000)
+    assert.equal(afterAdd.netProfit, before.netProfit - 5000)
+  })
+
+  // 재감사 2차(FAIL 지적 3번) — expenses는 차량 구분이 없는 소유자 전체 배열인데,
+  // scope==='driver'(기사 손익) 화면에도 그대로 합산되던 오염을 잡는다. FIXTURE_WORK의
+  // 기사 차량('서울12가3456')에는 애초에 비용 데이터가 없으므로, "오너 expenses가
+  // 기사 화면에 안 새는지"는 이 테스트로만 드러난다(기존 owner-scope 테스트들은 이
+  // 경로를 안 지난다).
+  test('scope=driver(기사 손익)에는 오너의 expenses가 섞여 들어가면 안 된다', () => {
+    const ownerExpenses = [{ id: 'owner-only', kind: 'maint', date: '2026-05-10', name: '오너 정비', cost: 50000 }]
+    const driverDetail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', FIXTURE_SETTINGS, FIXTURE_WORK, ownerExpenses)
+    assert.equal(driverDetail.expense.total, 0, '기사 손익에는 오너의 정비/주유/기타 비용이 들어가면 안 된다')
+    const ownerDetail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, ownerExpenses)
+    assert.equal(ownerDetail.expense.total, 50000, '같은 expenses가 owner 화면에는 정상 반영돼야 한다(비교용)')
+  })
+})
+
 describe('겹침 / 입금예정일', () => {
   test('assignmentRangesOverlap', () => {
     assert.equal(
@@ -235,7 +295,7 @@ describe('겹침 / 입금예정일', () => {
 describe('숫자 비교표용 스냅샷', () => {
   test('콘솔에 원본/연습앱 숫자를 같이 출력한다', () => {
     const revenue = getMonthlyFareRevenue(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
-    const owner = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK)
+    const owner = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, FIXTURE_EXPENSES)
     const driver = getLinkedDriverSettlementDetail(
       FIXTURE_WORK['서울12가3456'],
       MONTH_KEY,

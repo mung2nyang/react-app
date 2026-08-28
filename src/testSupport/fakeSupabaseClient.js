@@ -7,6 +7,7 @@ export function chainable(getResult) {
     select: () => chainable(getResult),
     eq: () => chainable(getResult),
     neq: () => chainable(getResult),
+    in: () => chainable(getResult),
     order: () => chainable(getResult),
     maybeSingle: () => chainable(getResult),
     single: () => chainable(getResult),

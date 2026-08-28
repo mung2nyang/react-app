@@ -1,8 +1,9 @@
 // @ts-check
 // Step 5(달력 홈 재작성): MainPage.jsx의 미수금 미니 카드 + 월간 운송료 정산 카드를 옮긴다.
-// unitPrice는 설정 스토어 값이고, 이 카드의 "1회 단가" 입력이 그 값을 직접 수정한다
-// (dayFareTotal의 unitPrice 출처 주석 — domain/calendarBadges.js — 참고: 고정노선
-// 거래처 단가와는 아직 분리된 별도 소스다).
+// 재감사 3차(FAIL 지적 3번) — 고정노선 연결 거래처가 있으면 이 입력이 그 거래처의
+// fixedUnitPrice를 고치고(CalendarPage.jsx의 saveUnitPrice), 없으면 설정의
+// unitPrice를 고친다 — 어느 쪽이든 이 컴포넌트는 그냥 onSaveUnitPrice(nextPrice)만
+// 부른다. linkedClientName이 있으면 어디로 반영되는지 사용자에게 알려준다.
 import { formatCurrencyInput, formatWon, parseCurrencyValue } from '../../domain/money.js'
 
 /**
@@ -24,9 +25,10 @@ import { formatCurrencyInput, formatWon, parseCurrencyValue } from '../../domain
  * @param {number} props.unpaidTotal
  * @param {FareSummary} props.fareSummary
  * @param {number|string} props.unitPrice
+ * @param {string|null} [props.linkedClientName]
  * @param {(nextPrice: number) => void} props.onSaveUnitPrice
  */
-export default function CalendarMonthSummary({ paymentOn, unpaidTotal, fareSummary, unitPrice, onSaveUnitPrice }) {
+export default function CalendarMonthSummary({ paymentOn, unpaidTotal, fareSummary, unitPrice, linkedClientName, onSaveUnitPrice }) {
   return (
     <>
       {paymentOn && unpaidTotal > 0 && (
@@ -56,6 +58,11 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, fareSumma
             aria-label="1회 단가"
           />
         </div>
+        {linkedClientName && (
+          <p className="summary-hint">
+            고정노선 연결 거래처 &apos;{linkedClientName}&apos;의 단가입니다 — 여기서 바꾸면 그 거래처 정보도 함께 바뀝니다.
+          </p>
+        )}
         <div className="summary-row">
           <span>기본 운송료 (횟수×단가)</span>
           <span className="summary-value">{formatWon(fareSummary.fixedFare)}</span>

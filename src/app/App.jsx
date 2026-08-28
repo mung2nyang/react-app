@@ -1,7 +1,6 @@
 // @ts-check
 // Step 3 라우터 셸: 옛 src/App.jsx의 screen/appPage 문자열 스위치를 실제 라우트로 바꾼
-// 자리. 세션·부트·토스트처럼 화면을 넘나드는 상태만 여기 남기고, 화면별 로직은
-// AuthRoute/AppShell로 옮겼다 (migration-audit-plan.md Step 3).
+// 자리. 세션·부트·토스트 상태만 여기 남기고, 화면별 로직은 AuthRoute/AppShell로 옮겼다.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../components/OnboardingPage.jsx'
@@ -10,9 +9,10 @@ import { applyTheme, loadPracticeSettings } from '../lib/practiceSettings.js'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { flushCloudSync } from '../lib/syncQueue.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
+import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { supabase } from '../supabaseClient.js'
 import { restoreSessionOnBoot } from './boot.js'
-import { AccountFlowBodyClass, SyncFlushBridge } from './providers.jsx'
+import { AccountFlowBodyClass, PendingWriteRetryBridge, SyncFlushBridge } from './providers.jsx'
 import { initializeOwnerFromPersist } from '../store/owner-state.js'
 import { isAlreadyInAppOnBoot } from './bootHomeGuard.js'
 import AuthRoute from './AuthRoute.jsx'
@@ -40,12 +40,10 @@ export default function App() {
     setToast(message)
   }
 
-  // 4차 재작업(사용자 지시 5번): `<BrowserRouter>`의 `useNavigate()`는
-  // `location.pathname`이 바뀔 때마다 새 함수를 반환한다 — `goHome`을
-  // `useCallback(fn, [navigate])`로 감쌌더니 매 라우트 전환마다 재생성되고 부트
-  // 이펙트가 다시 돌아, 로그인 계정이 어떤 탭으로 이동해도 재실행된 goHome()이
-  // `/app`으로 되돌려 보냈다(게스트는 restoreSessionOnBoot()이 null이라 안 드러났다).
-  // navigate를 ref로 감싸 goHome/부트 이펙트를 진짜 빈 의존성 배열로 고정한다.
+  // useNavigate()는 라우트가 바뀔 때마다 새 함수를 반환해서, goHome을
+  // useCallback(fn, [navigate])로 감싸면 매 전환마다 재생성돼 부트 이펙트가 다시
+  // 돌고 로그인 계정이 어디로 이동해도 goHome()이 /app으로 되돌려 보냈다(실측
+  // 확인) — navigate를 ref로 감싸 진짜 빈 의존성 배열로 고정한다.
   const navigateRef = useRef(navigate)
   useEffect(() => { navigateRef.current = navigate }) // 의존성 배열 없음 — 매 렌더 후 최신 navigate로 갱신.
 
@@ -104,6 +102,8 @@ export default function App() {
   }, [toast])
 
   async function handleLogout({ signOut = false } = {}) {
+    // 로그아웃도 전역 이동 경로다 — DayLogPage를 안 거치므로 여기서 직접 가드한다.
+    if (!confirmLeaveIfUnsafe()) return
     try { await flushCloudSync() } catch { /* ignore */ }
     if (signOut) {
       try { await supabase.auth.signOut() } catch { /* ignore */ }
@@ -116,6 +116,7 @@ export default function App() {
   return (
     <>
       <SyncFlushBridge />
+      <PendingWriteRetryBridge />
       <AccountFlowBodyClass active={inAccountFlow} />
 
       <Routes>

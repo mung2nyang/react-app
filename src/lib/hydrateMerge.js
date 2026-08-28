@@ -1,13 +1,25 @@
-// Step 0-4 감사 보완 2차: hydrateFromSupabase가 쓰는 순수 병합 함수들. cloudSync.js에서
-// 빼낸 이유는 (1) 200줄 제한, (2) 이 함수들은 supabase/cloudUserId 같은 모듈 상태가 전혀
-// 필요 없는 진짜 순수 함수라 독립적으로 테스트하기 쉽다. "조회 → 검증 → 병합(여기) →
-// 커밋"의 병합 단계만 담당하고, localStorage/store 쓰기는 전혀 하지 않는다 — 호출부
-// (cloudSync.js)가 전부 성공적으로 병합된 뒤에만 한 번에 커밋한다.
-
+// @ts-check
+// Step 0-4 감사 보완 2차: hydrateFromSupabase가 쓰는 순수 병합 함수들 — "조회 → 검증 →
+// 병합(여기) → 커밋"의 병합 단계만 담당하고, localStorage/store 쓰기는 전혀 하지
+// 않는다(호출부인 cloudSync.js가 전부 성공적으로 병합된 뒤에만 한 번에 커밋한다).
+// 타입 선언은 hydrateMergeTypes.js가 정본이다(200줄 제한 때문에 타입만 뺐다).
 /**
- * Supabase 쿼리 결과의 error 필드 — 실패하면 보통 { message, code? }나 Error 인스턴스,
- * 성공하면 null이다. any/unknown 대신 이 코드베이스가 실제로 읽는 필드만 적는다.
- * @typedef {{ message: string, code?: string }|Error|null} SupabaseQueryError
+ * @typedef {import('./hydrateMergeTypes.js').SupabaseQueryError} SupabaseQueryError
+ * @typedef {import('./hydrateMergeTypes.js').HydrateError} HydrateError
+ * @typedef {import('./hydrateMergeTypes.js').LocalProfile} LocalProfile
+ * @typedef {import('./hydrateMergeTypes.js').ProfileRow} ProfileRow
+ * @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar
+ * @typedef {import('./hydrateMergeTypes.js').RawCarBackup} RawCarBackup
+ * @typedef {import('./hydrateMergeTypes.js').VehicleRow} VehicleRow
+ * @typedef {import('./hydrateMergeTypes.js').LocalClient} LocalClient
+ * @typedef {import('./hydrateMergeTypes.js').ClientRow} ClientRow
+ * @typedef {import('./hydrateMergeTypes.js').LocalDriver} LocalDriver
+ * @typedef {import('./hydrateMergeTypes.js').DriverLinkRow} DriverLinkRow
+ * @typedef {import('./hydrateMergeTypes.js').DailyLogRow} DailyLogRow
+ * @typedef {import('./hydrateMergeTypes.js').DetailRow} DetailRow
+ * @typedef {import('./hydrateMergeTypes.js').MergedDayRecord} MergedDayRecord
+ * @typedef {import('./hydrateMergeTypes.js').JsonRecord} JsonRecord
+ * @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike
  */
 
 /**
@@ -19,12 +31,13 @@ export function throwIfAnyHydrateError(labeledErrors) {
   const failed = Object.entries(labeledErrors).filter(([, error]) => error)
   if (!failed.length) return
   const tables = failed.map(([table]) => table).join(', ')
-  const error = new Error(`hydrate 조회 실패: ${tables}`)
+  const error = /** @type {HydrateError} */ (new Error(`hydrate 조회 실패: ${tables}`))
   error.failedTables = failed.map(([table]) => table)
   error.cause = Object.fromEntries(failed)
   throw error
 }
 
+/** @param {LocalProfile} localProfile @param {ProfileRow} profileRow */
 export function mergeProfileRow(localProfile, profileRow) {
   return {
     ...localProfile,
@@ -41,10 +54,11 @@ export function mergeProfileRow(localProfile, profileRow) {
   }
 }
 
+/** @param {Array<LocalCar>} localCars @param {Array<VehicleRow>} vehicleRows */
 export function mergeCarsFromRows(localCars, vehicleRows) {
   if (!Array.isArray(vehicleRows) || !vehicleRows.length) return localCars
   const cars = vehicleRows.map((row) => {
-    const raw = row.raw && typeof row.raw === 'object' ? row.raw : {}
+    const raw = row.raw && typeof row.raw === 'object' ? row.raw : /** @type {RawCarBackup} */ ({})
     return {
       ...raw,
       id: raw.id || `car-${row.id}`,
@@ -63,6 +77,7 @@ export function mergeCarsFromRows(localCars, vehicleRows) {
   return [...cars, ...unsynced]
 }
 
+/** @param {Array<LocalClient>} localClients @param {Array<ClientRow>} clientRows */
 export function mergeClientsFromRows(localClients, clientRows) {
   if (!Array.isArray(clientRows) || !clientRows.length) return localClients
   const clients = clientRows.map((row) => ({
@@ -76,6 +91,7 @@ export function mergeClientsFromRows(localClients, clientRows) {
   return [...clients, ...unsynced]
 }
 
+/** @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars @param {Array<DriverLinkRow>} linkRows */
 export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
   if (!Array.isArray(linkRows)) return localDrivers
   const byCode = new Map((localDrivers || []).map((item) => [item.inviteCode, item]))
@@ -98,6 +114,7 @@ export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
   return merged.length ? merged : localDrivers
 }
 
+/** @param {Array<LocalCar>} cars */
 export function findMainCar(cars) {
   return (cars || []).find((car) => car.type === 'main' && car.supabaseId) || (cars || []).find((car) => car.supabaseId) || null
 }
@@ -108,10 +125,22 @@ export function findMainCar(cars) {
  * transport_details가 실패했는데도 callDetails:[]로 기록해 로컬 콜상세를 지워 버리던
  * 버그(감사 지적 2번)를 원천 차단한다: 여기 도달했다는 것 자체가 transportRows가
  * 진짜 서버 응답이라는 뜻이다.
+ *
+ * 재감사 3차(FAIL 지적 1번) — deletedDateKeys(아직 서버에 삭제를 못 알린
+ * tombstone 날짜들, domain/workDataTombstones.js)에 있는 날짜는 서버 rows에 아직
+ * 남아 있는 stale 값을 여기서 걸러서 절대 되살리지 않는다. hydrate.js의 dirtyDomains
+ * 규칙(dirty면 서버 값 자체를 안 씀)이 이미 대부분의 경우를 막지만, 이 필터는 그
+ * 규칙과 무관하게 항상 적용되는 명시적인 두 번째 방어선이다.
+ * @param {Record<string, DayRecordLike>} localWorkData
+ * @param {{ dailyRows?: Array<DailyLogRow>, transportRows?: Array<DetailRow>, fuelRows?: Array<DetailRow>, maintRows?: Array<DetailRow>, miscRows?: Array<DetailRow> }} rows
+ * @param {Iterable<string>} [deletedDateKeys]
  */
-export function mergeWorkDataFromRows(localWorkData, { dailyRows, transportRows, fuelRows, maintRows, miscRows }) {
+export function mergeWorkDataFromRows(localWorkData, { dailyRows, transportRows, fuelRows, maintRows, miscRows }, deletedDateKeys = []) {
+  const tombstoned = new Set(deletedDateKeys)
+  /** @type {Record<string, MergedDayRecord>} */
   const byDate = {}
   ;(dailyRows || []).forEach((row) => {
+    if (tombstoned.has(row.work_date)) return
     byDate[row.work_date] = {
       ...(row.raw && typeof row.raw === 'object' ? row.raw : {}),
       isOff: !!row.is_off,
@@ -138,15 +167,29 @@ export function mergeWorkDataFromRows(localWorkData, { dailyRows, transportRows,
     if (!byDate[row.work_date]) return
     byDate[row.work_date].miscItems.push(row.raw && typeof row.raw === 'object' ? row.raw : row)
   })
-  return { ...(localWorkData || {}), ...byDate }
+  const merged = { ...(localWorkData || {}), ...byDate }
+  // localWorkData 자체가 profiles.settings.practiceSnapshot(서버에 백업된 스냅샷)일
+  // 수도 있다(hydrate.js) — 그 백업이 이 삭제보다 오래됐다면 여기서도 되살아날 수
+  // 있으니, 병합 결과에서도 tombstoned 날짜를 한 번 더 확실히 지운다.
+  tombstoned.forEach((dateKey) => { delete merged[dateKey] })
+  return merged
 }
 
 /**
  * 비용 한 종류(fuel/maint/misc)를 병합한다. rows가 있으면 그걸 우선하고, 없으면
  * 프로필 스냅샷(설정 백업) → 그래도 없으면 로컬 순으로 fallback한다(기존 동작 유지).
+ * @template Row
+ * @param {Object} args
+ * @param {string} args.kind
+ * @param {Array<JsonRecord>} args.currentExpenses
+ * @param {Array<{ kind: string }>} [args.snapshotExpenses]
+ * @param {Array<{ kind: string }>} [args.previousExpenses]
+ * @param {Array<Row>} [args.rows]
+ * @param {(row: Row, index: number) => JsonRecord} args.mapRow
+ * @param {(currentExpenses: Array<JsonRecord>, keep: Array<JsonRecord>) => Array<JsonRecord>} args.replace
  */
 export function mergeExpenseKind({ kind, currentExpenses, snapshotExpenses, previousExpenses, rows, mapRow, replace }) {
-  if ((rows || []).length) {
+  if (rows && rows.length) {
     return replace(currentExpenses, rows.map((row, index) => mapRow(row, index)))
   }
   const snapshotKind = (snapshotExpenses || []).filter((item) => item.kind === kind)

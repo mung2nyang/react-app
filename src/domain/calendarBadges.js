@@ -13,17 +13,17 @@ import { callFareTotal, dayTripCount, getCallDetails, getFixedCount, isOffDay } 
 import { getDetailPaymentSummary } from './finance.js'
 import { parseCurrencyValue } from './money.js'
 
-/**
- * @typedef {Object} CallDetailLike
- * @property {string|number} [fare]
- */
-
-/**
- * @typedef {Object} DayRecordLike
- * @property {boolean} [isOff]
- * @property {number|string} [fixedCount]
- * @property {Array<CallDetailLike>} [callDetails]
- */
+// Step 6(일지 재작성): CallDetailLike는 이제 domain/callDetail.js 한 곳에서만
+// 정의한다 — 여기서 다시 선언했더니 day-log/dayLogTypes.js가 쓰는(필드가 훨씬 많은)
+// CallDetailLike와 서로 안 겹쳐서 타입 에러가 났다(실측 확인). 이 alias는 기존에
+// `import('./calendarBadges.js').CallDetailLike`로 참조하던 다른 파일들의 경로를
+// 안 바꾸려고 남겨 둔다.
+/** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
+// 재감사 3차 — DayRecordLike의 정본은 dayRecordTypes.js다(필드가 더 많다:
+// palletCount/fixedRouteCounts 등). 여기서 다시 선언하지 않고 alias만 한다 —
+// 기존에 `import('./calendarBadges.js').DayRecordLike`로 참조하던 다른 파일들의
+// 경로를 안 바꾸려고 이 이름은 남겨 둔다.
+/** @typedef {import('./dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
 /**
  * 달력 셀 fare 뱃지용 짧은 금액 표기. 바닐라 script.js의 formatFareShort(만원

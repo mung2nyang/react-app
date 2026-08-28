@@ -64,6 +64,38 @@ describe('mergeWorkDataFromRows — transport_details 실패 회귀 방지', () 
   })
 })
 
+// 재감사 3차(FAIL 지적 1번) — 아직 서버에 삭제를 못 알린 날짜(tombstone)는 서버가
+// 아직 갖고 있는 stale daily_logs/transport_details row로 되살아나면 안 된다.
+describe('mergeWorkDataFromRows — deletedDateKeys(tombstone)는 절대 되살리지 않는다', () => {
+  test('서버 daily_logs에 아직 남아 있는 tombstone 날짜는 결과에서 빠진다', () => {
+    const result = mergeWorkDataFromRows({}, {
+      dailyRows: [
+        { work_date: '2026-08-01', is_off: false, fixed_count: 3, raw: {} },
+        { work_date: '2026-08-02', is_off: false, fixed_count: 5, raw: {} },
+      ],
+      transportRows: [], fuelRows: [], maintRows: [], miscRows: [],
+    }, ['2026-08-01'])
+    assert.equal(result['2026-08-01'], undefined, 'tombstone 날짜는 서버에 남아 있어도 되살아나면 안 된다')
+    assert.ok(result['2026-08-02'], 'tombstone이 아닌 날짜는 그대로 반영돼야 한다')
+  })
+
+  test('localWorkData(profile 백업 스냅샷일 수도 있다) 자체에 남아 있던 tombstone 날짜도 결과에서 지운다', () => {
+    const staleLocal = { '2026-08-01': { isOff: false, fixedCount: 3, callDetails: [] } }
+    const result = mergeWorkDataFromRows(staleLocal, {
+      dailyRows: [], transportRows: [], fuelRows: [], maintRows: [], miscRows: [],
+    }, ['2026-08-01'])
+    assert.equal(result['2026-08-01'], undefined, 'profile 백업 스냅샷에만 남아 있던 stale 값도 지워야 한다')
+  })
+
+  test('deletedDateKeys를 생략하면(기존 호출부) 기존 동작 그대로 전부 반영된다', () => {
+    const result = mergeWorkDataFromRows({}, {
+      dailyRows: [{ work_date: '2026-08-01', is_off: false, fixed_count: 3, raw: {} }],
+      transportRows: [], fuelRows: [], maintRows: [], miscRows: [],
+    })
+    assert.ok(result['2026-08-01'], '세 번째 인자를 생략해도 기존 호출부가 그대로 동작해야 한다')
+  })
+})
+
 describe('mergeCarsFromRows', () => {
   test('행이 없으면 로컬 값을 그대로 둔다(서버가 빈 걸 로컬 삭제 신호로 오해하지 않는다)', () => {
     const local = [{ id: 'local-1', number: '11가1111' }]

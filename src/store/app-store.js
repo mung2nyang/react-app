@@ -1,3 +1,4 @@
+// @ts-check
 // Step 1~4 스토어 껍데기 + Step 0-4 감사 보완(1차/2차, 사용자 지시).
 // UI는 아직 workLogs/cars/... 도메인 슬라이스를 구독하지 않는다 (migration-plan.md 1.3의
 // "쓰지 말 것" 대상은 여전히 페이지 useState). 이 파일의 목적은 src/lib/*.js 의 save*
@@ -11,6 +12,15 @@
 import { writeAllOrNothing } from './atomicPersist.js'
 import { buildBatchWrites } from './batchWrites.js'
 import { scheduleCloudSync } from '../lib/syncQueue.js'
+
+/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../lib/hydrateMergeTypes.js').LocalProfile} ProfileLike */
 
 /**
  * @typedef {'idle'|'hydrating'|'ready'|'failed'} HydrationStatus
@@ -29,15 +39,16 @@ import { scheduleCloudSync } from '../lib/syncQueue.js'
 /**
  * @typedef {Object} AppStoreState
  * @property {HydrationState} hydration
- * @property {Record<string, Record<string, object>>} workLogs          ownerKey -> { main: object }
- * @property {Record<string, Array<object>>} cars                       ownerKey -> Car[]
- * @property {Record<string, Array<object>>} clients                    ownerKey -> Client[]
- * @property {Record<string, object>} settings                          ownerKey -> Settings
- * @property {Record<string, Array<object>>} expenses                   ownerKey -> Expense[]
- * @property {Record<string, Array<object>>} invoices                   ownerKey -> Invoice[]
- * @property {Record<string, Array<object>>} drivers                    ownerKey -> Driver[]
- * @property {Record<string, object>} profile                           ownerKey -> Profile
+ * @property {Record<string, { main?: Record<string, DayRecordLike> }>} workLogs ownerKey -> { main: 날짜별 기록 }
+ * @property {Record<string, Array<CarLike>>} cars                      ownerKey -> Car[]
+ * @property {Record<string, Array<ClientLike>>} clients                ownerKey -> Client[]
+ * @property {Record<string, FinanceSettings>} settings                 ownerKey -> Settings
+ * @property {Record<string, Array<ExpenseItem>>} expenses              ownerKey -> Expense[]
+ * @property {Record<string, Array<InvoiceLike>>} invoices              ownerKey -> Invoice[]
+ * @property {Record<string, Array<DriverRecord>>} drivers               ownerKey -> Driver[]
+ * @property {Record<string, ProfileLike>} profile                      ownerKey -> Profile
  * @property {Record<string, Array<string>>} dismissedNotifications     ownerKey -> id[]
+ * @property {Record<string, import('../domain/workDataTombstones.js').WorkDataTombstones>} workDataDeletedDates ownerKey -> {dateKey: 삭제시각}
  */
 
 /** @type {AppStoreState} */
@@ -52,6 +63,7 @@ const state = {
   drivers: {},
   profile: {},
   dismissedNotifications: {},
+  workDataDeletedDates: {},
 }
 
 /** @type {Set<(state: AppStoreState) => void>} */
@@ -75,23 +87,48 @@ export function getState() {
   return state
 }
 
+/**
+ * 재감사 10차(FAIL 지적 4번) — 9+1개 persist 도메인이 실제로 갖는 값 모양 전부를
+ * 실제 도메인 타입의 합집합으로 적는다(예전엔 object/Array<object>로 뭉뚱그렸다).
+ * applyDomainToState의 동적 키 대입(stateAsRecord[slice] = ...)은 TS가 합집합
+ * 프로퍼티에 값을 쓸 때 요구하는 "값이 합집합 전체와 호환돼야" 하는 제약을 그대로
+ * 만족한다 — 각 domain이 실제로 이 합집합의 한 갈래이기만 하면 되고, 어떤 갈래인지는
+ * buildBatchWrites 호출부(commitHelpers.js)가 이미 domain별로 정확한 타입의 값만
+ * 넘기도록 보장한다.
+ * @typedef {Record<string, DayRecordLike>|FinanceSettings|ProfileLike|
+ *   import('../domain/workDataTombstones.js').WorkDataTombstones|Array<CarLike>|
+ *   Array<ClientLike>|Array<DriverRecord>|Array<ExpenseItem>|Array<InvoiceLike>|
+ *   Array<string>} DomainValue
+ */
+
 // persist 키(domain)와 state 슬라이스 이름이 항상 같지는 않다 — workData만 workLogs에
 // { main: value } 모양으로 들어간다. 이 사실을 아는 곳을 여기 한 곳으로 좁혀서,
 // domain 문자열을 그대로 state 프로퍼티 이름으로 오인하는 사고(예: 존재하지 않는
 // state.workData가 생기는 것)를 막는다.
+/**
+ * @param {import('./persist.js').PersistDomain} domain
+ * @param {string} ownerKey
+ * @param {DomainValue} value
+ */
 function applyDomainToState(domain, ownerKey, value) {
   if (domain === 'workData') {
-    state.workLogs = { ...state.workLogs, [ownerKey]: { main: value } }
+    // 'workData' domain의 값은 항상 Record<string, DayRecordLike>다(commitHelpers.js의
+    // commitWorkData가 그 모양만 넘긴다) — DomainValue 합집합 중 이 갈래로 좁힌다.
+    const workData = /** @type {Record<string, DayRecordLike>} */ (value)
+    state.workLogs = { ...state.workLogs, [ownerKey]: { main: workData } }
     return
   }
-  state[domain] = { ...state[domain], [ownerKey]: value }
+  // 위 분기가 'workData'를 이미 처리하고 리턴했으니, 여기 도달하는 domain은 항상
+  // AppStoreState의 실제 슬라이스 이름과 정확히 같은 나머지 9개 중 하나다. 동적
+  // 키(slice)로 쓰는 자리는 TS가 "이 값이 9개 슬라이스 타입 전부(교집합)에 맞는지"를
+  // 구조적으로 요구해서(실측 — 합집합 읽기/교집합 쓰기라는 TS의 알려진 제약) 어느
+  // 구체 타입을 넣어도 못 좁힌다. state 자신을 "ownerKey -> DomainValue" 레코드로
+  // 단언한다 — 9개 슬라이스 전부가 실제로 그 구조를 그대로 만족하므로(각 슬라이스가
+  // Record<string, DomainValue> 그 자체다) any/unknown을 경유하지 않는 정확한 타입이다.
+  const slice = /** @type {Exclude<import('./persist.js').PersistDomain, 'workData'>} */ (domain)
+  const stateAsRecord = /** @type {Record<Exclude<import('./persist.js').PersistDomain, 'workData'>, Record<string, DomainValue>>} */ (state)
+  stateAsRecord[slice] = { ...stateAsRecord[slice], [ownerKey]: value }
 }
-
-/**
- * 9개 persist 도메인이 실제로 갖는 값 모양 — object(workData/settings/profile) 또는
- * 배열(cars/clients/drivers/expenses/invoices/dismissedNotifications) 중 하나다.
- * @typedef {object|Array<object>|Array<string>} DomainValue
- */
 
 /**
  * @typedef {Object} BatchEntry

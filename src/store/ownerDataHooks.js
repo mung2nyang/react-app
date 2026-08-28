@@ -12,8 +12,16 @@ import { getState, subscribe } from './app-store.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 
 /** @typedef {import('../domain/calendarBadges.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
 const EMPTY_WORK_DATA = /** @type {Record<string, DayRecordLike>} */ ({})
+// 재감사 2차(FAIL 지적 2번) — useExpenseForm.js가 마운트 시 한 번만 loadExpenses로
+// 스냅샷을 뜨고 그 이후엔 다시 안 읽어서, 그 사이 다른 경로(hydrate, 다른 탭, 또는
+// 같은 화면의 다른 조작)로 store에 반영된 항목이 다음 save()/remove()에서 통째로
+// 덮여 사라지는 stale overwrite 버그가 있었다. useOwnerWorkData와 같은 패턴으로
+// 고친다 — 화면은 항상 store를 직접 구독하고, 쓰기 직전에는(useDayDraft.js의
+// readOwnerWorkData와 같은 자리) readOwnerExpenses로 한 번 더 최신값을 읽는다.
+const EMPTY_EXPENSES = /** @type {Array<ExpenseItem>} */ ([])
 
 /**
  * store에서 ownerKey의 workData(state.workLogs[ownerKey].main)를 읽는다 — 없으면
@@ -24,12 +32,11 @@ const EMPTY_WORK_DATA = /** @type {Record<string, DayRecordLike>} */ ({})
  * @returns {Record<string, DayRecordLike>}
  */
 export function readOwnerWorkData(ownerKey) {
-  // app-store.js의 AppStoreState 타입은 아직 // @ts-check가 없는 파일에 있어
-  // workLogs[ownerKey].main을 일부러 느슨한 object로 선언해 뒀다(모든 도메인
-  // 슬라이스를 한 타입으로 묶어야 해서다) — 실제 런타임 모양(day-record.js의
-  // saveDayRecord가 만드는 dateKey→DayRecordLike 맵)으로 여기서 좁혀 준다.
-  const raw = /** @type {Record<string, DayRecordLike>|undefined} */ (getState().workLogs[ownerKey]?.main)
-  return raw || EMPTY_WORK_DATA
+  // 재감사 10차(FAIL 지적 4번) — app-store.js의 AppStoreState.workLogs가 이제
+  // { main?: Record<string, DayRecordLike> }로 정확히 선언돼 있어 더 이상 여기서
+  // object로 단언할 필요가 없다(app-store.js의 DayRecordLike도 이 파일과 같은
+  // domain/dayRecordTypes.js 정본을 가리킨다).
+  return getState().workLogs[ownerKey]?.main || EMPTY_WORK_DATA
 }
 
 /**
@@ -42,6 +49,69 @@ export function readOwnerWorkData(ownerKey) {
  */
 export function useOwnerWorkData(ownerKey) {
   return useSyncExternalStore(subscribe, () => readOwnerWorkData(ownerKey))
+}
+
+/**
+ * store에서 ownerKey의 expenses(정비/주유/기타 비용 배열)를 읽는다 — 없으면 항상
+ * 같은 EMPTY_EXPENSES 참조. useOwnerExpenses의 getSnapshot과 useExpenseForm.js의
+ * save()/remove()(쓰기 직전 최신값 재확인)가 이 함수 하나를 공유한다 —
+ * readOwnerWorkData와 정확히 같은 역할.
+ * @param {string} ownerKey
+ * @returns {Array<ExpenseItem>}
+ */
+export function readOwnerExpenses(ownerKey) {
+  return getState().expenses[ownerKey] || EMPTY_EXPENSES
+}
+
+/**
+ * ownerKey의 expenses를 store에서 직접 구독한다(재감사 2차 FAIL 지적 2번) —
+ * useOwnerWorkData와 같은 이유(초기 렌더~구독 등록 사이 갱신 누락 방지)로
+ * useSyncExternalStore를 쓴다.
+ * @param {string} ownerKey
+ * @returns {Array<ExpenseItem>}
+ */
+export function useOwnerExpenses(ownerKey) {
+  return useSyncExternalStore(subscribe, () => readOwnerExpenses(ownerKey))
+}
+
+/** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
+
+const EMPTY_CLIENTS = /** @type {Array<ClientLike>} */ ([])
+
+/**
+ * 재감사 3차(FAIL 지적 3번) — CalendarPage.jsx가 loadClients(ownerKey)로 렌더마다
+ * 직접 읽던 것을 없애고, workData/expenses와 같은 방식으로 store를 구독하게 한다 —
+ * 그래야 이 화면에서 고정노선 거래처의 fixedUnitPrice를 수정한 직후 같은 화면의
+ * 달력 합계·매출 계산이 다시 렌더에서 최신값을 받는다(새로고침 없이).
+ * @param {string} ownerKey
+ * @returns {Array<ClientLike>}
+ */
+export function readOwnerClients(ownerKey) {
+  return getState().clients[ownerKey] || EMPTY_CLIENTS
+}
+
+/**
+ * @param {string} ownerKey
+ * @returns {Array<ClientLike>}
+ */
+export function useOwnerClients(ownerKey) {
+  return useSyncExternalStore(subscribe, () => readOwnerClients(ownerKey))
+}
+
+const EMPTY_TOMBSTONES = /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones} */ ({})
+
+/**
+ * 재감사 3차(FAIL 지적 1번) — "아직 서버에 못 알린 빈 날 삭제" 목록을 읽는다.
+ * lib/workData.js(원자적 커밋)와 lib/syncDeletedWorkDates.js(실제 원격 삭제)가
+ * readOwnerWorkData와 같은 이유로 이 함수 하나를 공유한다 — 둘 다 React 컴포넌트가
+ * 아니라 구독이 필요 없어 useX 훅은 따로 두지 않는다(이 값을 렌더에 쓰는 화면이
+ * 아직 없다).
+ * @param {string} ownerKey
+ * @returns {import('../domain/workDataTombstones.js').WorkDataTombstones}
+ */
+export function readOwnerWorkDataTombstones(ownerKey) {
+  const raw = /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones|undefined} */ (getState().workDataDeletedDates[ownerKey])
+  return raw || EMPTY_TOMBSTONES
 }
 
 /**

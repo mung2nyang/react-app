@@ -12,6 +12,7 @@ import { flushMutationOutbox } from './outboxFlush.js'
 import { StaleSessionError } from './outboxErrors.js'
 import { syncClients, syncVehicles } from './syncVehiclesClients.js'
 import { syncWorkData } from './syncWorkData.js'
+import { syncDeletedWorkDates } from './syncDeletedWorkDates.js'
 import { syncFuelRecords, syncMaintenanceRecords, syncMiscExpenseRecords } from './syncExpenseRecords.js'
 import { syncTaxInvoices } from './syncTaxInvoicesTable.js'
 
@@ -60,6 +61,13 @@ async function syncAll(userId, ownerKey, captured) {
   const clients = await syncClients(userId, ownerKey)
   assertSessionStillCurrent(captured)
   await syncWorkData(userId, ownerKey, cars, clients)
+  assertSessionStillCurrent(captured)
+  // 재감사 3차(FAIL 지적 1번) — syncWorkData는 로컬에 남은 날짜만 upsert한다. 빈 날
+  // 삭제로 생긴 tombstone(있으면)을 여기서 실제로 원격 삭제까지 반영한다. 이 단계가
+  // 던지면(삭제 실패/transport 삭제 실패/세션 전환) syncAll 전체가 실패해 아래
+  // clearDirty가 안 불리고 workData/workDataDeletedDates가 dirty로 남는다 — 다음
+  // hydrate가 그 dirty 상태를 보고 서버 값으로 워크데이터를 덮지 않는다.
+  await syncDeletedWorkDates(userId, ownerKey, cars, captured)
   assertSessionStillCurrent(captured)
   await syncFuelRecords(userId, ownerKey, cars)
   assertSessionStillCurrent(captured)

@@ -1,7 +1,9 @@
+// @ts-check
 // Step 2: 앱 루트 전용 리스너를 한 곳에 모은다 (migration-plan.md 3.11 "전역 리스너: 루트
 // 한 곳 + cleanup"). App.jsx가 화면과 무관하게 딱 한 번만 마운트한다.
 import { useEffect } from 'react'
 import { attachSyncFlushListeners } from './syncFlushListeners.js'
+import { attachPendingWriteRetryListeners } from './pendingWriteRetryListeners.js'
 
 /**
  * online / visibilitychange(hidden) / pagehide 시 클라우드 동기화를 즉시 flush한다.
@@ -12,6 +14,18 @@ import { attachSyncFlushListeners } from './syncFlushListeners.js'
  */
 export function SyncFlushBridge() {
   useEffect(() => attachSyncFlushListeners(window, document), [])
+
+  return null
+}
+
+/**
+ * Step 6 재감사 2차(FAIL 지적) — quota 초과 등으로 실패한 일지 자동 저장을
+ * pendingWorkDataWrites.js 큐에서 컴포넌트 생애주기와 무관하게 계속 재시도한다.
+ * 큐가 비어 있으면 재시도 자체가 아무 일도 안 하므로 항상 마운트해도 된다.
+ * @returns {null}
+ */
+export function PendingWriteRetryBridge() {
+  useEffect(() => attachPendingWriteRetryListeners(window), [])
 
   return null
 }

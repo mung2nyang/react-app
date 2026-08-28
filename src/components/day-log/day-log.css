@@ -1,0 +1,20 @@
+/* Step 6(일지 재작성): InlineExpandHost.jsx가 JS(ResizeObserver + max-height)로
+   하던 펼침·접힘을 순수 CSS로 대체한다(migration-plan.md 3.2). 내용 높이를 몰라도
+   되고, 마운트 시 이미 높이가 0이라 첫 프레임에 깜빡이지 않는다. */
+.inline-sheet {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s ease;
+}
+.inline-sheet.is-visible {
+  grid-template-rows: 1fr;
+}
+.inline-sheet-panel {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* 재감사(FAIL 지적 9번) — 자동 저장 실패 상태를 시각적으로도 구분한다. */
+.autosave-status-failed {
+  color: #e0453a;
+}
