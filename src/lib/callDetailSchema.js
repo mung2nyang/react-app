@@ -7,6 +7,8 @@
 // 정의되지 않은 추가 필드(레거시/서버가 몰래 얹은 필드 등)도 이제 명시적으로 거부한다
 // — 여기 없는 필드가 실제로 필요해지면 CallDetailLike 정본(domain/callDetail.js)과
 // 이 검증기 양쪽에 같이 추가해야 한다(스키마 드리프트 방지).
+import { parseCurrencyValue } from '../domain/money.js'
+
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
 
@@ -18,6 +20,22 @@ function isPlainObject(value) {
 /** @param {JsonValue} value @returns {boolean} 0 이상의 유한한 숫자(금액류 — 정수만은 아니다) */
 function isNonNegativeFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value) && value >= 0
+}
+
+/**
+ * payments.js/financeCore.js가 실제로 받는 금액: 숫자이거나, parseCurrencyValue가
+ * 다루는 통화 문자열(`"1,000"`, `"1,000원"`). 임의 문자열·음수 기호·NaN/Infinity 표기는 거부.
+ * @param {JsonValue} value
+ * @returns {boolean}
+ */
+export function isValidCurrencyAmount(value) {
+  if (typeof value === 'number') return Number.isInteger(value) && Number.isFinite(value) && value >= 0
+  if (typeof value !== 'string') return false
+  const trimmed = value.trim()
+  // 쉼표 없는 정수, 또는 천 단위 쉼표 그룹(3자리). 선택적으로 끝의 `원`(앞에 공백 하나).
+  if (!/^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\s?원)?$/.test(trimmed)) return false
+  const parsed = parseCurrencyValue(trimmed)
+  return Number.isFinite(parsed) && parsed >= 0
 }
 
 // domain/callDetail.js의 CallDetailLike가 선언한 필드 전체 — 이 목록 밖의 키가 있으면
@@ -58,10 +76,7 @@ function isValidPayment(value) {
   if (!isPlainObject(value)) return false
   if (Object.keys(value).some((key) => !ALLOWED_PAYMENT_KEYS.includes(/** @type {typeof ALLOWED_PAYMENT_KEYS[number]} */ (key)))) return false
   if ('id' in value && typeof value.id !== 'string') return false
-  if ('amount' in value) {
-    if (typeof value.amount !== 'string' && typeof value.amount !== 'number') return false
-    if (typeof value.amount === 'number' && !isNonNegativeFiniteNumber(value.amount)) return false
-  }
+  if ('amount' in value && !isValidCurrencyAmount(value.amount)) return false
   if ('paidAt' in value && typeof value.paidAt !== 'string') return false
   if ('note' in value && typeof value.note !== 'string') return false
   return true

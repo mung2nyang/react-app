@@ -13,14 +13,14 @@ import { calculateDriverVehicleCommission, getDriverCarWorkData, getMonthlyDrive
 /** @typedef {import('./financeTypes.js').WorkDataByLogId} WorkDataByLogId */
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./financeTypes.js').DriverLinkLike} DriverLinkLike */
-/** @typedef {{ key?: string, biz?: object, carLabel?: string, carNumber?: string }} SupplierIdentity */
+/** @typedef {{ key?: string, biz?: import('./financeTypes.js').SupplierBiz, carLabel?: string, carNumber?: string }} SupplierIdentity */
 /** @typedef {{ type: 'call'|'fixed', dateKey: string, client: string, loadLoc: string, unloadLoc: string, fare: number, vatExempt: boolean, platform?: string, distanceKm?: string|number, cargoTonnage?: string|number, paymentDueDate?: string, remarks?: string, fixedCount?: number }} DriverTrip */
 
 /** @param {string} monthKey @param {'sales'|'purchase'|'commission'} [flow] @param {FinanceSettings} [settings] @param {WorkDataByLogId} [workDataByLogId] */
 export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {}, workDataByLogId = {}) {
   const cars = settings.cars || []
   if (flow === 'sales') {
-    /** @type {Record<string, { partyKey: string, clientName: string, partyType: string, count: number, supplyAmount: number, taxAmount: number, supplierKey?: string, supplierBiz?: object, vehicleLabel?: string, vehicleNumbers: Set<string> }>} */
+    /** @type {Record<string, { partyKey: string, clientName: string, partyType: string, count: number, supplyAmount: number, taxAmount: number, supplierKey?: string, supplierBiz?: import('./financeTypes.js').SupplierBiz, vehicleLabel?: string, vehicleNumbers: Set<string> }>} */
     const grouped = {}
     /** @type {Array<{ logId: string, car: CarLike|null, data: Record<string, import('./day-record.js').DayRecordLike> }>} */
     const sources = [{ logId: 'main', car: null, data: logData(workDataByLogId, 'main') }]

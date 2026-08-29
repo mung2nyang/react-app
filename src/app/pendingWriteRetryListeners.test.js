@@ -1,3 +1,4 @@
+// @ts-check
 // 재감사 3차(FAIL 지적 2번) — attachPendingWriteRetryListeners가 (1) 붙는 즉시 한 번
 // 재시도하고(reload 복구), (2) online/beforeunload/타이머를 전부 정확히 등록·해제하는지
 // (listener cleanup) 실측한다. app-store.test.js와 같은 이유로 mock.module은 파일당
@@ -8,37 +9,50 @@
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
+/** @typedef {(event: Event) => void} WindowListener */
+
+/** @type {() => boolean} */
 let hasPendingDayWritesImpl = () => false
-let retryPendingDayWritesFn = mock.fn()
-let guardBeforeUnloadFn = mock.fn()
+/** @type {() => boolean} */
+let hasAnyUnsafeRegistrationImpl = () => false
+/** @type {() => void} */
+let retryPendingDayWritesFn = () => {}
+/** @type {(event: Event) => void} */
+let guardBeforeUnloadFn = () => {}
 
 mock.module('../lib/pendingWorkDataWrites.js', {
   exports: {
-    hasPendingDayWrites: (...args) => hasPendingDayWritesImpl(...args),
-    retryPendingDayWrites: (...args) => retryPendingDayWritesFn(...args),
+    hasPendingDayWrites: () => hasPendingDayWritesImpl(),
+    retryPendingDayWrites: () => { retryPendingDayWritesFn() },
+    registerPendingDayWrite: () => false,
   },
 })
 mock.module('../lib/durableWriteGuard.js', {
-  exports: { guardBeforeUnload: (...args) => guardBeforeUnloadFn(...args) },
+  exports: {
+    guardBeforeUnload: (/** @type {Event} */ event) => { guardBeforeUnloadFn(event) },
+    hasAnyUnsafeRegistration: () => hasAnyUnsafeRegistrationImpl(),
+  },
 })
 
 const { attachPendingWriteRetryListeners } = await import('./pendingWriteRetryListeners.js')
-
-// 재감사 10차(FAIL 지적 4번) — pendingWriteRetryListeners.js의 EventTargetLike가
-// 실제로 약속하는 리스너 모양(addEventListener(type, listener: (event: Event) =>
-// void))을 그대로 재사용한다. Function은 인자/반환값 정보를 전부 지워서 잘못된
-// 인자로 불러도 컴파일타임에 못 잡는다 — 실제 계약과 똑같은 구체 타입으로 바꾼다.
-/** @typedef {(event: Event) => void} WindowListener */
 
 function fakeWindowTarget() {
   /** @type {Record<string, Array<WindowListener>>} */
   const listeners = {}
   return {
     listeners,
+    /**
+     * @param {string} type
+     * @param {WindowListener} fn
+     */
     addEventListener(type, fn) {
       listeners[type] = listeners[type] || []
       listeners[type].push(fn)
     },
+    /**
+     * @param {string} type
+     * @param {WindowListener} fn
+     */
     removeEventListener(type, fn) {
       listeners[type] = (listeners[type] || []).filter((item) => item !== fn)
     },
@@ -47,11 +61,12 @@ function fakeWindowTarget() {
 
 test('attach 즉시 한 번 재시도한다 — reload 직후 durable 큐 복구', () => {
   hasPendingDayWritesImpl = () => true
-  retryPendingDayWritesFn = mock.fn()
+  let retryCount = 0
+  retryPendingDayWritesFn = () => { retryCount += 1 }
   const target = fakeWindowTarget()
   const cleanup = attachPendingWriteRetryListeners(target)
   try {
-    assert.equal(retryPendingDayWritesFn.mock.callCount(), 1, '붙는 즉시(온라인 이벤트/5초를 기다리지 않고) 한 번 재시도해야 한다')
+    assert.equal(retryCount, 1, '붙는 즉시(온라인 이벤트/5초를 기다리지 않고) 한 번 재시도해야 한다')
   } finally {
     cleanup()
   }
@@ -69,30 +84,87 @@ test('cleanup은 online/beforeunload 리스너와 타이머를 전부 정리한�
   assert.equal(target.listeners.beforeunload?.length, 0, 'cleanup 후 beforeunload 리스너가 남으면 안 된다')
 })
 
+test('재감사 11차 — cleanup 후 interval이 retry를 더 부르지 않는다', () => {
+  mock.timers.enable({ apis: ['setInterval', 'setTimeout'], now: 0 })
+  try {
+    hasPendingDayWritesImpl = () => true
+    let retryCount = 0
+    retryPendingDayWritesFn = () => { retryCount += 1 }
+    const target = fakeWindowTarget()
+    const cleanup = attachPendingWriteRetryListeners(target)
+    assert.equal(retryCount, 1, 'attach 직후 1회')
+    cleanup()
+    mock.timers.tick(30_000)
+    assert.equal(retryCount, 1, 'cleanup 후 시간이 지나도 재시도하면 안 된다 — 이 테스트가 안 깨지면 interval 누수가 없다')
+  } finally {
+    mock.timers.reset()
+  }
+})
+
 test('beforeunload가 실제로 오면 durableWriteGuard.guardBeforeUnload로 그대로 넘긴다', () => {
   hasPendingDayWritesImpl = () => false
-  guardBeforeUnloadFn = mock.fn()
+  /** @type {Event | undefined} */
+  let received
+  guardBeforeUnloadFn = (event) => { received = event }
   const target = fakeWindowTarget()
   const cleanup = attachPendingWriteRetryListeners(target)
-  const fakeEvent = { preventDefault: () => {} }
-  target.listeners.beforeunload[0](fakeEvent)
+  const fakeEvent = new Event('beforeunload')
+  const beforeunload = target.listeners.beforeunload?.[0]
+  assert.ok(beforeunload, 'beforeunload 리스너가 있어야 한다')
+  beforeunload(fakeEvent)
   cleanup()
 
-  assert.equal(guardBeforeUnloadFn.mock.callCount(), 1)
-  assert.equal(guardBeforeUnloadFn.mock.calls[0].arguments[0], fakeEvent)
+  assert.equal(received, fakeEvent)
 })
 
 test('online 이벤트가 오면 큐가 있을 때만 retryPendingDayWrites를 부른다', () => {
   hasPendingDayWritesImpl = () => false
-  retryPendingDayWritesFn = mock.fn()
+  let retryCount = 0
+  retryPendingDayWritesFn = () => { retryCount += 1 }
   const target = fakeWindowTarget()
   const cleanup = attachPendingWriteRetryListeners(target)
-  retryPendingDayWritesFn = mock.fn() // 위 attach 시점의 즉시-재시도 호출은 카운트에서 제외
-  target.listeners.online[0]()
-  assert.equal(retryPendingDayWritesFn.mock.callCount(), 0, '큐가 비어 있으면 online이 와도 재시도하면 안 된다')
+  retryCount = 0
+  const online = target.listeners.online?.[0]
+  assert.ok(online, 'online 리스너가 있어야 한다')
+  online(new Event('online'))
+  assert.equal(retryCount, 0, '큐가 비어 있으면 online이 와도 재시도하면 안 된다')
 
   hasPendingDayWritesImpl = () => true
-  target.listeners.online[0]()
-  assert.equal(retryPendingDayWritesFn.mock.callCount(), 1, '큐가 있으면 online에서 재시도해야 한다')
+  online(new Event('online'))
+  assert.equal(retryCount, 1, '큐가 있으면 online에서 재시도해야 한다')
   cleanup()
+})
+
+test('재감사 16차 — unsafe-only면 5초 interval과 retry가 시작되지 않고 beforeunload는 남는다', () => {
+  mock.timers.enable({ apis: ['setInterval', 'setTimeout'], now: 0 })
+  try {
+    let pendingChecks = 0
+    hasPendingDayWritesImpl = () => {
+      pendingChecks += 1
+      return false
+    }
+    hasAnyUnsafeRegistrationImpl = () => true
+    let retryCount = 0
+    retryPendingDayWritesFn = () => { retryCount += 1 }
+    const target = fakeWindowTarget()
+    const cleanup = attachPendingWriteRetryListeners(target)
+    const checksAfterAttach = pendingChecks
+    assert.equal(retryCount, 0, 'unsafe만 있으면 attach 직후에도 retry하면 안 된다')
+    assert.equal(target.listeners.beforeunload?.length, 1, 'unsafe-only여도 beforeunload 방어는 남아야 한다')
+    const fakeEvent = new Event('beforeunload')
+    /** @type {Event|undefined} */
+    let received
+    guardBeforeUnloadFn = (event) => { received = event }
+    const beforeunload = target.listeners.beforeunload?.[0]
+    assert.ok(beforeunload)
+    beforeunload(fakeEvent)
+    assert.equal(received, fakeEvent)
+    mock.timers.tick(30_000)
+    assert.equal(retryCount, 0, '5초 interval이 retry를 돌리면 안 된다')
+    assert.equal(pendingChecks, checksAfterAttach, 'interval이 돌면 hasPending 검사가 늘어난다 — 돌면 안 된다')
+    cleanup()
+  } finally {
+    hasAnyUnsafeRegistrationImpl = () => false
+    mock.timers.reset()
+  }
 })

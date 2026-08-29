@@ -11,9 +11,10 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { backfillCallDetailIds, saveDayRecord } from '../../domain/day-record.js'
 import { saveWorkDataWithTombstoneCheck } from '../../lib/workData.js'
-import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../lib/durableWriteGuard.js'
-import { clearPendingDayWrite, getPendingDayWrite, registerPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
+import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../../lib/durableWriteGuard.js'
+import { clearPendingDayWrite, getPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
 import { readOwnerWorkData } from '../../store/ownerDataHooks.js'
+import { queueFailedDayWrite, settlePendingDayWrite, useMountedRef } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
 
 const DEBOUNCE_MS = 600
@@ -44,8 +45,8 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
   // 쌓인다(따로 리비전 번호를 둘 필요가 없다).
   const [idMigration] = useState(() => {
     const stored = readOwnerWorkData(ownerKey)[dateKey]
-    const pending = getPendingDayWrite(ownerKey, dateKey)
-    return backfillCallDetailIds(pending ? { ...stored, ...pending } : stored)
+    const queued = getPendingDayWrite(ownerKey, dateKey) || getUnsafeRegistrationPatch(ownerKey, dateKey)
+    return backfillCallDetailIds(queued ? { ...stored, ...queued } : stored)
   })
   const [state, dispatch] = useReducer(
     dayLogReducer,
@@ -78,6 +79,8 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
   // 되므로, 실패한 뒤 언마운트해도(화면 닫기/라우트 이동) 마지막으로 한 번 더
   // commitNow를 시도한다.
   const hasPendingRef = useRef(false)
+  const draftRevRef = useRef(0)
+  const mountedRef = useMountedRef()
 
   const commitNow = useCallback(() => {
     if (timerRef.current) {
@@ -118,16 +121,12 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
       // 재감사 2차(FAIL 지적) — quota가 계속 꽉 차 있는 상태(persistent)에서 화면을
       // 나가면(언마운트) 아래 unmount effect의 마지막 재시도조차 실패할 수 있고,
       // 그러면 draftRef는 컴포넌트와 함께 사라져 이 편집을 복구할 방법이 없어진다.
-      // 이 patch를 컴포넌트 생애주기와 무관한 전역 큐에 등록해 둔다 — online 이벤트나
-      // 5초 주기 타이머(app/pendingWriteRetryListeners.js)가 나중에(공간이 확보되면)
-      // 계속 재시도한다. 성공하면 onCommitted도 그때 가서 불러 준다.
-      const registered = registerPendingDayWrite(ownerKey, dateKey, patch, (ok) => { if (ok) onCommittedRef.current?.() })
-      // 재감사 10차(FAIL 지적 2번) — registerPendingDayWrite가 dateKey/patch 계약
-      // 위반으로 거부하면(정상 동작에서는 안 일어나지만 반환값을 무시하면 안 된다)
-      // 이 편집은 durable에도 fallback에도 전혀 안 남는다 — durableWriteGuard 전용
-      // 메모리에 최신 draft를 남겨 beforeunload/전역 이동 방어가 계속 살아있게 한다
-      // (성공으로 처리하지 않고, 그렇다고 조용히 잃어버리지도 않는다).
-      if (!registered) markUnsafeRegistrationFailure(ownerKey, dateKey, patch)
+      // 이 patch를 전역 큐에 등록한다. durable/fallback이면 online·5초가 재시도하고,
+      // register false(invalid)는 unsafe overlay만 남긴다.
+      const attemptRev = draftRevRef.current
+      queueFailedDayWrite(ownerKey, dateKey, patch, (ok) => {
+        settlePendingDayWrite(hasPendingRef, mountedRef, setAutoSaveStatus, onCommittedRef, draftRevRef, attemptRev, ok)
+      })
       return
     }
     hasPendingRef.current = false
@@ -142,7 +141,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
     clearPendingDayWrite(ownerKey, dateKey, patch)
     setAutoSaveStatus('saved')
     onCommittedRef.current?.()
-  }, [ownerKey, dateKey])
+  }, [ownerKey, dateKey, mountedRef])
 
   // draft가 바뀔 때마다 디바운스를 다시 건다 — 이전 타이머가 남아 있으면 취소하고
   // 새로 건다(연타 입력 중에는 계속 미뤄지다가, 입력이 멈춘 뒤에만 실제로 쓴다).
@@ -160,6 +159,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
       isFirstDraftRef.current = false
       return undefined
     }
+    draftRevRef.current += 1
     setAutoSaveStatus('pending')
     hasPendingRef.current = true
     if (timerRef.current) clearTimeout(timerRef.current)

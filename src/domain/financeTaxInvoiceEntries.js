@@ -21,7 +21,7 @@ import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
  * @property {number} [supplyAmount]
  * @property {number} [taxAmount]
  * @property {number} [totalAmount]
- * @property {object} [supplierBiz]
+ * @property {import('./financeTypes.js').SupplierBiz} [supplierBiz]
  * @property {string} [vehicleLabel]
  * @property {Array<string>} [vehicleNumbers]
  */
@@ -121,7 +121,7 @@ export function buildTaxInvoiceEntry(group, monthKey, flow = 'sales', records = 
 }
 
 /**
- * @param {{ flow?: string, supplierBiz?: object }} [item]
+ * @param {{ flow?: string, supplierBiz?: import('./financeTypes.js').SupplierBiz }} [item]
  * @param {FinanceSettings} [settings]
  */
 export function getTaxInvoiceSupplierBiz(item, settings = {}) {

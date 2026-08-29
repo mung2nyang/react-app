@@ -87,6 +87,7 @@ export default function MainPageRoute({
         showToast={showToast}
         onWorkChanged={onWorkChanged}
         onClose={closeWorkLog}
+        onOpenMenu={onOpenMenu}
       />
     )
   }

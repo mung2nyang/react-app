@@ -34,6 +34,18 @@
  */
 
 /**
+ * @typedef {Object} SupplierBiz
+ * @property {boolean} [sameAsOwner]
+ * @property {string} [name]
+ * @property {string} [bizNumber]
+ * @property {string} [representative]
+ * @property {string} [address]
+ * @property {string} [bizType]
+ * @property {string} [bizItem]
+ * @property {string} [email]
+ */
+
+/**
  * finance*.js 함수들이 공유하는 설정 모양 — lib/ownerFinance.js의 buildFinanceSettings가
  * 실제로 만드는 값의 상위집합(느슨하게, 전부 optional로 — 픽스처/실제 값 둘 다
  * 이 함수들에 그대로 들어온다).

@@ -11,6 +11,7 @@ const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 /** @typedef {import('./dayLogTypes.js').Settings} Settings */
+/** @typedef {import('../../domain/call-details.js').CallDetailDraft} CallDetailDraft */
 
 /**
  * @param {Object} props
@@ -19,7 +20,7 @@ const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
  * @param {string} props.dateKey
  * @param {Array<ClientLike>} props.clients
  * @param {Settings} props.settings
- * @param {(item: object) => void} props.onSave
+ * @param {(item: CallDetailDraft) => void} props.onSave
  * @param {() => void} props.onClose
  */
 export default function CallDetailForm({ value, previousItem, dateKey, clients, settings, onSave, onClose }) {

@@ -5,8 +5,10 @@
  * @typedef {'loading' | 'redirect' | 'allow'} SessionGateResult
  */
 
+/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+
 /**
- * @param {{ booting: boolean, session: object | null }} args
+ * @param {{ booting: boolean, session: AppSession | null }} args
  * @returns {SessionGateResult}
  *   loading: 부트 중이라 세션이 있는지 아직 모른다 — 로딩 문구만 보여준다.
  *   redirect: 부트가 끝났는데 세션이 없다 — /auth로 보낸다(세션 없이 새로고침/북마크로

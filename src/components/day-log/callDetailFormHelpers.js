@@ -44,7 +44,7 @@ export function draftFromDetail(item, dateKey, clients) {
     departureTime: item.departureTime || '',
     arrivalTime: item.arrivalTime || '',
     platform: item.platform || '',
-    cargoTonnage: item.cargoTonnage || '',
+    cargoTonnage: item.cargoTonnage == null || item.cargoTonnage === '' ? '' : String(item.cargoTonnage),
     receipt: item.receipt || '',
     remarks: item.remarks || '',
     startOdometer: formatCurrencyInput(item.startOdometer),

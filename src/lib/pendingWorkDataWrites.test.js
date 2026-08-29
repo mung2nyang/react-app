@@ -823,7 +823,7 @@ test('재감사 10차 FAIL 지적 1번(P0) — id 없는 레거시 payment와 �
       fare: '10,000',
       // id 없는 레거시 payment(backfillCallDetailIds는 payments[] 항목의 id는
       // 채우지 않는다) + 통화 문자열 amount.
-      payments: [{ amount: '1,000' }, { amount: 1000, note: '' }],
+      payments: [{ amount: '1,000' }, { amount: '1,000원' }, { amount: 1000, note: '' }],
     }],
     fixedRouteCounts: {},
   }
@@ -835,4 +835,50 @@ test('재감사 10차 FAIL 지적 1번(P0) — id 없는 레거시 payment와 �
 
   assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 2, '레거시 payment 모양이 있어도 정상 커밋돼야 한다')
   assert.equal(getPendingDayWrite(ownerKey, dateKey), undefined, '정상 처리됐으니 이 owner/date는 큐에서 지워져야 한다')
+})
+
+test('재감사 10차 FAIL 지적 1번 — 임의 문자열·음수·NaN·Infinity·중첩 객체 amount는 거부하고 기존 정상 항목은 보존한다', () => {
+  const ownerKey = 'pw-legacy-payment-reject'
+  const dateKeyGood = '2026-09-21'
+  const dateKeyBad = '2026-09-22'
+  const goodPatch = {
+    isOff: false,
+    fixedCount: 3,
+    palletCount: 0,
+    callDetails: [{ id: 'trp_ok', fare: '10,000', payments: [{ amount: '1,000' }, { amount: 1000 }] }],
+    fixedRouteCounts: {},
+  }
+  assert.equal(registerPendingDayWrite(ownerKey, dateKeyGood, goodPatch, (ok) => { if (!ok) throw new Error('정상 항목 callback이 실패로 불리면 안 됨') }), true)
+  const durableBefore = localStorage.getItem(`reactPracticeDurablePendingWrites:${ownerKey}`)
+
+  /** @param {string|number|{ nested: number }} amount */
+  function patchWithAmount(amount) {
+    return {
+      isOff: false,
+      fixedCount: 9,
+      palletCount: 0,
+      callDetails: [{ id: 'trp_bad', fare: '10,000', payments: [{ amount }] }],
+      fixedRouteCounts: {},
+    }
+  }
+  const rejected = [
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('oops'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(''))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(','))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('.'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('원'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(-1))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(Number.NaN))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(Number.POSITIVE_INFINITY))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('1,00'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('1,,000'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('1,000.50'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount({ nested: 1 }))),
+  ]
+  assert.equal(rejected.every((ok) => ok === false), true, 'oops·빈값·기호만·잘못된 쉼표·소수·음수·NaN·Infinity·중첩 객체 amount는 전부 거부돼야 한다')
+  assert.equal(localStorage.getItem(`reactPracticeDurablePendingWrites:${ownerKey}`), durableBefore, '거부된 등록은 기존 durable 원문을 건드리면 안 된다')
+  assert.equal(getPendingDayWrite(ownerKey, dateKeyGood)?.fixedCount, 3, '기존 정상 항목이 그대로 남아 있어야 한다')
+  assert.equal(getPendingDayWrite(ownerKey, dateKeyBad), undefined, '거부된 날짜는 큐에 없어야 한다')
+  retryPendingDayWrites()
+  assert.equal(getPendingDayWrite(ownerKey, dateKeyGood), undefined, '정상 항목은 정리돼야 한다')
 })

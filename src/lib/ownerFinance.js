@@ -85,7 +85,7 @@ export function patchWorkLog(workDataByLogId, logId, dateKey, detailIndex, apply
 
 /**
  * @param {WorkDataByLogId} workDataByLogId
- * @param {object} settings
+ * @param {import('../domain/financeTypes.js').FinanceSettings} settings
  * @param {string} clientName
  * @param {string} monthKey
  * @param {Date} [paidAt]

@@ -35,6 +35,7 @@ const KIND_ADD_CLASS = { maint: 'maint-add-direct-btn', fuel: 'fuel-add-direct-b
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 /** @typedef {import('./dayLogTypes.js').Settings} Settings */
 /** @typedef {import('./day-log-reducer.js').DayDraft} DayDraft */
+/** @typedef {import('../../domain/call-details.js').CallDetailDraft} CallDetailDraft */
 
 /**
  * @param {Object} props
@@ -45,12 +46,11 @@ const KIND_ADD_CLASS = { maint: 'maint-add-direct-btn', fuel: 'fuel-add-direct-b
  * @param {Array<ClientLike>} props.clients
  * @param {Settings} props.settings
  * @param {(message: string) => void} [props.showToast]
- * @param {(() => void)} [props.onWorkChanged] 예전 MainPageRoute의 saveDay가 매번 부르던
- *   콜백과 같은 역할(AppShell의 알림 뱃지 재계산) — 이제 useDayDraft가 실제로 커밋될
- *   때만 부른다.
+ * @param {(() => void)} [props.onWorkChanged] 커밋될 때만(AppShell 알림 뱃지).
  * @param {() => void} props.onClose
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function DayLogPage({ month, day, dateKey, ownerKey, clients, settings, showToast, onWorkChanged, onClose }) {
+export default function DayLogPage({ month, day, dateKey, ownerKey, clients, settings, showToast, onWorkChanged, onClose, onOpenMenu }) {
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, showToast)
   const expenseForm = useExpenseForm(ownerKey, dateKey, showToast)
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
@@ -89,7 +89,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
     patchDraft({ fixedRouteCounts: nextCounts, fixedCount: nextCount })
   }
 
-  /** @param {object} formDraft */
+  /** @param {CallDetailDraft} formDraft */
   function handleSaveCall(formDraft) {
     const editingIndex = editingCallId ? indexOfCall(editingCallId) : -1
     const result = upsertCallDetail(draft.callDetails, formDraft, editingIndex, dateKey, clients)
@@ -115,7 +115,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
 
   return (
     <div className="page work-log-page">
-      <DayLogHeader month={month} day={day} autoSaveStatus={autoSaveStatus} onClose={handleClose} />
+      <DayLogHeader month={month} day={day} autoSaveStatus={autoSaveStatus} onClose={handleClose} onOpenMenu={onOpenMenu} />
       <OffToggle isOff={draft.isOff} onChange={(off) => patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })} />
       <div className={`modal-work-details${draft.isOff ? ' is-off' : ''}`}>
         {settings.fixedOn && (

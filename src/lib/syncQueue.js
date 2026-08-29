@@ -139,9 +139,9 @@ export function scheduleCloudSync() {
  * 둘 다 즉시(디바운스 없이) 플러시하고 끝날 때까지 기다린다.
  */
 export async function flushCloudSync() {
+  if (syncTimer) { clearTimeout(syncTimer); syncTimer = null }
   const userId = getCloudUserId()
   const ownerKey = getCloudOwnerKey()
   if (!isHydrationReady() || !userId || !ownerKey) return
-  if (syncTimer) { clearTimeout(syncTimer); syncTimer = null }
   await Promise.all([queueSync(userId, ownerKey), flushMutationOutbox(ownerKey)])
 }

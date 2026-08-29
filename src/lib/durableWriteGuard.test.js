@@ -7,25 +7,41 @@
 // 직접 검증한다 — pendingWorkDataWrites.js의 다른 owner/fallback 상태를 전혀 건드리지
 // 않는 새 프로세스(별도 파일)에서 검증해 전역 오염(다른 테스트가 남긴 broken owner)
 // 없이 정확한 before/after를 관찰할 수 있게 한다.
+// 재감사 11차 hang: pendingWorkDataWrites → app-store가 실제 supabaseClient의
+// realtime/auth 타이머를 붙잡는다. stub을 다른 import보다 먼저 올려야
+// `--test-force-exit` 없이 프로세스가 스스로 끝난다.
+import '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
 const {
-  clearUnsafeRegistrationFailure, confirmLeaveIfUnsafe, guardBeforeUnload, isDurableWriteBroken,
+  clearUnsafeRegistrationFailure, confirmLeaveIfUnsafe, guardBeforeUnload, getUnsafeRegistrationPatch,
+  hasAnyUnsafeRegistration, hasUnsafeRegistration, isDurableWriteBroken, listUnsafeRegistrations,
   markUnsafeRegistrationFailure,
 } = await import('./durableWriteGuard.js')
+const { registerPendingDayWrite, retryPendingDayWrites } = await import('./pendingWorkDataWrites.js')
 
 /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */
-const samplePatch = { isOff: false, fixedCount: 4, palletCount: 1, callDetails: [], fixedRouteCounts: {} }
+const invalidPatch = {
+  isOff: false,
+  fixedCount: 4,
+  palletCount: 1,
+  callDetails: [{ id: 'trp-unsafe', fare: '10,000', client: '한진', payments: [{ amount: 'oops' }] }],
+  fixedRouteCounts: {},
+}
+
+/** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */
+const validPatch = { isOff: false, fixedCount: 4, palletCount: 1, callDetails: [], fixedRouteCounts: {} }
 
 test('이 프로세스는 아직 아무 owner도 건드리지 않았으니 시작 시점엔 healthy다', () => {
   assert.equal(isDurableWriteBroken(), false, '아무 등록도 안 했는데 broken이면 다른 테스트 오염이거나 초기값이 잘못됐다')
 })
 
 test('markUnsafeRegistrationFailure를 부르면 fallback/durable이 전혀 없어도 broken으로 바뀐다', () => {
-  markUnsafeRegistrationFailure('guard-owner-a', '2026-09-21', samplePatch)
+  markUnsafeRegistrationFailure('guard-owner-a', '2026-09-21', invalidPatch)
   assert.equal(isDurableWriteBroken(), true, 'registerPendingDayWrite가 거부한 draft가 메모리에도 안 남으면 안 된다')
+  assert.equal(hasUnsafeRegistration('guard-owner-a', '2026-09-21'), true, 'owner/date 단위로 unsafe가 기록돼야 한다')
 
   const event = { preventDefault: () => { event.prevented = true }, returnValue: undefined, prevented: false }
   guardBeforeUnload(event)
@@ -37,8 +53,8 @@ test('markUnsafeRegistrationFailure를 부르면 fallback/durable이 전혀 없�
 })
 
 test('서로 다른 owner/date를 따로 추적한다 — 하나만 지워도 나머지는 계속 broken이다', () => {
-  markUnsafeRegistrationFailure('guard-owner-b', '2026-09-22', samplePatch)
-  markUnsafeRegistrationFailure('guard-owner-c', '2026-09-23', samplePatch)
+  markUnsafeRegistrationFailure('guard-owner-b', '2026-09-22', invalidPatch)
+  markUnsafeRegistrationFailure('guard-owner-c', '2026-09-23', invalidPatch)
   assert.equal(isDurableWriteBroken(), true)
 
   clearUnsafeRegistrationFailure('guard-owner-b', '2026-09-22')
@@ -49,16 +65,17 @@ test('서로 다른 owner/date를 따로 추적한다 — 하나만 지워도 �
 })
 
 test('같은 owner/date를 다시 mark하면(연속 실패) clear 한 번으로 지워진다 — 키가 최신 값으로 덮인다', () => {
-  markUnsafeRegistrationFailure('guard-owner-d', '2026-09-24', samplePatch)
-  markUnsafeRegistrationFailure('guard-owner-d', '2026-09-24', { ...samplePatch, fixedCount: 9 })
-  assert.equal(isDurableWriteBroken(), true)
+  markUnsafeRegistrationFailure('guard-owner-d', '2026-09-24', invalidPatch)
+  markUnsafeRegistrationFailure('guard-owner-d', '2026-09-24', { ...invalidPatch, fixedCount: 9 })
+  assert.equal(getUnsafeRegistrationPatch('guard-owner-d', '2026-09-24')?.fixedCount, 9, '같은 owner/date는 최신 patch가 승리해야 한다')
+  assert.equal(listUnsafeRegistrations().length, 1)
 
   clearUnsafeRegistrationFailure('guard-owner-d', '2026-09-24')
   assert.equal(isDurableWriteBroken(), false, '같은 키를 두 번 mark해도 한 번의 clear로 완전히 지워져야 한다(Map이 새 엔트리를 추가하는 게 아니라 같은 키를 덮어써야 한다)')
 })
 
 test('broken 상태에서 confirmLeaveIfUnsafe는 window.confirm을 거쳐 사용자 선택을 그대로 돌려준다', () => {
-  markUnsafeRegistrationFailure('guard-owner-e', '2026-09-25', samplePatch)
+  markUnsafeRegistrationFailure('guard-owner-e', '2026-09-25', invalidPatch)
   const originalConfirm = window.confirm
   try {
     window.confirm = () => false
@@ -70,4 +87,35 @@ test('broken 상태에서 confirmLeaveIfUnsafe는 window.confirm을 거쳐 사�
     clearUnsafeRegistrationFailure('guard-owner-e', '2026-09-25')
   }
   assert.equal(isDurableWriteBroken(), false)
+})
+
+test('재감사 11차 — owner A unsafe가 남은 동안 owner B 큐 성공으로 경고가 꺼지지 않는다', () => {
+  markUnsafeRegistrationFailure('guard-owner-a-keep', '2026-09-21', invalidPatch)
+  const registeredB = registerPendingDayWrite('guard-owner-b-ok', '2026-09-22', validPatch)
+  assert.equal(registeredB, true)
+  assert.equal(isDurableWriteBroken(), true, 'A의 unsafe가 있으면 B 성공으로 전체가 healthy가 되면 안 된다')
+  assert.equal(getUnsafeRegistrationPatch('guard-owner-a-keep', '2026-09-21')?.fixedCount, 4)
+  assert.equal(hasAnyUnsafeRegistration(), true)
+  retryPendingDayWrites()
+  assert.equal(hasAnyUnsafeRegistration(), true, 'pending retry가 invalid unsafe를 승격·해제하면 안 된다')
+  clearUnsafeRegistrationFailure('guard-owner-a-keep', '2026-09-21')
+  assert.equal(isDurableWriteBroken(), false)
+})
+
+test('재감사 16차 — unsafe-only는 beforeunload와 confirmLeave 방어만 하고 retry로는 안 지워진다', () => {
+  markUnsafeRegistrationFailure('guard-unsafe-only', '2026-10-06', invalidPatch)
+  assert.equal(hasAnyUnsafeRegistration(), true)
+  const event = { preventDefault: () => { event.prevented = true }, returnValue: undefined, prevented: false }
+  guardBeforeUnload(event)
+  assert.equal(event.prevented, true)
+  const originalConfirm = window.confirm
+  try {
+    window.confirm = () => false
+    assert.equal(confirmLeaveIfUnsafe(), false)
+  } finally {
+    window.confirm = originalConfirm
+  }
+  retryPendingDayWrites()
+  assert.equal(hasUnsafeRegistration('guard-unsafe-only', '2026-10-06'), true, 'retry가 unsafe를 지우면 안 된다')
+  clearUnsafeRegistrationFailure('guard-unsafe-only', '2026-10-06')
 })

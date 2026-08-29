@@ -1,65 +1,20 @@
 // @ts-check
 // durable(모듈 생애주기와 무관한) 실패-편집 큐. React 콜백(onSettled)은 직렬화 불가라
 // durable엔 안 넣고 메모리 전용 Map에 둔다. 저수준 읽기/쓰기는 durableStorage.js,
-// 타입은 pendingWorkDataWritesTypes.js가 정본.
+// 타입은 pendingWorkDataWritesTypes.js가 정본. owner/date 스캔은
+// pendingWorkDataWritesState.js.
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
 import { saveDayRecord } from '../domain/day-record.js'
 import { readOwnerWorkData } from '../store/ownerDataHooks.js'
-import { allDurableOwnerKeys, readDurable, writeDurable } from './durableStorage.js'
+import { readDurable, writeDurable } from './durableStorage.js'
 import { isValidPatch } from './durablePatchSchema.js'
+import { pulsePendingRetry } from './pendingRetryPulse.js'
 import { saveWorkDataWithTombstoneCheck } from './workData.js'
+import {
+  computeEffectivePendingEntries, fallback, keyOf, settledCallbacks,
+} from './pendingWorkDataWritesState.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
-
-// durable 기록 실패 시만 쓰는 세션 한정 fallback. 키 결합의 U+0000 구분자는 실제
-// NUL 바이트를 소스에 박지 않고 String.fromCharCode(0)으로 런타임에 만든다.
-const KEY_SEP = String.fromCharCode(0)
-/** @type {Map<string, EffectivePatch>} */
-const fallback = new Map()
-/** @type {Map<string, (ok: boolean) => void>} */
-const settledCallbacks = new Map()
-
-/** @param {string} ownerKey @param {string} dateKey */
-function keyOf(ownerKey, dateKey) {
-  return `${ownerKey}${KEY_SEP}${dateKey}`
-}
-
-/**
- * durable(모든 owner)과 fallback을 owner/date 복합키로 병합한 "지금 실제로 존재하는
- * pending 항목" 맵(fallback이 durable 위를 덮어써서 키마다 값 하나만 남는다). 아래
- * 4개 export가 이 함수 하나를 공유한다. durable 읽기가 실패한 owner는
- * `unreadableOwners`에, owner 목록 열거 자체가 실패하면 durable 스캔을 통째로
- * 건너뛰고 `ownerEnumerationFailed: true`를 돌려준다 — fallback은 그래도 포함한다.
- * @returns {{
- *   entries: Map<string, { ownerKey: string, dateKey: string, patch: EffectivePatch }>,
- *   unreadableOwners: Set<string>,
- *   ownerEnumerationFailed: boolean,
- * }}
- */
-function computeEffectivePendingEntries() {
-  /** @type {Map<string, { ownerKey: string, dateKey: string, patch: EffectivePatch }>} */
-  const entries = new Map()
-  /** @type {Set<string>} */
-  const unreadableOwners = new Set()
-  const ownerList = allDurableOwnerKeys()
-  if (ownerList.ok) {
-    ownerList.owners.forEach((ownerKey) => {
-      const result = readDurable(ownerKey)
-      if (!result.ok) {
-        unreadableOwners.add(ownerKey)
-        return
-      }
-      Object.entries(result.value).forEach(([dateKey, patch]) => {
-        entries.set(keyOf(ownerKey, dateKey), { ownerKey, dateKey, patch })
-      })
-    })
-  }
-  fallback.forEach((patch, key) => {
-    const [ownerKey, dateKey] = key.split(KEY_SEP)
-    entries.set(key, { ownerKey, dateKey, patch })
-  })
-  return { entries, unreadableOwners, ownerEnumerationFailed: !ownerList.ok }
-}
 
 /**
  * 재감사 9차 — durable/fallback/callback을 건드리기 전에 dateKey/patch를 readDurable과
@@ -72,22 +27,24 @@ function computeEffectivePendingEntries() {
  */
 export function registerPendingDayWrite(ownerKey, dateKey, patch, onSettled) {
   if (!isValidCalendarDateKey(dateKey) || !isValidPatch(patch)) return false
-  if (onSettled) settledCallbacks.set(keyOf(ownerKey, dateKey), onSettled)
-  const current = readDurable(ownerKey)
-  if (!current.ok) {
-    // durable 원문을 못 읽었으니 빈 객체 기반으로 재작성하지 않는다(다른 날짜 원문
-    // 파괴 방지, 재감사 6차) — 신규 patch는 fallback에만 보존한다.
-    fallback.set(keyOf(ownerKey, dateKey), patch)
-    return true
-  }
   try {
-    const next = { ...current.value, [dateKey]: patch }
-    writeDurable(ownerKey, next)
-    fallback.delete(keyOf(ownerKey, dateKey))
-  } catch {
-    fallback.set(keyOf(ownerKey, dateKey), patch)
+    if (onSettled) settledCallbacks.set(keyOf(ownerKey, dateKey), onSettled)
+    const current = readDurable(ownerKey)
+    if (!current.ok) {
+      fallback.set(keyOf(ownerKey, dateKey), patch)
+      return true
+    }
+    try {
+      const next = { ...current.value, [dateKey]: patch }
+      writeDurable(ownerKey, next)
+      fallback.delete(keyOf(ownerKey, dateKey))
+    } catch {
+      fallback.set(keyOf(ownerKey, dateKey), patch)
+    }
+    return true
+  } finally {
+    pulsePendingRetry()
   }
-  return true
 }
 
 /**
@@ -102,32 +59,33 @@ export function registerPendingDayWrite(ownerKey, dateKey, patch, onSettled) {
  * @returns {boolean} true면 완전히 정리됐다. false면 못 읽었거나 못 지워 residual로 남았다.
  */
 export function clearPendingDayWrite(ownerKey, dateKey, effectivePatch) {
-  const current = readDurable(ownerKey)
-  if (!current.ok) {
-    // durable 원문을 못 읽었으니 삭제 쓰기 자체를 시도하지 않는다(빈 객체 기반으로
-    // 다시 쓰면 원본 파괴). cleanup 실패로 처리하고 effectivePatch를 authoritative
-    // fallback으로 유지한다.
-    fallback.set(keyOf(ownerKey, dateKey), effectivePatch)
-    return false
-  }
-  const next = current.value
-  const hadDurableEntry = dateKey in next
-  let durableCleanupOk = true
-  if (hadDurableEntry) {
-    delete next[dateKey]
-    try {
-      writeDurable(ownerKey, next)
-    } catch {
-      durableCleanupOk = false
+  try {
+    const current = readDurable(ownerKey)
+    if (!current.ok) {
+      fallback.set(keyOf(ownerKey, dateKey), effectivePatch)
+      return false
     }
+    const next = current.value
+    const hadDurableEntry = dateKey in next
+    let durableCleanupOk = true
+    if (hadDurableEntry) {
+      delete next[dateKey]
+      try {
+        writeDurable(ownerKey, next)
+      } catch {
+        durableCleanupOk = false
+      }
+    }
+    if (!durableCleanupOk) {
+      fallback.set(keyOf(ownerKey, dateKey), effectivePatch)
+      return false
+    }
+    fallback.delete(keyOf(ownerKey, dateKey))
+    settledCallbacks.delete(keyOf(ownerKey, dateKey))
+    return true
+  } finally {
+    pulsePendingRetry()
   }
-  if (!durableCleanupOk) {
-    fallback.set(keyOf(ownerKey, dateKey), effectivePatch)
-    return false
-  }
-  fallback.delete(keyOf(ownerKey, dateKey))
-  settledCallbacks.delete(keyOf(ownerKey, dateKey))
-  return true
 }
 
 /**
