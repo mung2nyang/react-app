@@ -1,0 +1,91 @@
+.app-dropdown.app-date-dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.app-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 32px;
+  padding: 4px 6px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-dropdown-trigger:hover {
+  background-color: var(--hover-bg);
+}
+
+.app-dropdown-value {
+  white-space: nowrap;
+}
+
+.app-dropdown-chevron {
+  width: 8px;
+  height: 8px;
+  margin-top: -2px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.app-dropdown.open .app-dropdown-chevron {
+  margin-top: 4px;
+  transform: rotate(225deg);
+}
+
+.app-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 100%;
+  max-height: 124px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
+}
+
+.app-dropdown-menu[hidden] {
+  display: none;
+}
+
+.app-dropdown-option {
+  display: block;
+  width: 100%;
+  min-height: 31px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+}
+
+.app-dropdown-option[aria-selected="true"],
+.app-dropdown-option:hover,
+.app-dropdown-option:focus-visible {
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  outline: none;
+}
+
+.date-select-group .app-date-dropdown:first-child { min-width: 76px; }
+.date-select-group .app-date-dropdown:last-child { min-width: 50px; }

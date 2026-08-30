@@ -1,20 +1,69 @@
-/* Step 6(일지 재작성): InlineExpandHost.jsx가 JS(ResizeObserver + max-height)로
-   하던 펼침·접힘을 순수 CSS로 대체한다(migration-plan.md 3.2). 내용 높이를 몰라도
-   되고, 마운트 시 이미 높이가 0이라 첫 프레임에 깜빡이지 않는다. */
+/* Step 6/7: 인라인 시트는 CSS grid 0fr↔1fr. JS max-height/DOM 이동 금지.
+   펼침 시 패널은 내용 높이(min-content)를 쓴다. 1fr만 쓰면 부모 높이가 auto일 때
+   행이 0으로 접혀 실제 브라우저에서 폼이 안 보인다. */
 .inline-sheet {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.32s ease;
 }
 .inline-sheet.is-visible {
-  grid-template-rows: 1fr;
+  grid-template-rows: min-content;
+  margin-top: 12px;
 }
 .inline-sheet-panel {
   overflow: hidden;
   min-height: 0;
 }
+.inline-sheet.is-visible .inline-sheet-panel {
+  min-height: min-content;
+  overflow: visible;
+}
 
-/* 재감사(FAIL 지적 9번) — 자동 저장 실패 상태를 시각적으로도 구분한다. */
+.work-log-page {
+  box-sizing: border-box;
+  height: 100dvh;
+  overflow-y: auto;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.work-log-page .call-detail-inline-host .call-detail-modal-content,
+.work-log-page .maint-fuel-inline-host .modal-content {
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  padding: 10px 0 0;
+  overflow: visible;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+.work-log-page .modal-section-title {
+  font-size: var(--fs-5);
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.work-log-page .inline-sheet.is-visible .call-detail-form-actions,
+.work-log-page .inline-sheet.is-visible .inline-expense-form .modal-btns {
+  position: sticky;
+  bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  z-index: 3;
+  margin-top: 10px;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+  background: var(--bg-color);
+}
+
+/* 고정 하단 네비(약 71px)에 마지막 입력·저장이 가려지지 않게 한다. */
+.work-log-page .input-box,
+.work-log-page .modal-btn {
+  scroll-margin-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
 .autosave-status-failed {
   color: #e0453a;
 }

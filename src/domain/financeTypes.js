@@ -11,17 +11,25 @@
 /**
  * @typedef {Object} CarLike
  * @property {string} [id]
+ * @property {string|number} [supabaseId]
  * @property {string} number
+ * @property {string} [tonnage]
  * @property {'main'|'sub'} [type]
  * @property {string} [settlementMode]
  * @property {boolean} [commEnabled]
  * @property {string} [commType]
  * @property {string|number} [commission]
  * @property {boolean} [insuranceOn]
+ * @property {boolean} [logEnabled]
+ * @property {boolean} [driverLinkEnabled]
  * @property {boolean} [shareRevenueWithOwner]
+ * @property {boolean} [archived]
  * @property {string} [driverName]
+ * @property {string} [driverPhone]
  * @property {string} [driverLinkId]
+ * @property {string} [infoType]
  * @property {{ driverName?: string, bizNumber?: string, name?: string, address?: string, bizType?: string, bizItem?: string, email?: string }} [personalInfo]
+ * @property {{ sameAsOwner?: boolean, name?: string, bizNumber?: string, representative?: string, address?: string, bizType?: string, bizItem?: string, email?: string }} [businessInfo]
  */
 
 /**
@@ -68,6 +76,21 @@
  * @property {string} [bizType]
  * @property {string} [bizItem]
  * @property {string} [bizEmail]
+ * @property {'light'|'dark'} [theme]
+ * @property {'count'|'fare'} [inputMode]
+ * @property {boolean} [callDetail]
+ * @property {boolean} [timeOn]
+ * @property {boolean} [platformOn]
+ * @property {boolean} [distanceOn]
+ * @property {boolean} [cargoTonnageOn]
+ * @property {boolean} [fixedRouteOn]
+ * @property {Array<{ id: string, loadLoc: string, unloadLoc: string }>} [fixedRoutePresets]
+ * @property {boolean} [runCountToggle]
+ * @property {Array<number>} [runCountPresets]
+ * @property {boolean} [subFixedRouteOn]
+ * @property {Array<{ id: string, loadLoc: string, unloadLoc: string }>} [subFixedRoutePresets]
+ * @property {boolean} [subRunCountToggle]
+ * @property {Array<number>} [subRunCountPresets]
  */
 
 export {}

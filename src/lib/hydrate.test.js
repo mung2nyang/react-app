@@ -7,7 +7,7 @@ const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = crea
 mock.module('../supabaseClient.js', { exports: { supabase: fakeSupabase } })
 
 const { hydrateFromSupabase, retryHydrate } = await import('./hydrate.js')
-const { endCloudSession } = await import('./cloudSession.js')
+const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { getState } = await import('../store/app-store.js')
 const { markDirty, getDirtyDomains } = await import('./dirtyJournal.js')
 const { readJsonKey, writeJsonKey } = await import('../store/persist.js')
@@ -240,6 +240,31 @@ describe('실패 주입 — hydrate 도중 owner(계정) 변경', () => {
   })
 })
 
+describe('hydrate 종료 시 hydrating에 남지 않는다', () => {
+  test('조회 중 세대만 올라가면 스냅샷은 버리고 이 세대 슬롯은 ready로 닫는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit-hydrate-stale-close'
+    const userId = 'user-hydrate-stale-close'
+
+    let releaseProfiles
+    const gate = new Promise((resolve) => { releaseProfiles = resolve })
+    handlers.profiles = { select: () => gate.then(() => ({ data: { id: userId, name: '늦게 도착한 이름', settings: {} }, error: null })) }
+
+    const hydratePromise = hydrateFromSupabase(userId, ownerKey)
+    await wait(10)
+    assert.equal(getState().hydration.status, 'hydrating')
+
+    beginSessionEpoch(userId, ownerKey)
+    releaseProfiles()
+    await hydratePromise
+
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(readJsonKey('profile', ownerKey, {}).name, undefined, '세대가 바뀐 뒤의 스냅샷은 localStorage에 쓰지 않는다')
+    endCloudSession()
+  })
+})
+
 describe('hydrate — outbox tombstone/pending 재적용 (사용자 지시 4번)', () => {
   test('활성 tombstone이 있는 차량은 서버 응답에 있어도 hydrate 결과에서 제외된다', async () => {
     resetHandlers()
@@ -275,6 +300,39 @@ describe('hydrate — outbox tombstone/pending 재적용 (사용자 지시 4번)
     const drivers = readJsonKey('drivers', ownerKey, [])
     const driver = drivers.find((item) => item.id === 'local-driver-1')
     assert.equal(driver?.status, 'linked', '서버가 아직 pending을 반환해도 로컬의 pending mutation(linked 의도)이 유지돼야 한다')
+    endCloudSession()
+  })
+})
+
+describe('hydrate — 레거시 fuel raw는 스키마 throw 없이 ready로 닫힌다', () => {
+  test('fuel_records.raw에 비용 객체 extra 키가 있어도 status는 ready다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-fuel-coerce-ready'
+    const userId = 'user-hydrate-fuel-coerce-ready'
+    handlers.vehicles = { select: () => ({ data: [{ id: 501, type: 'main', number: '11가1111', raw: {} }], error: null }) }
+    handlers.daily_logs = { select: () => ({ data: [{ work_date: '2026-08-01', is_off: false, fixed_count: 1, raw: {} }], error: null }) }
+    handlers.fuel_records = {
+      select: () => ({
+        data: [{
+          work_date: '2026-08-01',
+          sequence: 0,
+          raw: {
+            id: 'fuel-1', kind: 'fuel', date: '2026-08-01', name: '주유', fuelType: '주유',
+            payment: '카드', type: '주유', cost: 80000, subsidy: 0, liter: 40, mileage: 0,
+          },
+        }],
+        error: null,
+      }),
+    }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    const day = readJsonKey('workData', ownerKey, {})['2026-08-01']
+    assert.equal(day?.fuelItems, undefined)
+    const expenses = readJsonKey('expenses', ownerKey, [])
+    assert.equal(expenses.filter((item) => item.kind === 'fuel').length, 1)
+    assert.equal(expenses[0].id, 'fuel-1')
     endCloudSession()
   })
 })

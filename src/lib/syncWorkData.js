@@ -22,7 +22,8 @@ export async function syncWorkData(userId, ownerKey, cars, clients) {
       raw: dailyFields,
     }, { onConflict: 'vehicle_id,work_date' }).select('id').single()
     if (error) throw error
-    await supabase.from('transport_details').delete().eq('daily_log_id', data.id)
+    const { error: deleteError } = await supabase.from('transport_details').delete().eq('daily_log_id', data.id)
+    if (deleteError) throw deleteError
     if (callDetails.length) {
       const { error: detailError } = await supabase.from('transport_details').insert(callDetails.map((detail, index) => ({
         daily_log_id: data.id,

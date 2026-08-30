@@ -9,11 +9,15 @@
 // 둘 다 app-store.js의 commitBatch를 거친다 — 여러 슬라이스를 한 번에 반영하고 notify를
 // 정확히 한 번만 호출한다. 예전엔 슬라이스마다 commit()을 따로 불러서, 구독자가 "cars만
 // 반영되고 profile은 아직 안 반영된" 중간 state를 볼 수 있었다.
-import { readJsonKey } from './persist.js'
+import { readLogWorkData } from './persist.js'
+import { readPersistDomain } from './persistDomainRead.js'
 import { commitBatch } from './app-store.js'
 
 /** @typedef {import('./persist.js').PersistDomain} PersistDomain */
 /** @typedef {import('./app-store.js').DomainValue} DomainValue */
+/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 
 // 재감사 4차(FAIL 지적 4번) — unknown으로 받던 걸 없앴다. 이 두 함수를 실제로 부르는
 // 자리(normalizeFor, readJsonKey<DomainValue>(...)의 결과)가 전부 이미 DomainValue로
@@ -26,53 +30,43 @@ import { commitBatch } from './app-store.js'
 // 알 수 없다(OBJECT_DOMAINS는 런타임 Set이다) — Array.isArray/typeof로 실제 좁힌
 // 뒤에는 그 갈래를 그대로 DomainValue로 돌려줄 수 있고, 대체용 빈 값({}/[])만 정직한
 // 단언이 필요하다(빈 객체/빈 배열은 DomainValue의 모든 갈래를 구조적으로 만족한다).
-/** @param {DomainValue} value @returns {DomainValue} */
-function toArray(value) {
-  return Array.isArray(value) ? value : /** @type {DomainValue} */ ([])
-}
-
-/** @param {DomainValue} value @returns {DomainValue} */
-function toObject(value) {
-  return value && typeof value === 'object' && !Array.isArray(value) ? value : /** @type {DomainValue} */ ({})
-}
-
-// 재감사 3차(FAIL 지적 1번) — workDataDeletedDates("아직 서버에 못 알린 빈 날 삭제"
-// 목록, domain/workDataTombstones.js)도 새로고침 뒤에 살아남아야 다음 hydrate/동기화가
-// "삭제를 아직 못 알렸다"는 사실을 잊지 않는다 — object 계열(workData/settings/profile과
-// 같은 dateKey->값 맵) 취급이다.
+// workDataDeletedDates도 object 계열. workData는 readLogWorkData로 따로 읽는다.
 /** @type {Array<PersistDomain>} */
-const DOMAINS = ['workData', 'cars', 'clients', 'settings', 'expenses', 'invoices', 'drivers', 'profile', 'dismissedNotifications', 'workDataDeletedDates']
-/** @type {Set<PersistDomain>} */
-const OBJECT_DOMAINS = new Set(['settings', 'profile', 'workData', 'workDataDeletedDates'])
-
-/** @param {PersistDomain} domain @returns {DomainValue} */
-function fallbackFor(domain) {
-  return OBJECT_DOMAINS.has(domain) ? {} : []
-}
-
-/** @param {PersistDomain} domain @param {DomainValue} value @returns {DomainValue} */
-function normalizeFor(domain, value) {
-  return OBJECT_DOMAINS.has(domain) ? toObject(value) : toArray(value)
-}
+const SLICE_DOMAINS = ['cars', 'clients', 'settings', 'expenses', 'invoices', 'drivers', 'profile', 'dismissedNotifications', 'workDataDeletedDates']
 
 /**
  * localStorage에 이미 저장된 값을 store에 읽어 들인다. 아무것도 새로 쓰지 않고,
- * 클라우드 동기화도 예약하지 않는다 — 순수 "state를 persist와 맞춘다"만 한다.
- * commitBatch(persist:false, syncToCloud:false)를 거치므로 notify는 한 번만 나간다.
+ * 클라우드 동기화도 예약하지 않는다. 도메인/서브 일지 중 하나라도 읽기·스키마가
+ * 실패하면 Store와 workLogs를 전혀 바꾸지 않고 notify 0회로 끝낸다.
  * @param {string} ownerKey
  */
 export function initializeOwnerFromPersist(ownerKey) {
-  const entries = DOMAINS.map((domain) => ({
-    domain,
-    ownerKey,
-    value: normalizeFor(domain, readJsonKey(domain, ownerKey, fallbackFor(domain))),
-  }))
-  commitBatch(entries, { persist: false, syncToCloud: false })
+  /** @type {Array<import('./app-store.js').BatchEntry>} */
+  const entries = []
+  for (const domain of SLICE_DOMAINS) {
+    const read = readPersistDomain(domain, ownerKey)
+    if (!read.ok) return
+    entries.push({ domain, ownerKey, value: read.value })
+  }
+  const workRead = readLogWorkData(ownerKey, 'main')
+  if (!workRead.ok) return
+  entries.push({ domain: 'workData', ownerKey, value: workRead.value })
+  const carsEntry = entries.find((entry) => entry.domain === 'cars')
+  const cars = Array.isArray(carsEntry?.value) ? /** @type {Array<CarLike>} */ (carsEntry.value) : []
+  /** @type {Record<string, Record<string, DayRecordLike>>} */
+  const extra = {}
+  for (const car of cars) {
+    if (car?.type !== 'sub' || !car.number || car.number === 'main') continue
+    const logRead = readLogWorkData(ownerKey, car.number)
+    if (!logRead.ok) return
+    extra[car.number] = logRead.value
+  }
+  commitBatch(entries, {
+    persist: false,
+    syncToCloud: false,
+    replaceWorkLogs: { ownerKey, next: { main: workRead.value, ...extra } },
+  })
 }
-
-/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */

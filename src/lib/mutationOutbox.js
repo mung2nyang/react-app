@@ -182,7 +182,7 @@ export function hasPendingOps(ownerKey) {
  */
 export function isTombstoned(ownerKey, resourceType, resourceId) {
   if (!resourceId) return false
-  return readOutbox(ownerKey).some((op) => op.kind === 'tombstone' && op.resourceType === resourceType && op.resourceId === resourceId)
+  return readOutbox(ownerKey).some((op) => op.kind === 'tombstone' && op.resourceType === resourceType && String(op.resourceId) === String(resourceId))
 }
 
 /**

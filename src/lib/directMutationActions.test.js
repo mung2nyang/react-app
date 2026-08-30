@@ -136,16 +136,28 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
     endCloudSession()
   })
 
-  test('supabaseId가 없는(로컬 전용) 차량은 hydration 상태와 무관하게 항상 삭제된다', async () => {
+  test('supabaseId가 없는 로컬 차량도 로그인+hydration failed면 삭제하지 않는다', async () => {
     const ownerKey = 'dma-vehicle-local-only'
     beginFailed('user-1', ownerKey)
     const cars = [{ id: 'car-local', number: '99하9999' }]
     writeJsonKey('cars', ownerKey, cars)
-
     const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-local' })
-    assert.deepEqual(result.cars, [])
-    assert.equal(countOf('vehicles', 'delete'), 0, '서버에 애초에 없던 차량이라 호출 자체가 없어야 한다')
+    assert.deepEqual(result.cars, cars)
+    assert.equal(result.failed, true)
+    assert.equal(result.closeModal, false)
+    assert.equal(countOf('vehicles', 'delete'), 0)
     endCloudSession()
+  })
+
+  test('게스트(세션 없음)의 로컬 차량은 바로 삭제된다', async () => {
+    endCloudSession()
+    const ownerKey = 'dma-vehicle-guest-local'
+    const cars = [{ id: 'car-guest', number: '88하8888' }]
+    writeJsonKey('cars', ownerKey, cars)
+    const result = await requestVehicleDeletion({ ownerKey, userId: null, cars, vehicleId: 'car-guest' })
+    assert.deepEqual(result.cars, [])
+    assert.equal(result.failed, false)
+    assert.equal(countOf('vehicles', 'delete'), 0)
   })
 })
 

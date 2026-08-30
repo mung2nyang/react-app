@@ -39,9 +39,14 @@ import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
  * domain/taxInvoices.js(mergeTaxInvoiceRecords/applyInsertedTaxInvoiceId)와
  * domain/invoices.js(persistInvoiceRecord)가 실제로 읽고 쓰는 필드만 얹은
  * TaxInvoiceRecord의 상위집합이다 — id는 두 함수 모두 키로 쓰므로 필수.
- * @typedef {TaxInvoiceRecord & { id: string, supabaseId?: string, supplyAmount?: number,
- *   taxAmount?: number, totalAmount?: number, carNumber?: string,
- *   vehicleNumbers?: Array<string>, clientName?: string, clientBizNumber?: string }} InvoiceLike
+ * @typedef {TaxInvoiceRecord & { id: string, supabaseId?: string|number, supplyAmount?: number,
+ *   taxAmount?: number, totalAmount?: number, count?: number, carNumber?: string, logId?: string,
+ *   vehicleNumbers?: Array<string>, vehicleLabel?: string, clientName?: string, clientBizNumber?: string,
+ *   clientRepresentative?: string, clientAddress?: string, clientBizType?: string, clientBizItem?: string,
+ *   clientEmail?: string, issueDate?: string, itemName?: string, remark?: string, updatedAt?: string,
+ *   issuedAt?: string, partyKey?: string, partyType?: string, supplierKey?: string,
+ *   grossAmount?: number, commissionAmount?: number, insuranceAmount?: number, netAmount?: number,
+ *   supplierBiz?: import('./financeTypes.js').SupplierBiz }} InvoiceLike
  */
 
 /** @param {'sales'|'purchase'|'commission'} [flow] */

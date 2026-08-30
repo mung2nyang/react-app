@@ -12,7 +12,7 @@
  * @property {string} [paymentTerm]
  * @property {string} [paymentTermValue]
  * @property {boolean} [isPinned]
- * @property {boolean} [scopedToVehicleNumber]
+ * @property {string} [scopedToVehicleNumber]
  * @property {boolean} [commEnabled]
  * @property {string} [commType]
  * @property {string|number} [commValue]
@@ -25,7 +25,7 @@
  * @property {string} [taxAddress]
  * @property {string} [taxBizType]
  * @property {string} [taxBizItem]
- * @property {string} [supabaseId]
+ * @property {string|number} [supabaseId]
  */
 
 /**
@@ -43,6 +43,16 @@
  * @property {string} [taxBizType]
  * @property {string} [taxBizItem]
  * @property {boolean} [isPinned]
+ * @property {string} [scopedToVehicleNumber]
+ * @property {boolean} [commEnabled]
+ * @property {string} [commType]
+ * @property {string|number} [commValue]
+ * @property {boolean} [fixedRouteLinked]
+ * @property {string|number} [fixedUnitPrice]
+ * @property {boolean} [palletOn]
+ * @property {string|number} [palletPrice]
+ * @property {string} [id]
+ * @property {string} [supabaseId]
  */
 
 export {}

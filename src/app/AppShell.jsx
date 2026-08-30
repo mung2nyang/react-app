@@ -3,29 +3,16 @@
 // 그대로 옮긴 자리 — 하단탭/사이드메뉴/알림패널은 여기서 한 번만 마운트하고,
 // 화면별 콘텐츠는 중첩 <Routes>의 Outlet 자리에서 페이지 컴포넌트가 그린다.
 import { Suspense, useMemo, useState } from 'react'
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav.jsx'
 import SideMenu from '../components/SideMenu.jsx'
 import NotificationPanel from '../components/NotificationPanel.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
 import { todayWorkLogSelection } from '../lib/calendar.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
-import MainPageRoute from './MainPageRoute.jsx'
-import ComingSoonRoute from './ComingSoonRoute.jsx'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
-import {
-  AppSettingsPage,
-  CarManagementPage,
-  ClientManagementPage,
-  DriverConnectionPage,
-  MaintFuelPage,
-  MyPage,
-  PersonalInfoPage,
-  ReceivablesPage,
-  ReportPage,
-  RevenuePage,
-  TaxInvoicePage,
-} from './lazyPages.js'
+import AppShellRoutes from './AppShellRoutes.jsx'
+import { withFromLogState } from './fromLogNavigation.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 /** @typedef {{ id: string, page?: string, title?: string }} NotificationItem */
@@ -76,7 +63,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   function navigate(to, options) {
     if (!confirmLeaveIfUnsafe()) return
     if (typeof to === 'number') { rawNavigate(to); return }
-    rawNavigate(to, options)
+    rawNavigate(to, withFromLogState(location.pathname, to, options))
   }
   const [menuOpen, setMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -122,55 +109,19 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
     <div className="container main-app-container">
       <HydrationRetryBanner showToast={showToast} />
       <Suspense fallback={<div className="page">불러오는 중...</div>}>
-        <Routes>
-          <Route
-            index
-            element={(
-              <MainPageRoute
-                ownerKey={ownerKey}
-                userName={session?.name}
-                showToast={showToast}
-                onWorkChanged={bumpNotifTick}
-                notifCount={notifications.length}
-                onOpenMenu={() => setMenuOpen(true)}
-                onOpenNotifs={() => { bumpNotifTick(); setNotifOpen(true) }}
-                onBackToAuth={onBackToAuth}
-              />
-            )}
-          />
-          <Route
-            path="day/:date"
-            element={(
-              <MainPageRoute
-                ownerKey={ownerKey}
-                userName={session?.name}
-                showToast={showToast}
-                onWorkChanged={bumpNotifTick}
-                notifCount={notifications.length}
-                onOpenMenu={() => setMenuOpen(true)}
-                onOpenNotifs={() => { bumpNotifTick(); setNotifOpen(true) }}
-                onBackToAuth={onBackToAuth}
-              />
-            )}
-          />
-          <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
-          <Route path="clients" element={<ClientManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
-          {/* MyPage.jsx는 아직 @ts-check가 없어 session 매개변수 타입을 자기 안의
-              session?.accountType 용법만으로(TS가 name 등 다른 필드는 못 봤다)
-              좁게 추론한다 — 그 추론 타입이 null을 안 받으므로 undefined로만 바꿔
-              건넨다(AppSession 자체는 그대로, MyPage.jsx는 손 안 댔다). */}
-          <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} onOpen={(/** @type {string} */ page, /** @type {string} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} />} />
-          <Route path="me/profile" element={<PersonalInfoPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate('/app')} onGoAuth={onGoAuth} />} />
-          <Route path="me/settings" element={<AppSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
-          <Route path="expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
-          <Route path="receivables" element={<ReceivablesPage ownerKey={ownerKey} showToast={showToast} onWorkChanged={bumpNotifTick} onBack={() => { navigate('/app'); bumpNotifTick() }} />} />
-          <Route path="report" element={<ReportPage ownerKey={ownerKey} onBack={() => navigate('/app')} />} />
-          <Route path="tax" element={<TaxInvoicePage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
-          <Route path="drivers" element={<DriverConnectionPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => { navigate('/app'); bumpNotifTick() }} />} />
-          {/* RevenuePage.jsx의 session prop도 undefined만 받는다(위 MyPage와 같은 이유). */}
-          <Route path="revenue" element={<RevenuePage ownerKey={ownerKey} session={session ?? undefined} onBack={() => navigate('/app')} />} />
-          <Route path="soon" element={<ComingSoonRoute />} />
-        </Routes>
+        <AppShellRoutes
+          ownerKey={ownerKey}
+          session={session}
+          showToast={showToast}
+          bumpNotifTick={bumpNotifTick}
+          notifCount={notifications.length}
+          onOpenMenu={() => setMenuOpen(true)}
+          onOpenNotifs={() => { bumpNotifTick(); setNotifOpen(true) }}
+          onBackToAuth={onBackToAuth}
+          onGoAuth={onGoAuth}
+          navigate={navigate}
+          goToPage={goToPage}
+        />
       </Suspense>
       <BottomNav active={activeNav} onSelect={selectTab} />
       <SideMenu

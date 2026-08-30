@@ -105,7 +105,7 @@ export function endCloudSession() {
   cloudUserId = null
   cloudOwnerKey = null
   sessionEpoch += 1
-  setHydration({ status: 'idle', userId: null, ownerKey: null })
+  setHydration({ status: 'idle', userId: null, ownerKey: null, epoch: 0 })
   if (outgoingOwnerKey) evict(hydrateSingleFlightKey(outgoingOwnerKey))
 }
 
@@ -134,4 +134,37 @@ export function blockedReasonForCloudWrite(cloudId) {
   } catch (error) {
     return error instanceof Error ? error.message : String(error)
   }
+}
+
+/**
+ * 로그인 계정에서 hydrate가 ready가 아니면 거래처/차량 추가·수정·삭제를 막는다.
+ * 게스트(cloudUserId 없음)는 로컬만 쓰므로 허용.
+ * 로그인이면 액션의 ownerKey/userId가 현재 cloud owner/user/session epoch·hydration과
+ * 같아야 한다 — 계정 B ready 상태에서 stale owner A 쓰기를 거부한다.
+ * @param {{ ownerKey?: string, userId?: string|null, sessionEpoch?: number }} [expected]
+ */
+export function blockedReasonForOwnerDataWrite(expected = {}) {
+  if (!getCloudUserId()) return null
+  try {
+    assertCloudWriteReady()
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error)
+  }
+  if (expected.ownerKey && getCloudOwnerKey() !== expected.ownerKey) {
+    return '다른 계정의 데이터를 저장할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+  }
+  if (expected.userId && getCloudUserId() !== expected.userId) {
+    return '다른 계정의 데이터를 저장할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+  }
+  if (expected.sessionEpoch != null && expected.sessionEpoch !== getSessionEpoch()) {
+    return '세션이 바뀌었습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+  }
+  const hydration = getState().hydration
+  if (expected.ownerKey && hydration.ownerKey && hydration.ownerKey !== expected.ownerKey) {
+    return '다른 계정의 데이터를 저장할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+  }
+  if (expected.userId && hydration.userId && hydration.userId !== expected.userId) {
+    return '다른 계정의 데이터를 저장할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+  }
+  return null
 }

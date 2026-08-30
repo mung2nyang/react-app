@@ -64,6 +64,17 @@ export function upsertClient(clients, draft, editingId = null) {
     }
   }
 
+  const commEnabled = !!draft.commEnabled
+  const commValue = String(draft.commValue || '').trim()
+  const fixedRouteLinked = !!draft.fixedRouteLinked
+  const fixedUnitPrice = String(draft.fixedUnitPrice ?? '').trim()
+  const palletOn = !!draft.palletOn
+  const palletPrice = String(draft.palletPrice ?? '').trim()
+
+  if (commEnabled && !commValue) return { error: '수수료 값을 입력해 주세요.', clients }
+  if (fixedRouteLinked && !fixedUnitPrice) return { error: '고정노선 1회 단가를 입력해 주세요.', clients }
+  if (palletOn && !palletPrice) return { error: '파렛트 단가를 입력해 주세요.', clients }
+
   const next = {
     companyName,
     managerName,
@@ -77,6 +88,13 @@ export function upsertClient(clients, draft, editingId = null) {
     isPinned: !!draft.isPinned,
     paymentTerm,
     paymentTermValue: needsPaymentTermValue(paymentTerm) ? paymentTermValue : '',
+    commEnabled,
+    commType: draft.commType === 'direct' ? 'direct' : 'percent',
+    commValue: commEnabled ? commValue : '',
+    fixedRouteLinked,
+    fixedUnitPrice: fixedRouteLinked ? fixedUnitPrice : '',
+    palletOn,
+    palletPrice: palletOn ? palletPrice : '',
   }
   const list = [...(clients || [])]
 
@@ -84,19 +102,21 @@ export function upsertClient(clients, draft, editingId = null) {
     const idx = list.findIndex((client) => client.id === editingId)
     if (idx < 0) return { error: '거래처를 찾지 못했습니다.', clients }
     list[idx] = { ...list[idx], ...next }
-    return { clients: sortClientsPinnedFirst(list) }
+  } else {
+    list.push(/** @type {ClientLike} */ ({ id: `client_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, ...next }))
   }
 
-  list.push(/** @type {ClientLike} */ ({ id: `client-${Date.now()}`, ...next }))
-  return { clients: sortClientsPinnedFirst(list) }
+  const savedId = editingId || list[list.length - 1].id
+  const unique = fixedRouteLinked
+    ? list.map((client) => (client.id === savedId ? client : { ...client, fixedRouteLinked: false }))
+    : list
+  return { clients: sortClientsPinnedFirst(unique), id: savedId }
 }
 
 // 재감사 3차(FAIL 지적 3번) — 달력의 "1회 단가" 편집이 고정노선 연결 거래처가
 // 있을 때 그 거래처의 fixedUnitPrice를 원자적으로 고치게 하는 유일한 창구.
-// upsertClient의 `next`는 회사 정보 폼 필드만 만들고 fixedUnitPrice/fixedRouteLinked
-// 등은 아예 건드리지 않는다(Step 7 전이라 그 폼 자체가 없다) — 그래서 upsertClient로
-// 이 필드를 고치면 조용히 무시된다. 이 함수는 다른 필드는 그대로 두고 이 필드만
-// 정확히 바꾼다(updateClientTaxInfo와 같은 "타겟 패치" 패턴).
+// upsertClient의 `next`는 회사 정보와 고정노선·파렛트·수수료를 함께 정규화한다.
+// 고정노선이 true면 unique 단계에서 같은 결과 배열의 다른 거래처를 모두 해제한다.
 /**
  * @param {Array<ClientLike>} clients
  * @param {string} clientId

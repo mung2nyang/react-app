@@ -37,6 +37,11 @@ body { margin: 0; font-family: system-ui, 'Segoe UI', sans-serif; }
   --primary-color: #4299e1;
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --icon-color: #cccccc;
+  --work-badge-bg: #4a4a4a;
+  --work-badge-text: #fbd38d;
+  --off-badge-bg: #5a3a3a;
+  --off-badge-text: #fed7d7;
 }
 
 body.account-flow-active {

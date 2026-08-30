@@ -11,8 +11,6 @@ import { removeCallDetail, upsertCallDetail } from '../../domain/call-details.js
 import { getDetailPaymentSummary } from '../../domain/finance.js'
 import { toggleCallPaymentStatus } from '../../domain/payments.js'
 import { confirmLeaveIfUnsafe } from '../../lib/durableWriteGuard.js'
-import { KINDS } from '../../lib/expenses.js'
-import ExpenseFormModal from '../ExpenseFormModal.jsx'
 import { useDayDraft } from './useDayDraft.js'
 import { useExpenseForm } from './useExpenseForm.js'
 import { bindInlinePanelActions } from './inlinePanelActions.js'
@@ -23,14 +21,10 @@ import FixedRouteChips from './FixedRouteChips.jsx'
 import PalletSection from './PalletSection.jsx'
 import CallDetailList from './CallDetailList.jsx'
 import CallDetailForm from './CallDetailForm.jsx'
-import ExpenseGroups from './ExpenseGroups.jsx'
-import ExpenseSelectPanel from './ExpenseSelectPanel.jsx'
+import DayLogExpenses from './DayLogExpenses.jsx'
 import MessageTemplateSheet from './MessageTemplateSheet.jsx'
 import InlineSheet from './InlineSheet.jsx'
 import './day-log.css'
-
-/** @type {Record<string, string>} */
-const KIND_ADD_CLASS = { maint: 'maint-add-direct-btn', fuel: 'fuel-add-direct-btn', misc: 'misc-add-direct-btn' }
 
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 /** @typedef {import('./dayLogTypes.js').Settings} Settings */
@@ -49,9 +43,10 @@ const KIND_ADD_CLASS = { maint: 'maint-add-direct-btn', fuel: 'fuel-add-direct-b
  * @param {(() => void)} [props.onWorkChanged] 커밋될 때만(AppShell 알림 뱃지).
  * @param {() => void} props.onClose
  * @param {(() => void)} [props.onOpenMenu]
+ * @param {string} [props.logId]
  */
-export default function DayLogPage({ month, day, dateKey, ownerKey, clients, settings, showToast, onWorkChanged, onClose, onOpenMenu }) {
-  const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, showToast)
+export default function DayLogPage({ month, day, dateKey, ownerKey, clients, settings, showToast, onWorkChanged, onClose, onOpenMenu, logId = 'main' }) {
+  const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, showToast, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, showToast)
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
 
@@ -160,33 +155,13 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
           </>
         )}
 
-        <div className="modal-section maint-section">
-          <div className="modal-section-title">
-            <span>차량 정비/주유/기타</span>
-            <button type="button" className="compact-add-btn" onClick={openExpenseKindPick}>+ 추가</button>
-          </div>
-          <ExpenseGroups dayExpenses={dayExpenses} onEdit={openExpenseEdit} onDelete={expenseForm.remove} />
-          <div className="maint-fuel-add-row">
-            {KINDS.map((item) => (
-              <button key={item.value} type="button" className={`maint-fuel-add-btn ${KIND_ADD_CLASS[item.value]}`} onClick={() => openExpenseAdd(item.value)}>+ {item.label} 추가</button>
-            ))}
-          </div>
-          <InlineSheet open={expenseForm.kindPick || expenseForm.modalOpen} className="maint-fuel-inline-host">
-            {expenseForm.kindPick && <ExpenseSelectPanel onPick={openExpenseAdd} />}
-            {expenseForm.modalOpen && (
-              <ExpenseFormModal
-                inline
-                draft={expenseForm.draft}
-                editingId={expenseForm.editingId}
-                lockDate
-                kindLabel={KINDS.find((item) => item.value === expenseForm.draft.kind)?.label || '정비'}
-                onChange={expenseForm.setDraft}
-                onClose={expenseForm.closeModal}
-                onSave={expenseForm.save}
-              />
-            )}
-          </InlineSheet>
-        </div>
+        <DayLogExpenses
+          dayExpenses={dayExpenses}
+          expenseForm={expenseForm}
+          onKindPick={openExpenseKindPick}
+          onAdd={openExpenseAdd}
+          onEdit={openExpenseEdit}
+        />
       </div>
       {messageItem && (
         <MessageTemplateSheet

@@ -127,10 +127,12 @@ export function scheduleCloudSync() {
   if (syncTimer) clearTimeout(syncTimer)
   syncTimer = setTimeout(() => {
     syncTimer = null
-    // 재감사 3번: 이 두 함수가 던지는 건 항상 Error(우리 코드) 또는 PostgrestError
-    // (Error를 상속함)뿐이다 — unknown 대신 실제로 던져지는 타입을 그대로 적는다.
-    queueSync(userId, ownerKey).catch((/** @type {Error} */ error) => console.error('클라우드 동기화 실패:', error))
+    // 차량 tombstone이 대기 중이면 일반 sync 조회가 그 서버 id를 재사용하지 않도록
+    // outbox flush를 먼저 돌린다. findExistingVehicle도 tombstone id를 걸러
+    // 반대 실행 순서(조회가 먼저)를 방어한다.
     flushMutationOutbox(ownerKey).catch((/** @type {Error} */ error) => console.error('outbox 플러시 실패:', error))
+      .then(() => queueSync(userId, ownerKey))
+      .catch((/** @type {Error} */ error) => console.error('클라우드 동기화 실패:', error))
   }, 600)
 }
 
@@ -143,5 +145,6 @@ export async function flushCloudSync() {
   const userId = getCloudUserId()
   const ownerKey = getCloudOwnerKey()
   if (!isHydrationReady() || !userId || !ownerKey) return
-  await Promise.all([queueSync(userId, ownerKey), flushMutationOutbox(ownerKey)])
+  await flushMutationOutbox(ownerKey)
+  await queueSync(userId, ownerKey)
 }

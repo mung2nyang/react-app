@@ -11,6 +11,7 @@ const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { buildTombstoneOp, buildMutationOp, getPendingOps, hasPendingOps, planOutboxAppend } = await import('./mutationOutbox.js')
 const { writeAllOrNothing } = await import('../store/atomicPersist.js')
 const { readJsonKey, writeJsonKey } = await import('../store/persist.js')
+const { commitCars } = await import('../store/commitHelpers.js')
 const { getState, setHydration, subscribe } = await import('../store/app-store.js')
 
 function seedOp(ownerKey, op) {
@@ -221,7 +222,7 @@ describe('기사 초대 upsert — 성공 시 로컬에 서버 확정값을 되�
     resetOutboxQueuesForTests()
     const ownerKey = 'outboxflush-driver-upsert-no-vehicle'
     beginReadySession('user-1', ownerKey)
-    writeJsonKey('cars', ownerKey, [{ id: 'car-local', number: '55다5555', type: 'sub' }]) // supabaseId 없음 — upsert 실행 전 syncVehicles가 먼저 동기화를 시도한다.
+    commitCars(ownerKey, [{ id: 'car-local', number: '55다5555', type: 'sub' }], { syncToCloud: false })
     handlers.vehicles = {
       select: () => ({ data: [], error: null }),
       insert: () => ({ data: null, error: { message: 'network down' } }), // 차량 동기화 자체가 실패
@@ -245,7 +246,7 @@ describe('사용자 지시 1번(4차 재작업) — 미동기화 차량이 뒤�
     resetOutboxQueuesForTests()
     const ownerKey = 'outboxflush-unsynced-car-conflict'
     beginReadySession('user-1', ownerKey)
-    writeJsonKey('cars', ownerKey, [{ id: 'car-local', number: '99자9999', type: 'sub' }]) // 커밋 시점: 로컬 전용(supabaseId 없음).
+    commitCars(ownerKey, [{ id: 'car-local', number: '99자9999', type: 'sub' }], { syncToCloud: false })
     const previousDriver = { id: 'driver-local-5', name: '기존기사', vehicleNumber: '', startDate: '', endDate: '', inviteCode: '', status: 'pending' }
     writeJsonKey('drivers', ownerKey, [{ ...previousDriver, vehicleNumber: '99자9999', startDate: '2026-08-01', endDate: '', inviteCode: '777888' }]) // 낙관적으로 이미 반영된 상태.
 
@@ -276,7 +277,7 @@ describe('사용자 지시 1번(4차 재작업) — 미동기화 차량이 뒤�
     assert.deepEqual(drivers.find((item) => item.id === 'driver-local-5'), previousDriver, '낙관적으로 반영했던 배정 값이 수정 전 스냅샷으로 롤백돼야 한다(성공한 것처럼 남으면 안 된다)')
     const storeDriver = getState().drivers[ownerKey]?.find((item) => item.id === 'driver-local-5')
     assert.deepEqual(storeDriver, previousDriver, 'Store도 함께 롤백돼야 한다')
-    assert.equal(notifyCount, 1, '롤백+outbox 제거가 원자적 쓰기 한 번으로 끝나 notify도 한 번만 나가야 한다')
+    assert.equal(notifyCount, 2, '차량 supabaseId 병합 1회와 롤백+outbox 제거 1회로 notify가 두 번 나간다')
     endCloudSession()
   })
 })

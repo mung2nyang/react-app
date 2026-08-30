@@ -1,9 +1,10 @@
 // @ts-check
-// 재감사 9차(FAIL 지적 2번) — durable에 저장되는 콜상세는 useDayDraft.js 진입 전에
-// domain/day-record.js의 backfillCallDetailIds가 이미 돈 뒤라 id 없는 항목이 있을 수
-// 없다(실제 계약). 예전 검증기는 `id`가 "있으면 문자열이어야 한다" 정도만 봐서
-// `{}`/`{id:""}`/id 자체가 없는 `{fare:"1000"}` 같은 값도 통과시켰다 — day-record.js가
-// 이런 값을 실제 CallDetailLike로 오인해 뒤섞이면 콜상세 목록 자체가 깨질 수 있다.
+// durable EffectivePatch는 isValidCallDetail(비어 있지 않은 id 필수). persisted
+// historical workData는 isPersistedCallDetail — CallDetailLike 정본대로 id는 선택이다.
+// 예전 검증기는 `id`가 "있으면 문자열이어야 한다" 정도만 봐서
+// `{}`/`{id:""}`도 통과시켰다 — day-record.js가 이런 값을 실제 CallDetailLike로
+// 오인해 뒤섞이면 콜상세 목록 자체가 깨질 수 있다. persist 쪽은 id 없는 레거시
+// 콜을 허용하고, initialize → useDayDraft → backfillCallDetailIds가 한 번만 채운다.
 // 정의되지 않은 추가 필드(레거시/서버가 몰래 얹은 필드 등)도 이제 명시적으로 거부한다
 // — 여기 없는 필드가 실제로 필요해지면 CallDetailLike 정본(domain/callDetail.js)과
 // 이 검증기 양쪽에 같이 추가해야 한다(스키마 드리프트 방지).
@@ -40,11 +41,11 @@ export function isValidCurrencyAmount(value) {
 
 // domain/callDetail.js의 CallDetailLike가 선언한 필드 전체 — 이 목록 밖의 키가 있으면
 // 거부한다(레거시 데이터에 정말 필요한 필드가 생기면 여기와 callDetail.js 둘 다 고친다).
-const ALLOWED_CALL_DETAIL_KEYS = /** @type {const} */ ([
+export const ALLOWED_CALL_DETAIL_KEYS = /** @type {const} */ ([
   'id', 'loadLoc', 'unloadLoc', 'fare', 'client', 'clientId', 'commissionSnapshot',
   'remarks', 'vatExempt', 'paymentStatus', 'payments', 'paymentDueDate', 'workDate',
   'distanceType', 'linkedLoadIndex', 'departureTime', 'arrivalTime', 'platform',
-  'cargoTonnage', 'receipt', 'startOdometer', 'endOdometer', 'distanceKm',
+  'cargoTonnage', 'receipt', 'startOdometer', 'endOdometer', 'distanceKm', 'insuranceFee',
 ])
 const ALLOWED_COMMISSION_KEYS = /** @type {const} */ (['enabled', 'type', 'value'])
 const ALLOWED_PAYMENT_KEYS = /** @type {const} */ (['id', 'amount', 'paidAt', 'note'])
@@ -83,22 +84,31 @@ function isValidPayment(value) {
 }
 
 /**
+ * persisted historical workData용. CallDetailLike 정본대로 id는 선택이다.
+ * 빈 `{}`와 빈 문자열 id는 거부한다.
+ * @param {JsonValue} item
+ */
+export function isPersistedCallDetail(item) {
+  if (!isPlainObject(item) || Object.keys(item).length === 0) return false
+  if (Object.keys(item).some((key) => !ALLOWED_CALL_DETAIL_KEYS.includes(/** @type {typeof ALLOWED_CALL_DETAIL_KEYS[number]} */ (key)))) return false
+  if ('id' in item && (typeof item.id !== 'string' || item.id === '')) return false
+  return matchesCallDetailFields(item)
+}
+
+/**
+ * durable EffectivePatch용. 비어 있지 않은 id가 필수다.
  * @param {JsonValue} item
  * @returns {item is EffectiveCallDetail}
  */
 export function isValidCallDetail(item) {
-  if (!isPlainObject(item)) return false
-  if (Object.keys(item).some((key) => !ALLOWED_CALL_DETAIL_KEYS.includes(/** @type {typeof ALLOWED_CALL_DETAIL_KEYS[number]} */ (key)))) return false
-  // 재감사 9차(FAIL 지적 2번) — useDayDraft 진입 전 backfillCallDetailIds가 이미 돌아
-  // 모든 콜상세가 비어 있지 않은 id를 반드시 가진다. id 없는(또는 빈 문자열) 항목은
-  // 거부한다.
-  if (typeof item.id !== 'string' || item.id === '') return false
+  return isPersistedCallDetail(item) && isPlainObject(item) && typeof item.id === 'string' && item.id !== ''
+}
+
+/** @param {Record<string, JsonValue>} item */
+function matchesCallDetailFields(item) {
   if ('loadLoc' in item && typeof item.loadLoc !== 'string') return false
   if ('unloadLoc' in item && typeof item.unloadLoc !== 'string') return false
-  if ('fare' in item) {
-    if (typeof item.fare !== 'string' && typeof item.fare !== 'number') return false
-    if (typeof item.fare === 'number' && !isNonNegativeFiniteNumber(item.fare)) return false
-  }
+  if ('fare' in item && !isValidCurrencyAmount(item.fare)) return false
   if ('client' in item && typeof item.client !== 'string') return false
   if ('clientId' in item && item.clientId !== null && typeof item.clientId !== 'string') return false
   if ('remarks' in item && typeof item.remarks !== 'string') return false
@@ -119,6 +129,7 @@ export function isValidCallDetail(item) {
   if ('startOdometer' in item && typeof item.startOdometer !== 'string') return false
   if ('endOdometer' in item && typeof item.endOdometer !== 'string') return false
   if ('distanceKm' in item && typeof item.distanceKm !== 'string') return false
+  if ('insuranceFee' in item && !isValidCurrencyAmount(item.insuranceFee)) return false
   if ('commissionSnapshot' in item && !isValidCommissionSnapshot(item.commissionSnapshot)) return false
   if ('payments' in item) {
     if (!Array.isArray(item.payments)) return false

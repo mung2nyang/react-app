@@ -3,12 +3,12 @@
 // 판정(2차) + dirty journal 재적용(2차) + single-flight/세대 보호(2차, cloudSession.js로
 // 이전) + outbox tombstone/pending 재적용(4차, 신규)까지 전부 여기서 합친다.
 import { supabase } from '../supabaseClient.js'
-import { setHydration } from '../store/app-store.js'
+import { getState, setHydration } from '../store/app-store.js'
 import { replaceOwnerState } from '../store/owner-state.js'
 import { getDirtyDomains, hasDirty } from './dirtyJournal.js'
 import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
 import { singleFlight } from './singleFlight.js'
-import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, getSessionEpoch, isSessionStillCurrent } from './cloudSession.js'
+import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, isSessionStillCurrent } from './cloudSession.js'
 import { collectPracticeSnapshot } from './cloudStorage.js'
 import { hasPendingOps } from './mutationOutbox.js'
 import { flushMutationOutbox } from './outboxFlush.js'
@@ -39,9 +39,20 @@ export function hydrateFromSupabase(userId, ownerKey) {
   })
 }
 
+/**
+ * 이 세대가 hydration 슬롯을 아직 쥐고 있을 때만 ready/failed로 닫는다.
+ * 로그아웃(idle)이나 더 새 hydrate가 epoch를 갈아탄 뒤에는 덮지 않는다.
+ * @param {number} myEpoch
+ * @param {{ status: 'ready'|'failed', userId: string, ownerKey: string }} patch
+ */
+function finishHydration(myEpoch, patch) {
+  if (getState().hydration.epoch !== myEpoch) return
+  setHydration({ ...patch, epoch: myEpoch })
+}
+
 /** @param {string} userId @param {string} ownerKey @param {number} myEpoch */
 async function performHydrate(userId, ownerKey, myEpoch) {
-  setHydration({ status: 'hydrating', userId, ownerKey })
+  setHydration({ status: 'hydrating', userId, ownerKey, epoch: myEpoch })
 
   try {
     const [profileRes, vehiclesRes, clientsRes, linksRes] = await Promise.all([
@@ -119,16 +130,23 @@ async function performHydrate(userId, ownerKey, myEpoch) {
       })
     }
 
-    if (!isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) return nextSnapshot // 더 최신 세션이 이미 있다 — 조용히 버린다.
-
-    replaceOwnerState(ownerKey, nextSnapshot, { sync: false })
-    setHydration({ status: 'ready', userId, ownerKey })
-    if (hasDirty(ownerKey)) scheduleCloudSync()
-    if (hasPendingOps(ownerKey)) flushMutationOutbox(ownerKey).catch((error) => console.error('outbox 플러시 실패:', error))
+    if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
+      replaceOwnerState(ownerKey, nextSnapshot, { sync: false })
+      finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
+      if (hasDirty(ownerKey)) scheduleCloudSync()
+      if (hasPendingOps(ownerKey)) flushMutationOutbox(ownerKey).catch((error) => console.error('outbox 플러시 실패:', error))
+    } else {
+      // 스냅샷은 반영하지 않는다. 이 세대가 아직 hydrating이면 스위치를 닫아 영원히 잠기지 않게 한다.
+      finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
+    }
     return nextSnapshot
   } catch (error) {
-    if (getSessionEpoch() === myEpoch) setHydration({ status: 'failed', userId, ownerKey })
+    finishHydration(myEpoch, { status: 'failed', userId, ownerKey })
     throw error
+  } finally {
+    if (getState().hydration.epoch === myEpoch && getState().hydration.status === 'hydrating') {
+      finishHydration(myEpoch, { status: 'failed', userId, ownerKey })
+    }
   }
 }
 

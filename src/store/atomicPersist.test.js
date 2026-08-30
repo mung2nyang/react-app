@@ -13,12 +13,16 @@ import { readJsonKey, storageKeyFor, writeJsonKey } from './persist.js'
 
 // Storage 전역 이름에 기대지 않고 프로토타입에서 원본 setItem을 직접 캡처한다 —
 // jsdom이 항상 전역 Storage 생성자를 노출한다는 보장이 없다.
+/**
+ * @param {(key: string) => boolean} shouldFail
+ * @param {() => void} fn
+ */
 function withFailingSetItem(shouldFail, fn) {
   const proto = Object.getPrototypeOf(localStorage)
   const original = proto.setItem
-  const spy = mock.method(proto, 'setItem', function patchedSetItem(key, value) {
+  const spy = mock.method(proto, 'setItem', function patchedSetItem(/** @type {string} */ key, /** @type {string} */ value) {
     if (shouldFail(key)) throw new Error('quota exceeded (simulated)')
-    return original.call(this, key, value)
+    return original.call(localStorage, key, value)
   })
   try {
     fn()
@@ -103,5 +107,23 @@ describe('writeAllOrNothing — 쓰기 도중 실패는 이미 쓴 항목을 원
 
     assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), null, 'journal 실패 시 도메인 키도 함께 롤백돼야 한다')
     assert.equal(localStorage.getItem(journalKey), null, 'journal 자체도 안 쓰여야 한다')
+  })
+
+  test('remove 항목이 실패한 setItem 뒤에 있으면 삭제와 선행 쓰기가 함께 롤백된다', () => {
+    const owner = 'atomic-remove-rollback'
+    const carsKey = storageKeyFor('cars', owner)
+    const logKey = `reactPracticeWorkData:${owner}:log:11가1111`
+    localStorage.setItem(logKey, JSON.stringify({ '2026-08-01': { fixedCount: 1 } }))
+    writeJsonKey('cars', owner, [{ id: 'keep' }])
+    const failKey = storageKeyFor('profile', owner)
+    withFailingSetItem((key) => key === failKey, () => {
+      assert.throws(() => writeAllOrNothing([
+        { key: carsKey, value: [{ id: 'new' }] },
+        { key: logKey, remove: true },
+        { key: failKey, value: { name: 'x' } },
+      ]))
+    })
+    assert.deepEqual(readJsonKey('cars', owner, []), [{ id: 'keep' }])
+    assert.equal(localStorage.getItem(logKey), JSON.stringify({ '2026-08-01': { fixedCount: 1 } }))
   })
 })

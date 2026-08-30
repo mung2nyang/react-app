@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { isValidCallDetail, isValidCurrencyAmount } from './callDetailSchema.js'
+import { isPersistedCallDetail, isValidCallDetail, isValidCurrencyAmount } from './callDetailSchema.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
@@ -48,4 +48,13 @@ test('재감사 12차 — 통화는 천 단위 쉼표 또는 쉼표 없는 정�
     fare: '1,000',
     payments: [{ amount: nestedAmount }],
   }), false)
+})
+
+test('durable는 id 필수, persisted workData는 id 없는 레거시 콜을 허용한다', () => {
+  const legacy = { loadLoc: '레거시상차', fare: '1,000' }
+  assert.equal(isPersistedCallDetail(legacy), true)
+  assert.equal(isValidCallDetail(legacy), false)
+  assert.equal(isPersistedCallDetail({}), false)
+  assert.equal(isValidCallDetail({ id: '', fare: '1,000' }), false)
+  assert.equal(isValidCallDetail({ id: 'trp_ok', fare: '1,000' }), true)
 })

@@ -2,6 +2,7 @@
 // 날짜별 운행 기록(workData[dateKey]) 파생 계산 + 저장 형태 정규화.
 // migration-plan.md의 domain/day-record.ts 자리. DayRecordLike/CallDetailLike
 // 정본은 각각 dayRecordTypes.js/callDetail.js — 여기선 alias만 한다.
+import { dedupeCallDetailsById, withCoercedCallDetailId } from './callDetailIds.js'
 import { getDetailPaymentSummary } from './finance.js'
 import { parseCurrencyValue } from './money.js'
 
@@ -70,14 +71,20 @@ export function getCallDetails(record) {
 /** @param {DayRecordLike|undefined} record @returns {{ record: DayRecordLike|undefined, changed: boolean }} */
 export function backfillCallDetailIds(record) {
   const list = Array.isArray(record?.callDetails) ? record.callDetails : []
-  if (list.length === 0 || list.every((item) => item?.id)) return { record, changed: false }
-  return {
-    record: {
-      ...record,
-      callDetails: list.map((item) => (item?.id ? item : { ...item, id: `trp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` })),
-    },
-    changed: true,
-  }
+  if (list.length === 0) return { record, changed: false }
+  let changed = false
+  const callDetails = list.map((item) => {
+    const coerced = withCoercedCallDetailId(item)
+    if (coerced !== item) {
+      changed = true
+      return coerced
+    }
+    if (item?.id) return item
+    changed = true
+    return { ...item, id: `trp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}` }
+  })
+  if (!changed) return { record, changed: false }
+  return { record: { ...record, callDetails }, changed: true }
 }
 
 /** @param {DayRecordLike|null|undefined} record */
@@ -145,7 +152,7 @@ export function saveDayRecord(data, dateKey, { isOff = false, fixedCount = 0, ca
   const off = !!isOff
   const count = off ? 0 : Math.max(0, parseInt(String(fixedCount), 10) || 0)
   const prev = next[dateKey] || {}
-  const details = Array.isArray(callDetails) ? callDetails : getCallDetails(prev)
+  const details = dedupeCallDetailsById(Array.isArray(callDetails) ? callDetails : getCallDetails(prev))
   const routeCounts = getFixedRouteCounts({
     fixedRouteCounts: fixedRouteCounts !== undefined ? fixedRouteCounts : prev.fixedRouteCounts,
   })
@@ -156,8 +163,12 @@ export function saveDayRecord(data, dateKey, { isOff = false, fixedCount = 0, ca
   if (!off && count === 0 && pallets === 0 && details.length === 0) {
     delete next[dateKey]
   } else {
+    const restPrev = { ...prev }
+    delete restPrev.fuelItems
+    delete restPrev.maintItems
+    delete restPrev.miscItems
     next[dateKey] = {
-      ...prev,
+      ...restPrev,
       isOff: off,
       fixedCount: count,
       callDetails: details,

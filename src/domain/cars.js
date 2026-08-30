@@ -1,5 +1,22 @@
+// @ts-check
 // Step 4 도메인 폴더 이동: cars.js의 순수 계산부. localStorage I/O(loadCars/saveCars)는
 // lib/cars.js에 남아 이 파일을 재수출한다.
+
+/** @typedef {import('./financeTypes.js').CarLike} CarLike */
+/** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
+
+/**
+ * @typedef {Object} CarUpsertDraft
+ * @property {string} [number]
+ * @property {string} [tonnage]
+ * @property {'main'|'sub'} [type]
+ * @property {string} [driverName]
+ * @property {string} [driverPhone]
+ * @property {string} [settlementMode]
+ * @property {boolean} [commEnabled]
+ * @property {string} [commType]
+ * @property {string} [commission]
+ */
 export const SETTLEMENT_MODES = [
   { value: 'company', label: '회사 정산', description: '회사가 거래처에 매출 계산서를 발행하고 기사 계산서를 수취합니다.' },
   { value: 'driver_direct', label: '기사 직접 정산', description: '기사가 거래처에 직접 발행하고 회사는 기사에게 수수료 계산서를 발행합니다.' },
@@ -7,14 +24,20 @@ export const SETTLEMENT_MODES = [
   { value: 'none', label: '계산서 미사용', description: '이 기사차량 운행분은 계산서 자동 생성에서 제외합니다.' },
 ]
 
+/** @param {Array<CarLike>|null|undefined} cars */
 export function hasMainCar(cars) {
   return (cars || []).some((car) => car.type === 'main')
 }
 
+/** @param {string} [mode] */
 export function getSettlementModeMeta(mode) {
   return SETTLEMENT_MODES.find((item) => item.value === mode) || SETTLEMENT_MODES[0]
 }
 
+/**
+ * @param {CarUpsertDraft} draft
+ * @param {'main'|'sub'} type
+ */
 function driverFieldsFromDraft(draft, type) {
   if (type !== 'sub') {
     return {
@@ -40,7 +63,12 @@ function driverFieldsFromDraft(draft, type) {
   }
 }
 
-export function upsertCar(cars, draft, editingId = null) {
+/**
+ * @param {Array<CarLike>|null|undefined} cars
+ * @param {CarUpsertDraft} draft
+ * @param {string|null} [editingId]
+ */
+export function upsertCar(cars, draft, editingId) {
   const number = String(draft.number || '').trim()
   const tonnage = String(draft.tonnage || '').trim()
   if (!number) return { error: '차량번호를 입력해 주세요.', cars }
@@ -55,6 +83,8 @@ export function upsertCar(cars, draft, editingId = null) {
   }
 
   const list = [...(cars || [])]
+  const duplicate = list.some((car) => car.number === number && (!editingId || car.id !== editingId))
+  if (duplicate) return { error: '이미 등록된 차량번호입니다.', cars }
 
   if (editingId) {
     const idx = list.findIndex((car) => car.id === editingId)
@@ -72,7 +102,7 @@ export function upsertCar(cars, draft, editingId = null) {
   }
 
   list.push({
-    id: `car-${Date.now()}`,
+    id: `car_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     type,
     number,
     tonnage,
@@ -81,21 +111,25 @@ export function upsertCar(cars, draft, editingId = null) {
   return { cars: list }
 }
 
+/** @param {Array<CarLike>|null|undefined} cars @param {string} id */
 export function removeCar(cars, id) {
   return (cars || []).filter((car) => car.id !== id)
 }
 
+/** @param {string} [carNum] @returns {string} */
 export function getShortCarNum(carNum) {
-  if (!carNum || carNum === 'main') return carNum
+  if (!carNum || carNum === 'main') return carNum || ''
   const match = carNum.match(/\d{4}$/)
   return match ? match[0] : carNum
 }
 
+/** @param {CarLike|null|undefined} car @param {FinanceSettings} [settings] */
 export function getEffectiveDriverSettlementMode(car, settings = {}) {
   const selected = car?.settlementMode || 'default'
   return selected === 'default' ? (settings.defaultDriverSettlementMode || 'company') : selected
 }
 
+/** @param {CarLike|null|undefined} car @param {FinanceSettings} [settings] */
 export function getCarBusinessInfo(car, settings = {}) {
   const ownerBiz = {
     name: settings.bizName || '',
@@ -123,10 +157,12 @@ export function getCarBusinessInfo(car, settings = {}) {
   }
 }
 
+/** @param {CarLike|null|undefined} car */
 export function isVehicleRevenueSharedWithOwner(car) {
   return car?.shareRevenueWithOwner !== false
 }
 
+/** @param {CarLike|null|undefined} car @param {FinanceSettings} [settings] */
 export function getVehicleSupplierIdentity(car, settings = {}) {
   const ownerBiz = {
     sameAsOwner: true,

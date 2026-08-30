@@ -16,11 +16,11 @@
 /** @typedef {{ message: string, code?: string }|Error|null} SupabaseQueryError */
 /** @typedef {Error & { failedTables?: Array<string>, cause?: Record<string, SupabaseQueryError> }} HydrateError */
 
-/** @typedef {{ name?: string, phone?: string, bizName?: string, bizNumber?: string, bizAddress?: string, bizType?: string, bizItem?: string, bizEmail?: string, bankName?: string, accountNumber?: string }} LocalProfile */
+/** @typedef {{ name?: string, phone?: string, bizName?: string, bizRepresentative?: string, bizNumber?: string, bizAddress?: string, bizType?: string, bizItem?: string, bizEmail?: string, bankName?: string, accountNumber?: string, accountHolder?: string }} LocalProfile */
 /** @typedef {{ name?: string, phone?: string, business_name?: string, business_number?: string, business_address?: string, business_type?: string, business_item?: string, business_email?: string, bank_name?: string, account_number?: string }|null|undefined} ProfileRow */
 
-/** @typedef {{ supabaseId?: string|number, type?: string, number?: string }} LocalCar */
-/** @typedef {{ id?: string, driverName?: string, settlementMode?: string|null, commEnabled?: boolean, commType?: string|null, commission?: string|number }} RawCarBackup */
+/** @typedef {{ id?: string, supabaseId?: string|number, type?: string, number?: string, settlementMode?: string, commType?: string, commEnabled?: boolean, commission?: string|number, driverName?: string, tonnage?: string }} LocalCar */
+/** @typedef {{ id?: string, driverName?: string, settlementMode?: string, commEnabled?: boolean, commType?: string, commission?: string|number }} RawCarBackup */
 /** @typedef {{ id: string|number, raw?: RawCarBackup|null, number?: string, type?: string, tonnage?: string, driver_name?: string, settlement_mode?: string|null, comm_enabled?: boolean, comm_type?: string|null, comm_value?: string|number }} VehicleRow */
 
 /** @typedef {{ supabaseId?: string|number }} LocalClient */
@@ -32,6 +32,6 @@
 
 /** @typedef {{ work_date: string, raw?: JsonRecord|null, is_off?: boolean, fixed_count?: number }} DailyLogRow */
 /** @typedef {{ work_date: string, raw?: JsonRecord|null }} DetailRow */
-/** @typedef {{ isOff: boolean, fixedCount: number, callDetails: Array<JsonRecord>, fuelItems: Array<JsonRecord>, maintItems: Array<JsonRecord>, miscItems: Array<JsonRecord> }} MergedDayRecord */
+/** @typedef {{ isOff: boolean, fixedCount: number, callDetails: Array<JsonRecord>, fuelItems?: Array<JsonRecord>, maintItems?: Array<JsonRecord>, miscItems?: Array<JsonRecord> }} MergedDayRecord */
 
 export {}

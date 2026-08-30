@@ -32,11 +32,17 @@ const EMPTY_EXPENSES = /** @type {Array<ExpenseItem>} */ ([])
  * @returns {Record<string, DayRecordLike>}
  */
 export function readOwnerWorkData(ownerKey) {
-  // 재감사 10차(FAIL 지적 4번) — app-store.js의 AppStoreState.workLogs가 이제
-  // { main?: Record<string, DayRecordLike> }로 정확히 선언돼 있어 더 이상 여기서
-  // object로 단언할 필요가 없다(app-store.js의 DayRecordLike도 이 파일과 같은
-  // domain/dayRecordTypes.js 정본을 가리킨다).
   return getState().workLogs[ownerKey]?.main || EMPTY_WORK_DATA
+}
+
+/**
+ * @param {string} ownerKey
+ * @param {string} [logId]
+ * @returns {Record<string, DayRecordLike>}
+ */
+export function readOwnerLogWorkData(ownerKey, logId = 'main') {
+  if (!logId || logId === 'main') return readOwnerWorkData(ownerKey)
+  return getState().workLogs[ownerKey]?.[logId] || EMPTY_WORK_DATA
 }
 
 /**
@@ -96,6 +102,19 @@ export function readOwnerClients(ownerKey) {
  */
 export function useOwnerClients(ownerKey) {
   return useSyncExternalStore(subscribe, () => readOwnerClients(ownerKey))
+}
+
+/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
+const EMPTY_CARS = /** @type {Array<CarLike>} */ ([])
+
+/** @param {string} ownerKey */
+export function readOwnerCars(ownerKey) {
+  return getState().cars[ownerKey] || EMPTY_CARS
+}
+
+/** @param {string} ownerKey */
+export function useOwnerCars(ownerKey) {
+  return useSyncExternalStore(subscribe, () => readOwnerCars(ownerKey))
 }
 
 const EMPTY_TOMBSTONES = /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones} */ ({})

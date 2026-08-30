@@ -3,14 +3,15 @@
 // 배럴로 domain/expenses.js를 재수출한다.
 import { readJsonKey } from '../store/persist.js'
 import { commitExpenses } from '../store/commitHelpers.js'
+import { dedupeExpensesById } from '../domain/expenses.js'
 
 export function loadExpenses(ownerKey = 'guest') {
   const parsed = readJsonKey('expenses', ownerKey, [])
-  return Array.isArray(parsed) ? parsed : []
+  return Array.isArray(parsed) ? dedupeExpensesById(parsed) : []
 }
 
 export function saveExpenses(ownerKey, items) {
-  commitExpenses(ownerKey, items)
+  commitExpenses(ownerKey, dedupeExpensesById(items))
 }
 
 export * from '../domain/expenses.js'

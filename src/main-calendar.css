@@ -385,48 +385,6 @@ body:not(.account-flow-active) {
 .work-log-page .fuel-add-direct-btn { color: var(--primary-color); }
 .work-log-page .misc-add-direct-btn { color: #d97706; }
 
-.work-log-page .call-detail-inline-host,
-.work-log-page .maint-fuel-inline-host {
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: max-height .48s cubic-bezier(.22, 1, .36, 1), opacity .28s ease, transform .42s cubic-bezier(.22, 1, .36, 1);
-}
-
-.work-log-page .call-detail-inline-host.is-open,
-.work-log-page .maint-fuel-inline-host.is-open {
-  margin-top: 12px;
-  opacity: 1;
-  transform: none;
-}
-
-.work-log-page .inline-expanded-panel {
-  opacity: 0;
-  transform: translateY(-8px);
-  transition: opacity .28s ease .06s, transform .42s cubic-bezier(.22, 1, .36, 1);
-}
-
-.work-log-page .inline-expanded-panel.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-.work-log-page .call-detail-inline-host .call-detail-modal-content,
-.work-log-page .maint-fuel-inline-host .modal-content {
-  width: 100%;
-  max-width: none;
-  max-height: none;
-  padding: 10px 0 0;
-  overflow: visible;
-  border: 0;
-  border-top: 1px solid var(--border-color);
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  text-align: left;
-}
-
 .work-log-page .call-detail-modal-title {
   margin: 0;
   padding: 0 2px 11px;
@@ -580,11 +538,9 @@ body:not(.account-flow-active) {
 }
 
 .work-log-page .call-detail-form-actions {
-  position: static;
   gap: 8px;
   margin-top: 10px;
   padding: 0 0 8px;
-  background: transparent;
 }
 
 .work-log-page .call-detail-form-actions .modal-btn {

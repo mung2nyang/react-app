@@ -1029,7 +1029,22 @@ test('재감사 FAIL 지적 6번 — 콜상세 폼을 열면 비용 폼이 닫�
       openCallBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
     })
     assert.ok(container.querySelector('.call-detail-modal-content'), '콜상세 폼이 DOM에 있어야 한다')
+    const callSheet = container.querySelector('.call-detail-inline-host')
+    assert.ok(callSheet?.classList.contains('is-visible'))
+    assert.equal(callSheet?.getAttribute('aria-hidden'), 'false')
+    assert.equal(callSheet?.hasAttribute('hidden'), false)
     assert.equal(container.querySelector('.maint-fuel-select-inline'), null, '비용 선택 패널은 아직 DOM에 없어야 한다')
+
+    for (const label of ['+ 정비 추가', '+ 주유 추가', '+ 기타 추가']) {
+      const kindBtn = Array.from(container.querySelectorAll('button')).find((btn) => (btn.textContent || '').includes(label))
+      assert.ok(kindBtn, label)
+      await act(async () => { kindBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })) })
+      const expenseSheet = container.querySelector('.maint-fuel-inline-host')
+      assert.ok(expenseSheet?.classList.contains('is-visible'), `${label} 시트가 열려야 한다`)
+      assert.equal(expenseSheet?.getAttribute('aria-hidden'), 'false')
+      assert.equal(container.querySelector('.call-detail-modal-content'), null, `${label} 후 콜 폼은 닫혀야 한다`)
+      assert.ok(container.querySelector('#expenseCost'), `${label} 비용 입력이 보여야 한다`)
+    }
 
     const openExpenseBtn = container.querySelector('.maint-section .compact-add-btn')
     assert.ok(openExpenseBtn, '비용 섹션의 "+ 추가" 버튼을 찾아야 한다')

@@ -171,6 +171,13 @@ describe('backfillCallDetailIds — 레거시 콜상세 id를 로드 시 한 번
     assert.ok(next.callDetails[1].id.length > 0)
   })
 
+  test('숫자 id는 문자열로만 고치고 새 trp_ id를 만들지 않는다', () => {
+    const record = { callDetails: [{ id: 42, fare: '1' }] }
+    const { record: next, changed } = backfillCallDetailIds(record)
+    assert.equal(changed, true)
+    assert.equal(next.callDetails[0].id, '42')
+  })
+
   test('모든 항목에 이미 id가 있으면 changed:false이고 같은 참조를 그대로 돌려준다(멱등)', () => {
     const record = { callDetails: [{ id: 'a', fare: '1' }] }
     const result = backfillCallDetailIds(record)
@@ -225,5 +232,40 @@ describe('backfillCallDetailIds — 레거시 콜상세 id를 로드 시 한 번
     const afterHydrate = backfillCallDetailIds(cloudRoundTrip)
     assert.equal(afterHydrate.changed, false)
     assert.equal(afterHydrate.record.callDetails[0].id, migrated.record.callDetails[0].id)
+  })
+})
+
+describe('saveDayRecord — 비용 임베드를 일지에 남기지 않는다', () => {
+  test('이전 기록의 fuel/maint/misc는 저장 결과에서 빠진다', () => {
+    const prev = {
+      [dateKey]: {
+        isOff: false,
+        fixedCount: 1,
+        callDetails: [],
+        fuelItems: [{ type: '주유', cost: 1 }],
+        maintItems: [{ name: '오일', fare: 1 }],
+        miscItems: [{ name: '기타', fare: 1 }],
+      },
+    }
+    const next = saveDayRecord(prev, dateKey, { fixedCount: 1, callDetails: [] })
+    assert.equal(next[dateKey].fuelItems, undefined)
+    assert.equal(next[dateKey].maintItems, undefined)
+    assert.equal(next[dateKey].miscItems, undefined)
+    assert.equal(next[dateKey].fixedCount, 1)
+  })
+
+  test('같은 id 콜상세는 저장 시 한 건만 남긴다', () => {
+    const next = saveDayRecord({}, dateKey, {
+      fixedCount: 1,
+      callDetails: [
+        { id: 'trp_a', fare: '1,000' },
+        { id: 'trp_a', fare: '1,000' },
+        { id: 7, fare: '2,000' },
+        { id: '7', fare: '2,000' },
+      ],
+    })
+    assert.equal(next[dateKey].callDetails.length, 2)
+    assert.equal(next[dateKey].callDetails[0].id, 'trp_a')
+    assert.equal(next[dateKey].callDetails[1].id, '7')
   })
 })

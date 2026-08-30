@@ -3,6 +3,7 @@
 // 분리한 이유는 200줄 제한 — 로직은 전혀 없고 전부 commitBatch([{ domain, ... }])의
 // 얇은 래퍼다.
 import { commitBatch } from './app-store.js'
+import { storageKeyForLog } from './persist.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
@@ -31,6 +32,25 @@ function commit(domain, ownerKey, value, options = {}) {
 /** @param {string} ownerKey @param {Record<string, DayRecordLike>} data 날짜별 운행 기록 @param {{ syncToCloud?: boolean }} [options] */
 export function commitWorkData(ownerKey, data, options = {}) {
   return commit('workData', ownerKey, data, options)
+}
+
+/**
+ * 서브 차량 로컬 일지. 메인 workData 키는 건드리지 않고 storageKeyForLog만 쓴다.
+ * syncWorkData.js가 메인만 동기화하므로 클라우드 예약은 하지 않는다(Step 9).
+ * @param {string} ownerKey
+ * @param {string} logId
+ * @param {Record<string, DayRecordLike>} data
+ */
+export function commitLogWorkData(ownerKey, logId, data) {
+  if (!logId || logId === 'main') return commitWorkData(ownerKey, data)
+  const jsonValue = /** @type {import('./atomicPersist.js').JsonValue} */ (data)
+  commitBatch([], {
+    persist: true,
+    syncToCloud: false,
+    extraWrites: [{ key: storageKeyForLog(ownerKey, logId), value: jsonValue }],
+    mergeWorkLogs: { ownerKey, extra: { [logId]: data } },
+  })
+  return data
 }
 
 /** @param {string} ownerKey @param {Array<CarLike>} cars @param {{ syncToCloud?: boolean }} [options] */

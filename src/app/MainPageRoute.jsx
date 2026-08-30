@@ -17,8 +17,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import CalendarPage from '../components/calendar/CalendarPage.jsx'
 import DayLogPage from '../components/day-log/DayLogPage.jsx'
 import { parseDateKeySelection } from '../lib/calendar.js'
-import { loadClients } from '../lib/clients.js'
-import { useOwnerSettings } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../store/ownerDataHooks.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
 
@@ -43,20 +42,23 @@ export default function MainPageRoute({
   onOpenNotifs,
   onBackToAuth,
 }) {
-  const { date } = useParams()
+  const { date, logId: rawLogId } = useParams()
+  const logId = rawLogId ? decodeURIComponent(rawLogId) : 'main'
   const navigate = useNavigate()
   const location = useLocation()
   const selected = parseDateKeySelection(date)
   const settings = useOwnerSettings(ownerKey)
+  const clients = useOwnerClients(ownerKey)
+  const cars = useOwnerCars(ownerKey)
+  const knownLog = logId === 'main' || cars.some((car) => car.number === logId)
 
-  // 재감사 9차(FAIL 지적 4번) — `date`는 있는데(=/app/day/:date 경로) 실제 달력
-  // 날짜로 검증되지 않으면(parseDateKeySelection이 null) DayLogPage를 렌더하거나
-  // 편집을 저장하는 대신 /app으로 안전하게 replace한다 — 아래 렌더 자체는 이미
-  // CalendarPage로 떨어지지만(그 자체로 DayLogPage/저장은 막힌다), URL을 깨진
-  // 채로 남겨 두지 않는다.
   useEffect(() => {
     if (date && !selected) navigate('/app', { replace: true })
   }, [date, selected, navigate])
+
+  useEffect(() => {
+    if (rawLogId && !knownLog) navigate('/app', { replace: true })
+  }, [rawLogId, knownLog, navigate])
 
   function closeWorkLog() {
     const target = resolveWorkLogCloseTarget(location.state)
@@ -65,6 +67,7 @@ export default function MainPageRoute({
   }
 
   if (selected) {
+    if (rawLogId && !knownLog) return null
     return (
       <DayLogPage
         // 재감사 1번(FAIL 지적) — react-router는 같은 Route(`day/:date`) 안에서
@@ -77,12 +80,13 @@ export default function MainPageRoute({
         // 완전히 새로 마운트한다 — 기존(이미 실측 검증된) 언마운트 flush effect가
         // "옛 인스턴스"에서 정확히 한 번 실행돼 A의 밀린 편집을 A에 flush하고,
         // "새 인스턴스"는 B의 데이터로 완전히 새로 초기화된다.
-        key={`${ownerKey}:${selected.dateKey}`}
+        key={`${ownerKey}:${logId}:${selected.dateKey}`}
         month={selected.month}
         day={selected.day}
         dateKey={selected.dateKey}
         ownerKey={ownerKey}
-        clients={loadClients(ownerKey)}
+        logId={logId}
+        clients={clients}
         settings={settings}
         showToast={showToast}
         onWorkChanged={onWorkChanged}
@@ -100,6 +104,7 @@ export default function MainPageRoute({
       onOpenMenu={onOpenMenu}
       onOpenNotifs={onOpenNotifs}
       onBackToAuth={onBackToAuth}
+      showToast={showToast}
       // closeWorkLog(DayLogPage 헤더 "뒤로가기")는 DayLogPage.jsx의 handleClose가
       // 이미 confirmLeaveIfUnsafe()로 감싸서 부른다 — 여기서 또 감싸면 같은 이동에
       // confirm이 두 번 뜬다. 달력→일지 진입은 그 경로가 아니라서(어디서도 아직

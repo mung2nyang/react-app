@@ -10,10 +10,11 @@
 // 아님+횟수 0+파렛트 0+콜상세 0이면 그 날짜 키를 지운다)을 재사용한다.
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { backfillCallDetailIds, saveDayRecord } from '../../domain/day-record.js'
-import { saveWorkDataWithTombstoneCheck } from '../../lib/workData.js'
+import { saveLogWorkDataWithTombstoneCheck } from '../../lib/workData.js'
+import { pendingOwnerForLog } from '../../lib/pendingLogOwner.js'
 import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../../lib/durableWriteGuard.js'
 import { clearPendingDayWrite, getPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
-import { readOwnerWorkData } from '../../store/ownerDataHooks.js'
+import { readOwnerLogWorkData } from '../../store/ownerDataHooks.js'
 import { queueFailedDayWrite, settlePendingDayWrite, useMountedRef } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
 
@@ -27,25 +28,13 @@ const DEBOUNCE_MS = 600
  *   바뀔 때마다가 아니라 디바운스가 끝나 실제로 쓰였을 때만 부른다.
  * @param {(message: string) => void} [showToast] 재감사(FAIL 지적 9번) — 자동 저장이
  *   실패(예: localStorage 용량 초과)하면 조용히 넘어가지 않고 이걸로 알린다.
+ * @param {string} [logId] 차량번호. 생략/`main`이면 메인 일지.
  */
-export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
-  // 재감사(FAIL 지적 3번) — id 없는 레거시 콜상세를 "마운트 시 정확히 한 번" 영구
-  // id로 채운다. useState(() => ...)로 감싸 컴포넌트 생애주기당 정확히 한 번만
-  // 계산한다(MainPageRoute.jsx가 이제 dateKey로 key를 주므로, 날짜가 바뀌면 이
-  // 컴포넌트 자체가 새로 마운트되고 여기도 다시 한 번만 돈다 — 재감사 FAIL 지적
-  // 1번 수정과 맞물린다). initDayLogState는 이 값을 그대로 옮기기만 하고 스스로
-  // id를 만들지 않는다 — 아래 mount effect가 changed일 때만 실제로 store/localStorage에
-  // 원자적으로 반영한다(초안만 바뀌고 store는 안 바뀌는 반쪽 상태를 만들지 않는다).
-  // 재감사 3차(FAIL 지적 2번) — 이 owner/date로 아직 서버는커녕 store에도 못 들어간
-  // durable pending patch가 있으면(quota 실패로 큐에 남은 이전 인스턴스의 편집) store
-  // 값 위에 덮어씌운다. 이걸 안 하면: 실패한 편집이 큐에 남은 채로 화면을 나갔다
-  // 다시 들어와서 다른 필드를 편집해 성공 커밋하면, 그 성공 커밋이 여전히 store의
-  // 오래된 값 기준이라 큐에 있던(더 먼저 실패한) 편집이 통째로 사라진다 — 필드
-  // 단위로 얕게 덮어써서(patchDraft와 같은 규칙) 이후 draft 편집이 이 위에 자연스럽게
-  // 쌓인다(따로 리비전 번호를 둘 필요가 없다).
+export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = 'main') {
+  const pendingOwner = pendingOwnerForLog(ownerKey, logId)
   const [idMigration] = useState(() => {
-    const stored = readOwnerWorkData(ownerKey)[dateKey]
-    const queued = getPendingDayWrite(ownerKey, dateKey) || getUnsafeRegistrationPatch(ownerKey, dateKey)
+    const stored = readOwnerLogWorkData(ownerKey, logId)[dateKey]
+    const queued = getPendingDayWrite(pendingOwner, dateKey) || getUnsafeRegistrationPatch(pendingOwner, dateKey)
     return backfillCallDetailIds(queued ? { ...stored, ...queued } : stored)
   })
   const [state, dispatch] = useReducer(
@@ -88,14 +77,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
       timerRef.current = null
     }
     const draft = draftRef.current
-    const latest = readOwnerWorkData(ownerKey)
-    // structuredClone: draft와 store가 커밋 이후에도 같은 배열/객체 참조를 공유하지
-    // 않게 한다(재감사 FAIL 지적 8번) — draft.callDetails의 각 item(payments 배열,
-    // commissionSnapshot 객체 포함)을 얕게만 복제했었는데, 그러면 "커밋된 뒤에도
-    // draft를 계속 들고 있다가 어딘가에서 항목을 제자리 수정(in-place mutate)하면"
-    // 이미 store에 반영된 값까지 같이 바뀌는 참조 공유 버그가 이론상 가능했다.
-    // saveDayRecord에 넘기기 직전에 깊은 복제를 해서 store 쪽 사본을 draft와 완전히
-    // 분리한다.
+    const latest = readOwnerLogWorkData(ownerKey, logId)
     const patch = structuredClone({
       isOff: draft.isOff,
       fixedCount: draft.fixedCount,
@@ -108,7 +90,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
       // 재감사 3차(FAIL 지적 1번) — 빈 날 삭제가 실제로 일어났으면(latest에는
       // dateKey가 있었는데 next에는 없으면) workData 커밋과 같은 원자적 트랜잭션에
       // tombstone 기록도 함께 실어 보낸다 — lib/workData.js 참고.
-      saveWorkDataWithTombstoneCheck(ownerKey, dateKey, latest, next)
+      saveLogWorkDataWithTombstoneCheck(ownerKey, logId, dateKey, latest, next)
     } catch (error) {
       // writeAllOrNothing(atomicPersist.js)이 이미 store/localStorage를 실패 전
       // 상태로 롤백했다 — commitBatch의 notify()/scheduleCloudSync()도 이 throw보다
@@ -124,24 +106,17 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast) {
       // 이 patch를 전역 큐에 등록한다. durable/fallback이면 online·5초가 재시도하고,
       // register false(invalid)는 unsafe overlay만 남긴다.
       const attemptRev = draftRevRef.current
-      queueFailedDayWrite(ownerKey, dateKey, patch, (ok) => {
+      queueFailedDayWrite(pendingOwner, dateKey, patch, (ok) => {
         settlePendingDayWrite(hasPendingRef, mountedRef, setAutoSaveStatus, onCommittedRef, draftRevRef, attemptRev, ok)
       })
       return
     }
     hasPendingRef.current = false
-    clearUnsafeRegistrationFailure(ownerKey, dateKey)
-    // 방금 성공했으니, 혹시 이전 실패로 큐에 남아 있던 이 날짜의 오래된 patch가
-    // 있다면 지운다 — 재감사 5차(FAIL 지적 1번, P0): 방금 커밋한 patch를 반드시
-    // 같이 넘긴다. durable에서 못 지우면(정리 자체가 실패하면) clearPendingDayWrite가
-    // 이 patch를 authoritative fallback으로 남겨서, 다음 재시도가 오래된 stale
-    // durable 값이 아니라 지금 막 store에 반영된 이 값을 계속 본다 — patch 없이
-    // owner/date만 넘기면 store엔 이미 새 값이 있는데 큐만 오래된 값으로 되돌아갈
-    // 수 있었다(실측 확인).
-    clearPendingDayWrite(ownerKey, dateKey, patch)
+    clearUnsafeRegistrationFailure(pendingOwner, dateKey)
+    clearPendingDayWrite(pendingOwner, dateKey, patch)
     setAutoSaveStatus('saved')
     onCommittedRef.current?.()
-  }, [ownerKey, dateKey, mountedRef])
+  }, [ownerKey, dateKey, logId, pendingOwner, mountedRef])
 
   // draft가 바뀔 때마다 디바운스를 다시 건다 — 이전 타이머가 남아 있으면 취소하고
   // 새로 건다(연타 입력 중에는 계속 미뤄지다가, 입력이 멈춘 뒤에만 실제로 쓴다).

@@ -23,6 +23,32 @@ describe('거래처 저장 — 세금계산서 필드', () => {
     assert.equal(result.clients[0].taxBizItem, '화물운송')
   })
 
+  test('고정노선은 계정에서 한 곳만 남기고 나머지는 같은 결과에서 해제한다', () => {
+    const first = upsertClient([], { companyName: 'A', fixedRouteLinked: true, fixedUnitPrice: '100000' }).clients
+    const two = upsertClient(first, { companyName: 'B', fixedRouteLinked: true, fixedUnitPrice: '200000' }).clients
+    assert.equal(two.filter((item) => item.fixedRouteLinked).length, 1)
+    assert.equal(two.find((item) => item.companyName === 'B')?.fixedRouteLinked, true)
+    assert.equal(two.find((item) => item.companyName === 'A')?.fixedRouteLinked, false)
+  })
+
+  test('수정해도 id와 supabaseId를 보존하고 수수료·파렛트를 저장한다', () => {
+    const created = upsertClient([], { companyName: '한진', commEnabled: true, commType: 'percent', commValue: '10', palletOn: true, palletPrice: '3000' })
+    const id = created.id
+    created.clients[0].supabaseId = 'sb-client-1'
+    const edited = upsertClient(created.clients, {
+      companyName: '한진물류',
+      commEnabled: true,
+      commType: 'percent',
+      commValue: '12',
+      palletOn: true,
+      palletPrice: '4000',
+    }, id)
+    assert.equal(edited.clients[0].id, id)
+    assert.equal(edited.clients[0].supabaseId, 'sb-client-1')
+    assert.equal(edited.clients[0].commValue, '12')
+    assert.equal(edited.clients[0].palletPrice, '4000')
+  })
+
   test('즐겨찾기는 목록 앞으로 오고, 드래그는 같은 핀 그룹 안에서만 된다', () => {
     const first = upsertClient([], { companyName: '가', isPinned: false }).clients
     const two = upsertClient(first, { companyName: '나', isPinned: true }).clients
@@ -44,7 +70,7 @@ describe('거래처 저장 — 세금계산서 필드', () => {
 // 하나로 통일했는지 확인한다.
 describe('resolveFixedUnitPrice — 달력·매출이 같은 단가를 쓰는지', () => {
   test('고정노선 연결 거래처가 있으면 그 fixedUnitPrice를 쓴다', () => {
-    const settings = { clients: [{ companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: '250,000' }], unitPrice: 100000 }
+    const settings = { clients: [{ id: 'c-fixed', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: '250,000' }], unitPrice: 100000 }
     assert.equal(resolveFixedUnitPrice(settings), 250000, '연결된 거래처 단가가 우선이어야 한다')
   })
 
@@ -54,7 +80,7 @@ describe('resolveFixedUnitPrice — 달력·매출이 같은 단가를 쓰는지
   })
 
   test('연결된 거래처가 있어도 fixedUnitPrice가 0/빈값이면 unitPrice로 fallback한다', () => {
-    const settings = { clients: [{ companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: '' }], unitPrice: 100000 }
+    const settings = { clients: [{ id: 'c-empty', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: '' }], unitPrice: 100000 }
     assert.equal(resolveFixedUnitPrice(settings), 100000)
   })
 

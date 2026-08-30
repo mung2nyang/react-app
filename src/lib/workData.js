@@ -5,7 +5,7 @@
 // 유지하는 배럴이다 — 호출부는 한 곳도 바꿀 필요 없다.
 import { readJsonKey } from '../store/persist.js'
 import { commitBatch } from '../store/app-store.js'
-import { commitWorkData } from '../store/commitHelpers.js'
+import { commitLogWorkData, commitWorkData } from '../store/commitHelpers.js'
 import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
 import { addWorkDataTombstone, removeWorkDataTombstone } from '../domain/workDataTombstones.js'
 
@@ -58,6 +58,22 @@ export function saveWorkDataWithTombstoneCheck(ownerKey, dateKey, previousData, 
     { domain: 'workData', ownerKey, value: nextData },
     { domain: 'workDataDeletedDates', ownerKey, value: nextTombstones },
   ])
+}
+
+/**
+ * 서브 로그는 daily_logs tombstone 대상이 아니다(syncWorkData.js가 메인만 동기화).
+ * @param {string} ownerKey
+ * @param {string} logId
+ * @param {string} dateKey
+ * @param {Record<string, DayRecordLike>} previousData
+ * @param {Record<string, DayRecordLike>} nextData
+ */
+export function saveLogWorkDataWithTombstoneCheck(ownerKey, logId, dateKey, previousData, nextData) {
+  if (!logId || logId === 'main') {
+    saveWorkDataWithTombstoneCheck(ownerKey, dateKey, previousData, nextData)
+    return
+  }
+  commitLogWorkData(ownerKey, logId, nextData)
 }
 
 // 재감사 3차 — day-record.js/call-details.js 둘 다 이제 각자 CallDetailLike를

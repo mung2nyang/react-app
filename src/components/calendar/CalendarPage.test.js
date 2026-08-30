@@ -95,3 +95,34 @@ test('재감사 3차 — 연결 거래처가 있으면 단가 편집이 그 거�
     container.remove()
   }
 })
+
+test('년/월 커스텀 드롭다운은 listbox로 열리고 선택하면 쿼리가 유지된다', async () => {
+  const ownerKey = 'cal-date-select-owner'
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+    const yearBtn = container.querySelector('[aria-label="년도 선택"]')
+    assert.ok(yearBtn instanceof window.HTMLButtonElement)
+    await act(async () => { yearBtn.click() })
+    const list = container.querySelector('[role="listbox"]')
+    assert.ok(list)
+    assert.equal(list.hasAttribute('hidden'), false)
+    const options = container.querySelectorAll('[role="option"]')
+    assert.ok(options.length > 4)
+    await act(async () => {
+      options[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+    })
+    assert.equal(container.querySelector('[role="listbox"]')?.hasAttribute('hidden'), true)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})

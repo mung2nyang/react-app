@@ -5,10 +5,12 @@
 // pendingWorkDataWritesState.js.
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
 import { saveDayRecord } from '../domain/day-record.js'
-import { readOwnerWorkData } from '../store/ownerDataHooks.js'
+import { readOwnerLogWorkData } from '../store/ownerDataHooks.js'
+import { commitLogWorkData } from '../store/commitHelpers.js'
 import { readDurable, writeDurable } from './durableStorage.js'
 import { isValidPatch } from './durablePatchSchema.js'
 import { pulsePendingRetry } from './pendingRetryPulse.js'
+import { parsePendingOwner } from './pendingLogOwner.js'
 import { saveWorkDataWithTombstoneCheck } from './workData.js'
 import {
   computeEffectivePendingEntries, fallback, keyOf, settledCallbacks,
@@ -143,9 +145,14 @@ export function retryPendingDayWrites() {
     // 금지, 재감사 8차). 읽기가 복구되면 다음 호출에서 자연히 다시 포함된다.
     if (unreadableOwners.has(ownerKey)) return
     try {
-      const latest = readOwnerWorkData(ownerKey)
+      const parsed = parsePendingOwner(ownerKey)
+      const latest = readOwnerLogWorkData(parsed.ownerKey, parsed.logId)
       const next = saveDayRecord(latest, dateKey, patch)
-      saveWorkDataWithTombstoneCheck(ownerKey, dateKey, latest, next)
+      if (!parsed.logId || parsed.logId === 'main') {
+        saveWorkDataWithTombstoneCheck(parsed.ownerKey, dateKey, latest, next)
+      } else {
+        commitLogWorkData(parsed.ownerKey, parsed.logId, next)
+      }
       // durable에서도 진짜 지워졌을 때만 onSettled를 부른다 — 실패하면 다음 재시도의
       // 정리 성공 때 정확히 한 번 불린다.
       const onSettled = settledCallbacks.get(keyOf(ownerKey, dateKey))

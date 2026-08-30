@@ -54,7 +54,7 @@ export function initDayLogState(record) {
       // id 없는 자리를 가리킬 수 있어서), 여기 도달하는 record는 useDayDraft.js가
       // backfillCallDetailIds로 이미 전부 id를 채운 뒤라 항상 있다 — 위 함수 docblock에
       // 적힌 계약을 타입으로도 명시한다(단언 하나, object/any 경유 아님).
-      callDetails: /** @type {Array<import('./dayLogTypes.js').CallDetailLike>} */ (structuredClone(getCallDetails(record))),
+      callDetails: /** @type {Array<import('./dayLogTypes.js').CallDetailLike>} */ (structuredClone(getCallDetails({ callDetails: record?.callDetails }))),
       fixedRouteCounts: structuredClone(record?.fixedRouteCounts || {}),
     },
     editingCallId: null,

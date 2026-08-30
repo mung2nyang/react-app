@@ -1,7 +1,6 @@
 // @ts-check
-// Step 5(달력 홈 재작성): MainPage.jsx의 상단 알림/메뉴 버튼 + 배너 + 년/월 네비게이션을
-// 옮긴다. 표시(연/월)만 다루고 그 값을 어디서 왔는지(URL 쿼리)는 모른다 — CalendarPage가
-// year/month/onChangeMonth로 넘겨준다.
+import CalendarDateSelect from './CalendarDateSelect.jsx'
+
 const BANNER = '/images/banner_image.png'
 
 /**
@@ -28,7 +27,7 @@ export default function CalendarHeader({
       {onOpenNotifs && (
         <button type="button" className="icon-btn top-notification-btn" title="알림" onClick={onOpenNotifs}>
           <svg viewBox="0 0 24 24">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
           </svg>
           {notifCount > 0 && <span className="notification-count-badge">{notifCount > 99 ? '99+' : notifCount}</span>}
@@ -57,26 +56,18 @@ export default function CalendarHeader({
           </button>
 
           <div className="date-select-group">
-            <select
-              className="date-select"
-              title="년도 선택"
+            <CalendarDateSelect
+              label="년도 선택"
               value={year}
-              onChange={(e) => onChangeMonth(Number(e.target.value), month)}
-            >
-              {yearOptions.map((y) => (
-                <option key={y} value={y}>{y}년</option>
-              ))}
-            </select>
-            <select
-              className="date-select"
-              title="월 선택"
+              options={yearOptions.map((y) => ({ value: String(y), label: `${y}년` }))}
+              onChange={(next) => onChangeMonth(Number(next), month)}
+            />
+            <CalendarDateSelect
+              label="월 선택"
               value={month}
-              onChange={(e) => onChangeMonth(year, Number(e.target.value))}
-            >
-              {Array.from({ length: 12 }, (_, m) => (
-                <option key={m} value={m}>{m + 1}월</option>
-              ))}
-            </select>
+              options={Array.from({ length: 12 }, (_, m) => ({ value: String(m), label: `${m + 1}월` }))}
+              onChange={(next) => onChangeMonth(year, Number(next))}
+            />
           </div>
 
           <button type="button" className="arrow-btn" title="다음 달" onClick={() => onChangeMonth(year, month + 1)}>

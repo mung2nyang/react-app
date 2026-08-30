@@ -6,17 +6,57 @@
 // --experimental-test-module-mocks 플래그가 있어야 동작한다(package.json의 test 스크립트).
 import { mock } from 'node:test'
 
-// Step 0-4 감사 보완 2차(9번): "sync:false면 원격 쓰기가 없어야 한다" 같은 테스트가
-// 최종 state만 보고 넘어가지 않도록, 이 스텁을 거친 select/upsert/insert/update/delete
-// 호출 횟수를 여기 담아 둔다. 테스트가 import해서 직접 spy할 수 있다.
-export const stubSupabaseCallCounts = {}
+/** @typedef {{ data: unknown, error: { message: string }|null }} StubQueryResult */
+/** @typedef {'select'|'upsert'|'insert'|'update'|'delete'} StubMethod */
 
-export function resetStubSupabaseCallCounts() {
-  Object.keys(stubSupabaseCallCounts).forEach((key) => delete stubSupabaseCallCounts[key])
+/** @type {Record<StubMethod, number>} */
+export const stubSupabaseCallCounts = { select: 0, upsert: 0, insert: 0, update: 0, delete: 0 }
+
+/** @returns {Record<'select'|'upsert'|'insert'|'update'|'delete', () => Promise<StubQueryResult>>} */
+function defaultMethodImpls() {
+  return {
+    select: async () => ({ data: [], error: null }),
+    upsert: async () => ({ data: null, error: null }),
+    insert: async () => ({ data: null, error: null }),
+    update: async () => ({ data: null, error: null }),
+    delete: async () => ({ data: null, error: null }),
+  }
 }
 
+/** @type {ReturnType<typeof defaultMethodImpls>} */
+export let stubSupabaseMethodImpls = defaultMethodImpls()
+
+export function resetStubSupabaseCallCounts() {
+  stubSupabaseCallCounts.select = 0
+  stubSupabaseCallCounts.upsert = 0
+  stubSupabaseCallCounts.insert = 0
+  stubSupabaseCallCounts.update = 0
+  stubSupabaseCallCounts.delete = 0
+  stubSupabaseMethodImpls = defaultMethodImpls()
+}
+
+/** @param {StubMethod} method */
 function bumpStubCall(method) {
-  stubSupabaseCallCounts[method] = (stubSupabaseCallCounts[method] || 0) + 1
+  stubSupabaseCallCounts[method] += 1
+}
+
+/** @param {'select'|'upsert'|'insert'|'update'|'delete'} method */
+function createQuery(method) {
+  bumpStubCall(method)
+  const query = {
+    eq() { return query },
+    in() { return query },
+    order() { return query },
+    select() { return query },
+    /**
+     * @param {(value: StubQueryResult) => unknown} [onFulfilled]
+     * @param {(reason: unknown) => unknown} [onRejected]
+     */
+    then(onFulfilled, onRejected) {
+      return Promise.resolve(stubSupabaseMethodImpls[method]()).then(onFulfilled, onRejected)
+    },
+  }
+  return query
 }
 
 mock.module('../supabaseClient.js', {
@@ -24,11 +64,11 @@ mock.module('../supabaseClient.js', {
     supabase: {
       from() {
         return {
-          select: () => { bumpStubCall('select'); return Promise.resolve({ data: [], error: null }) },
-          upsert: () => { bumpStubCall('upsert'); return Promise.resolve({ data: null, error: null }) },
-          insert: () => { bumpStubCall('insert'); return Promise.resolve({ data: null, error: null }) },
-          update: () => { bumpStubCall('update'); return Promise.resolve({ data: null, error: null }) },
-          delete: () => { bumpStubCall('delete'); return Promise.resolve({ data: null, error: null }) },
+          select: () => createQuery('select'),
+          upsert: () => createQuery('upsert'),
+          insert: () => createQuery('insert'),
+          update: () => createQuery('update'),
+          delete: () => createQuery('delete'),
         }
       },
       auth: { signOut: async () => ({ error: null }) },

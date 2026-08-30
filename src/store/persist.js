@@ -4,6 +4,7 @@
 // 값과 완전히 동일하다. 이 파일이 유일한 출처가 되며, 값 자체를 바꾸면 기존에 저장된
 // 사용자 데이터와 클라우드 동기화가 갈라지므로 절대 바꾸지 않는다.
 // (migration-plan.md 1.1 저장소 계약 / migration-audit-plan.md Step 1)
+import { parsePersistedWorkDataMap } from './persistDayRecord.js'
 
 /**
  * @typedef {'workData'|'cars'|'clients'|'settings'|'expenses'|'invoices'|'drivers'|'profile'|'dismissedNotifications'|'workDataDeletedDates'} PersistDomain
@@ -35,6 +36,51 @@ export function storageKeyFor(domain, ownerKey) {
   const prefix = PERSIST_KEYS[domain]
   if (!prefix) throw new Error(`[persist] 알 수 없는 도메인입니다: ${domain}`)
   return `${prefix}:${ownerKey}`
+}
+
+/**
+ * 서브 차량 로컬 일지 키. 메인(`workData`) persist 문자열은 그대로 두고
+ * 같은 prefix 뒤에 `:log:${차량번호}`만 붙인다. `syncWorkData.js`는 메인
+ * 키만 읽으므로 이 키의 클라우드 동기화는 Step 9 범위다.
+ * @param {string} ownerKey
+ * @param {string} logId 차량번호. `main`이면 메인 workData 키.
+ */
+export function storageKeyForLog(ownerKey, logId) {
+  if (!logId || logId === 'main') return storageKeyFor('workData', ownerKey)
+  return `${PERSIST_KEYS.workData}:${ownerKey}:log:${logId}`
+}
+
+/**
+ * @typedef {{ ok: true, kind: 'missing', value: Record<string, import('../domain/dayRecordTypes.js').DayRecordLike> }
+ *   | { ok: true, kind: 'value', value: Record<string, import('../domain/dayRecordTypes.js').DayRecordLike> }
+ *   | { ok: false, kind: 'getItem' | 'parse' | 'schema' }} LogWorkDataRead
+ */
+
+/**
+ * 서브/메인 일지 persist 읽기. 키 부재와 읽기 실패를 구분한다 — 실패를 `{}`로 바꾸지 않는다.
+ * dateKey와 DayRecord 중첩(숫자·불리언·fixedRouteCounts·callDetails·payments)을 검증한다.
+ * @param {string} ownerKey
+ * @param {string} [logId]
+ * @returns {LogWorkDataRead}
+ */
+export function readLogWorkData(ownerKey, logId = 'main') {
+  const key = storageKeyForLog(ownerKey, logId)
+  let raw
+  try {
+    raw = localStorage.getItem(key)
+  } catch {
+    return { ok: false, kind: 'getItem' }
+  }
+  if (raw === null) return { ok: true, kind: 'missing', value: {} }
+  let parsed
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return { ok: false, kind: 'parse' }
+  }
+  const mapped = parsePersistedWorkDataMap(parsed)
+  if (!mapped) return { ok: false, kind: 'schema' }
+  return { ok: true, kind: 'value', value: mapped }
 }
 
 /**

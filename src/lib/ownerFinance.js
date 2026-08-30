@@ -2,12 +2,12 @@
 // 재감사 3차(FAIL 지적 4번) — 이번 diff가 건드린 프로덕션 JS 전체를 활성 typecheck
 // 대상으로 만들라는 지시로 @ts-check를 붙였다.
 import { loadCars } from './cars.js'
-import { loadClients } from './clients.js'
 import { loadDrivers } from './drivers.js'
 import { getReceivableItems } from './finance.js'
 import { loadPracticeSettings } from './practiceSettings.js'
 import { loadProfile } from './profile.js'
 import { loadWorkData, markReceivableItemPaid, saveWorkData } from './workData.js'
+import { readOwnerClients } from '../store/ownerDataHooks.js'
 
 /** @typedef {import('../domain/day-record.js').DayRecordLike} DayRecordLike */
 // WorkDataByLogId의 정본은 domain/financeTypes.js다 — alias만 한다(중복 선언 금지).
@@ -57,7 +57,7 @@ export function buildFinanceSettings(ownerKey = 'guest') {
     bizType: profile.bizType,
     bizItem: profile.bizItem,
     bizEmail: profile.bizEmail,
-    clients: loadClients(ownerKey),
+    clients: readOwnerClients(ownerKey),
     cars: loadCars(ownerKey),
     driverLinks: drivers.map((driver) => ({
       id: driver.id,

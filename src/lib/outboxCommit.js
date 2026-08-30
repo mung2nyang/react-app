@@ -27,11 +27,11 @@ export const STORAGE_FAIL_TOAST = '저장에 실패했습니다. 잠시 후 다�
 
 /**
  * 로컬 전용(supabaseId 없음) 도메인 변경 — outbox 없이 commitBatch만 거친다.
- * @param {{ domain: PersistDomain, ownerKey: string, value: DomainValue, successToast: string }} params
+ * @param {{ domain: PersistDomain, ownerKey: string, value: DomainValue, successToast: string, extraWrites?: Array<import('../store/atomicPersist.js').KeyedWrite>, replaceWorkLogs?: import('../store/app-store.js').WorkLogsReplace }} params
  */
-export function commitLocalOnly({ domain, ownerKey, value, successToast }) {
+export function commitLocalOnly({ domain, ownerKey, value, successToast, extraWrites = [], replaceWorkLogs }) {
   try {
-    commitBatch([{ domain, ownerKey, value }], {})
+    commitBatch([{ domain, ownerKey, value }], { extraWrites, replaceWorkLogs })
     return { value, toast: successToast, failed: false }
   } catch (error) {
     console.error(`[outboxCommit] ${domain} 로컬 저장 실패:`, error)
@@ -41,13 +41,15 @@ export function commitLocalOnly({ domain, ownerKey, value, successToast }) {
 
 /**
  * @param {{ domain: PersistDomain, ownerKey: string, domainValue: DomainValue, op: OutboxOp,
- *   successToast: string, pendingToast: string, failureToast?: string }} params
+ *   successToast: string, pendingToast: string, failureToast?: string,
+ *   extraWrites?: Array<import('../store/atomicPersist.js').KeyedWrite>,
+ *   replaceWorkLogs?: import('../store/app-store.js').WorkLogsReplace }} params
  *   failureToast: permanentFailure일 때 보여줄 문구. 생략하면 실제 실패 사유
  *   (error.message)를 그대로 쓰고, 그것도 없으면 pendingToast로 대체한다.
  * @returns {Promise<{ status: OutboxResultStatus|null, succeeded: boolean, toast: string,
  *   storageFailed: boolean }>}
  */
-export async function commitWithOutboxAndFlush({ domain, ownerKey, domainValue, op, successToast, pendingToast, failureToast }) {
+export async function commitWithOutboxAndFlush({ domain, ownerKey, domainValue, op, successToast, pendingToast, failureToast, extraWrites = [], replaceWorkLogs }) {
   // 재감사 1번: driverLink/upsert가 확정 전에 여러 번 편집되면 mergeOutboxOp가
   // 최초 op의 id를 그대로 이어받을 수 있다(mergeDriverUpsert) — 그러면 이번에
   // 새로 만든 op.id로 flush 결과를 찾아도 못 찾는다. 항상 effectiveOp.id로 찾는다.
@@ -60,8 +62,8 @@ export async function commitWithOutboxAndFlush({ domain, ownerKey, domainValue, 
     // 가능한 순수 데이터라 JsonValue와 값 수준에서는 같지만, object의 속성 타입까지
     // TS가 구조적으로 검증할 수는 없다 — 여기서 그 사실을 명시적으로 단언한다.
     const jsonDomainValue = /** @type {import('../store/atomicPersist.js').JsonValue} */ (domainValue)
-    writeAllOrNothing([{ key: domainKey, value: jsonDomainValue }, { key: outboxKey, value: nextOps }])
-    commitBatch([{ domain, ownerKey, value: domainValue }], { persist: false, syncToCloud: false })
+    writeAllOrNothing([{ key: domainKey, value: jsonDomainValue }, { key: outboxKey, value: nextOps }, ...extraWrites])
+    commitBatch([{ domain, ownerKey, value: domainValue }], { persist: false, syncToCloud: false, replaceWorkLogs })
   } catch (error) {
     console.error(`[outboxCommit] ${domain}+outbox 원자적 저장 실패:`, error)
     return { status: null, succeeded: false, toast: STORAGE_FAIL_TOAST, storageFailed: true }

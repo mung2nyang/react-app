@@ -172,3 +172,22 @@ export function expenseTitle(item, kindLabel = '') {
 export function filterByDate(items, dateKey) {
   return (items || []).filter((item) => item.date === dateKey)
 }
+
+/**
+ * 같은 id는 한 번만 남긴다(먼저 나온 항목). 조회/hydrate가 비용을 복제해도 배열이 안 늘어나게.
+ * @template {{ id?: string }} T
+ * @param {Array<T>} [items]
+ * @returns {Array<T>}
+ */
+export function dedupeExpensesById(items) {
+  const seen = new Set()
+  /** @type {Array<T>} */
+  const next = []
+  ;(items || []).forEach((item) => {
+    const id = item && typeof item.id === 'string' ? item.id : ''
+    if (!id || seen.has(id)) return
+    seen.add(id)
+    next.push(item)
+  })
+  return next
+}

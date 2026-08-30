@@ -43,6 +43,7 @@
  * @property {string} [startOdometer]
  * @property {string} [endOdometer]
  * @property {string} [distanceKm]
+ * @property {string|number} [insuranceFee]
  */
 
 export {}

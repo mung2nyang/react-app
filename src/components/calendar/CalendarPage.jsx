@@ -10,9 +10,10 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../domain/calendarViewDate.js'
-import { getFixedRouteClient, resolveFixedUnitPrice, updateClientFixedUnitPrice } from '../../domain/clients.js'
+import { getFixedRouteClient, resolveFixedUnitPrice } from '../../domain/clients.js'
 import { monthCallUnpaidTotal, monthWorkFareSummary } from '../../domain/day-record.js'
-import { saveClients } from '../../lib/clients.js'
+import { requestClientFixedUnitPrice } from '../../lib/clientMutations.js'
+import { getCloudUserId } from '../../lib/cloudSession.js'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
 import { useOwnerClients, useOwnerSettings, useOwnerWorkData } from '../../store/ownerDataHooks.js'
 import CalendarHeader from './CalendarHeader.jsx'
@@ -35,9 +36,10 @@ const YEAR_OPTIONS = getYearOptions()
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(() => void)} [props.onOpenNotifs]
  * @param {(() => void)} [props.onBackToAuth]
+ * @param {(message: string) => void} [props.showToast]
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
-export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, onSelectDay }) {
+export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, showToast, onSelectDay }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const viewDate = useMemo(() => viewDateFromSearchParams(searchParams), [searchParams])
   const year = viewDate.getFullYear()
@@ -67,18 +69,23 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
     setSearchParams(searchParamsForViewDate(new Date(nextYear, nextMonth, 1)), { replace: true })
   }
 
-  // 재감사 3차(FAIL 지적 3번) — 연결된 고정노선 거래처가 있으면 그 거래처의
-  // fixedUnitPrice를 원자적으로 고친다(updateClientFixedUnitPrice + saveClients =
-  // commitClients = commitBatch, 다른 거래처 편집과 완전히 같은 원자적 쓰기 경로).
-  // fallback settings.unitPrice는 연결된 거래처가 없을 때만 건드린다 — "몰래
-  // fallback만 고치는" 이전 동작을 없앴다.
+  // 연결된 고정노선 거래처가 있으면 requestClientFixedUnitPrice로만 고친다
+  // (saveClients 우회 금지 — 세션 게이트·commitClients와 목록 저장이 같은 창구).
+  // fallback settings.unitPrice는 연결된 거래처가 없을 때만 건드린다.
   /** @param {number} nextPrice */
   function saveUnitPrice(nextPrice) {
     if (fixedRouteClient) {
-      saveClients(ownerKey, updateClientFixedUnitPrice(clients, fixedRouteClient.id, nextPrice))
-    } else {
-      savePracticeSettings(ownerKey, { unitPrice: nextPrice })
+      const result = requestClientFixedUnitPrice({
+        ownerKey,
+        userId: getCloudUserId(),
+        clients,
+        clientId: fixedRouteClient.id,
+        nextPrice,
+      })
+      if (result.toast) showToast?.(result.toast)
+      return
     }
+    savePracticeSettings(ownerKey, { unitPrice: nextPrice })
   }
 
   return (
