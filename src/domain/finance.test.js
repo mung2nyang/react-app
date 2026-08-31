@@ -23,6 +23,7 @@ import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY, OVERLAP_LI
 import { parseCurrencyValue } from './money.js'
 import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
 
+/** @template T @param {T} a @param {T} b */
 function same(a, b) {
   assert.equal(JSON.stringify(a), JSON.stringify(b))
 }

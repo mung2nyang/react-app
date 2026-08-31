@@ -330,7 +330,7 @@ test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 work
     })
     await waitUntil(() => window.location.pathname === '/app/day/2026-08-06')
 
-    const countInput = container.querySelector('#modalFixedCountInput')
+    const countInput = requireHtmlInput(container, '#modalFixedCountInput')
     assert.ok(countInput, '일지의 운행 횟수 입력을 찾아야 한다')
     assert.equal(countInput.value, '5', 'WorkLogPage가 store의 최신값(B, 5회)을 받아야 한다 — 로컬 스냅샷의 예전(빈) 값이 아니다')
 
@@ -343,7 +343,7 @@ test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 work
     assert.equal(storeData?.['2026-08-06']?.fixedCount, 3, '편집한 8/6은 store에서 3으로 바뀌어야 한다')
     assert.equal(storeData?.['2026-08-05']?.fixedCount, 2, '건드리지 않은 8/5가 store에서 유실되면 안 된다')
 
-    const persisted = readJsonKey('workData', ownerKey, {})
+    const persisted = readWorkData(ownerKey)
     assert.equal(persisted?.['2026-08-06']?.fixedCount, 3, 'localStorage도 store와 같은 값(8/6=3)이어야 한다')
     assert.equal(persisted?.['2026-08-05']?.fixedCount, 2, 'localStorage에서도 8/5가 유실되면 안 된다')
 
@@ -372,17 +372,17 @@ test('Step 6 — 일지 디바운스 커밋 + 언마운트 flush + 빈 날 삭�
     })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
 
-    const countInput = container.querySelector('#modalFixedCountInput')
+    const countInput = requireHtmlInput(container, '#modalFixedCountInput')
     await act(async () => { setNativeInputValue(countInput, '4') })
 
     // 화면(입력값)은 즉시 반영되지만, store/localStorage는 디바운스가 끝나기 전까지
     // 아직 그대로여야 한다 — "입력 → 즉시 화면 반영, 디바운스 후 localStorage".
     assert.equal(countInput.value, '4', '입력값은 즉시 화면에 반영돼야 한다')
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey], undefined, '디바운스가 끝나기 전에는 store에 아직 반영되면 안 된다')
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey], undefined, '디바운스가 끝나기 전에는 localStorage에도 아직 반영되면 안 된다')
+    assert.equal(readWorkData(ownerKey)[dateKey], undefined, '디바운스가 끝나기 전에는 localStorage에도 아직 반영되면 안 된다')
 
     await waitUntil(() => getState().workLogs[ownerKey]?.main?.[dateKey]?.fixedCount === 4, { timeoutMs: 2000 })
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey]?.fixedCount, 4, '디바운스가 끝나면 localStorage도 store와 같은 값이어야 한다')
+    assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 4, '디바운스가 끝나면 localStorage도 store와 같은 값이어야 한다')
 
     // 새 값(7)을 입력한 직후, 디바운스가 끝나기 전에 화면을 닫는다 — 언마운트
     // flush가 이 마지막 편집을 유실 없이 커밋해야 한다.
@@ -397,7 +397,7 @@ test('Step 6 — 일지 디바운스 커밋 + 언마운트 flush + 빈 날 삭�
     await waitUntil(() => window.location.pathname === '/app')
 
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey]?.fixedCount, 7, '언마운트(뒤로가기) 시점에 밀린 편집(7)이 즉시 flush돼야 한다')
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey]?.fixedCount, 7, 'localStorage에도 flush된 값이 반영돼야 한다')
+    assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 7, 'localStorage에도 flush된 값이 반영돼야 한다')
 
     // 같은 날짜를 다시 열어서 flush된 값이 실제로 왕복되는지 확인한다.
     await act(async () => {
@@ -405,12 +405,12 @@ test('Step 6 — 일지 디바운스 커밋 + 언마운트 flush + 빈 날 삭�
       window.dispatchEvent(new window.PopStateEvent('popstate'))
     })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
-    assert.equal(container.querySelector('#modalFixedCountInput').value, '7', '재진입 시 flush된 값(7)을 그대로 보여줘야 한다')
+    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '7', '재진입 시 flush된 값(7)을 그대로 보여줘야 한다')
 
     // 값을 0으로 비우면(빈 날) 디바운스가 끝난 뒤 그 날짜 키 자체가 store/localStorage에서 사라져야 한다.
     await act(async () => { setNativeInputValue(container.querySelector('#modalFixedCountInput'), '0') })
     await waitUntil(() => getState().workLogs[ownerKey]?.main?.[dateKey] === undefined, { timeoutMs: 2000 })
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey], undefined, '빈 날은 localStorage에서도 키 자체가 지워져야 한다')
+    assert.equal(readWorkData(ownerKey)[dateKey], undefined, '빈 날은 localStorage에서도 키 자체가 지워져야 한다')
   } finally {
     await unmountTracked(root)
     container.remove()
@@ -451,7 +451,7 @@ test('재감사 FAIL 지적 1번 — 과거 일지에서 "일일운행" 탭으�
       window.dispatchEvent(new window.PopStateEvent('popstate'))
     })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
-    assert.equal(container.querySelector('#modalFixedCountInput').value, '2', 'A는 자기 원래 값(2)으로 열려야 한다')
+    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '2', 'A는 자기 원래 값(2)으로 열려야 한다')
 
     // A를 9로 고치되, 디바운스(600ms)가 끝나기 전에 즉시 "일일운행" 탭으로 이동한다.
     await act(async () => { setNativeInputValue(container.querySelector('#modalFixedCountInput'), '9') })
@@ -464,7 +464,7 @@ test('재감사 FAIL 지적 1번 — 과거 일지에서 "일일운행" 탭으�
     await waitUntil(() => window.location.pathname === `/app/day/${dateB}`)
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
 
-    assert.equal(container.querySelector('#modalFixedCountInput').value, '6', 'B는 자기 원래 값(6)으로 떠야 한다 — A의 draft(9)가 새어 들어오면 안 된다')
+    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '6', 'B는 자기 원래 값(6)으로 떠야 한다 — A의 draft(9)가 새어 들어오면 안 된다')
 
     // A에 걸려 있던 편집(9)은 언마운트(key 교체) flush로 A에만 정확히 반영돼야 한다.
     await waitUntil(() => getState().workLogs[ownerKey]?.main?.[dateA]?.fixedCount === 9, { timeoutMs: 2000 })
@@ -476,8 +476,8 @@ test('재감사 FAIL 지적 1번 — 과거 일지에서 "일일운행" 탭으�
     // 여기서 드러난다.
     await act(async () => { await wait(700) })
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateB]?.fixedCount, 6, '시간이 더 지나도 B가 A(9)로 덮이면 안 된다')
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateB]?.fixedCount, 6, 'localStorage에서도 B는 그대로여야 한다')
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateA]?.fixedCount, 9, 'localStorage에서도 A는 flush된 값이어야 한다')
+    assert.equal(readWorkData(ownerKey)[dateB]?.fixedCount, 6, 'localStorage에서도 B는 그대로여야 한다')
+    assert.equal(readWorkData(ownerKey)[dateA]?.fixedCount, 9, 'localStorage에서도 A는 flush된 값이어야 한다')
   } finally {
     await unmountTracked(root)
     container.remove()
@@ -563,12 +563,12 @@ test('재감사 FAIL 지적 4번 — 고정노선+파렛트 거래처가 있으�
     })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
 
-    const palletInput = container.querySelector('#modalPalletCount')
+    const palletInput = requireHtmlInput(container, '#modalPalletCount')
     assert.ok(palletInput, '고정노선 연결 + palletOn 거래처가 있으면 파렛트 입력이 보여야 한다')
 
     await act(async () => { setNativeInputValue(palletInput, '5') })
     await waitUntil(() => getState().workLogs[ownerKey]?.main?.[dateKey]?.palletCount === 5, { timeoutMs: 2000 })
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey]?.palletCount, 5, 'localStorage에도 반영돼야 한다')
+    assert.equal(readWorkData(ownerKey)[dateKey]?.palletCount, 5, 'localStorage에도 반영돼야 한다')
 
     await act(async () => {
       window.history.pushState({}, '', '/app')
@@ -580,7 +580,7 @@ test('재감사 FAIL 지적 4번 — 고정노선+파렛트 거래처가 있으�
       window.dispatchEvent(new window.PopStateEvent('popstate'))
     })
     await waitUntil(() => !!container.querySelector('#modalPalletCount'))
-    assert.equal(container.querySelector('#modalPalletCount').value, '5', '재진입 시 저장된 파렛트 값을 그대로 보여줘야 한다')
+    assert.equal(requireHtmlInput(container, '#modalPalletCount').value, '5', '재진입 시 저장된 파렛트 값을 그대로 보여줘야 한다')
 
     // palletCount 커밋(syncToCloud 기본값 true)이 예약한 클라우드 동기화 디바운스가
     // 다음 테스트로 새지 않게 기다린다(재감사 2차 — 테스트 격리).
@@ -661,7 +661,7 @@ test('재감사 3차 FAIL 지적 2번 — 재진입 시 durable pending patch가
     assert.equal(errSpy.count(), 2, '언마운트 flush도 여전히 막혀 있어 한 번 더(총 2번) 로깅돼야 한다')
 
     assert.equal(
-      container.querySelector('#modalFixedCountInput').value, '5',
+      requireHtmlInput(container, '#modalFixedCountInput').value, '5',
       '재진입 시 durable 큐의 pending patch(fixedCount=5)가 store의 오래된 값(없음) 위에 덮여 보여야 한다',
     )
 
@@ -731,7 +731,7 @@ test('재감사 5차 FAIL 지적 1번 — useDayDraft 직접 커밋 성공 후 c
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
-    assert.equal(container.querySelector('#modalFixedCountInput').value, '1', 'stale durable A(fixedCount=1)가 store 위에 덮여 보여야 한다')
+    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '1', 'stale durable A(fixedCount=1)가 store 위에 덮여 보여야 한다')
     assert.deepEqual(getPendingDayWrite(ownerKey, dateKey)?.fixedCount, 1, '마운트 직후에도 stale A가 그대로(durable이든 residual fallback이든) pending에 남아 있어야 한다')
 
     // durable cleanup 쓰기는 계속 막혀 있다(workData 쓰기는 그대로 성공) — 직접 편집(C)을 저장한다.
@@ -1108,7 +1108,7 @@ test('재감사 FAIL 지적 9번 — 자동 저장 quota 초과: store/localStor
       '자동 저장 실패가 화면에 표시돼야 한다(거짓 "저장됨"이 아니라)',
     )
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey], undefined, '실패한 쓰기는 store에 전혀 반영되면 안 된다')
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey], undefined, '실패한 쓰기는 localStorage에도 전혀 반영되면 안 된다')
+    assert.equal(readWorkData(ownerKey)[dateKey], undefined, '실패한 쓰기는 localStorage에도 전혀 반영되면 안 된다')
     assert.equal(notifyCount, 0, 'writeAllOrNothing이 던지면 commitBatch의 notify()에 도달하면 안 된다 — 구독자가 한 번도 안 불려야 한다')
     assert.equal(totalSupabaseCalls(), supabaseCallsBefore, 'notify() 뒤에 있는 scheduleCloudSync()까지 못 갔으니 Supabase 호출이 늘면 안 된다')
 
@@ -1129,7 +1129,7 @@ test('재감사 FAIL 지적 9번 — 자동 저장 quota 초과: store/localStor
       getState().workLogs[ownerKey]?.main?.[dateKey]?.fixedCount, 4,
       '실패했던 편집(4)이 언마운트 시 재시도로 결국 store에 반영돼야 한다(유실되면 안 된다)',
     )
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey]?.fixedCount, 4, 'localStorage에도 반영돼야 한다')
+    assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 4, 'localStorage에도 반영돼야 한다')
     // shouldFail을 재시도 전에 이미 false로 풀어 뒀으니 언마운트 flush는 성공한다
     // — 추가 로깅 없이 그대로 1이어야 한다.
     assert.equal(errSpy.count(), 1, '복구 후 언마운트 flush는 성공했으니 추가로 로깅되면 안 된다')
@@ -1379,7 +1379,7 @@ test('재감사 2차 FAIL 지적 — persistent quota + 라우트 이동에도 d
     unsubscribe()
 
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey], undefined, 'quota가 여전히 막혀 있으니 store에는 아직 없어야 한다')
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey], undefined, 'localStorage에도 아직 없어야 한다')
+    assert.equal(readWorkData(ownerKey)[dateKey], undefined, 'localStorage에도 아직 없어야 한다')
     assert.equal(hasPendingDayWrites(), true, '컴포넌트가 사라진 뒤에도 실패한 편집이 전역 재시도 큐에 남아 있어야 한다(영구 유실 아님)')
     assert.equal(notifyCount, 0, '실패한 시도(최초+언마운트 재시도) 두 번 다 notify에 도달하면 안 된다')
     assert.equal(totalSupabaseCalls(), supabaseCallsBefore, 'quota가 막혀 있는 동안은 Supabase 호출이 늘면 안 된다')
@@ -1394,7 +1394,7 @@ test('재감사 2차 FAIL 지적 — persistent quota + 라우트 이동에도 d
 
     assert.equal(pendingDayWriteCount(), 0, '재시도가 성공하면 전역 큐에서 완전히 지워져야 한다(다른 큐 항목도 없어야 한다)')
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey]?.fixedCount, 4, '결국 store에 반영돼야 한다 — 유실되지 않았다는 최종 증거')
-    assert.equal(readJsonKey('workData', ownerKey, {})[dateKey]?.fixedCount, 4, 'localStorage에도 반영돼야 한다')
+    assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 4, 'localStorage에도 반영돼야 한다')
     assert.equal(errSpy.count(), 2, '복구 후 재시도는 성공했으니 추가로 로깅되면 안 된다')
     errSpy.restore()
   } finally {
@@ -1452,7 +1452,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
     await waitUntil(() => !!container.querySelector('#modalPalletCount'))
-    assert.equal(container.querySelector('#modalFixedCountInput').value, '2', '기존 fixedCount(2)가 그대로 보여야 한다')
+    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '2', '기존 fixedCount(2)가 그대로 보여야 한다')
 
     const storeBefore = structuredClone(committedRecord(ownerKey, dateKey))
     const workDataRawBefore = localStorage.getItem(workDataKey)

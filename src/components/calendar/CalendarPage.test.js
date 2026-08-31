@@ -24,7 +24,9 @@ const { default: CalendarPage } = await import('./CalendarPage.jsx')
 const { commitClients, commitSettings, commitWorkData } = await import('../../store/commitHelpers.js')
 const { getState } = await import('../../store/app-store.js')
 const { normalizeSettings } = await import('../../domain/practiceSettings.js')
-const { getMonthlyFareRevenue } = await import('../../domain/finance.js')
+const { getMonthlyFareRevenue, getOwnerMonthlyFinanceDetail } = await import('../../domain/finance.js')
+const { buildFinanceSettings } = await import('../../lib/ownerFinance.js')
+const { monthWorkFareSummary } = await import('../../domain/day-record.js')
 
 test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 단가 입력은 없다', async () => {
   const ownerKey = 'test-calendar-unitprice-owner'
@@ -98,6 +100,99 @@ test('고정노선 거래처가 없으면 정산 카드에 1회 단가가 없고
     assert.equal(container.querySelector('.summary-price-input'), null)
     assert.equal(container.textContent.includes('1회 단가'), false)
     assert.equal(container.textContent.includes('15,000 원'), false, '설정 unitPrice 5,000×3회를 쓰면 안 된다')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('홈 월간 정산 카드의 운임 수수료 = 매출 income.commission.total, 합계는 그만큼 차감', async () => {
+  const ownerKey = 'test-calendar-commission-owner'
+  const dateKey = '2026-08-10'
+  const monthKey = '2026-08'
+
+  commitClients(ownerKey, [
+    {
+      id: 'client-comm', companyName: '수수료거래처', fixedRouteLinked: true, fixedUnitPrice: 10000,
+      commEnabled: true, commType: 'percent', commValue: 10,
+    },
+  ], { syncToCloud: false })
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-comm', client: '수수료거래처', fare: 100000 }] },
+  }, { syncToCloud: false })
+
+  const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
+  const revenueDetail = getOwnerMonthlyFinanceDetail(monthKey, 'owner', buildFinanceSettings(ownerKey), workDataByLogId, [])
+  const commissionTotal = revenueDetail.income.commission.total
+  assert.equal(commissionTotal, 10000, '거래처 10% × 운임 100,000 = 10,000')
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+
+    assert.ok(container.textContent.includes('운임 수수료'), '정산 카드에 운임 수수료 행이 있어야 한다')
+    assert.ok(
+      container.textContent.includes(`-${commissionTotal.toLocaleString('ko-KR')} 원`),
+      `운임 수수료 금액이 매출과 같은 -${commissionTotal.toLocaleString('ko-KR')} 원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
+    )
+
+    const fareSummary = monthWorkFareSummary(workDataByLogId.main, 2026, 7, 10000)
+    const settledTotal = fareSummary.total - commissionTotal
+    const totalRow = container.querySelector('.summary-row.total .summary-value')
+    assert.equal(
+      totalRow?.textContent,
+      `${settledTotal.toLocaleString('ko-KR')} 원`,
+      `합계는 운임+부가세(${fareSummary.total.toLocaleString('ko-KR')})에서 수수료를 뺀 ${settledTotal.toLocaleString('ko-KR')} 원이어야 한다`,
+    )
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('수수료가 없으면 정산 카드에 운임 수수료 행이 없고 합계는 monthWorkFareSummary.total과 같다', async () => {
+  const ownerKey = 'test-calendar-commission-zero'
+  const dateKey = '2026-08-12'
+
+  commitClients(ownerKey, [
+    { id: 'client-nocomm', companyName: '무수수료거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
+  ], { syncToCloud: false })
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 2, callDetails: [] },
+  }, { syncToCloud: false })
+
+  const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
+  const revenueDetail = getOwnerMonthlyFinanceDetail('2026-08', 'owner', buildFinanceSettings(ownerKey), workDataByLogId, [])
+  assert.equal(revenueDetail.income.commission.total, 0)
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+
+    assert.equal(container.textContent.includes('운임 수수료'), false, '수수료 0이면 행을 숨긴다')
+    const fareSummary = monthWorkFareSummary(workDataByLogId.main, 2026, 7, 10000)
+    const totalRow = container.querySelector('.summary-row.total .summary-value')
+    assert.equal(
+      totalRow?.textContent,
+      `${fareSummary.total.toLocaleString('ko-KR')} 원`,
+      '합계는 기존 monthWorkFareSummary.total과 같아야 한다',
+    )
   } finally {
     await act(async () => { root.unmount() })
     container.remove()

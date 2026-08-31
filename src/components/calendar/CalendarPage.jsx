@@ -12,7 +12,13 @@ import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../domain/calendarViewDate.js'
 import { resolveFixedUnitPrice } from '../../domain/clients.js'
 import { monthCallUnpaidTotal, monthWorkFareSummary } from '../../domain/day-record.js'
-import { useOwnerClients, useOwnerSettings, useOwnerWorkData } from '../../store/ownerDataHooks.js'
+import { getOwnerMonthlyFinanceDetail } from '../../lib/finance.js'
+import { buildFinanceSettings } from '../../lib/ownerFinance.js'
+import {
+  useOwnerCars, useOwnerClients, useOwnerDrivers, useOwnerExpenses,
+  useOwnerProfile, useOwnerSettings, useOwnerWorkData, useOwnerWorkDataByLogId,
+} from '../../store/ownerDataHooks.js'
+import { monthKeyOf } from '../revenue/revenueFormat.js'
 import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
@@ -47,6 +53,28 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
   const clients = useOwnerClients(ownerKey)
   const unitPrice = resolveFixedUnitPrice({ clients })
 
+  // 매출 화면과 같은 수수료 정본: OwnerRevenueView처럼 관련 useOwner*를 구독해
+  // buildFinanceSettings 메모가 갱신되게 하고, 수수료 합은 매출과 동일하게
+  // getOwnerMonthlyFinanceDetail(...).income.commission.total 한곳에서만 읽는다
+  // (홈 전용 수수료 식을 새로 짜지 않는다 — day-record.js는 그대로).
+  const cars = useOwnerCars(ownerKey)
+  const profile = useOwnerProfile(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
+  const expenses = useOwnerExpenses(ownerKey)
+  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
+  const financeSettings = useMemo(() => {
+    void cars
+    void settings
+    void profile
+    void drivers
+    void clients
+    return buildFinanceSettings(ownerKey)
+  }, [ownerKey, cars, settings, profile, drivers, clients])
+  const commissionTotal = useMemo(
+    () => getOwnerMonthlyFinanceDetail(monthKeyOf(year, month), 'owner', financeSettings, workDataByLogId, expenses).income.commission.total,
+    [year, month, financeSettings, workDataByLogId, expenses],
+  )
+
   const cells = useMemo(() => buildCalendarCells(viewDate), [viewDate])
   const fareSummary = /** @type {FareSummary} */ (useMemo(
     () => monthWorkFareSummary(workData, year, month, unitPrice),
@@ -77,14 +105,15 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
         workData={workData}
         inputMode={settings.inputMode === 'fare' ? 'fare' : 'count'}
         unitPrice={unitPrice}
-        paymentOn={settings.paymentOn}
+        paymentOn={!!settings.paymentOn}
         onSelectDay={onSelectDay}
       />
 
       <CalendarMonthSummary
-        paymentOn={settings.paymentOn}
+        paymentOn={!!settings.paymentOn}
         unpaidTotal={unpaidTotal}
         fareSummary={fareSummary}
+        commissionTotal={commissionTotal}
       />
 
       {userName && <p className="main-practice-note">{userName}님 · 달력에 횟수 기록</p>}

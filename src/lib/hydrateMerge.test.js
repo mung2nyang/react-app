@@ -207,17 +207,19 @@ describe('mergeCarsFromRows', () => {
 
 describe('findMainCar', () => {
   test('type이 main이고 supabaseId가 있는 차량을 우선한다', () => {
-    const cars = [{ type: 'sub', supabaseId: 1 }, { type: 'main', supabaseId: 2 }]
+    /** @type {import('../domain/financeTypes.js').CarLike[]} */
+    const cars = [{ type: 'sub', supabaseId: 1, number: '99하9999' }, { type: 'main', supabaseId: 2, number: '11가1111' }]
     assert.equal(findMainCar(cars).supabaseId, 2)
   })
 
   test('main이 없으면 supabaseId가 있는 아무 차량이나 돌려준다', () => {
-    const cars = [{ type: 'sub', supabaseId: 7 }]
+    /** @type {import('../domain/financeTypes.js').CarLike[]} */
+    const cars = [{ type: 'sub', supabaseId: 7, number: '99하9999' }]
     assert.equal(findMainCar(cars).supabaseId, 7)
   })
 
   test('supabaseId가 있는 차량이 하나도 없으면 null', () => {
-    assert.equal(findMainCar([{ type: 'main' }]), null)
+    assert.equal(findMainCar([{ type: 'main', number: '11가1111' }]), null)
     assert.equal(findMainCar([]), null)
   })
 })

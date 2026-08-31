@@ -26,7 +26,14 @@ export function hasOnlyKeys(value, allowed) {
   return Object.keys(value).every((key) => set.has(key))
 }
 
-const PERSONAL_INFO_KEYS = ['driverName', 'bizNumber', 'name', 'address', 'bizType', 'bizItem', 'email']
+// 재감사(Step 7 후속) — 기존 7개는 businessInfo(사업자정보)와 혼동돼 있었다.
+// personalInfo는 바닐라 정본(ubiquitous-parakeet/car-management.js 저장부 +
+// finance.js 조회부의 합집합)상 phone/bank/account/accountHolder도 함께 쓴다 —
+// 기존 7개를 빼지 않고(하위호환) 4개를 더한다.
+const PERSONAL_INFO_KEYS = [
+  'driverName', 'bizNumber', 'name', 'address', 'bizType', 'bizItem', 'email',
+  'phone', 'bank', 'account', 'accountHolder',
+]
 const BUSINESS_INFO_KEYS = ['sameAsOwner', 'name', 'bizNumber', 'representative', 'address', 'bizType', 'bizItem', 'email']
 const CAR_KEYS = [
   'id', 'supabaseId', 'number', 'tonnage', 'type', 'settlementMode', 'commEnabled', 'commType',
@@ -42,11 +49,19 @@ const CLIENT_KEYS = [
 const EXPENSE_KEYS = ['id', 'kind', 'date', 'name', 'category', 'fuelType', 'payment', 'cost', 'subsidy', 'mileage', 'liters']
 const DRIVER_KEYS = ['id', 'name', 'phone', 'vehicleNumber', 'startDate', 'endDate', 'inviteCode', 'status', 'supabaseId']
 
-/** @param {JsonValue} value @param {ReadonlyArray<string>} keys */
-function isStringRecord(value, keys) {
+/**
+ * hydrate 정규화(hydrateMergeCars.js)가 재사용한다 — personalInfo/businessInfo raw
+ * 백업이 정본 키셋 밖 필드나 잘못된 타입을 가지면(전체) 이 함수가 false를 돌려주고,
+ * 그 차량은 해당 중첩 필드만 생략한 채 나머지 필드는 정상 정규화된다(검증기 자체는
+ * 그대로 두고 producer만 이 함수로 걸러 쓴다 — 새 검증 로직을 추가하지 않는다).
+ * @param {JsonValue} value @param {ReadonlyArray<string>} keys
+ */
+export function isStringRecord(value, keys) {
   if (!isPlainObject(value) || !hasOnlyKeys(value, keys)) return false
   return Object.entries(value).every(([key, field]) => (key === 'sameAsOwner' ? typeof field === 'boolean' : typeof field === 'string'))
 }
+
+export { PERSONAL_INFO_KEYS, BUSINESS_INFO_KEYS }
 
 /** @param {JsonValue} value */
 export function isPersistedCar(value) {

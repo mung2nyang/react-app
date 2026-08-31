@@ -16,6 +16,7 @@ import { dueSoonItems, groupByClientMonth, groupItems } from './receivables.js'
 import { addPartialPayment, markReceivableItemPaid } from './payments.js'
 import { markMonthlyReceivablesPaid } from '../lib/ownerFinance.js'
 
+/** @template T @param {T} a @param {T} b */
 function same(a, b) {
   assert.equal(JSON.stringify(a), JSON.stringify(b))
 }

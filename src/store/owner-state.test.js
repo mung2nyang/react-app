@@ -178,6 +178,174 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     assert.equal(getState().cars[owner]?.[0]?.settlementMode, 'default')
   })
 
+  // Step 7 후속 재감사 — 위 최소 row(raw:{})는 `...raw` 스프레드가 있던 예전 코드에서도
+  // 통과했다(라 추가할 게 없어서). 아래 3개는 raw에 "정본 밖/잘못된" 값이 실제로 섞인
+  // 경우라 예전 코드였다면 hydrate 직후 persist는 됐어도 이 initialize 왕복에서
+  // cars/clients 도메인 전체가 schema 실패로 사라졌을 시나리오다(감지력 확인: 이 3개
+  // 테스트는 hydrateMergeCars.js/hydrateMergeClients.js의 `...raw`를 되돌리면 실패한다 —
+  // 되돌려서 확인 후 복원함).
+  test('바닐라 personalInfo(phone/bank/account/accountHolder) raw는 initialize 왕복 후 보존된다', async () => {
+    const { mergeCarsFromRows } = await import('../lib/hydrateMerge.js')
+    const { readPersistDomain } = await import('./persistDomainRead.js')
+    const { commitBatch } = await import('./app-store.js')
+    const owner = 'hydrate-personalinfo-roundtrip'
+    resetStubSupabaseCallCounts()
+    const merged = mergeCarsFromRows([], [{
+      id: 601,
+      number: '22나2222',
+      type: 'sub',
+      raw: {
+        personalInfo: {
+          driverName: '김기사', name: '김기사', bizNumber: '111-11-11111',
+          phone: '010-1234-5678', bank: '국민은행', account: '123-456-789', accountHolder: '김기사',
+        },
+      },
+    }])
+    assert.equal(merged[0].personalInfo?.phone, '010-1234-5678')
+    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    assert.equal(readPersistDomain('cars', owner).kind, 'value')
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    assert.equal(getState().cars[owner]?.length, 0)
+    initializeOwnerFromPersist(owner)
+    assert.equal(readPersistDomain('cars', owner).kind, 'value')
+    const info = getState().cars[owner]?.[0]?.personalInfo
+    assert.equal(info?.driverName, '김기사')
+    assert.equal(info?.bizNumber, '111-11-11111')
+    assert.equal(info?.phone, '010-1234-5678')
+    assert.equal(info?.bank, '국민은행')
+    assert.equal(info?.account, '123-456-789')
+    assert.equal(info?.accountHolder, '김기사')
+    assert.equal(totalStubCalls(), 0)
+  })
+
+  test('raw.settlementMode가 bogus면 정규화돼 initialize가 성공하지만, 검증기에 bogus를 직접 넣으면 여전히 schema 실패다', async () => {
+    const { mergeCarsFromRows } = await import('../lib/hydrateMerge.js')
+    const { readPersistDomain } = await import('./persistDomainRead.js')
+    const { commitBatch } = await import('./app-store.js')
+    const owner = 'hydrate-bogus-enum'
+    resetStubSupabaseCallCounts()
+    const merged = mergeCarsFromRows([], [{ id: 701, number: '33다3333', type: 'main', raw: { settlementMode: 'bogus' } }])
+    // producer는 persist 불가 값을 canonical 기본값으로 정규화한다(검증기를 느슨하게
+    // 만드는 게 아니라 producer가 스키마를 맞춘다).
+    assert.equal(merged[0].settlementMode, 'default')
+    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    assert.equal(readPersistDomain('cars', owner).kind, 'value')
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    initializeOwnerFromPersist(owner)
+    assert.equal(getState().cars[owner]?.[0]?.settlementMode, 'default')
+    assert.equal(totalStubCalls(), 0)
+
+    // 검증기(isPersistedCar) 자체는 그대로다 — 'bogus'가 직접 저장돼 있으면 여전히
+    // 거부하고, 그 실패는 Store/원문/notify를 하나도 건드리지 않는다.
+    const beforeCarsState = JSON.stringify(getState().cars[owner])
+    localStorage.setItem(storageKeyFor('cars', owner), JSON.stringify([{ number: '33다3333', settlementMode: 'bogus' }]))
+    let notifyCount = 0
+    const unsub = subscribe(() => { notifyCount += 1 })
+    initializeOwnerFromPersist(owner)
+    unsub()
+    assert.equal(readPersistDomain('cars', owner).kind, 'schema')
+    assert.equal(notifyCount, 0)
+    assert.equal(JSON.stringify(getState().cars[owner]), beforeCarsState)
+    assert.equal(totalStubCalls(), 0)
+  })
+
+  test('거래처 raw에 정본 밖 extra 키가 섞여도 persist 가능한 거래처 1건으로 정규화되고 extra 키는 없다', async () => {
+    const { mergeClientsFromRows } = await import('../lib/hydrateMerge.js')
+    const { readPersistDomain } = await import('./persistDomainRead.js')
+    const { commitBatch } = await import('./app-store.js')
+    const owner = 'hydrate-client-extra-key'
+    resetStubSupabaseCallCounts()
+    // raw는 실제 Supabase JSONB(정본 밖 키가 실제로 섞일 수 있는 "미확인 JSON")라
+    // JsonRecord로 별도 선언한다 — ClientRow.raw의 선언 타입(RawClientBackup =
+    // Partial<ClientLike>)에 정본 밖 키를 인라인 리터럴로 바로 넣으면 TS의 신선한
+    // 객체 리터럴 초과 프로퍼티 검사에 걸린다(런타임 안전성과는 무관한 검사다).
+    /** @type {import('../lib/pendingWorkDataWritesTypes.js').JsonRecord} */
+    const rawWithExtraKey = { managerName: '박담당', phone: '010-9999-8888', extraFromVanilla: '레거시전용필드' }
+    const merged = mergeClientsFromRows([], [{
+      id: 801,
+      company_name: '한진',
+      legacy_client_id: 'client-1',
+      raw: rawWithExtraKey,
+    }])
+    assert.equal(merged.length, 1)
+    assert.equal('extraFromVanilla' in merged[0], false)
+    assert.equal(merged[0].managerName, '박담당')
+    replaceOwnerState(owner, { clients: merged }, { sync: false })
+    assert.equal(readPersistDomain('clients', owner).kind, 'value')
+    commitBatch([{ domain: 'clients', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    assert.equal(getState().clients[owner]?.length, 0)
+    initializeOwnerFromPersist(owner)
+    assert.equal(readPersistDomain('clients', owner).kind, 'value')
+    assert.equal(getState().clients[owner]?.length, 1)
+    assert.equal(getState().clients[owner]?.[0]?.managerName, '박담당')
+    assert.equal(getState().clients[owner]?.[0]?.phone, '010-9999-8888')
+    assert.equal('extraFromVanilla' in (getState().clients[owner]?.[0] || {}), false)
+    assert.equal(totalStubCalls(), 0)
+  })
+
+  // 재감사(불리언 기본값) — insuranceOn/logEnabled/driverLinkEnabled/
+  // shareRevenueWithOwner/archived를 boolOrFalse로 채우면 "없음"과 "명시적 false"가
+  // 구분 안 돼, shareRevenueWithOwner처럼 "없음 = true(공유)"인 필드가 hydrate 왕복
+  // 한 번으로 전부 false(비공유)가 돼 버린다(감지력: 아래 3개는 hydrateMergeCars.js의
+  // boolOrOmit을 boolOrFalse로 되돌리면 실패한다 — 되돌려서 확인 후 복원함).
+  test('raw:{}인 최소 row는 shareRevenueWithOwner 키가 없고, 소비 쪽 기본값(공유)으로 읽힌다', async () => {
+    const { mergeCarsFromRows } = await import('../lib/hydrateMerge.js')
+    const { readPersistDomain } = await import('./persistDomainRead.js')
+    const { commitBatch } = await import('./app-store.js')
+    const { isVehicleRevenueSharedWithOwner } = await import('../domain/cars.js')
+    const owner = 'hydrate-share-default'
+    resetStubSupabaseCallCounts()
+    const merged = mergeCarsFromRows([], [{ id: 901, number: '44라4444', type: 'sub', raw: {} }])
+    assert.equal('shareRevenueWithOwner' in merged[0], false)
+    assert.equal(isVehicleRevenueSharedWithOwner(merged[0]), true)
+    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    assert.equal(readPersistDomain('cars', owner).kind, 'value')
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    assert.equal(getState().cars[owner]?.length, 0)
+    initializeOwnerFromPersist(owner)
+    assert.equal(readPersistDomain('cars', owner).kind, 'value')
+    const car = getState().cars[owner]?.[0]
+    assert.equal('shareRevenueWithOwner' in (car || {}), false)
+    assert.equal(isVehicleRevenueSharedWithOwner(car), true)
+    assert.equal(totalStubCalls(), 0)
+  })
+
+  test('raw.shareRevenueWithOwner:false는 정규화·왕복 후에도 false로 남는다', async () => {
+    const { mergeCarsFromRows } = await import('../lib/hydrateMerge.js')
+    const { commitBatch } = await import('./app-store.js')
+    const { isVehicleRevenueSharedWithOwner } = await import('../domain/cars.js')
+    const owner = 'hydrate-share-false'
+    resetStubSupabaseCallCounts()
+    const merged = mergeCarsFromRows([], [{ id: 902, number: '55마5555', type: 'sub', raw: { shareRevenueWithOwner: false } }])
+    assert.equal(merged[0].shareRevenueWithOwner, false)
+    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    initializeOwnerFromPersist(owner)
+    const car = getState().cars[owner]?.[0]
+    assert.equal(car?.shareRevenueWithOwner, false)
+    assert.equal(isVehicleRevenueSharedWithOwner(car), false)
+    assert.equal(totalStubCalls(), 0)
+  })
+
+  test('React upsertCar가 실제로 저장하는 모양(불리언 필드 없음)도 hydrate 왕복 후 공유가 true로 유지된다', async () => {
+    const { mergeCarsFromRows } = await import('../lib/hydrateMerge.js')
+    const { commitBatch } = await import('./app-store.js')
+    const { upsertCar, isVehicleRevenueSharedWithOwner } = await import('../domain/cars.js')
+    const owner = 'hydrate-share-upsertcar-shape'
+    resetStubSupabaseCallCounts()
+    const { cars, error } = upsertCar([], { number: '66바6666', type: 'sub', driverName: '이기사', driverPhone: '010-2222-3333' })
+    assert.equal(error, undefined)
+    assert.equal('shareRevenueWithOwner' in cars[0], false)
+    const merged = mergeCarsFromRows([], [{ id: 903, number: '66바6666', type: 'sub', raw: cars[0] }])
+    assert.equal(isVehicleRevenueSharedWithOwner(merged[0]), true)
+    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    initializeOwnerFromPersist(owner)
+    const car = getState().cars[owner]?.[0]
+    assert.equal(isVehicleRevenueSharedWithOwner(car), true)
+    assert.equal(totalStubCalls(), 0)
+  })
+
   test('hydrate 비용 임베드와 expenses는 initialize 뒤 유실·중복 0건이다', async () => {
     const { mergeWorkDataFromRows } = await import('../lib/hydrateMerge.js')
     const { expenseFromFuelRecord, replaceFuelExpenses } = await import('../domain/fuelRecords.js')

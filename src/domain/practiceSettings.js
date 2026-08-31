@@ -69,6 +69,7 @@ export function normalizeFixedRoutePresets(value) {
   return presets
 }
 
+/** @returns {import('./financeTypes.js').FinanceSettings} */
 export function normalizeSettings(raw = {}) {
   const inputMode = raw.inputMode === 'fare' ? 'fare' : 'count'
   const theme = raw.theme === 'dark' ? 'dark' : 'light'

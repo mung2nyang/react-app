@@ -1,7 +1,19 @@
 // @ts-check
 // 재감사 10차(FAIL 지적 4번) — 이 파일도 이제 // @ts-check 대상이다.
+/** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('./financeTypes.js').WorkDataByLogId} WorkDataByLogId */
+/** @typedef {import('./financeTypes.js').CarLike} CarLike */
+/** @typedef {import('./financeTypes.js').DriverLinkLike} DriverLinkLike */
+/** @typedef {import('./clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
+
+// 픽스처는 FinanceSettings로 통하되, 소비 측(finance.test.js 등)이 cars/clients/
+// driverLinks를 옵셔널 체크 없이 바로 쓰므로 그 3개만 필수로 좁힌다.
+/** @typedef {FinanceSettings & { cars: Array<CarLike>, clients: Array<ClientLike>, driverLinks: Array<DriverLinkLike> }} FixtureSettings */
+
 export const MONTH_KEY = '2026-05'
 
+/** @type {FixtureSettings} */
 export const FIXTURE_SETTINGS = {
   paymentOn: true,
   subPaymentOn: true,
@@ -14,6 +26,7 @@ export const FIXTURE_SETTINGS = {
   userName: '차주',
   clients: [
     {
+      id: 'client-hanjin',
       companyName: '한진',
       fixedRouteLinked: true,
       fixedUnitPrice: '250,000',
@@ -58,6 +71,7 @@ export const FIXTURE_SETTINGS = {
   ],
 }
 
+/** @type {WorkDataByLogId} */
 export const FIXTURE_WORK = {
   main: {
     '2026-05-10': {
@@ -133,6 +147,7 @@ export const FIXTURE_WORK = {
 // 금액으로 맞춰 뒀다(부기: finance.js는 더 이상 그 필드들을 안 읽는다 — 여기서
 // 값이 같은 건 "합계가 같아야 정상"이라는 걸 테스트가 확인하기 위해서일 뿐,
 // finance.js가 두 곳을 같이 읽는다는 뜻이 아니다).
+/** @type {Array<ExpenseItem>} */
 export const FIXTURE_EXPENSES = [
   { id: 'fx-maint-1', kind: 'maint', date: '2026-05-10', name: '오일', cost: 30000 },
   { id: 'fx-fuel-1', kind: 'fuel', date: '2026-05-10', fuelType: '주유', cost: 80000, subsidy: 5000, liters: 40 },
@@ -140,6 +155,7 @@ export const FIXTURE_EXPENSES = [
   { id: 'fx-maint-2', kind: 'maint', date: '2026-05-11', name: '정비', cost: 20000 },
 ]
 
+/** @type {Array<DriverLinkLike>} */
 export const OVERLAP_LINKS = [
   {
     id: 'a',

@@ -28,7 +28,7 @@
  * @property {string} [driverPhone]
  * @property {string} [driverLinkId]
  * @property {string} [infoType]
- * @property {{ driverName?: string, bizNumber?: string, name?: string, address?: string, bizType?: string, bizItem?: string, email?: string }} [personalInfo]
+ * @property {{ driverName?: string, bizNumber?: string, name?: string, address?: string, bizType?: string, bizItem?: string, email?: string, phone?: string, bank?: string, account?: string, accountHolder?: string }} [personalInfo]
  * @property {{ sameAsOwner?: boolean, name?: string, bizNumber?: string, representative?: string, address?: string, bizType?: string, bizItem?: string, email?: string }} [businessInfo]
  */
 

@@ -56,24 +56,19 @@ export function mergeProfileRow(localProfile, profileRow) {
 }
 
 export { mergeCarsFromRows } from './hydrateMergeCars.js'
+export { mergeClientsFromRows } from './hydrateMergeClients.js'
 export { mergeWorkDataFromRows } from './hydrateMergeWork.js'
 
-
-/** @param {Array<LocalClient>} localClients @param {Array<ClientRow>} clientRows */
-export function mergeClientsFromRows(localClients, clientRows) {
-  if (!Array.isArray(clientRows) || !clientRows.length) return localClients
-  const clients = clientRows.map((row) => ({
-    ...(row.raw && typeof row.raw === 'object' ? row.raw : {}),
-    companyName: row.company_name,
-    id: row.legacy_client_id || row.id,
-    supabaseId: row.id,
-    isPinned: row.is_pinned ?? !!(row.raw && row.raw.isPinned),
-  }))
-  const unsynced = (localClients || []).filter((client) => client && !client.supabaseId)
-  return [...clients, ...unsynced]
-}
-
-/** @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars @param {Array<DriverLinkRow>} linkRows */
+/**
+ * Step 7 후속(재감사) — 예전엔 `...local`(로컬 Store의 기존 드라이버 객체)을 통째로
+ * 스프레드했다. Store 드라이버는 이미 DRIVER_KEYS로 정규화돼 있는 게 보통이지만,
+ * 스프레드는 "혹시 남아있을 정본 밖 필드"까지 그대로 들여와 다음 initialize에서
+ * drivers 도메인 전체를 스키마 실패로 만들 수 있었다 — 이제 DRIVER_KEYS 9개 필드만
+ * 명시적으로 채운다. `id: local.id || row.id`도 함께 고쳤다: row.id는 Supabase
+ * bigint(number)일 수 있는데 isPersistedDriver는 id를 string으로 요구한다 —
+ * local.id가 없으면 String(row.id)로 문자열화한다.
+ * @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars @param {Array<DriverLinkRow>} linkRows
+ */
 export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
   if (!Array.isArray(linkRows)) return localDrivers
   const byCode = new Map((localDrivers || []).map((item) => [item.inviteCode, item]))
@@ -81,14 +76,13 @@ export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
     const car = (mergedCars || []).find((item) => item.supabaseId === row.vehicle_id)
     const local = byCode.get(row.invite_code) || (localDrivers || []).find((item) => item.supabaseId === row.id) || {}
     return {
-      ...local,
-      id: local.id || row.id,
+      id: local.id || String(row.id),
       supabaseId: row.id,
-      inviteCode: row.invite_code,
+      inviteCode: row.invite_code || '',
       vehicleNumber: car?.number || local.vehicleNumber || '',
       startDate: row.assignment_start || '',
       endDate: row.assignment_end || '',
-      status: row.status === 'linked' ? 'linked' : 'pending',
+      status: /** @type {'pending'|'linked'} */ (row.status === 'linked' ? 'linked' : 'pending'),
       name: local.name || local.driverName || '기사',
       phone: local.phone || '',
     }

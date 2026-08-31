@@ -21,8 +21,11 @@ import { formatWon } from '../../domain/money.js'
  * @param {boolean} props.paymentOn
  * @param {number} props.unpaidTotal
  * @param {FareSummary} props.fareSummary
+ * @param {number} [props.commissionTotal] 거래처 운임 수수료 합(매출 화면과 같은
+ *   getOwnerMonthlyFinanceDetail(...).income.commission.total). 표시 전용.
  */
-export default function CalendarMonthSummary({ paymentOn, unpaidTotal, fareSummary }) {
+export default function CalendarMonthSummary({ paymentOn, unpaidTotal, fareSummary, commissionTotal = 0 }) {
+  const commission = Math.max(0, Number(commissionTotal) || 0)
   return (
     <>
       {paymentOn && unpaidTotal > 0 && (
@@ -57,11 +60,20 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, fareSumma
           <span>부가세 (공급가액 기준 10%)</span>
           <span className="summary-value">{formatWon(fareSummary.vat)}</span>
         </div>
+        {commission > 0 && (
+          <div className="summary-row">
+            <span>운임 수수료</span>
+            <span className="summary-value">-{formatWon(commission)}</span>
+          </div>
+        )}
         <div className="summary-row total">
           <span>합계</span>
-          <span className="summary-value">{formatWon(fareSummary.total)}</span>
+          <span className="summary-value">{formatWon(fareSummary.total - commission)}</span>
         </div>
-        <p className="summary-hint">횟수×단가에 세부 입력 운임을 더합니다. 면제 건은 부가세 0원입니다.</p>
+        <p className="summary-hint">
+          횟수×단가에 세부 입력 운임을 더합니다. 면제 건은 부가세 0원입니다.
+          {commission > 0 && ' 운임 수수료는 거래처(콜 저장 시점) 기준입니다.'}
+        </p>
       </div>
     </>
   )
