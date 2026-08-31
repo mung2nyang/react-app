@@ -7,6 +7,7 @@
 /** @typedef {{ data?: import('../store/atomicPersist.js').JsonValue, error?: { message?: string } | null }} FakeQueryResult */
 /** @typedef {(arg?: EqFilters | import('../store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeHandler */
 /** @typedef {Record<string, Record<string, FakeHandler>>} FakeHandlers */
+/** @typedef {(args?: import('../store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeRpcHandler */
 
 /**
  * @param {(filters: EqFilters) => FakeQueryResult | Promise<FakeQueryResult>} getResult
@@ -35,7 +36,7 @@ export function chainable(getResult) {
   return api
 }
 
-/** @returns {{ fakeSupabase: { from: (table: string) => ReturnType<typeof chainable>, auth: { signOut: () => Promise<{ error: null }> } }, handlers: FakeHandlers, callCounts: Record<string, number>, resetHandlers: () => void, countOf: (table: string, method: string) => number, emptyOkHandlers: () => FakeHandlers }} */
+/** @returns {{ fakeSupabase: { from: (table: string) => ReturnType<typeof chainable>, rpc: (fn: string, args?: import('../store/atomicPersist.js').JsonValue) => Promise<FakeQueryResult>, auth: { signOut: () => Promise<{ error: null }> } }, handlers: FakeHandlers, callCounts: Record<string, number>, resetHandlers: () => void, countOf: (table: string, method: string) => number, emptyOkHandlers: () => FakeHandlers }} */
 export function createFakeSupabase() {
   /** @type {FakeHandlers} */
   const handlers = {}
@@ -82,6 +83,16 @@ export function createFakeSupabase() {
         update: (row) => { bump(table, 'update'); return chainable(() => (h.update ? h.update(row) : { data: null, error: null })) },
         delete: () => { bump(table, 'delete'); return chainable(h.delete || (() => ({ data: null, error: null }))) },
       }
+    },
+    /**
+     * 슬라이스 A: upsert_driver_link_idempotent 등 RPC. handlers.rpc[fnName]가 있으면
+     * 그걸 부르고, 없으면 no-op { data: null, error: null }. countOf('rpc', fnName)로 카운트.
+     * @param {string} fnName @param {import('../store/atomicPersist.js').JsonValue} [args]
+     */
+    rpc(fnName, args) {
+      bump('rpc', fnName)
+      const h = (handlers.rpc || {})[fnName]
+      return Promise.resolve().then(() => (h ? h(args) : { data: null, error: null }))
     },
     auth: { signOut: async () => ({ error: null }) },
   }

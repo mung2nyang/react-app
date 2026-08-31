@@ -42,7 +42,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
             <input id="drvEnd" type="date" className="input-box" value={draft.endDate} onChange={(e) => setDraft({ ...draft, endDate: e.target.value })} />
           </div>
         </div>
-        <p className="car-type-hint">같은 차량에 기간이 겹치면 저장되지 않습니다. 종료일이 없으면 계속 할당됩니다. 메인 차량은 할당할 수 없습니다.</p>
+        <p className="car-type-hint">한 차량은 한 기사에게만 할당할 수 있습니다. 종료일이 없으면 계속 할당됩니다. 메인 차량은 할당할 수 없습니다.</p>
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
           <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>

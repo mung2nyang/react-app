@@ -1,5 +1,9 @@
 // Step 4 도메인 폴더 이동: drivers.js의 순수 계산부. localStorage I/O(loadDrivers/
 // saveDrivers)는 lib/drivers.js에 남아 이 파일을 재수출한다.
+//
+// 2026-09-01 보리 지시: 날짜/기간 겹침 계산 차단(findOverlappingDriverLink 등)은
+// 요구한 적 없는 코드라 제거했다. 남긴 규칙은 "같은 차량번호는 한 기사에게만"
+// 하나뿐이다(기간 무관, 연결 해제된 기사는 제외).
 export function generateInviteCode(items = []) {
   const used = new Set((items || []).map((item) => item.inviteCode))
   let code = ''
@@ -15,32 +19,6 @@ export function countByStatus(items) {
     linked: list.filter((item) => item.status === 'linked').length,
     pending: list.filter((item) => item.status !== 'linked').length,
   }
-}
-
-export function driverToLink(driver) {
-  if (!driver) return null
-  return {
-    id: driver.id,
-    supabaseId: driver.supabaseId,
-    driverName: driver.name || driver.driverName || '',
-    phone: driver.phone || '',
-    inviteCode: driver.inviteCode || '',
-    vehicleNumber: driver.vehicleNumber || '',
-    assignmentStart: driver.startDate || driver.assignmentStart || '',
-    assignmentEnd: driver.endDate || driver.assignmentEnd || '',
-    status: driver.status || 'pending',
-  }
-}
-
-export function driversToLinks(items) {
-  return (items || []).map(driverToLink)
-}
-
-export function overlapConflictMessage(link) {
-  const name = link?.driverName || '다른 기사'
-  const start = link?.assignmentStart || ''
-  const end = link?.assignmentEnd || '계속'
-  return `같은 차량에 ${name}의 할당 기간(${start}~${end})과 겹칩니다.`
 }
 
 export function upsertDriver(items, draft, editingId = null, cars = []) {
@@ -70,9 +48,14 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
   const duplicate = list.some((item) => item.inviteCode === inviteCode && item.id !== editingId)
   if (duplicate) return { error: '이미 쓰인 초대 코드입니다.', items }
 
-  if (vehicleNumber && startDate) {
-    const conflicting = findOverlappingDriverLink(driversToLinks(list), vehicleNumber, startDate, endDate, editingId)
-    if (conflicting) return { error: overlapConflictMessage(conflicting), items }
+  // 같은 차량번호는 한 기사에게만(기간 무관). 연결 해제된 기사는 비운 것으로 본다.
+  if (vehicleNumber) {
+    const taken = list.some((item) => (
+      item.id !== editingId
+      && item.status !== 'disconnected'
+      && String(item.vehicleNumber || '').trim() === vehicleNumber
+    ))
+    if (taken) return { error: '이미 다른 기사에게 할당된 차량입니다.', items }
   }
 
   const next = { name, phone, inviteCode, vehicleNumber, startDate, endDate }
@@ -101,21 +84,4 @@ export function isDateWithinAssignment(dateKey, assignmentStart, assignmentEnd) 
   if (dateKey < assignmentStart) return false
   if (assignmentEnd && dateKey > assignmentEnd) return false
   return true
-}
-
-export function assignmentRangesOverlap(startA, endA, startB, endB) {
-  const aEnd = endA || '9999-12-31'
-  const bEnd = endB || '9999-12-31'
-  return startA <= bEnd && startB <= aEnd
-}
-
-export function findOverlappingDriverLink(links, vehicleNumber, start, end, excludeId) {
-  if (!vehicleNumber || !start) return null
-  return (links || []).find((link) => {
-    if (excludeId && link.id === excludeId) return false
-    if (link.status === 'disconnected') return false
-    if ((link.vehicleNumber || '') !== vehicleNumber) return false
-    if (!link.assignmentStart) return false
-    return assignmentRangesOverlap(start, end, link.assignmentStart, link.assignmentEnd || '')
-  })
 }

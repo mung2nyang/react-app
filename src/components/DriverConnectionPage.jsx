@@ -109,7 +109,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
       <section className="personal-intro">
         <span className="personal-intro-kicker">DRIVER CONNECTION</span>
         <strong>기사 초대부터 차량 할당까지</strong>
-        <p>{cloud ? '같은 차량에 기간이 겹치는 기사는 할당할 수 없습니다. 로그인한 계정은 클라우드에도 저장됩니다.' : '연습 앱에서는 초대 목록만 이 기기에 저장합니다. 같은 차량·겹치는 기간은 할당할 수 없습니다.'}</p>
+        <p>{cloud ? '한 차량은 한 기사에게만 할당할 수 있습니다. 로그인한 계정은 클라우드에도 저장됩니다.' : '연습 앱에서는 초대 목록만 이 기기에 저장합니다. 한 차량은 한 기사에게만 할당할 수 있습니다.'}</p>
         <div className="driver-management-counts">
           <span>연동 중 <b>{counts.linked}</b></span>
           <span>초대 대기 <b>{counts.pending}</b></span>

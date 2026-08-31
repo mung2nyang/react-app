@@ -1,61 +1,36 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { OVERLAP_LINKS, FIXTURE_SETTINGS, FIXTURE_WORK } from './finance.fixtures.js'
-import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
-import {
-  driversToLinks,
-  findOverlappingDriverLink,
-  overlapConflictMessage,
-  upsertDriver,
-} from './drivers.js'
+import { upsertDriver } from './drivers.js'
 import { buildClientRow, buildVehicleRow } from '../lib/cloudStorage.js'
 import { deleteClientFromSupabase, deleteVehicleFromSupabase } from '../lib/directMutations.js'
 
-const original = loadOriginalWindow()
-applyOriginalFixture(original, FIXTURE_SETTINGS, FIXTURE_WORK)
+// 2026-09-01 보리 지시: 기사 할당 "기간 겹침" 계산 차단(findOverlappingDriverLink 등)은
+// 요구한 적 없는 코드라 제거했다. 남긴 규칙은 "같은 차량번호는 한 기사에게만"(기간 무관).
+describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
+  const base = { name: '박기사', phone: '010-3333-4444', inviteCode: '222222', vehicleNumber: '서울12가3456', startDate: '2026-05-20', endDate: '' }
+  const cars = [{ type: 'sub', number: '서울12가3456' }]
 
-describe('기사 할당 겹침 — 원본과 같은 규칙', () => {
-  test('findOverlappingDriverLink가 원본과 같은 대상을 고른다', () => {
-    const hit = findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-05-20', '2026-06-10')
-    const originalHit = original.findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-05-20', '2026-06-10')
-    assert.equal(hit?.id, originalHit?.id)
-    assert.equal(hit?.id, 'a')
-  })
-
-  test('해제된 할당은 겹침으로 보지 않는다', () => {
-    assert.equal(
-      findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-05-10', '2026-05-20', 'a'),
-      original.findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-05-10', '2026-05-20', 'a'),
-    )
-  })
-
-  test('연습앱 기사 목록을 원본 link 모양으로 바꾸면 같은 겹침이 난다', () => {
-    const drivers = [
-      { id: 'a', name: '김기사', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '2026-05-31', status: 'pending' },
-      { id: 'b', name: '이기사', vehicleNumber: '서울12가3456', startDate: '2026-06-01', endDate: '', status: 'linked' },
-    ]
-    const ours = findOverlappingDriverLink(driversToLinks(drivers), '서울12가3456', '2026-05-20', '2026-06-10')
-    const theirs = original.findOverlappingDriverLink(driversToLinks(drivers), '서울12가3456', '2026-05-20', '2026-06-10')
-    assert.equal(ours?.id, theirs?.id)
-    assert.equal(ours?.id, 'a')
-  })
-
-  test('upsertDriver는 원본과 같은 겹침 안내를 낸다', () => {
+  test('같은 차량이 이미 다른 기사에게 있으면 기간과 무관하게 거절한다', () => {
     const items = [
       { id: 'a', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '2026-05-31', status: 'pending' },
     ]
-    const result = upsertDriver(items, {
-      name: '박기사',
-      phone: '010-3333-4444',
-      inviteCode: '222222',
-      vehicleNumber: '서울12가3456',
-      startDate: '2026-05-20',
-      endDate: '2026-06-10',
-    }, null, [{ type: 'sub', number: '서울12가3456' }])
-    const conflict = original.findOverlappingDriverLink(driversToLinks(items), '서울12가3456', '2026-05-20', '2026-06-10')
-    assert.equal(result.error, overlapConflictMessage(conflict))
-    assert.match(result.error, /같은 차량에 김기사의 할당 기간/)
+    // 기존 할당(5/1~5/31)과 겹치지 않는 6월 기간이어도 같은 차량이면 거절.
+    const result = upsertDriver(items, { ...base, startDate: '2026-07-01', endDate: '2026-07-31' }, null, cars)
+    assert.equal(result.error, '이미 다른 기사에게 할당된 차량입니다.')
   })
+
+  test('연결 해제된(disconnected) 기사가 쓰던 차량은 다시 할당할 수 있다', () => {
+    const items = [
+      { id: 'a', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'disconnected' },
+    ]
+    const result = upsertDriver(items, base, null, cars)
+    assert.equal(result.error, undefined)
+    assert.equal(result.items.length, 2)
+  })
+
+  // 수정 시 자기 자신 제외(item.id !== editingId)는 upsertDriver 내부 가드로 처리한다.
+  // domain/drivers.js가 @ts-check 대상이 아니라(editingId 기본값 null이 타입을 좁힘)
+  // 문자열 editingId를 타입 우회 없이 넘길 수 없어 여기서는 생성 케이스만 검증한다.
 
   test('메인 차량은 할당할 수 없다', () => {
     const result = upsertDriver([], {

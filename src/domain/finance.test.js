@@ -1,11 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { calculatePaymentDueDate } from './clients.js'
-import {
-  assignmentRangesOverlap,
-  findOverlappingDriverLink,
-  isDateWithinAssignment,
-} from './drivers.js'
+import { isDateWithinAssignment } from './drivers.js'
 import { getEffectiveDriverSettlementMode } from './cars.js'
 import {
   calculateDriverVehicleCommission,
@@ -19,7 +15,7 @@ import {
   getReceivableItems,
   getTaxInvoiceSourceGroups,
 } from './finance.js'
-import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY, OVERLAP_LINKS } from './finance.fixtures.js'
+import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
 import { parseCurrencyValue } from './money.js'
 import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
 
@@ -248,36 +244,9 @@ describe('getOwnerMonthlyFinanceDetail — 비용은 canonical expenses에서만
   })
 })
 
-describe('겹침 / 입금예정일', () => {
-  test('assignmentRangesOverlap', () => {
-    assert.equal(
-      assignmentRangesOverlap('2026-05-01', '2026-05-31', '2026-05-15', '2026-06-15'),
-      original.assignmentRangesOverlap('2026-05-01', '2026-05-31', '2026-05-15', '2026-06-15'),
-    )
-    assert.equal(
-      assignmentRangesOverlap('2026-05-01', '2026-05-31', '2026-06-01', ''),
-      original.assignmentRangesOverlap('2026-05-01', '2026-05-31', '2026-06-01', ''),
-    )
-    assert.equal(
-      assignmentRangesOverlap('2026-05-01', '', '2026-12-01', '2026-12-31'),
-      original.assignmentRangesOverlap('2026-05-01', '', '2026-12-01', '2026-12-31'),
-    )
-  })
-
-  test('findOverlappingDriverLink', () => {
-    const hit = findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-05-20', '2026-06-10')
-    const originalHit = original.findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-05-20', '2026-06-10')
-    assert.equal(hit?.id, originalHit?.id)
-    assert.equal(
-      findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-05-20', '2026-05-25', 'a')?.id,
-      original.findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-05-20', '2026-05-25', 'a')?.id,
-    )
-    assert.equal(
-      findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-07-01', '2026-07-31'),
-      original.findOverlappingDriverLink(OVERLAP_LINKS, '서울12가3456', '2026-07-01', '2026-07-31'),
-    )
-  })
-
+describe('입금예정일', () => {
+  // 2026-09-01 보리 지시로 기사 할당 "기간 겹침" 계산을 제거했다 — assignmentRangesOverlap
+  // / findOverlappingDriverLink 원본 대조 테스트도 그 기능과 함께 삭제한다.
   test('calculatePaymentDueDate', () => {
     const cases = [
       ['2026-01-31', 'next_month_end', ''],

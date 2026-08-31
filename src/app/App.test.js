@@ -295,7 +295,8 @@ test('재감사 9차 FAIL 지적 4번 — 존재하지 않는 달력 날짜로 /
 // 값이 커밋돼도 CalendarPage/WorkLogPage가 그 값을 봐야 하고, saveDay는 그 최신 store
 // workData를 기준으로 커밋해서 함께 있던 다른 날짜를 지우면 안 된다.
 test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 workData를 CalendarPage/WorkLogPage가 보고, 한 날짜 편집이 다른 날짜를 지우지 않는다', async () => {
-  window.history.pushState({}, '', '/app')
+  // calendarViewDate: URL `m`은 0-based. 8월 일지를 보려면 오늘 달(9월)이 아니라 고정 월로 들어간다.
+  window.history.pushState({}, '', '/app?y=2026&m=7')
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createTrackedRoot(container)
@@ -306,6 +307,7 @@ test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 work
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
     await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => !container.textContent.includes('불러오는 중'))
     await act(async () => { await wait(50) }) // 부트 초기화(initializeOwnerFromPersist)가 끝날 시간을 준다.
 
     // 마운트가 끝난 "뒤"에 store에 B를 외부에서 커밋한다 — 예전 아키텍처

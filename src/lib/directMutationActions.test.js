@@ -281,8 +281,11 @@ describe('requestDriverStatusChange / requestDriverDeletion — 사용자 지시
   })
 })
 
-describe('requestDriverInviteSave — 생성/수정도 outbox를 거친다', () => {
-  test('failed 상태에서는 저장을 막고 로컬에 아무 것도 안 남긴다', async () => {
+const RPC_FN = 'upsert_driver_link_idempotent'
+const FAIL_FAST_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+
+describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1회(Fail-Fast)', () => {
+  test('failed hydration: 저장을 막고 로컬/원격에 아무 것도 안 남긴다', async () => {
     const ownerKey = 'dma-invite-failed'
     beginFailed('user-1', ownerKey)
     const items = [{ id: 'drv-new', name: '박기사', vehicleNumber: '77가7777', startDate: '2026-08-01', endDate: '', inviteCode: '555555' }]
@@ -291,85 +294,97 @@ describe('requestDriverInviteSave — 생성/수정도 outbox를 거친다', () 
 
     assert.ok(result.blocked)
     assert.equal(countOf('driver_links', 'insert'), 0)
+    assert.equal(countOf('rpc', RPC_FN), 0)
     assert.equal(readJsonKey('drivers', ownerKey, []).length, 0, 'failed 상태에서는 localStorage에도 안 남아야 한다')
     endCloudSession()
   })
 
-  test('ready 상태에서 성공하면 서버가 확정한 값을 돌려주고 outbox가 비워진다', async () => {
+  test('성공: driver_links.insert 0, rpc 1, Store/result.items에 서버 id, hasPendingOps false', async () => {
     const ownerKey = 'dma-invite-success'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '77가7777', type: 'sub', supabaseId: 800 }]
     writeJsonKey('cars', ownerKey, cars)
-    handlers.driver_links = {
-      select: () => ({ data: [], error: null }),
-      insert: () => ({ data: { id: 950, invite_code: '555555', assignment_start: '2026-08-01', assignment_end: null, status: 'pending' }, error: null }),
+    handlers.rpc = {
+      [RPC_FN]: () => ({ data: [{ id: 950, invite_code: '555555', assignment_start: '2026-08-01', assignment_end: null, status: 'pending' }], error: null }),
     }
     const items = [{ id: 'drv-new', name: '박기사', vehicleNumber: '77가7777', startDate: '2026-08-01', endDate: '', inviteCode: '555555' }]
 
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars })
 
     assert.equal(result.blocked, null)
-    assert.match(result.toast, /초대를 저장했습니다/)
+    assert.match(result.toast, /기사 초대를 저장했습니다/)
+    assert.equal(countOf('driver_links', 'insert'), 0)
+    assert.equal(countOf('rpc', RPC_FN), 1)
     const saved = result.items.find((item) => item.id === 'drv-new')
-    assert.equal(saved.supabaseId, 950)
+    assert.equal(saved?.supabaseId, 950, 'result.items에 서버 id가 반영돼야 한다')
+    const inStore = getState().drivers[ownerKey]
+    assert.ok(Array.isArray(inStore) && inStore.some((item) => item.supabaseId === 950), 'Store에도 서버 id가 반영돼야 한다(4대 기준 2)')
+    const stored = readJsonKey('drivers', ownerKey, [])
+    assert.ok(Array.isArray(stored) && stored.length === 1, 'localStorage에도 1건만 저장돼야 한다')
     assert.equal(hasPendingOps(ownerKey), false)
     endCloudSession()
   })
 
-  test('사용자 지시 3번 — 차량이 이미 동기화돼 있고 겹침이 있으면 확정 실패로 즉시 처리하고 로컬/outbox에 아무 것도 안 남긴다', async () => {
-    const ownerKey = 'dma-invite-conflict'
+  test('RPC { data: null, error }: 지정 Fail-Fast 토스트, insert 0, outbox 비어 있음, Store가 실패 전 값', async () => {
+    const ownerKey = 'dma-invite-rpc-error'
     beginReady('user-1', ownerKey)
-    const cars = [{ id: 'car-1', number: '77가7777', type: 'sub', supabaseId: 801 }]
+    const cars = [{ id: 'car-1', number: '77가7777', type: 'sub', supabaseId: 803 }]
     writeJsonKey('cars', ownerKey, cars)
-    handlers.driver_links = {
-      select: () => ({ data: [{ id: 111, assignment_start: '2026-08-01', assignment_end: null, status: 'linked', driver_id: 'other' }], error: null }),
-    }
-    const items = [{ id: 'drv-new-2', name: '박기사', vehicleNumber: '77가7777', startDate: '2026-08-05', endDate: '', inviteCode: '666666' }]
+    handlers.rpc = { [RPC_FN]: () => ({ data: null, error: { message: 'RLS violation' } }) }
+    const items = [{ id: 'drv-err', name: '박기사', vehicleNumber: '77가7777', startDate: '2026-08-01', endDate: '', inviteCode: '888888' }]
 
-    const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: 'drv-new-2', cars })
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
+    const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars })
+    unsubscribe()
 
-    assert.ok(result.blocked, '확정 실패이므로 blocked가 있어야 한다(durable retry 대상이 아니다)')
-    assert.doesNotMatch(result.toast, /저장했습니다/)
-    assert.equal(hasPendingOps(ownerKey), false, '확정 실패는 outbox에 남으면 안 된다')
-    assert.equal(readJsonKey('drivers', ownerKey, []).length, 0, '낙관적 로컬 반영도 없어야 한다')
+    assert.equal(result.toast, FAIL_FAST_TOAST, 'RPC error 시 토스트가 정확히 지정 문구여야 한다')
+    assert.equal(result.blocked, FAIL_FAST_TOAST)
+    assert.equal(countOf('rpc', RPC_FN), 1)
     assert.equal(countOf('driver_links', 'insert'), 0)
+    assert.equal(hasPendingOps(ownerKey), false)
+    assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), [], 'localStorage도 실패 전(빈) 값이어야 한다')
+    assert.equal(notifyCount, 0)
     endCloudSession()
   })
 
-  test('사용자 지시 8번 — insert 응답이 유실된 뒤(즉시 재시도) 같은 payload로 다시 저장해도 중복 삽입 없이 그 행을 그대로 쓴다', async () => {
+  test('응답 유실 흉내 후 같은 driver.id로 재호출: rpc가 기존 행을 돌려주면 insert 0, 서버 행 1개로 취급', async () => {
     const ownerKey = 'dma-invite-idempotent'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '88가8888', type: 'sub', supabaseId: 802 }]
     writeJsonKey('cars', ownerKey, cars)
-    // 첫 시도가 이미 서버에 성공적으로 삽입했다고 가정한다(응답만 유실됨) — idempotency
-    // 조회(.maybeSingle())가 그 행을 그대로 돌려준다. 이 owner-prior 경로는 겹침 조회
-    // (배열 기대)까지 가지 않고 여기서 바로 끝나므로, 단일 객체 모양으로 응답해도 된다.
-    handlers.driver_links = {
-      select: () => ({ data: { id: 950, vehicle_id: 802, assignment_start: '2026-08-01', assignment_end: null, invite_code: '777777', status: 'pending', driver_id: null }, error: null }),
+    // 첫 시도가 이미 서버에 만들었다(응답만 유실). 같은 p_idempotency_key면 RPC가
+    // 기존 행(id 950)을 그대로 돌려준다 — 중복 insert 없음.
+    handlers.rpc = {
+      [RPC_FN]: () => ({ data: [{ id: 950, invite_code: '777777', assignment_start: '2026-08-01', assignment_end: null, status: 'pending' }], error: null }),
     }
     const items = [{ id: 'drv-new-3', name: '박기사', vehicleNumber: '88가8888', startDate: '2026-08-01', endDate: '', inviteCode: '777777' }]
 
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: 'drv-new-3', cars })
 
-    assert.equal(result.blocked, null, '내 이전 삽입을 겹침으로 오인해 확정 실패시키면 안 된다')
+    assert.equal(result.blocked, null)
+    assert.equal(countOf('rpc', RPC_FN), 1)
     assert.equal(countOf('driver_links', 'insert'), 0, '이미 있는 행을 재사용해야지 다시 삽입하면 안 된다')
+    assert.equal(countOf('driver_links', 'update'), 0, '기간/코드가 그대로면 보정 update도 없어야 한다')
     const saved = result.items.find((item) => item.id === 'drv-new-3')
-    assert.equal(saved.supabaseId, 950, '기존에 성공한 행의 id를 그대로 받아야 한다')
+    assert.equal(saved?.supabaseId, 950, '기존에 성공한 행의 id를 그대로 받아야 한다')
     endCloudSession()
   })
 
-  test('입력이 불완전해도(차량/시작일 없음) 사용자 지시 2번대로 로컬에는 항상 저장되고 저장 토스트가 뜬다', async () => {
+  test('불완전 입력(차량/시작일 없음): 기존 로컬 저장 유지, rpc 0', async () => {
     const ownerKey = 'dma-invite-incomplete'
     beginReady('user-1', ownerKey)
     const items = [{ id: 'drv-incomplete', name: '박기사' }]
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars: [] })
     assert.match(result.toast, /초대를 저장했습니다/, '차량 미할당이라도 로컬 저장 자체는 성공 토스트를 보여줘야 한다(예전 동작)')
-    assert.equal(countOf('driver_links', 'insert'), 0, '클라우드 시도 자체를 안 해야 한다')
-    assert.deepEqual(readJsonKey('drivers', ownerKey, []), items, '로컬에는 반드시 저장돼야 한다 — 이게 이번에 고친 회귀다')
+    assert.equal(countOf('rpc', RPC_FN), 0, '클라우드 시도 자체를 안 해야 한다')
+    assert.equal(countOf('driver_links', 'insert'), 0)
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), items, '로컬에는 반드시 저장돼야 한다')
     endCloudSession()
   })
 
-  test('입력이 불완전한데 로컬 저장 자체가 실패하면(사용자 지시 10번) 예외를 던지지 않고 실패 토스트를 돌려준다', async () => {
+  test('불완전 입력인데 로컬 저장 자체가 실패하면(AGENTS §10) 예외를 던지지 않고 실패 토스트를 돌려준다', async () => {
     const ownerKey = 'dma-invite-incomplete-storage-fail'
     beginReady('user-1', ownerKey)
     const items = [{ id: 'drv-incomplete-2', name: '박기사' }]
@@ -383,41 +398,53 @@ describe('requestDriverInviteSave — 생성/수정도 outbox를 거친다', () 
     endCloudSession()
   })
 
-  // 재감사 항목 2: 사전 겹침 조회 대기 중 로그아웃하면 Store/localStorage/outbox/
-  // 이후 원격 호출이 전부 0이어야 한다 — session은 조회 시작 전에 캡처해 두고,
-  // 조회 내부의 await 직후 재검증한다.
-  test('재감사 2번 — 겹침 조회 대기 중 로그아웃하면 Store/localStorage/outbox/이후 원격 호출이 전부 0이다', async () => {
+  test('배정 차량이 아직 서버에 없으면(car.supabaseId 없음): Fail-Fast 토스트, rpc 0, 차량 동기화 큐 안 돌림', async () => {
+    const ownerKey = 'dma-invite-car-unsynced'
+    beginReady('user-1', ownerKey)
+    const cars = [{ id: 'car-1', number: '77가7777', type: 'sub' }]
+    writeJsonKey('cars', ownerKey, cars)
+    const items = [{ id: 'drv-x', name: '박기사', vehicleNumber: '77가7777', startDate: '2026-08-01', endDate: '', inviteCode: '111111' }]
+
+    const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars })
+
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.equal(countOf('rpc', RPC_FN), 0)
+    assert.equal(countOf('driver_links', 'insert'), 0)
+    assert.equal(countOf('vehicles', 'insert'), 0, '차량 동기화 큐를 새로 돌리면 안 된다')
+    assert.equal(readJsonKey('drivers', ownerKey, []).length, 0)
+    endCloudSession()
+  })
+
+  // AGENTS §9: RPC 응답 대기 중 로그아웃하면 결과를 폐기하고 Store/localStorage/
+  // outbox에 아무 반영도 하지 않는다 — session은 RPC 시작 전 캡처, await 직후 재검증.
+  test('RPC 응답 대기 중 로그아웃하면 결과를 폐기하고 Store/localStorage/outbox가 그대로다', async () => {
     const ownerKey = 'dma-invite-epoch-logout'
     beginReady('user-1', ownerKey)
-    const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 900 }]
-    const existingDriver = { id: 'driver-1', name: '기사', vehicleNumber: '11가1111', startDate: '2026-08-01', endDate: '', inviteCode: '123456', status: 'pending', supabaseId: 500 }
-    writeJsonKey('drivers', ownerKey, [existingDriver])
-    const items = [{ ...existingDriver, startDate: '2026-08-10' }] // 호출부가 이미 낙관적으로 편집해 넘긴 배열.
+    const cars = [{ id: 'car-1', number: '11가1111', type: 'sub', supabaseId: 900 }]
+    writeJsonKey('drivers', ownerKey, [])
+    const items = [{ id: 'drv-lo', name: '기사', vehicleNumber: '11가1111', startDate: '2026-08-10', endDate: '', inviteCode: '123456' }]
 
-    let releaseSelect
-    const gate = new Promise((resolve) => { releaseSelect = resolve })
-    handlers.driver_links = { select: () => gate.then(() => ({ data: [], error: null })) }
+    let releaseRpc
+    const gate = new Promise((resolve) => { releaseRpc = resolve })
+    handlers.rpc = { [RPC_FN]: () => gate.then(() => ({ data: [{ id: 500 }], error: null })) }
 
-    const savePromise = requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: 'driver-1', cars, previousItems: [existingDriver] })
+    const savePromise = requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars })
     await wait(10)
-    assert.equal(countOf('driver_links', 'select'), 1, '겹침 조회가 이미 나갔어야 한다')
+    assert.equal(countOf('rpc', RPC_FN), 1, 'RPC가 이미 나갔어야 한다')
 
-    endCloudSession() // 조회 응답을 기다리는 도중 로그아웃한다.
-    // notify 카운트는 로그아웃(hydration 상태 변경) 자체가 아니라, 그 *이후* 이
-    // 저장 시도가 drivers 도메인에 뭔가를 반영하는지만 본다.
+    endCloudSession() // RPC 응답을 기다리는 도중 로그아웃한다.
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
-    releaseSelect()
+    releaseRpc()
     await savePromise
     unsubscribe()
 
     assert.equal(notifyCount, 0, '로그아웃 이후 이 저장 시도가 Store에 아무 반영도 하면 안 된다(notify 0회)')
     assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
-    assert.deepEqual(readJsonKey('drivers', ownerKey, []), [existingDriver], 'localStorage도 원래 값 그대로여야 한다')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), [], 'localStorage도 원래 값 그대로여야 한다')
     assert.equal(hasPendingOps(ownerKey), false, 'outbox에도 아무것도 안 남아야 한다')
-    assert.equal(countOf('driver_links', 'insert'), 0, '이후 원격 insert가 없어야 한다')
-    assert.equal(countOf('driver_links', 'update'), 0, '이후 원격 update가 없어야 한다')
-    assert.equal(countOf('vehicles', 'select'), 0, '이후 다른 원격 호출도 없어야 한다')
+    assert.equal(countOf('driver_links', 'insert'), 0, 'insert가 없어야 한다')
+    assert.equal(countOf('driver_links', 'update'), 0, '재검증 실패 뒤 보정 update가 나가면 안 된다')
   })
 })
 
