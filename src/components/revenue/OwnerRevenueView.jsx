@@ -3,8 +3,8 @@
 import { useMemo, useState } from 'react'
 import { shiftMonth } from '../../lib/calendar.js'
 import { getOwnerMonthlyFinanceDetail } from '../../lib/finance.js'
-import { buildFinanceSettings, loadWorkDataByLogId } from '../../lib/ownerFinance.js'
-import { loadExpenses } from '../../lib/expenses.js'
+import { buildFinanceSettings } from '../../lib/ownerFinance.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
 import { DateNav } from './RevenueNav.jsx'
 import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { monthKeyOf, won } from './revenueFormat.js'
@@ -24,13 +24,19 @@ export default function OwnerRevenueView({ ownerKey }) {
   const month = viewDate.getMonth()
   const yearly = tab === 'yearly'
 
-  const settings = useMemo(() => buildFinanceSettings(ownerKey), [ownerKey])
-  const workDataByLogId = useMemo(() => loadWorkDataByLogId(ownerKey), [ownerKey])
-  // 재감사(FAIL 지적 2번) — 비용(정비/주유/기타) 정본은 expenses 스토어다. 이 화면이
-  // 마운트될 때마다(라우트 진입마다) 다시 읽으므로, 일지에서 방금 추가한 비용도
-  // "새로고침 없이" 그대로 반영된다 — 이미 useMemo 의존성이 ownerKey뿐이라 컴포넌트가
-  // 다시 마운트되는(라우트를 나갔다 들어오는) 시점마다 최신 localStorage 값을 새로 읽는다.
-  const expenses = useMemo(() => loadExpenses(ownerKey), [ownerKey])
+  const cars = useOwnerCars(ownerKey)
+  const practiceSettings = useOwnerSettings(ownerKey)
+  const profile = useOwnerProfile(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
+  const settings = useMemo(() => {
+    void cars
+    void practiceSettings
+    void profile
+    void drivers
+    return buildFinanceSettings(ownerKey)
+  }, [ownerKey, cars, practiceSettings, profile, drivers])
+  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
+  const expenses = useOwnerExpenses(ownerKey)
 
   const monthly = useMemo(
     () => getOwnerMonthlyFinanceDetail(monthKeyOf(year, month), scope, settings, workDataByLogId, expenses),

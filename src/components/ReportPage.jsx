@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
 import { buildMonthReport, dash } from '../lib/report.js'
+import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkData } from '../store/ownerDataHooks.js'
 
 const YEAR_OPTIONS = getYearOptions()
 
@@ -9,7 +10,16 @@ export default function ReportPage({ ownerKey = 'guest', onBack }) {
   const [viewDate, setViewDate] = useState(() => new Date())
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
-  const report = useMemo(() => buildMonthReport(ownerKey, year, month), [ownerKey, year, month])
+  const expenses = useOwnerExpenses(ownerKey)
+  const cars = useOwnerCars(ownerKey)
+  const practiceSettings = useOwnerSettings(ownerKey)
+  const workData = useOwnerWorkData(ownerKey)
+  const clients = useOwnerClients(ownerKey)
+  const storedProfile = useOwnerProfile(ownerKey)
+  const report = useMemo(
+    () => buildMonthReport(ownerKey, year, month, expenses, cars, practiceSettings, workData, clients, storedProfile),
+    [ownerKey, year, month, expenses, cars, practiceSettings, workData, clients, storedProfile],
+  )
   const car = report.mainCar
   const profile = report.profile
 

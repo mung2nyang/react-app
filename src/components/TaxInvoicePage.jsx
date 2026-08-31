@@ -1,11 +1,20 @@
 // @ts-check
 import { useMemo, useState } from 'react'
 import { getTaxInvoiceFlowMeta, getTaxInvoiceSourceGroups } from '../lib/finance.js'
-import { lastDayOfMonth, listMonthInvoices, loadInvoices, saveInvoices } from '../lib/invoices.js'
+import { lastDayOfMonth, listMonthInvoices, saveInvoices } from '../lib/invoices.js'
 import { formatWon } from '../lib/money.js'
-import { buildFinanceSettings, loadWorkDataByLogId } from '../lib/ownerFinance.js'
+import { buildFinanceSettings } from '../lib/ownerFinance.js'
 import { changeTaxInvoiceStatus, saveTaxInvoiceDraft } from '../lib/taxInvoiceActions.js'
-import { useOwnerClients } from '../store/ownerDataHooks.js'
+import {
+  readOwnerInvoices,
+  useOwnerCars,
+  useOwnerClients,
+  useOwnerDrivers,
+  useOwnerInvoices,
+  useOwnerProfile,
+  useOwnerSettings,
+  useOwnerWorkDataByLogId,
+} from '../store/ownerDataHooks.js'
 import TaxInvoiceDraftModal from './TaxInvoiceDraftModal.jsx'
 import TaxInvoiceEntryList from './TaxInvoiceEntryList.jsx'
 import TaxInvoiceToolbar from './TaxInvoiceToolbar.jsx'
@@ -20,7 +29,11 @@ import TaxInvoiceToolbar from './TaxInvoiceToolbar.jsx'
  */
 export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }) {
   const clients = useOwnerClients(ownerKey)
-  const [records, setRecords] = useState(() => /** @type {Array<InvoiceLike>} */ (loadInvoices(ownerKey)))
+  const cars = useOwnerCars(ownerKey)
+  const practiceSettings = useOwnerSettings(ownerKey)
+  const profile = useOwnerProfile(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
+  const records = useOwnerInvoices(ownerKey)
   const [viewDate, setViewDate] = useState(() => new Date())
   const [tab, setTab] = useState(/** @type {'draft'|'issued'} */ ('draft'))
   const [flow, setFlow] = useState(/** @type {'sales'|'purchase'|'commission'} */ ('sales'))
@@ -31,12 +44,13 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }
   const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
   const settings = useMemo(() => {
     void clients
+    void cars
+    void practiceSettings
+    void profile
+    void drivers
     return buildFinanceSettings(ownerKey)
-  }, [ownerKey, clients])
-  const workDataByLogId = useMemo(() => {
-    void records
-    return loadWorkDataByLogId(ownerKey)
-  }, [ownerKey, records])
+  }, [ownerKey, clients, cars, practiceSettings, profile, drivers])
+  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const flowMeta = getTaxInvoiceFlowMeta(flow)
   const listed = useMemo(
     () => listMonthInvoices(monthKey, flow, settings, workDataByLogId, records),
@@ -55,7 +69,6 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }
 
   /** @param {Array<InvoiceLike>} next */
   function persist(next) {
-    setRecords(next)
     saveInvoices(ownerKey, next)
   }
 
@@ -70,7 +83,14 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }
 
   function saveDraft() {
     if (!modalItem) return
-    if (saveTaxInvoiceDraft({ ownerKey, clients, records, modalItem, persist, showToast })) {
+    if (saveTaxInvoiceDraft({
+      ownerKey,
+      clients,
+      records: readOwnerInvoices(ownerKey),
+      modalItem,
+      persist,
+      showToast,
+    })) {
       setModalItem(null)
     }
   }
@@ -80,7 +100,15 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }
    * @param {'draft'|'issued'} status
    */
   function changeStatus(item, status) {
-    changeTaxInvoiceStatus({ item, status, settings, records, persist, openDraft, showToast })
+    changeTaxInvoiceStatus({
+      item,
+      status,
+      settings,
+      records: readOwnerInvoices(ownerKey),
+      persist,
+      openDraft,
+      showToast,
+    })
   }
 
   const emptyDraft = flow === 'sales'

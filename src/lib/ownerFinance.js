@@ -1,13 +1,17 @@
 // @ts-check
 // 재감사 3차(FAIL 지적 4번) — 이번 diff가 건드린 프로덕션 JS 전체를 활성 typecheck
 // 대상으로 만들라는 지시로 @ts-check를 붙였다.
-import { loadCars } from './cars.js'
-import { loadDrivers } from './drivers.js'
 import { getReceivableItems } from './finance.js'
-import { loadPracticeSettings } from './practiceSettings.js'
-import { loadProfile } from './profile.js'
-import { loadWorkData, markReceivableItemPaid, saveWorkData } from './workData.js'
-import { readOwnerClients } from '../store/ownerDataHooks.js'
+import { markReceivableItemPaid, saveWorkData } from './workData.js'
+import { resolveFixedUnitPrice } from '../domain/clients.js'
+import {
+  readOwnerCars,
+  readOwnerClients,
+  readOwnerDrivers,
+  readOwnerProfile,
+  readOwnerSettings,
+  readOwnerWorkDataByLogId,
+} from '../store/ownerDataHooks.js'
 
 /** @typedef {import('../domain/day-record.js').DayRecordLike} DayRecordLike */
 // WorkDataByLogId의 정본은 domain/financeTypes.js다 — alias만 한다(중복 선언 금지).
@@ -18,10 +22,7 @@ import { readOwnerClients } from '../store/ownerDataHooks.js'
  * @returns {WorkDataByLogId}
  */
 export function loadWorkDataByLogId(ownerKey = 'guest') {
-  // loadWorkData(lib/workData.js)는 아직 @ts-check가 없어 반환 타입이 느슨한
-  // object로 추론된다 — 실제 런타임 모양(day-record.js의 saveDayRecord가 만드는
-  // dateKey→DayRecordLike 맵)으로 여기서 좁힌다.
-  return { main: /** @type {Record<string, DayRecordLike>} */ (loadWorkData(ownerKey)) }
+  return readOwnerWorkDataByLogId(ownerKey)
 }
 
 /**
@@ -34,19 +35,16 @@ export function persistWorkDataByLogId(ownerKey, workDataByLogId) {
 
 /** @param {string} [ownerKey] */
 export function buildFinanceSettings(ownerKey = 'guest') {
-  const practice = loadPracticeSettings(ownerKey)
-  const profile = loadProfile(ownerKey)
-  const drivers = loadDrivers(ownerKey)
+  const practice = readOwnerSettings(ownerKey)
+  const profile = readOwnerProfile(ownerKey)
+  const drivers = readOwnerDrivers(ownerKey)
+  const clients = readOwnerClients(ownerKey)
   return {
     paymentOn: true,
     subPaymentOn: true,
     fixedOn: practice.fixedOn,
     subFixedOn: practice.subFixedOn,
-    // 재감사 2차(FAIL 지적) — resolveFixedUnitPrice(domain/clients.js)의 fallback
-    // 소스. 고정노선 연결 거래처가 없으면(Step 7 전 대부분) 매출 화면도 달력과 같은
-    // settings.unitPrice를 쓰게 한다 — 전에는 여기 빠져 있어서 매출 화면은 항상 0으로
-    // 계산됐다(달력 배지는 0이 아닌데 매출은 0인 불일치의 원인 중 하나였다).
-    unitPrice: practice.unitPrice,
+    unitPrice: resolveFixedUnitPrice({ clients }),
     defaultDriverSettlementMode: 'company',
     driverInvoiceBasis: 'net',
     bizName: profile.bizName,
@@ -57,8 +55,8 @@ export function buildFinanceSettings(ownerKey = 'guest') {
     bizType: profile.bizType,
     bizItem: profile.bizItem,
     bizEmail: profile.bizEmail,
-    clients: readOwnerClients(ownerKey),
-    cars: loadCars(ownerKey),
+    clients,
+    cars: readOwnerCars(ownerKey),
     driverLinks: drivers.map((driver) => ({
       id: driver.id,
       vehicleNumber: driver.vehicleNumber,

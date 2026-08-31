@@ -148,8 +148,7 @@ export function getMonthlyFareRevenue(monthKey, settings = {}, workDataByLogId =
     const isMain = source.logId === 'main'
     const activeFixedOn = isMain ? settings.fixedOn : settings.subFixedOn
     const activePalletOn = !!fixedRouteClientForTotals?.palletOn
-    // 달력·매출 단가는 resolveFixedUnitPrice(domain/clients.js)로 통일: 연결된
-    // 거래처가 있으면 그 fixedUnitPrice, 없으면 settings.unitPrice로 fallback.
+    // 달력·매출 단가는 고정노선 연결 거래처 fixedUnitPrice만 (resolveFixedUnitPrice).
     const fixedUnitPrice = resolveFixedUnitPrice(settings)
     const palletUnitPrice = parseCurrencyValue(fixedRouteClientForTotals?.palletPrice)
 

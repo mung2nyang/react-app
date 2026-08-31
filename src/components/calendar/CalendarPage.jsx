@@ -10,11 +10,8 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../domain/calendarViewDate.js'
-import { getFixedRouteClient, resolveFixedUnitPrice } from '../../domain/clients.js'
+import { resolveFixedUnitPrice } from '../../domain/clients.js'
 import { monthCallUnpaidTotal, monthWorkFareSummary } from '../../domain/day-record.js'
-import { requestClientFixedUnitPrice } from '../../lib/clientMutations.js'
-import { getCloudUserId } from '../../lib/cloudSession.js'
-import { savePracticeSettings } from '../../lib/practiceSettings.js'
 import { useOwnerClients, useOwnerSettings, useOwnerWorkData } from '../../store/ownerDataHooks.js'
 import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
@@ -39,7 +36,7 @@ const YEAR_OPTIONS = getYearOptions()
  * @param {(message: string) => void} [props.showToast]
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
-export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, showToast, onSelectDay }) {
+export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, onSelectDay }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const viewDate = useMemo(() => viewDateFromSearchParams(searchParams), [searchParams])
   const year = viewDate.getFullYear()
@@ -47,15 +44,8 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
 
   const workData = useOwnerWorkData(ownerKey)
   const settings = useOwnerSettings(ownerKey)
-  // 재감사 2차(FAIL 지적) — 달력의 "1회 단가"를 finance.js(매출·계산서)와 같은
-  // 창구(resolveFixedUnitPrice)로 계산한다 — 고정노선 연결 거래처가 있으면 그
-  // fixedUnitPrice, 없으면(Step 7 전 지금 대부분의 상태) settings.unitPrice로
-  // fallback한다. 재감사 3차(FAIL 지적 3번) — clients도 이제 store를 구독한다
-  // (useOwnerClients) — 거래처 단가를 이 화면에서 직접 고친 직후에도(아래
-  // saveUnitPrice) 같은 렌더 사이클에서 최신값을 받는다.
   const clients = useOwnerClients(ownerKey)
-  const fixedRouteClient = getFixedRouteClient({ clients })
-  const unitPrice = resolveFixedUnitPrice({ clients, unitPrice: settings.unitPrice })
+  const unitPrice = resolveFixedUnitPrice({ clients })
 
   const cells = useMemo(() => buildCalendarCells(viewDate), [viewDate])
   const fareSummary = /** @type {FareSummary} */ (useMemo(
@@ -67,25 +57,6 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
   /** @param {number} nextYear @param {number} nextMonth */
   function changeMonth(nextYear, nextMonth) {
     setSearchParams(searchParamsForViewDate(new Date(nextYear, nextMonth, 1)), { replace: true })
-  }
-
-  // 연결된 고정노선 거래처가 있으면 requestClientFixedUnitPrice로만 고친다
-  // (saveClients 우회 금지 — 세션 게이트·commitClients와 목록 저장이 같은 창구).
-  // fallback settings.unitPrice는 연결된 거래처가 없을 때만 건드린다.
-  /** @param {number} nextPrice */
-  function saveUnitPrice(nextPrice) {
-    if (fixedRouteClient) {
-      const result = requestClientFixedUnitPrice({
-        ownerKey,
-        userId: getCloudUserId(),
-        clients,
-        clientId: fixedRouteClient.id,
-        nextPrice,
-      })
-      if (result.toast) showToast?.(result.toast)
-      return
-    }
-    savePracticeSettings(ownerKey, { unitPrice: nextPrice })
   }
 
   return (
@@ -114,9 +85,6 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
         paymentOn={settings.paymentOn}
         unpaidTotal={unpaidTotal}
         fareSummary={fareSummary}
-        unitPrice={unitPrice}
-        linkedClientName={fixedRouteClient?.companyName || null}
-        onSaveUnitPrice={saveUnitPrice}
       />
 
       {userName && <p className="main-practice-note">{userName}님 · 달력에 횟수 기록</p>}

@@ -7,18 +7,18 @@ import {
   filterMonth,
   groupExpensesByDate,
   KINDS,
-  loadExpenses,
   monthTotal,
   removeExpense,
   saveExpenses,
   upsertExpense,
 } from '../lib/expenses.js'
 import { formatWon } from '../lib/money.js'
+import { readOwnerExpenses, useOwnerExpenses } from '../store/ownerDataHooks.js'
 
 const YEAR_OPTIONS = getYearOptions()
 
 export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast }) {
-  const [items, setItems] = useState(() => loadExpenses(ownerKey))
+  const items = useOwnerExpenses(ownerKey)
   const [kind, setKind] = useState('maint')
   const [viewDate, setViewDate] = useState(() => new Date())
   const [modalOpen, setModalOpen] = useState(false)
@@ -33,8 +33,14 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
   const kindLabel = KINDS.find((item) => item.value === kind)?.label || '정비'
 
   function persist(next) {
-    setItems(next)
-    saveExpenses(ownerKey, next)
+    try {
+      saveExpenses(ownerKey, next)
+      return true
+    } catch (error) {
+      console.error('비용 저장 실패:', error)
+      showToast?.('저장하지 못했습니다. 저장 공간을 확인해 주세요.')
+      return false
+    }
   }
 
   function openAdd() {
@@ -61,18 +67,18 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
   }
 
   function save() {
-    const result = upsertExpense(items, { ...draft, kind: draft.kind || kind }, editingId)
+    const result = upsertExpense(readOwnerExpenses(ownerKey), { ...draft, kind: draft.kind || kind }, editingId)
     if (result.error) {
       showToast?.(result.error)
       return
     }
-    persist(result.items)
+    if (!persist(result.items)) return
     setModalOpen(false)
     showToast?.(editingId ? '내역을 수정했습니다.' : '내역을 등록했습니다.')
   }
 
   function remove(id) {
-    persist(removeExpense(items, id))
+    if (!persist(removeExpense(readOwnerExpenses(ownerKey), id))) return
     showToast?.('내역을 삭제했습니다.')
   }
 

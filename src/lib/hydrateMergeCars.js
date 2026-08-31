@@ -1,4 +1,6 @@
 // @ts-check
+import { dedupeCarsById } from '../domain/cars.js'
+
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
 /** @typedef {import('./hydrateMergeTypes.js').RawCarBackup} RawCarBackup */
 /** @typedef {import('./hydrateMergeTypes.js').VehicleRow} VehicleRow */
@@ -15,12 +17,18 @@ function commTypeFromHydrate(value) {
 
 /** @param {Array<LocalCar>} localCars @param {Array<VehicleRow>|null|undefined} vehicleRows */
 export function mergeCarsFromRows(localCars, vehicleRows) {
-  if (!Array.isArray(vehicleRows) || !vehicleRows.length) return localCars
+  if (!Array.isArray(vehicleRows) || !vehicleRows.length) {
+    const next = dedupeCarsById(localCars)
+    return next.length === (Array.isArray(localCars) ? localCars.length : 0)
+      ? (localCars || next)
+      : next
+  }
   const cars = vehicleRows.map((row) => {
     const raw = row.raw && typeof row.raw === 'object' ? row.raw : /** @type {RawCarBackup} */ ({})
+    const rawId = raw.id == null || raw.id === '' ? '' : String(raw.id)
     return {
       ...raw,
-      id: raw.id || `car-${row.id}`,
+      id: rawId || `car-${row.id}`,
       number: row.number || '',
       type: row.type === 'sub' ? 'sub' : 'main',
       tonnage: row.tonnage || '',
@@ -33,5 +41,5 @@ export function mergeCarsFromRows(localCars, vehicleRows) {
     }
   })
   const unsynced = (localCars || []).filter((car) => car && !car.supabaseId)
-  return [...cars, ...unsynced]
+  return dedupeCarsById([...cars, ...unsynced])
 }

@@ -12,6 +12,7 @@
 import { readLogWorkData } from './persist.js'
 import { readPersistDomain } from './persistDomainRead.js'
 import { commitBatch } from './app-store.js'
+import { dedupeCarsById } from '../domain/cars.js'
 
 /** @typedef {import('./persist.js').PersistDomain} PersistDomain */
 /** @typedef {import('./app-store.js').DomainValue} DomainValue */
@@ -46,7 +47,10 @@ export function initializeOwnerFromPersist(ownerKey) {
   for (const domain of SLICE_DOMAINS) {
     const read = readPersistDomain(domain, ownerKey)
     if (!read.ok) return
-    entries.push({ domain, ownerKey, value: read.value })
+    const value = domain === 'cars' && Array.isArray(read.value)
+      ? dedupeCarsById(/** @type {Array<CarLike>} */ (read.value))
+      : read.value
+    entries.push({ domain, ownerKey, value })
   }
   const workRead = readLogWorkData(ownerKey, 'main')
   if (!workRead.ok) return
@@ -99,7 +103,7 @@ export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
   /** @type {Array<import('./app-store.js').BatchEntry>} */
   const entries = []
   if (snapshot.workData && typeof snapshot.workData === 'object') entries.push({ domain: 'workData', ownerKey, value: snapshot.workData })
-  if (Array.isArray(snapshot.cars)) entries.push({ domain: 'cars', ownerKey, value: snapshot.cars })
+  if (Array.isArray(snapshot.cars)) entries.push({ domain: 'cars', ownerKey, value: dedupeCarsById(snapshot.cars) })
   if (Array.isArray(snapshot.clients)) entries.push({ domain: 'clients', ownerKey, value: snapshot.clients })
   if (Array.isArray(snapshot.drivers)) entries.push({ domain: 'drivers', ownerKey, value: snapshot.drivers })
   if (snapshot.profile && typeof snapshot.profile === 'object') entries.push({ domain: 'profile', ownerKey, value: snapshot.profile })

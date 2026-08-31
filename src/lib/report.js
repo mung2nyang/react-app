@@ -1,21 +1,23 @@
-import { loadCars } from './cars.js'
-import { loadExpenses, monthTotal } from './expenses.js'
-import { loadPracticeSettings } from './practiceSettings.js'
-import { loadProfile } from './profile.js'
-import { loadWorkData, monthWorkFareSummary } from './workData.js'
+import { monthTotal } from './expenses.js'
+import { monthWorkFareSummary } from './workData.js'
+import { resolveFixedUnitPrice } from '../domain/clients.js'
+import {
+  readOwnerCars,
+  readOwnerClients,
+  readOwnerExpenses,
+  readOwnerProfile,
+  readOwnerSettings,
+  readOwnerWorkData,
+} from '../store/ownerDataHooks.js'
 
 export function dash(value) {
   const text = String(value || '').trim()
   return text || '-'
 }
 
-export function buildMonthReport(ownerKey, year, monthIndex) {
-  const workData = loadWorkData(ownerKey)
-  const settings = loadPracticeSettings(ownerKey)
-  const profile = loadProfile(ownerKey)
-  const cars = loadCars(ownerKey)
-  const expenses = loadExpenses(ownerKey)
-  const fare = monthWorkFareSummary(workData, year, monthIndex, settings.unitPrice)
+export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwnerExpenses(ownerKey), cars = readOwnerCars(ownerKey), practiceSettings = readOwnerSettings(ownerKey), workData = readOwnerWorkData(ownerKey), clients = readOwnerClients(ownerKey), profile = readOwnerProfile(ownerKey)) {
+  const unitPrice = resolveFixedUnitPrice({ clients })
+  const fare = monthWorkFareSummary(workData, year, monthIndex, unitPrice)
   const maint = monthTotal(expenses, 'maint', year, monthIndex)
   const fuel = monthTotal(expenses, 'fuel', year, monthIndex)
   const misc = monthTotal(expenses, 'misc', year, monthIndex)
@@ -29,7 +31,7 @@ export function buildMonthReport(ownerKey, year, monthIndex) {
     mainCar,
     trips: fare.trips,
     callTrips: fare.callTrips,
-    unitPrice: settings.unitPrice,
+    unitPrice,
     fare: fare.fare,
     vat: fare.vat,
     total: fare.total,

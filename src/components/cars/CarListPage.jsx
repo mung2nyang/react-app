@@ -112,8 +112,13 @@ export default function CarListPage({ ownerKey = 'guest', onBack, showToast }) {
       </div>
       <div className="car-list">
         {cars.length === 0 && <div className="empty-state">등록된 차량이 없습니다.</div>}
-        {cars.map((car) => (
-          <CarListItem key={car.id} car={car} onEdit={() => openEdit(car)} onDelete={() => setPendingDelete(car)} />
+        {cars.map((car, index) => (
+          <CarListItem
+            key={String(car.id || car.number || `car-${index}`)}
+            car={car}
+            onEdit={() => openEdit(car)}
+            onDelete={() => setPendingDelete(car)}
+          />
         ))}
       </div>
       <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../components/OnboardingPage.jsx'
 import ForgotPasswordModal from '../components/ForgotPasswordModal.jsx'
-import { applyTheme, loadPracticeSettings } from '../lib/practiceSettings.js'
+import { applyTheme } from '../lib/practiceSettings.js'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { flushCloudSync } from '../lib/syncQueue.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
@@ -14,6 +14,7 @@ import { supabase } from '../supabaseClient.js'
 import { restoreSessionOnBoot } from './boot.js'
 import { AccountFlowBodyClass, PendingWriteRetryBridge, SyncFlushBridge } from './providers.jsx'
 import { initializeOwnerFromPersist } from '../store/owner-state.js'
+import { useOwnerSettings } from '../store/ownerDataHooks.js'
 import { isAlreadyInAppOnBoot } from './bootHomeGuard.js'
 import AuthRoute from './AuthRoute.jsx'
 import AppShell from './AppShell.jsx'
@@ -33,6 +34,7 @@ export default function App() {
   const location = useLocation()
 
   const ownerKey = session?.userId || (session?.guestMode ? 'guest' : session?.phone) || 'guest'
+  const practiceSettings = useOwnerSettings(ownerKey)
   const inAccountFlow = location.pathname.startsWith('/auth') || location.pathname === '/onboarding'
 
   /** @param {string} message */
@@ -92,8 +94,8 @@ export default function App() {
   }, [ownerKey])
 
   useEffect(() => {
-    applyTheme(loadPracticeSettings(ownerKey).theme)
-  }, [ownerKey, location.pathname])
+    applyTheme(practiceSettings.theme)
+  }, [practiceSettings.theme, location.pathname])
 
   useEffect(() => {
     if (!toast) return undefined

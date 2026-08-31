@@ -1,4 +1,4 @@
-import { loadProfile } from '../lib/profile.js'
+import { useOwnerProfile } from '../store/ownerDataHooks.js'
 
 function PersonIcon() {
   return (
@@ -84,7 +84,7 @@ const SHORTCUTS = [
 ]
 
 export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) {
-  const profile = loadProfile(ownerKey)
+  const profile = useOwnerProfile(ownerKey)
   const employed = session?.accountType === 'employed_driver'
   const displayName = profile.name || (session?.name && session.name !== '비회원' ? session.name : '') || (employed ? '기사' : '대표자')
 

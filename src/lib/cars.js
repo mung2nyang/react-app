@@ -3,10 +3,11 @@
 // 배럴로 domain/cars.js를 재수출한다.
 import { readJsonKey } from '../store/persist.js'
 import { commitCars } from '../store/commitHelpers.js'
+import { dedupeCarsById } from '../domain/cars.js'
 
 export function loadCars(ownerKey = 'guest') {
   const parsed = readJsonKey('cars', ownerKey, [])
-  return Array.isArray(parsed) ? parsed : []
+  return Array.isArray(parsed) ? dedupeCarsById(parsed) : []
 }
 
 export function saveCars(ownerKey, cars) {

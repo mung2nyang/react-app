@@ -29,6 +29,33 @@ export function hasMainCar(cars) {
   return (cars || []).some((car) => car.type === 'main')
 }
 
+/**
+ * 같은 id는 한 번만 남긴다(먼저 나온 항목). hydrate가 서버 행 + 미동기화 로컬을
+ * 이어 붙일 때 같은 raw.id가 두 번 들어가면 React key 경고가 난다.
+ * getSnapshot 안에서는 호출하지 말 것(매번 새 배열 → 렌더 루프).
+ * @template {{ id?: string|number }} T
+ * @param {Array<T>|null|undefined} cars
+ * @returns {Array<T>}
+ */
+export function dedupeCarsById(cars) {
+  const seen = new Set()
+  /** @type {Array<T>} */
+  const next = []
+  ;(Array.isArray(cars) ? cars : []).forEach((car) => {
+    if (!car || typeof car !== 'object') return
+    const rawId = /** @type {{ id?: unknown }} */ (car).id
+    const id = rawId == null || rawId === '' ? '' : String(rawId)
+    if (id) {
+      if (seen.has(id)) return
+      seen.add(id)
+      next.push(rawId === id ? car : /** @type {T} */ ({ ...car, id }))
+    } else {
+      next.push(car)
+    }
+  })
+  return next
+}
+
 /** @param {string} [mode] */
 export function getSettlementModeMeta(mode) {
   return SETTLEMENT_MODES.find((item) => item.value === mode) || SETTLEMENT_MODES[0]

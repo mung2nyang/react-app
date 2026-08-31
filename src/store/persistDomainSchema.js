@@ -21,7 +21,7 @@ const SETTINGS_KEYS = [
   'fixedRoutePresets', 'runCountToggle', 'runCountPresets', 'subFixedRouteOn', 'subFixedRoutePresets',
   'subRunCountToggle', 'subRunCountPresets',
 ]
-/** lib/profile.js emptyProfile + PersonalInfoPage 저장 필드와 동일하다. */
+/** lib/profile.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
 const PROFILE_KEYS = [
   'name', 'phone', 'bizName', 'bizRepresentative', 'bizNumber', 'bizAddress', 'bizType', 'bizItem',
   'bizEmail', 'bankName', 'accountNumber', 'accountHolder',

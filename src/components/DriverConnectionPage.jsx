@@ -6,14 +6,14 @@
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
 import { useState } from 'react'
-import { loadCars } from '../lib/cars.js'
 import { getCloudUserId, isCloudSession } from '../lib/cloudSession.js'
 import {
   requestDriverDeletion,
   requestDriverInviteSave,
   requestDriverStatusChange,
 } from '../lib/directMutationActions.js'
-import { countByStatus, generateInviteCode, loadDrivers, saveDrivers, upsertDriver } from '../lib/drivers.js'
+import { countByStatus, generateInviteCode, saveDrivers, upsertDriver } from '../lib/drivers.js'
+import { useOwnerCars, useOwnerDrivers } from '../store/ownerDataHooks.js'
 import DriverFormModal from './DriverFormModal.jsx'
 
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }
@@ -22,8 +22,8 @@ const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', sta
  * @param {{ ownerKey?: string, session: AppSession|null, onBack: () => void, showToast?: (message: string) => void }} props
  */
 export default function DriverConnectionPage({ ownerKey = 'guest', session, onBack, showToast }) {
-  const [drivers, setDrivers] = useState(() => /** @type {Array<DriverRecord>} */ (loadDrivers(ownerKey)))
-  const [cars] = useState(() => loadCars(ownerKey))
+  const drivers = useOwnerDrivers(ownerKey)
+  const cars = useOwnerCars(ownerKey)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
@@ -60,7 +60,6 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
       return
     }
     if (!cloud) {
-      setDrivers(result.items)
       saveDrivers(ownerKey, result.items)
       setModalOpen(false)
       showToast?.(editingId ? '초대를 수정했습니다.' : '초대를 저장했습니다.')
@@ -69,12 +68,18 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
     // editingId를 그대로 넘긴다(newId로 바꿔치기하지 않는다) — requestDriverInviteSave
     // 내부의 idx 조회가 "id로 못 찾으면 마지막 항목"으로 이미 신규 생성 케이스를
     // 처리하고, 토스트 문구(수정 vs 저장)도 이 원래 editingId(신규면 null)로 갈린다.
-    const saveResult = await requestDriverInviteSave({ ownerKey, userId: cloudUserId, items: result.items, editingId, cars, previousItems: drivers })
+    const saveResult = await requestDriverInviteSave({
+      ownerKey,
+      userId: cloudUserId,
+      items: result.items,
+      editingId,
+      cars: /** @type {import('../lib/outboxTypes.js').CarRecord[]} */ (cars),
+      previousItems: drivers,
+    })
     if (saveResult.blocked) {
       showToast?.(saveResult.blocked)
       return
     }
-    setDrivers(/** @type {Array<DriverRecord>} */ (saveResult.items))
     setModalOpen(false)
     if (saveResult.toast) showToast?.(saveResult.toast)
   }
@@ -82,14 +87,12 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
   /** @param {string} id @param {'pending'|'linked'} status */
   async function changeStatus(id, status) {
     const result = await requestDriverStatusChange({ ownerKey, userId: cloudUserId, drivers, driverId: id, status, cloud })
-    setDrivers(/** @type {Array<DriverRecord>} */ (result.drivers))
     if (result.toast) showToast?.(result.toast)
   }
 
   /** @param {string} id */
   async function remove(id) {
     const result = await requestDriverDeletion({ ownerKey, userId: cloudUserId, drivers, driverId: id, cloud })
-    setDrivers(/** @type {Array<DriverRecord>} */ (result.drivers))
     if (result.toast) showToast?.(result.toast)
   }
 

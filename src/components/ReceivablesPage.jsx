@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { formatWon, formatCurrencyInput, parseCurrencyValue } from '../lib/money.js'
 import {
   buildFinanceSettings,
-  loadWorkDataByLogId,
   markMonthlyReceivablesPaid,
   patchWorkLog,
   persistWorkDataByLogId,
@@ -17,16 +16,27 @@ import {
   receivableItemKey,
 } from '../lib/receivables.js'
 import { addPartialPayment, markReceivableItemPaid, undoLastPayment } from '../lib/workData.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../store/ownerDataHooks.js'
 
 export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast, onWorkChanged }) {
-  const [workDataByLogId, setWorkDataByLogId] = useState(() => loadWorkDataByLogId(ownerKey))
+  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const [tab, setTab] = useState('monthly')
   const [detail, setDetail] = useState(null)
   const [partialKey, setPartialKey] = useState('')
   const [partialAmount, setPartialAmount] = useState('')
   const [historyKey, setHistoryKey] = useState('')
 
-  const settings = useMemo(() => buildFinanceSettings(ownerKey), [ownerKey, workDataByLogId])
+  const cars = useOwnerCars(ownerKey)
+  const practiceSettings = useOwnerSettings(ownerKey)
+  const profile = useOwnerProfile(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
+  const settings = useMemo(() => {
+    void cars
+    void practiceSettings
+    void profile
+    void drivers
+    return buildFinanceSettings(ownerKey)
+  }, [ownerKey, workDataByLogId, cars, practiceSettings, profile, drivers])
   const items = useMemo(() => getReceivableItems(settings, workDataByLogId), [settings, workDataByLogId])
   const groups = useMemo(() => groupByClientMonth(items), [items])
   const dueItems = useMemo(() => dueSoonItems(items), [items])
@@ -36,7 +46,6 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
   const dueDates = detailItems.map((item) => item.paymentDueDate).filter(Boolean).sort()
 
   function persist(next) {
-    setWorkDataByLogId(next)
     persistWorkDataByLogId(ownerKey, next)
     onWorkChanged?.()
   }

@@ -229,19 +229,6 @@ body:not(.account-flow-active) {
   white-space: nowrap;
 }
 
-.summary-price-input {
-  width: 140px;
-  min-height: 36px;
-  padding: 6px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background: var(--input-bg);
-  color: var(--text-color);
-  text-align: right;
-  font: inherit;
-  font-weight: 700;
-}
-
 .summary-hint {
   margin: 12px 0 0;
   color: var(--sub-text-color);

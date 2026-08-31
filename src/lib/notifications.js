@@ -1,12 +1,12 @@
 import { todayKey } from './expenses.js'
 import { formatWon } from './money.js'
 import { getDdayLabel, overdueItems } from './receivables.js'
-import { loadDrivers } from './drivers.js'
 import { loadWorkData } from './workData.js'
 import { buildFinanceSettings, loadWorkDataByLogId } from './ownerFinance.js'
 import { getReceivableItems } from './finance.js'
 import { readJsonKey } from '../store/persist.js'
 import { commitDismissedNotifications } from '../store/commitHelpers.js'
+import { readOwnerDrivers } from '../store/ownerDataHooks.js'
 
 function loadDismissed(ownerKey) {
   const parsed = readJsonKey('dismissedNotifications', ownerKey, [])
@@ -36,7 +36,7 @@ export function collectNotifications(ownerKey = 'guest') {
     })
   })
 
-  loadDrivers(ownerKey).filter((driver) => driver.status !== 'linked').forEach((driver) => {
+  readOwnerDrivers(ownerKey).filter((driver) => driver.status !== 'linked').forEach((driver) => {
     const id = `driver:${driver.id}`
     if (dismissed.has(id)) return
     items.push({

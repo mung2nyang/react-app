@@ -58,6 +58,22 @@ export function useOwnerWorkData(ownerKey) {
 }
 
 /**
+ * 손익·계산서·미수용 logId→일지 맵. 기존 `loadWorkDataByLogId`와 같이 main만 담는다
+ * (서브 일지 persist 창구는 이 이관 범위 밖). `{ main }` 래퍼는 getSnapshot에 넣지 않는다.
+ * @param {string} ownerKey
+ * @returns {import('../domain/financeTypes.js').WorkDataByLogId}
+ */
+export function readOwnerWorkDataByLogId(ownerKey) {
+  return { main: readOwnerWorkData(ownerKey) }
+}
+
+/** @param {string} ownerKey */
+export function useOwnerWorkDataByLogId(ownerKey) {
+  const main = useOwnerWorkData(ownerKey)
+  return useMemo(() => ({ main }), [main])
+}
+
+/**
  * store에서 ownerKey의 expenses(정비/주유/기타 비용 배열)를 읽는다 — 없으면 항상
  * 같은 EMPTY_EXPENSES 참조. useOwnerExpenses의 getSnapshot과 useExpenseForm.js의
  * save()/remove()(쓰기 직전 최신값 재확인)가 이 함수 하나를 공유한다 —
@@ -104,6 +120,19 @@ export function useOwnerClients(ownerKey) {
   return useSyncExternalStore(subscribe, () => readOwnerClients(ownerKey))
 }
 
+/** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+const EMPTY_INVOICES = /** @type {Array<InvoiceLike>} */ ([])
+
+/** @param {string} ownerKey */
+export function readOwnerInvoices(ownerKey) {
+  return getState().invoices[ownerKey] || EMPTY_INVOICES
+}
+
+/** @param {string} ownerKey */
+export function useOwnerInvoices(ownerKey) {
+  return useSyncExternalStore(subscribe, () => readOwnerInvoices(ownerKey))
+}
+
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 const EMPTY_CARS = /** @type {Array<CarLike>} */ ([])
 
@@ -134,6 +163,15 @@ export function readOwnerWorkDataTombstones(ownerKey) {
 }
 
 /**
+ * 쓰기·리포트 조립용. normalizeSettings는 호출마다 새 객체이므로
+ * useSyncExternalStore getSnapshot 안에서는 쓰지 말 것.
+ * @param {string} ownerKey
+ */
+export function readOwnerSettings(ownerKey) {
+  return normalizeSettings(getState().settings[ownerKey])
+}
+
+/**
  * ownerKey의 설정을 store에서 직접 구독하고 normalizeSettings를 거쳐 돌려준다.
  * normalizeSettings는 호출마다 새 객체를 만들므로 getSnapshot 안에서 직접 부르지
  * 않는다(그러면 관계없는 알림에도 매번 새 참조가 나와 React가 "getSnapshot 결과가
@@ -145,3 +183,10 @@ export function useOwnerSettings(ownerKey) {
   const raw = useSyncExternalStore(subscribe, () => getState().settings[ownerKey])
   return useMemo(() => normalizeSettings(raw), [raw])
 }
+
+export {
+  readOwnerDrivers,
+  readOwnerProfile,
+  useOwnerDrivers,
+  useOwnerProfile,
+} from './ownerProfileDriversHooks.js'

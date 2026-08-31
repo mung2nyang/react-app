@@ -74,14 +74,14 @@ describe('resolveFixedUnitPrice — 달력·매출이 같은 단가를 쓰는지
     assert.equal(resolveFixedUnitPrice(settings), 250000, '연결된 거래처 단가가 우선이어야 한다')
   })
 
-  test('연결된 거래처가 없으면(Step 7 전 대부분의 상태) settings.unitPrice로 fallback한다', () => {
+  test('연결된 거래처가 없으면 0이다(설정 unitPrice는 쓰지 않는다)', () => {
     const settings = { clients: [], unitPrice: 100000 }
-    assert.equal(resolveFixedUnitPrice(settings), 100000)
+    assert.equal(resolveFixedUnitPrice(settings), 0)
   })
 
-  test('연결된 거래처가 있어도 fixedUnitPrice가 0/빈값이면 unitPrice로 fallback한다', () => {
+  test('연결된 거래처가 있어도 fixedUnitPrice가 0/빈값이면 0이다', () => {
     const settings = { clients: [{ id: 'c-empty', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: '' }], unitPrice: 100000 }
-    assert.equal(resolveFixedUnitPrice(settings), 100000)
+    assert.equal(resolveFixedUnitPrice(settings), 0)
   })
 
   test('둘 다 없으면 0', () => {
@@ -99,7 +99,7 @@ describe('resolveFixedUnitPrice — 달력·매출이 같은 단가를 쓰는지
     const data = { '2026-08-05': { isOff: false, fixedCount: 3, callDetails: [], fixedRouteCounts: {} } }
     const calendarFixedFare = monthWorkFareSummary(data, 2026, 7, resolveFixedUnitPrice(settings)).fixedFare
     const revenueFixedFare = getMonthlyFareRevenue('2026-08', settings, { main: data }).totalFare
-    assert.equal(calendarFixedFare, 3 * 120000, '달력 월합계는 unitPrice fallback으로 360,000원이어야 한다')
+    assert.equal(calendarFixedFare, 0, '거래처 단가가 없으면 고정노선분은 0원이어야 한다')
     assert.equal(revenueFixedFare, calendarFixedFare, '매출 화면 합계도 달력과 같은 값이어야 한다(단일 계약)')
   })
 })

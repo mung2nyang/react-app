@@ -4,6 +4,7 @@
 // 얇은 래퍼다.
 import { commitBatch } from './app-store.js'
 import { storageKeyForLog } from './persist.js'
+import { dedupeCarsById } from '../domain/cars.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
@@ -55,7 +56,7 @@ export function commitLogWorkData(ownerKey, logId, data) {
 
 /** @param {string} ownerKey @param {Array<CarLike>} cars @param {{ syncToCloud?: boolean }} [options] */
 export function commitCars(ownerKey, cars, options = {}) {
-  return commit('cars', ownerKey, cars, options)
+  return commit('cars', ownerKey, dedupeCarsById(cars), options)
 }
 
 /** @param {string} ownerKey @param {Array<ClientLike>} clients @param {{ syncToCloud?: boolean }} [options] */
@@ -83,7 +84,7 @@ export function commitDrivers(ownerKey, items, options = {}) {
   return commit('drivers', ownerKey, items, options)
 }
 
-/** @param {string} ownerKey @param {ProfileLike} profile 이미 emptyProfile과 병합된 값 @param {{ syncToCloud?: boolean }} [options] */
+/** @param {string} ownerKey @param {ProfileLike} profile 이미 EMPTY_PROFILE과 병합된 값 @param {{ syncToCloud?: boolean }} [options] */
 export function commitProfile(ownerKey, profile, options = {}) {
   return commit('profile', ownerKey, profile, options)
 }

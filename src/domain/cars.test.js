@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { upsertCar } from './cars.js'
+import { dedupeCarsById, upsertCar } from './cars.js'
 
 describe('차량 저장 — 기사명·정산·수수료', () => {
   test('차량번호 중복은 거절한다', () => {
@@ -61,5 +61,17 @@ describe('차량 저장 — 기사명·정산·수수료', () => {
     assert.equal(result.cars[0].commEnabled, true)
     assert.equal(result.cars[0].commType, 'percent')
     assert.equal(result.cars[0].commission, '15')
+  })
+})
+
+describe('dedupeCarsById', () => {
+  test('같은 id는 선두 한 건만 남긴다', () => {
+    const id = 'car_1788141346245_c60pq4'
+    const next = dedupeCarsById([
+      { id, number: '11가1111', type: 'main' },
+      { id, number: '11가1111', type: 'main' },
+    ])
+    assert.equal(next.length, 1)
+    assert.equal(next[0].id, id)
   })
 })

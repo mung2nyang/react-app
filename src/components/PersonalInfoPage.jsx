@@ -1,21 +1,16 @@
-import { useState } from 'react'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
-import { loadProfile, saveProfile } from '../lib/profile.js'
+import { saveProfile } from '../lib/profile.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
+import { useOwnerProfile } from '../store/ownerDataHooks.js'
 
 export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast }) {
   const locked = useHydrationLock()
-  const [profile, setProfile] = useState(() => {
-    const loaded = loadProfile(ownerKey)
-    if (!loaded.name && session?.name && session.name !== '비회원') loaded.name = session.name
-    if (!loaded.phone && session?.phone) loaded.phone = session.phone
-    return loaded
-  })
+  const profile = useOwnerProfile(ownerKey)
+  const sessionName = session?.name && session.name !== '비회원' ? session.name : ''
+  const sessionPhone = session?.phone || ''
 
   function update(field, value) {
-    const next = { ...profile, [field]: value }
-    setProfile(next)
-    saveProfile(ownerKey, next)
+    saveProfile(ownerKey, { ...profile, [field]: value })
   }
 
   const guest = !!session?.guestMode
@@ -87,11 +82,11 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           </div>
           <div className="form-group">
             <label htmlFor="userName">성명 (대표자)</label>
-            <input id="userName" className="input-box" placeholder="성명을 입력하세요" value={profile.name} onChange={(e) => update('name', e.target.value)} />
+            <input id="userName" className="input-box" placeholder="성명을 입력하세요" value={profile.name || sessionName} onChange={(e) => update('name', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="userPhone">연락처</label>
-            <input id="userPhone" type="tel" className="input-box" placeholder="010-0000-0000" value={profile.phone} onChange={(e) => update('phone', formatPhoneNumber(e.target.value))} />
+            <input id="userPhone" type="tel" className="input-box" placeholder="010-0000-0000" value={profile.phone || sessionPhone} onChange={(e) => update('phone', formatPhoneNumber(e.target.value))} />
           </div>
         </section>
 

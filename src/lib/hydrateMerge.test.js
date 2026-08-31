@@ -182,6 +182,27 @@ describe('mergeCarsFromRows', () => {
     assert.equal(merged[0].commType, 'percent')
     assert.equal(merged[0].supabaseId, 501)
   })
+
+  test('서버 행과 미동기화 로컬이 같은 id면 서버 쪽 한 대만 남긴다', () => {
+    const id = 'car_1788141346245_c60pq4'
+    const local = [{ id, number: '11가1111' }]
+    const rows = [{ id: 501, type: 'main', number: '11가1111', raw: { id } }]
+    const merged = mergeCarsFromRows(local, rows)
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0].id, id)
+    assert.equal(merged[0].supabaseId, 501)
+  })
+
+  test('서버 행이 없어도 로컬 id 중복은 한 대만 남긴다', () => {
+    const id = 'car_dup'
+    const local = [
+      { id, number: '11가1111' },
+      { id, number: '11가1111' },
+    ]
+    const merged = mergeCarsFromRows(local, [])
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0].id, id)
+  })
 })
 
 describe('findMainCar', () => {

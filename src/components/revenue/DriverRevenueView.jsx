@@ -5,7 +5,8 @@ import { useMemo, useState } from 'react'
 import { shiftMonth } from '../../lib/calendar.js'
 import { getMonthlyFareRevenue } from '../../lib/finance.js'
 import { formatWon } from '../../lib/money.js'
-import { buildFinanceSettings, loadWorkDataByLogId } from '../../lib/ownerFinance.js'
+import { buildFinanceSettings } from '../../lib/ownerFinance.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
 import { DateNav } from './RevenueNav.jsx'
 import { monthKeyOf } from './revenueFormat.js'
 
@@ -17,8 +18,18 @@ export default function DriverRevenueView({ ownerKey }) {
   const month = viewDate.getMonth()
   const yearly = tab === 'yearly'
 
-  const settings = useMemo(() => buildFinanceSettings(ownerKey), [ownerKey])
-  const workDataByLogId = useMemo(() => loadWorkDataByLogId(ownerKey), [ownerKey])
+  const cars = useOwnerCars(ownerKey)
+  const practiceSettings = useOwnerSettings(ownerKey)
+  const profile = useOwnerProfile(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
+  const settings = useMemo(() => {
+    void cars
+    void practiceSettings
+    void profile
+    void drivers
+    return buildFinanceSettings(ownerKey)
+  }, [ownerKey, cars, practiceSettings, profile, drivers])
+  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
 
   const monthly = useMemo(
     () => getMonthlyFareRevenue(monthKeyOf(year, month), settings, workDataByLogId),

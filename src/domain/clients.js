@@ -18,23 +18,14 @@ export function getFixedRouteClient(settings) {
   return (settings.clients || []).find((client) => client.fixedRouteLinked) || null
 }
 
-// 재감사 2차(FAIL 지적) — 달력(day-record.js/calendarBadges.js)과 매출·계산서
-// (finance.js)가 "고정노선 1회 단가"를 서로 다른 소스로 계산하고 있었다: finance.js는
-// getFixedRouteClient(settings)?.fixedUnitPrice만 보고(연결된 거래처가 없으면 0),
-// 달력은 settings.unitPrice(독립된 "1회 단가" 설정)만 봤다 — 그 결과 같은 달의
-// 달력 합계와 매출 화면 합계가 서로 다른 값을 보여줄 수 있었다(Step 5 감사가
-// "문서화만 하고 통일은 Step 6에서" 미뤄 뒀던 항목). 이 함수가 유일한 계산 창구다:
-// 고정노선에 실제로 연결된 거래처가 있으면 그 fixedUnitPrice를 쓰고(바닐라와 동일
-// 계약 — Step 7이 그 연결 UI를 만들면 자동으로 이 경로를 탄다), 없으면(현재 이
-// 앱의 대다수 사용자 상태 — 아직 Step 7 전) settings.unitPrice로 fallback한다.
+// 바닐라는 별도 "1회 단가" 설정이 없다. 계정에서 고정노선에 연결한 거래처 1곳의
+// fixedUnitPrice만 본다. settings.unitPrice는 포트 초기 임시값이라 더 이상 fallback하지 않는다.
 /**
  * @param {{ clients?: Array<ClientLike>, unitPrice?: number|string }} settings
  * @returns {number}
  */
 export function resolveFixedUnitPrice(settings) {
-  const linked = parseCurrencyValue(getFixedRouteClient(settings)?.fixedUnitPrice)
-  if (linked > 0) return linked
-  return Math.max(0, parseCurrencyValue(settings?.unitPrice))
+  return Math.max(0, parseCurrencyValue(getFixedRouteClient(settings)?.fixedUnitPrice))
 }
 
 /**

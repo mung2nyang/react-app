@@ -1,16 +1,15 @@
-import { useState } from 'react'
-import { applyTheme, loadPracticeSettings, savePracticeSettings } from '../lib/practiceSettings.js'
+import { useOwnerSettings } from '../store/ownerDataHooks.js'
+import { applyTheme, savePracticeSettings } from '../lib/practiceSettings.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
 import SwitchRow from './SwitchRow.jsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
 
 export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast }) {
   const locked = useHydrationLock()
-  const [settings, setSettings] = useState(() => loadPracticeSettings(ownerKey))
+  const settings = useOwnerSettings(ownerKey)
 
   function patch(nextPatch) {
     const next = savePracticeSettings(ownerKey, nextPatch)
-    setSettings(next)
     applyTheme(next.theme)
   }
 

@@ -10,6 +10,7 @@ import NotificationPanel from '../components/NotificationPanel.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
 import { todayWorkLogSelection } from '../lib/calendar.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
+import { useOwnerDrivers } from '../store/ownerDataHooks.js'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import AppShellRoutes from './AppShellRoutes.jsx'
 import { withFromLogState } from './fromLogNavigation.js'
@@ -68,8 +69,9 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const [menuOpen, setMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifTick, setNotifTick] = useState(0)
+  const drivers = useOwnerDrivers(ownerKey)
 
-  const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick])
+  const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick, drivers])
   const bumpNotifTick = () => setNotifTick((n) => n + 1)
 
   const activeNav = location.pathname === '/app'

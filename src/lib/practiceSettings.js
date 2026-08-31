@@ -5,13 +5,14 @@
 import { readJsonKey } from '../store/persist.js'
 import { commitSettings } from '../store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
+import { readOwnerSettings } from '../store/ownerDataHooks.js'
 
 export function loadPracticeSettings(ownerKey = 'guest') {
   return normalizeSettings(readJsonKey('settings', ownerKey, {}))
 }
 
 export function savePracticeSettings(ownerKey, patch) {
-  const next = normalizeSettings({ ...loadPracticeSettings(ownerKey), ...(patch || {}) })
+  const next = normalizeSettings({ ...readOwnerSettings(ownerKey), ...(patch || {}) })
   return commitSettings(ownerKey, next)
 }
 

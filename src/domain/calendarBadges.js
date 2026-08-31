@@ -39,13 +39,8 @@ export function formatFareShort(amount) {
 
 /**
  * 하루치 "운송료 표시" 금액 — inputMode==='fare'일 때 셀 뱃지에 쓴다.
- * 바닐라 script.js(buildCalendar)는 이 금액을 고정노선에 연결된 거래처의
- * fixedUnitPrice로 계산한다(설정 화면의 별도 "1회 단가" 필드가 바닐라엔 아예 없다).
- * 이 react-app 포트는 아직 거래처 연동(Step 7의 fixedRouteLinked/fixedUnitPrice) 이전이라,
- * 대신 설정 스토어의 독립적인 unitPrice("1회 단가" 입력)를 그대로 쓴다 — 두 소스를
- * 하나로 합치는 작업은 의도적으로 지금 하지 않는다(migration-audit-plan.md Step 5:
- * "고정노선 단가와 달력 합계 소스를 문서화(통일은 Step 6과 함께)"). Step 7에서 거래처의
- * fixedUnitPrice가 들어오면 이 함수가 그 값과 어떻게 합쳐질지 다시 정해야 한다.
+ * 바닐라와 같이 고정노선 연결 거래처의 fixedUnitPrice로 계산한다. 호출부가
+ * resolveFixedUnitPrice로 그 값을 넘겨 준다.
  * @param {DayRecordLike|null|undefined} record
  * @param {number|string} unitPrice
  * @returns {number}

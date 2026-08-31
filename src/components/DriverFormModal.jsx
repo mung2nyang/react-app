@@ -27,7 +27,9 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
           <label htmlFor="drvCar">할당 차량</label>
           <input id="drvCar" className="input-box" list="drvCarOptions" placeholder="차량번호" value={draft.vehicleNumber} onChange={(e) => setDraft({ ...draft, vehicleNumber: e.target.value })} />
           <datalist id="drvCarOptions">
-            {assignableCars.map((car) => <option key={car.id} value={car.number} />)}
+            {assignableCars.map((car, index) => (
+              <option key={String(car.id || car.number || `car-${index}`)} value={car.number} />
+            ))}
           </datalist>
         </div>
         <div className="personal-inline-fields">
