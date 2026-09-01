@@ -170,13 +170,19 @@ export async function updateDriverLinkStatusOnSupabase(supabaseId, status, captu
 }
 
 /**
+ * 슬라이스 B 보완(2026-09-01): 0행 삭제(이미 없음/RLS로 안 보임)를 성공으로 치면
+ * Store만 비고 서버 행이 남아 hydrate가 다시 그린다. .select()로 실제로 지워진 행을
+ * 받아 0행이면 throw — 호출부가 Fail-Fast 토스트를 띄우고 로컬을 건드리지 않는다.
  * @param {number|string|null|undefined} supabaseId
  * @param {SessionCapture} captured
  */
 export async function deleteDriverLinkOnSupabase(supabaseId, captured) {
   if (!supabaseId) return
   assertCloudWriteReady()
-  const { error } = await supabase.from('driver_links').delete().eq('id', supabaseId)
+  const { data, error } = await supabase.from('driver_links').delete().eq('id', supabaseId).select('id')
   assertSessionStillCurrent(captured)
   if (error) throw error
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new Error('삭제할 기사 연동 행을 찾지 못했습니다.')
+  }
 }

@@ -3,6 +3,7 @@ import { describe, test } from 'node:test'
 import {
   throwIfAnyHydrateError,
   mergeCarsFromRows,
+  mergeDriversFromRows,
   mergeWorkDataFromRows,
   mergeExpenseKind,
   findMainCar,
@@ -202,6 +203,44 @@ describe('mergeCarsFromRows', () => {
     const merged = mergeCarsFromRows(local, [])
     assert.equal(merged.length, 1)
     assert.equal(merged[0].id, id)
+  })
+})
+
+describe('mergeDriversFromRows — 슬라이스 B 보완: 서버 빈 배열은 삭제 신호다', () => {
+  /** @param {Array<import('./hydrateMergeTypes.js').LocalDriver>} d */
+  const asLocal = (d) => d
+  /** @param {Array<import('./hydrateMergeTypes.js').LocalCar>} c */
+  const asCars = (c) => c
+  /** @param {Array<import('./hydrateMergeTypes.js').DriverLinkRow>} r */
+  const asRows = (r) => r
+  const cars = asCars([{ id: 'car-1', number: '11가1111', supabaseId: 700 }])
+
+  test('linkRows가 빈 배열이면(서버에 활성 연동 없음) 로컬로 되돌리지 않고 []를 준다', () => {
+    const local = asLocal([{ id: 'drv-1', supabaseId: 500, inviteCode: '123456', status: 'pending', name: '기사' }])
+    assert.deepEqual(mergeDriversFromRows(local, cars, []), [])
+  })
+
+  test('linkRows가 배열이 아니면(조회 실패 등) 로컬 목록을 그대로 둔다', () => {
+    const local = asLocal([{ id: 'drv-1', supabaseId: 500, inviteCode: '123456', status: 'pending', name: '기사' }])
+    assert.equal(mergeDriversFromRows(local, cars, null), local)
+    assert.equal(mergeDriversFromRows(local, cars, undefined), local)
+  })
+
+  test('서버 행이 있으면 기존처럼 병합한다(로컬 name/phone은 invite_code로 매칭해 채운다)', () => {
+    const local = asLocal([{ id: 'drv-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '박기사', phone: '010-1' }])
+    const rows = asRows([{ id: 700, invite_code: '123456', vehicle_id: 700, assignment_start: '2026-08-01', status: 'linked' }])
+    const merged = mergeDriversFromRows(local, cars, rows)
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0].supabaseId, 700)
+    assert.equal(merged[0].status, 'linked')
+    assert.equal(merged[0].name, '박기사')
+    assert.equal(merged[0].vehicleNumber, '11가1111')
+  })
+
+  test('disconnected 서버 행만 있으면 활성 목록은 []다', () => {
+    const local = asLocal([{ id: 'drv-1', supabaseId: 500, inviteCode: '123456', status: 'pending', name: '기사' }])
+    const rows = asRows([{ id: 500, invite_code: '123456', status: 'disconnected' }])
+    assert.deepEqual(mergeDriversFromRows(local, cars, rows), [])
   })
 })
 

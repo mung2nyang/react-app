@@ -67,7 +67,8 @@ export { mergeWorkDataFromRows } from './hydrateMergeWork.js'
  * 명시적으로 채운다. `id: local.id || row.id`도 함께 고쳤다: row.id는 Supabase
  * bigint(number)일 수 있는데 isPersistedDriver는 id를 string으로 요구한다 —
  * local.id가 없으면 String(row.id)로 문자열화한다.
- * @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars @param {Array<DriverLinkRow>} linkRows
+ * @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars
+ * @param {Array<DriverLinkRow>|null|undefined} linkRows 조회 실패 시 배열이 아닐 수 있다
  */
 export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
   if (!Array.isArray(linkRows)) return localDrivers
@@ -87,7 +88,12 @@ export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
       phone: local.phone || '',
     }
   })
-  return merged.length ? merged : localDrivers
+  // 슬라이스 B 보완(2026-09-01): linkRows가 배열이면(빈 배열 포함) 서버가 정본이다.
+  // merged가 비었다는 건 "서버에 활성 기사 연동이 없다"는 뜻 — 로컬 스냅샷으로
+  // 되돌리면 방금 삭제한 기사가 hydrate ~0.6초 뒤 부활한다. localDrivers fallback은
+  // linkRows가 배열이 아닐 때(위 early return)만. 서버에 아직 없는 pending 생성 건은
+  // reconcileDrivers가 outbox 기준으로 되찾는다.
+  return merged
 }
 
 /** @param {Array<LocalCar>} cars */

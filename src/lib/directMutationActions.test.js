@@ -50,6 +50,9 @@ function withFailingSetItem(shouldFail, fn) {
   }
 }
 
+/** 리터럴을 DriverRecord[]로 좁혀 strict-inventory 진단(status 리터럴 widening 등)을 안 늘린다. @param {Array<import('./outboxTypes.js').DriverRecord>} items */
+const asDrivers = (items) => items
+
 describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오', () => {
   test('failed 상태: Store 유지, localStorage 유지, 서버 호출 0회, 성공 토스트 없음', async () => {
     const ownerKey = 'dma-vehicle-failed'
@@ -224,26 +227,31 @@ describe('requestClientDeletion — 사용자 지시 10번 필수 시나리오',
   })
 })
 
-describe('requestDriverStatusChange / requestDriverDeletion — 사용자 지시 10번 필수 시나리오', () => {
-  test('failed 상태에서 기사 상태변경 시도: Store 유지, localStorage 유지, 서버 호출 0회, 성공 토스트 없음', async () => {
+// 슬라이스 A·B 공통 Fail-Fast 실패 토스트.
+const FAIL_FAST_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+
+describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: outbox 없이 직접 1회(Fail-Fast)', () => {
+  test('failed hydration 상태에서 기사 상태변경 시도: Store 유지, localStorage 유지, 서버 호출 0회, 성공 토스트 없음', async () => {
     const ownerKey = 'dma-driver-status-failed'
     beginFailed('user-1', ownerKey)
-    const drivers = [{ id: 'drv-1', name: '기사', supabaseId: 600, status: 'pending' }]
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 600, status: 'pending' }])
     writeJsonKey('drivers', ownerKey, drivers)
 
     const result = await requestDriverStatusChange({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', status: 'linked', cloud: true })
 
     assert.deepEqual(result.drivers, drivers)
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers)
+    assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
     assert.equal(countOf('driver_links', 'update'), 0)
+    assert.equal(hasPendingOps(ownerKey), false)
     assert.doesNotMatch(result.toast, /연동 중으로 바꿨습니다/)
     endCloudSession()
   })
 
-  test('failed 상태에서 기사 삭제 시도: Store 유지, localStorage 유지, 서버 호출 0회, 성공 토스트 없음', async () => {
+  test('failed hydration 상태에서 기사 삭제 시도: Store 유지, localStorage 유지, 서버 호출 0회, 성공 토스트 없음', async () => {
     const ownerKey = 'dma-driver-delete-failed'
     beginFailed('user-1', ownerKey)
-    const drivers = [{ id: 'drv-1', name: '기사', supabaseId: 601, status: 'pending' }]
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 601, status: 'pending' }])
     writeJsonKey('drivers', ownerKey, drivers)
 
     const result = await requestDriverDeletion({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', cloud: true })
@@ -251,38 +259,162 @@ describe('requestDriverStatusChange / requestDriverDeletion — 사용자 지시
     assert.deepEqual(result.drivers, drivers)
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers)
     assert.equal(countOf('driver_links', 'delete'), 0)
+    assert.equal(hasPendingOps(ownerKey), false)
     assert.doesNotMatch(result.toast, /초대를 삭제했습니다/)
     endCloudSession()
   })
 
-  test('ready 상태에서 상태변경 성공 시 서버 호출 1회, outbox 비워짐', async () => {
+  test('ready 상태에서 상태변경 성공: driver_links.update 1회, Store 반영, 재시도 큐 없음', async () => {
     const ownerKey = 'dma-driver-status-success'
     beginReady('user-1', ownerKey)
-    const drivers = [{ id: 'drv-1', name: '기사', supabaseId: 602, status: 'pending' }]
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 602, status: 'pending' }])
     writeJsonKey('drivers', ownerKey, drivers)
+    const expected = [{ id: 'drv-1', name: '기사', supabaseId: 602, status: 'linked' }]
 
     const result = await requestDriverStatusChange({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', status: 'linked', cloud: true })
-    assert.equal(result.drivers.find((item) => item.id === 'drv-1').status, 'linked')
+
+    assert.deepEqual(result.drivers, expected)
     assert.equal(countOf('driver_links', 'update'), 1)
+    assert.equal(countOf('driver_links', 'insert'), 0, '새 op을 outbox에 넣지 않는다')
+    assert.deepEqual(getState().drivers[ownerKey], expected, 'Store에도 새 상태가 반영돼야 한다(4대 기준 2)')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), expected, 'localStorage에도 반영돼야 한다')
     assert.equal(hasPendingOps(ownerKey), false)
+    assert.match(result.toast, /연동 중으로 바꿨습니다/)
     endCloudSession()
   })
 
-  test('cloud:false(게스트/로컬)면 hydration 상태와 무관하게 로컬만 반영한다', async () => {
+  test('ready 상태에서 삭제 성공(서버가 지운 행 1개 반환): driver_links.delete 1회, Store에서 제거, 재시도 큐 없음', async () => {
+    const ownerKey = 'dma-driver-delete-success'
+    beginReady('user-1', ownerKey)
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 610, status: 'pending' }])
+    writeJsonKey('drivers', ownerKey, drivers)
+    handlers.driver_links = { delete: () => ({ data: [{ id: 610 }], error: null }) }
+
+    const result = await requestDriverDeletion({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', cloud: true })
+
+    assert.deepEqual(result.drivers, [])
+    assert.equal(countOf('driver_links', 'delete'), 1)
+    assert.deepEqual(getState().drivers[ownerKey], [], 'Store에서도 제거돼야 한다')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), [], 'localStorage에서도 제거돼야 한다')
+    assert.equal(hasPendingOps(ownerKey), false)
+    assert.match(result.toast, /초대를 삭제했습니다/)
+    endCloudSession()
+  })
+
+  test('슬라이스 B 보완 — delete가 0행이면(이미 없음/RLS): Fail-Fast 토스트, Store/localStorage 유지, 성공 토스트 없음', async () => {
+    const ownerKey = 'dma-driver-delete-zero-rows'
+    beginReady('user-1', ownerKey)
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 611, status: 'pending' }])
+    writeJsonKey('drivers', ownerKey, drivers)
+    handlers.driver_links = { delete: () => ({ data: [], error: null }) } // 삭제됐지만 0행
+
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
+    const result = await requestDriverDeletion({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', cloud: true })
+    unsubscribe()
+
+    assert.equal(result.toast, FAIL_FAST_TOAST, '0행 삭제는 성공이 아니다 — Fail-Fast 토스트')
+    assert.doesNotMatch(result.toast, /삭제했습니다/)
+    assert.equal(countOf('driver_links', 'delete'), 1)
+    assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, 'localStorage도 저장 전 값이어야 한다')
+    assert.equal(hasPendingOps(ownerKey), false)
+    assert.equal(notifyCount, 0)
+    endCloudSession()
+  })
+
+  test('ready + 서버 throw: 상태변경 Fail-Fast 토스트, update 1회, hasPendingOps false, Store 저장 전 값', async () => {
+    const ownerKey = 'dma-driver-status-throw'
+    beginReady('user-1', ownerKey)
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 603, status: 'pending' }])
+    writeJsonKey('drivers', ownerKey, drivers)
+    handlers.driver_links = { update: () => { throw new Error('network down') } }
+
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
+    const result = await requestDriverStatusChange({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', status: 'linked', cloud: true })
+    unsubscribe()
+
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.equal(countOf('driver_links', 'update'), 1)
+    assert.equal(hasPendingOps(ownerKey), false)
+    assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, 'localStorage도 저장 전 값이어야 한다')
+    assert.equal(notifyCount, 0)
+    endCloudSession()
+  })
+
+  test('ready + { data: null, error }: 삭제 Fail-Fast 토스트, delete 1회, hasPendingOps false, Store 저장 전 값', async () => {
+    const ownerKey = 'dma-driver-delete-dataerror'
+    beginReady('user-1', ownerKey)
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 604, status: 'linked' }])
+    writeJsonKey('drivers', ownerKey, drivers)
+    handlers.driver_links = { delete: () => ({ data: null, error: { message: 'RLS violation' } }) }
+
+    const result = await requestDriverDeletion({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', cloud: true })
+
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.equal(countOf('driver_links', 'delete'), 1)
+    assert.equal(hasPendingOps(ownerKey), false)
+    assert.equal(getState().drivers[ownerKey], undefined)
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, 'localStorage도 저장 전 값이어야 한다')
+    endCloudSession()
+  })
+
+  test('세션 전환: update await 이후 로그아웃하면 Store/localStorage에 반영하지 않는다', async () => {
+    const ownerKey = 'dma-driver-status-epoch'
+    beginReady('user-1', ownerKey)
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 605, status: 'pending' }])
+    writeJsonKey('drivers', ownerKey, drivers)
+
+    let releaseUpdate
+    const gate = new Promise((resolve) => { releaseUpdate = resolve })
+    handlers.driver_links = { update: () => gate.then(() => ({ data: null, error: null })) }
+
+    const promise = requestDriverStatusChange({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', status: 'linked', cloud: true })
+    await wait(10)
+    assert.equal(countOf('driver_links', 'update'), 1, 'update가 이미 나갔어야 한다')
+
+    endCloudSession() // 응답 대기 중 로그아웃한다.
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
+    releaseUpdate()
+    await promise
+    unsubscribe()
+
+    assert.equal(notifyCount, 0, '로그아웃 이후 이 시도가 Store에 아무 반영도 하면 안 된다')
+    assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, 'localStorage도 원래 값 그대로여야 한다')
+    assert.equal(hasPendingOps(ownerKey), false)
+  })
+
+  test('cloud:false(로컬 전용)면 hydration 상태와 무관하게 로컬만 반영한다', async () => {
     const ownerKey = 'dma-driver-guest'
-    beginFailed('user-1', ownerKey) // failed여도 게스트 모드는 영향 없어야 한다
-    const drivers = [{ id: 'drv-1', name: '기사', status: 'pending' }]
+    beginFailed('user-1', ownerKey) // failed여도 cloud:false면 영향 없어야 한다
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', status: 'pending' }])
     writeJsonKey('drivers', ownerKey, drivers)
 
     const result = await requestDriverStatusChange({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-1', status: 'linked', cloud: false })
-    assert.equal(result.drivers.find((item) => item.id === 'drv-1').status, 'linked')
+    assert.deepEqual(result.drivers, [{ id: 'drv-1', name: '기사', status: 'linked' }])
     assert.equal(countOf('driver_links', 'update'), 0)
+    endCloudSession()
+  })
+
+  test('supabaseId 없는 로컬 전용 항목은 cloud:true여도 서버 없이 로컬만 삭제한다', async () => {
+    const ownerKey = 'dma-driver-localonly-delete'
+    beginReady('user-1', ownerKey)
+    const drivers = asDrivers([{ id: 'drv-local', name: '로컬기사', status: 'pending' }])
+    writeJsonKey('drivers', ownerKey, drivers)
+
+    const result = await requestDriverDeletion({ ownerKey, userId: 'user-1', drivers, driverId: 'drv-local', cloud: true })
+    assert.deepEqual(result.drivers, [])
+    assert.equal(countOf('driver_links', 'delete'), 0)
+    assert.match(result.toast, /초대를 삭제했습니다/)
     endCloudSession()
   })
 })
 
 const RPC_FN = 'upsert_driver_link_idempotent'
-const FAIL_FAST_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 
 describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1회(Fail-Fast)', () => {
   test('failed hydration: 저장을 막고 로컬/원격에 아무 것도 안 남긴다', async () => {
