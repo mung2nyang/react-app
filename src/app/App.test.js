@@ -1915,144 +1915,86 @@ test('재감사 12차 — persistent quota 실패 후 마운트 중 retry 성공
   }
 })
 
-/** @param {string} dateKey */
-async function runStaleRetryThenNewerDraft(dateKey) {
+test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 Fail-Fast(저장 실패 상태 + 네트워크 토스트)이고 durable 큐에 새 항목이 없다. 복구 후 재편집이 서버·Store로 수렴한다', async () => {
   const ownerKey = 'user-boot-nav'
-  window.history.pushState({}, '', `/app/day/${dateKey}`)
+  const dateKey = '2026-10-02'
+  window.history.pushState({}, '', '/app/day/' + dateKey)
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createTrackedRoot(container)
-  const dailyLogs = captureDailyLogUpserts()
 
-  const proto = Object.getPrototypeOf(localStorage)
-  const originalSetItem = proto.setItem
-  const failKey = storageKeyFor('workData', ownerKey)
-  let shouldFail = false
-  const spy = mock.method(proto, 'setItem', /** @this {Storage} @param {string} key @param {string} value */ function patchedSetItem(key, value) {
-    if (shouldFail && key === failKey) throw new Error('quota exceeded (simulated, stale retry durable)')
-    return originalSetItem.call(this, key, value)
-  })
-  let errSpy
-  /** @type {(() => void)|undefined} */
-  let unsubscribe
+  // 서버 실패는 transport_details 쓰기를 던지게 해서 낸다(commitMainDayLogToCloud가
+  // daily_logs upsert 다음에 transport_details를 교체하다 실패 → Fail-Fast).
+  let serverShouldFail = false
+  const prevDailyLogs = handlers.daily_logs
+  const prevTransport = handlers.transport_details
+  handlers.daily_logs = {
+    ...(prevDailyLogs || {}),
+    select: () => ({ data: [{ work_date: dateKey, vehicle_id: 501, is_off: false, fixed_count: 2, raw: { palletCount: 0, fixedRouteCounts: {} } }], error: null }),
+  }
+  handlers.transport_details = {
+    delete: () => {
+      if (serverShouldFail) throw new Error('transport_details down (simulated)')
+      return { data: [{ id: 1 }], error: null }
+    },
+  }
+  const dailyLogs = captureDailyLogUpserts()
+  const errSpy = spyConsoleError('[commitMainDayLogToCloud] 일지 저장 실패:')
 
   try {
     await act(async () => {
       seedPalletClient(ownerKey)
       seedMainCar(ownerKey)
-      commitWorkData(ownerKey, {
-        [dateKey]: {
-          isOff: false,
-          fixedCount: 2,
-          palletCount: 0,
-          callDetails: [{ id: 'trp-stale-durable', fare: '10,000', client: '한진', payments: [{ amount: '1,000' }] }],
-          fixedRouteCounts: {},
-        },
-      }, { syncToCloud: false })
+      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
     })
-    await act(async () => {
-      root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
-    })
+    await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(App))) })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
-    errSpy = spyConsoleError('일지 자동 저장 실패:')
-    const supabaseBeforeFail = totalSupabaseCalls()
-    const upsertsBeforeFail = dailyLogs.forDate(dateKey).length
-    let notifyDuringFail = 0
-    const unsubFail = subscribe(() => { notifyDuringFail += 1 })
-    shouldFail = true
+    await waitUntil(() => committedRecord(ownerKey, dateKey)?.fixedCount === 2, { timeoutMs: 3000 })
+
+    serverShouldFail = true
     await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '8') })
-    await waitUntil(
-      () => (container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패')
-        && getPendingDayWrite(ownerKey, dateKey)?.fixedCount === 8,
-      { timeoutMs: 2000 },
-    )
+    await waitUntil(() => (container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), { timeoutMs: 2000 })
 
-    assert.equal(shouldFail, true, '실패 단계가 끝나기 전에 quota를 풀면 안 된다')
-    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 2, '실패 단계 Store는 초기값 2여야 한다')
-    assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 2, '실패 단계 localStorage도 2여야 한다')
-    assert.equal(getPendingDayWrite(ownerKey, dateKey)?.fixedCount, 8)
-    assert.equal(pendingDayWriteCount(), 1)
-    assert.equal(notifyDuringFail, 0, '실패 단계에서는 notify가 없어야 한다')
-    assert.equal(totalSupabaseCalls(), supabaseBeforeFail, '실패 단계에서는 Supabase가 늘면 안 된다')
-    assert.equal(dailyLogs.forDate(dateKey).length, upsertsBeforeFail, '실패 단계에서는 daily_logs upsert가 나가면 안 된다')
-    assert.equal(hasDirty(ownerKey), false)
+    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 2, '실패 시 Store는 저장 전 값(2)')
+    assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 2, '실패 시 localStorage도 저장 전 값')
+    assert.equal(pendingDayWriteCount(), 0, '로그인 Fail-Fast는 durable 큐에 새 항목을 넣지 않는다')
+    assert.equal(getPendingDayWrite(ownerKey, dateKey), undefined)
+    assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false)
+    const toastText = container.querySelector('.toast-message')?.textContent || ''
+    assert.match(toastText, /네트워크 상태를 확인해 주세요/)
+    assert.equal(toastText.includes('저장 공간'), false, '로그인 원격 실패에 quota 문구를 쓰면 안 된다')
     assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장됨'), false)
-    assert.equal(errSpy.count(), 1, '실패 단계 console.error는 정확히 1회여야 한다')
-    unsubFail()
+    assert.equal(errSpy.count(), 1)
 
-    shouldFail = false
-    let notifyCount = 0
-    unsubscribe = subscribe(() => { notifyCount += 1 })
+    serverShouldFail = false
+    const upsertsBefore = dailyLogs.forDate(dateKey).length
     await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '9') })
-    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '9')
-    assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 중'), 'B 입력 직후는 디바운스 pending이어야 한다')
-
-    await act(async () => { retryPendingDayWrites() })
-    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 8, 'A retry는 Store에 8을 커밋해야 한다')
-    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '9', '화면 draft는 최신 B=9여야 한다')
-    assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장됨'), false, '더 최신 draft가 있으면 저장됨으로 바꾸면 안 된다')
-    assert.equal(notifyCount, 1, '커밋된 A의 onCommitted/notify는 정확히 1회여야 한다')
-    assert.equal(errSpy.count(), 1, 'retry가 성공한 뒤 console.error가 늘면 안 된다')
-
-    const backButton = Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '뒤로가기')
-    assert.ok(backButton)
-    await act(async () => {
-      backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
-    })
-    await waitUntil(() => window.location.pathname === '/app')
-    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 9, '언마운트 flush가 최신 B=9를 저장해야 한다')
+    await waitUntil(() => committedRecord(ownerKey, dateKey)?.fixedCount === 9, { timeoutMs: 2000 })
     assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 9)
+    assert.equal(dailyLogs.forDate(dateKey).length > upsertsBefore, true, '재편집이 그 날짜 daily_logs upsert를 냈어야 한다')
     assert.equal(pendingDayWriteCount(), 0)
-    assert.equal(notifyCount, 2, 'B flush의 onCommitted가 A를 저장 완료로 오인하지 않고 한 번 더 불려야 한다')
-    assert.equal(errSpy.count(), 1, '이동 후 console.error가 늘면 안 된다')
-
-    await waitUntil(() => dailyLogs.forDate(dateKey).some((row) => row.fixed_count === 9), { timeoutMs: 5000 })
+    assert.equal(errSpy.count(), 1, '복구 성공 뒤 console.error가 늘면 안 된다')
     await waitUntil(() => !hasDirty(ownerKey), { timeoutMs: 5000 })
-    const dateUpserts = dailyLogs.forDate(dateKey)
-    assert.equal(dateUpserts.length, 1, '이 날짜의 daily_logs upsert는 최종 스냅샷 1회여야 한다')
-    assert.equal(dateUpserts[0]?.fixed_count, 9, '원격 daily_logs도 B=9로 수렴해야 한다')
-    assert.equal(hasDirty(ownerKey), false)
-
-    await act(async () => {
-      window.history.pushState({}, '', `/app/day/${dateKey}`)
-      window.dispatchEvent(new window.PopStateEvent('popstate'))
-    })
-    await waitUntil(() => {
-      const el = container.querySelector('#modalFixedCountInput')
-      return el instanceof window.HTMLInputElement && el.value === '9'
-    }, { timeoutMs: 3000 })
-    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '9')
-    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 9)
-    assert.equal(pendingDayWriteCount(), 0)
-    assert.equal(errSpy.count(), 1, '재진입 후 console.error가 늘면 안 된다')
-    assert.equal(dailyLogs.forDate(dateKey).length, 1)
   } finally {
-    unsubscribe?.()
-    errSpy?.restore()
-    spy.mock.restore()
-    shouldFail = false
-    clearUnsafeRegistrationFailure(ownerKey, dateKey)
-    await act(async () => { retryPendingDayWrites() })
-    if (liveRoots.has(root)) {
-      await unmountTracked(root)
-      container.remove()
-    }
-    await flushCloudSync()
+    errSpy.restore()
     dailyLogs.restore()
+    handlers.daily_logs = prevDailyLogs
+    if (prevTransport) handlers.transport_details = prevTransport
+    else delete handlers.transport_details
+    if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
+    await flushCloudSync()
   }
-}
-
-test('재감사 14차 — durable 큐에서 A retry가 최신 미저장 B를 지우지 않고 언마운트 flush가 B=9를 남긴다', async () => {
-  await runStaleRetryThenNewerDraft('2026-10-02')
 })
 
-test('재감사 15차 — invalid draft를 UI에서 고친 뒤 valid 등록이 unsafe를 해제하고 최종 9를 남긴다', async () => {
+test('슬라이스 D — 로그인 클라우드 일지: 서버 저장은 성공했지만 로컬 persist가 quota로 막히면 Fail-Fast 상태만, durable/tombstone은 안 쌓인다', async () => {
   const ownerKey = 'user-boot-nav'
   const dateKey = '2026-10-03'
-  window.history.pushState({}, '', `/app/day/${dateKey}`)
+  window.history.pushState({}, '', '/app/day/' + dateKey)
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createTrackedRoot(container)
+  const prevDailyLogs = handlers.daily_logs
+  handlers.daily_logs = { ...(prevDailyLogs || {}), select: () => ({ data: [{ work_date: dateKey, vehicle_id: 501, is_off: false, fixed_count: 2, raw: { palletCount: 0, fixedRouteCounts: {} } }], error: null }) }
   const dailyLogs = captureDailyLogUpserts()
 
   const proto = Object.getPrototypeOf(localStorage)
@@ -2061,123 +2003,52 @@ test('재감사 15차 — invalid draft를 UI에서 고친 뒤 valid 등록이 u
   const tombstoneKey = storageKeyFor('workDataDeletedDates', ownerKey)
   let shouldFail = false
   const spy = mock.method(proto, 'setItem', /** @this {Storage} @param {string} key @param {string} value */ function patchedSetItem(key, value) {
-    if (shouldFail && key === failKey) throw new Error('quota exceeded (simulated, unsafe ui fix)')
+    if (shouldFail && key === failKey) throw new Error('quota exceeded (simulated, slice D login)')
     return originalSetItem.call(this, key, value)
   })
-  let errSpy
-  /** @type {(() => void)|undefined} */
-  let unsubscribe
+  const errSpy = spyConsoleError('[commitMainDayLogToCloud] 일지 저장 실패:')
 
   try {
     await act(async () => {
       seedPalletClient(ownerKey)
       seedMainCar(ownerKey)
-      commitSettings(ownerKey, normalizeSettings({ fixedOn: true, callDetail: true }), { syncToCloud: false })
-      commitWorkData(ownerKey, {
-        [dateKey]: {
-          isOff: false,
-          fixedCount: 2,
-          palletCount: 0,
-          callDetails: [{ id: 'trp-unsafe-ui', fare: '10,000', client: '한진', payments: [{ amount: 'oops' }] }],
-          fixedRouteCounts: {},
-        },
-      }, { syncToCloud: false })
+      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
     })
-    await act(async () => {
-      root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
-    })
-    await waitUntil(() => !!container.querySelector('#modalFixedCountInput') && !!Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '삭제'))
+    await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(App))) })
+    await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
+    await waitUntil(() => committedRecord(ownerKey, dateKey)?.fixedCount === 2, { timeoutMs: 3000 })
 
-    const workDataRawBefore = localStorage.getItem(failKey)
-    const workDataBefore = structuredClone(readWorkData(ownerKey))
     const tombstoneRawBefore = localStorage.getItem(tombstoneKey)
-    const tombstoneBefore = JSON.stringify(readJsonKey('workDataDeletedDates', ownerKey, {}))
-    const dirtyBefore = hasDirty(ownerKey)
-    const supabaseBeforeFail = totalSupabaseCalls()
-    const upsertsBeforeFail = dailyLogs.forDate(dateKey).length
-    errSpy = spyConsoleError('일지 자동 저장 실패:')
-    let notifyCount = 0
-    unsubscribe = subscribe(() => { notifyCount += 1 })
+    const upsertsBefore = dailyLogs.forDate(dateKey).length
     shouldFail = true
     await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '8') })
-    await waitUntil(() => hasUnsafeRegistration(ownerKey, dateKey) && getUnsafeRegistrationPatch(ownerKey, dateKey)?.fixedCount === 8, { timeoutMs: 2000 })
+    await waitUntil(() => (container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), { timeoutMs: 2000 })
 
-    assert.equal(shouldFail, true, '실패 단계가 끝나기 전에 quota를 풀면 안 된다')
-    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 2, '실패 단계 Store는 초기 fixedCount=2여야 한다')
-    assert.equal(localStorage.getItem(failKey), workDataRawBefore, '실패 단계 workData localStorage 원문이 바뀌면 안 된다')
-    assert.deepEqual(readWorkData(ownerKey), workDataBefore, '실패 단계 workData 값이 작업 전과 같아야 한다')
-    assert.equal(notifyCount, 0, '실패 단계 notify는 0회여야 한다')
-    assert.equal(hasDirty(ownerKey), dirtyBefore, '실패 단계 dirty가 바뀌면 안 된다')
-    // scheduleCloudSync 0회는 App.unsafeQuotaFailSyncSpy.test.js가 mock.module로 직접 센다.
-    assert.equal(totalSupabaseCalls(), supabaseBeforeFail, '실패 단계 Supabase가 늘면 안 된다')
-    assert.equal(dailyLogs.forDate(dateKey).length, upsertsBeforeFail)
-    assert.equal(localStorage.getItem(tombstoneKey), tombstoneRawBefore, '실패 단계 tombstone localStorage가 바뀌면 안 된다')
-    assert.equal(JSON.stringify(readJsonKey('workDataDeletedDates', ownerKey, {})), tombstoneBefore, '실패 단계 tombstone 값이 바뀌면 안 된다')
-    assert.equal(getPendingDayWrite(ownerKey, dateKey), undefined, 'invalid patch는 durable 큐에 들어가면 안 된다')
-    assert.equal(pendingDayWriteCount(), 0)
-    assert.equal(hasUnsafeRegistration(ownerKey, dateKey), true)
-    assert.equal(getUnsafeRegistrationPatch(ownerKey, dateKey)?.fixedCount, 8, 'unsafe patch는 A=8이어야 한다')
-    assert.equal(errSpy.count(), 1, '실패 단계 console.error는 정확히 1회여야 한다')
-    assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'))
-    assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장됨'), false, '성공 상태가 보이면 안 된다')
+    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 2, 'Store는 저장 전 값(2)이어야 한다')
+    assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 2)
+    assert.equal(pendingDayWriteCount(), 0, 'durable 큐에 새 항목이 없어야 한다')
+    assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false)
+    assert.equal(localStorage.getItem(tombstoneKey), tombstoneRawBefore, '새 tombstone을 만들면 안 된다')
     const toastText = container.querySelector('.toast-message')?.textContent || ''
-    assert.match(toastText, /자동 저장에 실패/)
-    assert.equal(toastText.includes('저장했습니다'), false, '성공 토스트가 보이면 안 된다')
+    assert.match(toastText, /네트워크 상태를 확인해 주세요/)
+    assert.equal(toastText.includes('저장 공간'), false, '로그인 경로에 quota 문구를 쓰면 안 된다')
+    assert.equal(dailyLogs.forDate(dateKey).length, upsertsBefore + 1, '서버 daily_logs upsert는 나갔다')
+    assert.equal(errSpy.count(), 1)
 
     shouldFail = false
-    const deleteButton = Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '삭제')
-    if (!(deleteButton instanceof window.HTMLButtonElement)) throw new Error('invalid 콜상세 삭제 버튼이 필요합니다')
-    await act(async () => {
-      deleteButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
-    })
     await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '9') })
-    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '9')
-    await waitUntil(
-      () => committedRecord(ownerKey, dateKey)?.fixedCount === 9 && !hasUnsafeRegistration(ownerKey, dateKey),
-      { timeoutMs: 2000 },
-    )
-
-    const backButton = Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '뒤로가기')
-    assert.ok(backButton)
-    await act(async () => {
-      backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
-    })
-    await waitUntil(() => window.location.pathname === '/app')
-    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 9)
+    await waitUntil(() => committedRecord(ownerKey, dateKey)?.fixedCount === 9, { timeoutMs: 2000 })
     assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 9)
-    assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false, 'valid patch 등록/커밋이 unsafe를 해제해야 한다')
     assert.equal(pendingDayWriteCount(), 0)
-    assert.equal(notifyCount, 1, '복구 커밋의 notify는 정확히 1회여야 한다')
-    assert.equal(errSpy.count(), 1, '복구·이동 후 console.error가 늘면 안 된다')
-
-    await waitUntil(() => dailyLogs.forDate(dateKey).some((row) => row.fixed_count === 9), { timeoutMs: 5000 })
+    assert.equal(errSpy.count(), 1)
     await waitUntil(() => !hasDirty(ownerKey), { timeoutMs: 5000 })
-    const dateUpserts = dailyLogs.forDate(dateKey)
-    assert.equal(dateUpserts.length, 1, '해당 날짜 daily_logs upsert는 정확히 1회여야 한다')
-    assert.equal(dateUpserts[0]?.fixed_count, 9)
-
-    await act(async () => {
-      window.history.pushState({}, '', `/app/day/${dateKey}`)
-      window.dispatchEvent(new window.PopStateEvent('popstate'))
-    })
-    await waitUntil(() => {
-      const el = container.querySelector('#modalFixedCountInput')
-      return el instanceof window.HTMLInputElement && el.value === '9'
-    }, { timeoutMs: 3000 })
-    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '9')
-    assert.equal(errSpy.count(), 1, '재진입 후 console.error가 늘면 안 된다')
   } finally {
-    unsubscribe?.()
-    errSpy?.restore()
+    errSpy.restore()
     spy.mock.restore()
     shouldFail = false
-    clearUnsafeRegistrationFailure(ownerKey, dateKey)
-    await act(async () => { retryPendingDayWrites() })
-    if (liveRoots.has(root)) {
-      await unmountTracked(root)
-      container.remove()
-    }
-    await flushCloudSync()
     dailyLogs.restore()
+    handlers.daily_logs = prevDailyLogs
+    if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
+    await flushCloudSync()
   }
 })

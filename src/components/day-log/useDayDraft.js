@@ -14,6 +14,8 @@ import { saveLogWorkDataWithTombstoneCheck } from '../../lib/workData.js'
 import { pendingOwnerForLog } from '../../lib/pendingLogOwner.js'
 import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../../lib/durableWriteGuard.js'
 import { clearPendingDayWrite, getPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
+import { commitMainDayLogToCloud } from '../../lib/dayLogCloudCommit.js'
+import { shouldCommitDayLogToCloud } from '../../lib/mainDayLogRouting.js'
 import { readOwnerLogWorkData } from '../../store/ownerDataHooks.js'
 import { queueFailedDayWrite, settlePendingDayWrite, useMountedRef } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
@@ -34,7 +36,12 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   const pendingOwner = pendingOwnerForLog(ownerKey, logId)
   const [idMigration] = useState(() => {
     const stored = readOwnerLogWorkData(ownerKey, logId)[dateKey]
-    const queued = getPendingDayWrite(pendingOwner, dateKey) || getUnsafeRegistrationPatch(pendingOwner, dateKey)
+    // 슬라이스 D: 클라우드 경로(로그인 + 서버에 있는 메인 차량)에서는 서버 정본을
+    // hydrate가 이미 Store에 넣었다 — 남아 있는 옛 durable/unsafe 키를 draft 초기값에
+    // 겹치면 최신 서버 값을 덮는다. 게스트·서브·미동기화 메인은 예전처럼 overlay한다.
+    const queued = shouldCommitDayLogToCloud(ownerKey, logId)
+      ? null
+      : (getPendingDayWrite(pendingOwner, dateKey) || getUnsafeRegistrationPatch(pendingOwner, dateKey))
     return backfillCallDetailIds(queued ? { ...stored, ...queued } : stored)
   })
   const [state, dispatch] = useReducer(
@@ -71,6 +78,32 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   const draftRevRef = useRef(0)
   const mountedRef = useMountedRef()
 
+  const markSaved = useCallback((/** @type {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
+    hasPendingRef.current = false
+    clearUnsafeRegistrationFailure(pendingOwner, dateKey)
+    clearPendingDayWrite(pendingOwner, dateKey, patch)
+    if (mountedRef.current) setAutoSaveStatus('saved')
+    onCommittedRef.current?.()
+  }, [pendingOwner, dateKey, mountedRef])
+
+  // 게스트·서브·미동기화 메인: 예전 로컬 경로 그대로 — 로컬 persist + tombstone,
+  // quota 실패면 durable 큐에 등록해 online·5초 재시도.
+  const commitLocal = useCallback((/** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ latest, /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ next, /** @type {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
+    try {
+      saveLogWorkDataWithTombstoneCheck(ownerKey, logId, dateKey, latest, next)
+    } catch (error) {
+      if (mountedRef.current) setAutoSaveStatus('failed')
+      showToastRef.current?.('자동 저장에 실패했습니다. 저장 공간을 확인해 주세요.')
+      console.error('일지 자동 저장 실패:', error)
+      const attemptRev = draftRevRef.current
+      queueFailedDayWrite(pendingOwner, dateKey, patch, (ok) => {
+        settlePendingDayWrite(hasPendingRef, mountedRef, setAutoSaveStatus, onCommittedRef, draftRevRef, attemptRev, ok)
+      })
+      return
+    }
+    markSaved(patch)
+  }, [ownerKey, dateKey, logId, pendingOwner, mountedRef, markSaved])
+
   const commitNow = useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current)
@@ -86,37 +119,21 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
       fixedRouteCounts: draft.fixedRouteCounts,
     })
     const next = saveDayRecord(latest, dateKey, patch)
-    try {
-      // 재감사 3차(FAIL 지적 1번) — 빈 날 삭제가 실제로 일어났으면(latest에는
-      // dateKey가 있었는데 next에는 없으면) workData 커밋과 같은 원자적 트랜잭션에
-      // tombstone 기록도 함께 실어 보낸다 — lib/workData.js 참고.
-      saveLogWorkDataWithTombstoneCheck(ownerKey, logId, dateKey, latest, next)
-    } catch (error) {
-      // writeAllOrNothing(atomicPersist.js)이 이미 store/localStorage를 실패 전
-      // 상태로 롤백했다 — commitBatch의 notify()/scheduleCloudSync()도 이 throw보다
-      // 뒤에 있어서 여기 도달 자체가 "store 불변 + notify 0회 + 클라우드 예약 0회"를
-      // 보장한다. UI에는 거짓 "저장됨" 대신 실패를 알리고, hasPendingRef는 그대로
-      // true로 남겨 마지막 편집이 유실되지 않았다는 걸 나타낸다.
-      setAutoSaveStatus('failed')
-      showToastRef.current?.('자동 저장에 실패했습니다. 저장 공간을 확인해 주세요.')
-      console.error('일지 자동 저장 실패:', error)
-      // 재감사 2차(FAIL 지적) — quota가 계속 꽉 차 있는 상태(persistent)에서 화면을
-      // 나가면(언마운트) 아래 unmount effect의 마지막 재시도조차 실패할 수 있고,
-      // 그러면 draftRef는 컴포넌트와 함께 사라져 이 편집을 복구할 방법이 없어진다.
-      // 이 patch를 전역 큐에 등록한다. durable/fallback이면 online·5초가 재시도하고,
-      // register false(invalid)는 unsafe overlay만 남긴다.
-      const attemptRev = draftRevRef.current
-      queueFailedDayWrite(pendingOwner, dateKey, patch, (ok) => {
-        settlePendingDayWrite(hasPendingRef, mountedRef, setAutoSaveStatus, onCommittedRef, draftRevRef, attemptRev, ok)
+
+    // 슬라이스 D: 로그인 메인 일지는 그 날짜 daily_logs(+transport_details)에 직접 1회
+    // 쓰고 성공 시에만 Store 반영(Fail-Fast). durable/fallback/tombstone/전체맵 재sync 없음.
+    if (shouldCommitDayLogToCloud(ownerKey, logId)) {
+      void commitMainDayLogToCloud({ ownerKey, logId, dateKey, previousData: latest, nextData: next }).then((result) => {
+        if (!result.cloud) { commitLocal(latest, next, patch); return }
+        if (result.ok) { markSaved(patch); return }
+        if (mountedRef.current) setAutoSaveStatus('failed')
+        if (result.toast) showToastRef.current?.(result.toast)
+        // draft는 화면에 남는다. 재시도 큐 없음.
       })
       return
     }
-    hasPendingRef.current = false
-    clearUnsafeRegistrationFailure(pendingOwner, dateKey)
-    clearPendingDayWrite(pendingOwner, dateKey, patch)
-    setAutoSaveStatus('saved')
-    onCommittedRef.current?.()
-  }, [ownerKey, dateKey, logId, pendingOwner, mountedRef])
+    commitLocal(latest, next, patch)
+  }, [ownerKey, dateKey, logId, commitLocal, markSaved, mountedRef])
 
   // draft가 바뀔 때마다 디바운스를 다시 건다 — 이전 타이머가 남아 있으면 취소하고
   // 새로 건다(연타 입력 중에는 계속 미뤄지다가, 입력이 멈춘 뒤에만 실제로 쓴다).

@@ -5,7 +5,7 @@
 import { supabase } from '../supabaseClient.js'
 import { getState, setHydration } from '../store/app-store.js'
 import { replaceOwnerState } from '../store/owner-state.js'
-import { getDirtyDomains, hasDirty } from './dirtyJournal.js'
+import { clearDirtyDomain, getDirtyDomains, hasDirty } from './dirtyJournal.js'
 import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
 import { singleFlight } from './singleFlight.js'
 import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, isSessionStillCurrent } from './cloudSession.js'
@@ -98,8 +98,10 @@ async function performHydrate(userId, ownerKey, myEpoch) {
 
       // 재감사 3차(FAIL 지적 1번) — 아직 서버에 삭제를 못 알린 날짜(tombstone)는
       // 이 hydrate가 방금 받은 서버 rows로도 절대 되살아나지 않는다.
+      // 슬라이스 D: null을 []로 위장하지 않는다 — 조회 실패는 위에서 이미 throw했고,
+      // mergeWorkDataFromRows가 Array.isArray로만 "서버 정본" 여부를 가린다.
       nextWorkData = mergeWorkDataFromRows(nextWorkData, {
-        dailyRows: dailyRes.data || [], transportRows: transportRes.data || [], fuelRows: fuelRes.data || [], maintRows: maintRes.data || [], miscRows: miscRes.data || [],
+        dailyRows: dailyRes.data, transportRows: transportRes.data || [], fuelRows: fuelRes.data || [], maintRows: maintRes.data || [], miscRows: miscRes.data || [],
       }, Object.keys(readOwnerWorkDataTombstones(ownerKey)))
       nextExpenses = mergeExpenseKind({ kind: 'fuel', currentExpenses: nextExpenses, snapshotExpenses: profileSnapshot.expenses, previousExpenses: localSnapshot.expenses, rows: fuelRes.data || [], mapRow: expenseFromFuelRecord, replace: replaceFuelExpenses })
       nextExpenses = mergeExpenseKind({ kind: 'maint', currentExpenses: nextExpenses, snapshotExpenses: profileSnapshot.expenses, previousExpenses: localSnapshot.expenses, rows: maintRes.data || [], mapRow: expenseFromMaintenanceRecord, replace: replaceMaintExpenses })
@@ -115,6 +117,10 @@ async function performHydrate(userId, ownerKey, myEpoch) {
       profile: nextProfile, settings: nextSettings, expenses: nextExpenses, invoices: nextInvoices,
     }
 
+    // 슬라이스 D: 로그인 일지는 서버 daily_logs가 정본이다(위 mergeWorkDataFromRows).
+    // 남아 있던 옛 workData dirty 표시로 로컬 맵을 다시 덮으면 서버 정본이 죽고,
+    // hydrate 끝의 hasDirty→scheduleCloudSync가 전체 맵을 재업로드한다. 그 표시만 지운다.
+    clearDirtyDomain(ownerKey, 'workData')
     const dirtyDomains = getDirtyDomains(ownerKey)
     if (dirtyDomains.length) {
       const freshLocal = collectPracticeSnapshot(ownerKey)

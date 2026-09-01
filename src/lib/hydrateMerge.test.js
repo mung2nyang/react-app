@@ -59,10 +59,25 @@ describe('mergeWorkDataFromRows — transport_details 실패 회귀 방지', () 
     assert.equal(result['2026-08-02'], undefined)
   })
 
-  test('localWorkData에 있던 다른 날짜는 유지한다(전체 교체가 아니라 병합)', () => {
+  test('슬라이스 D — dailyRows가 빈 배열이면 서버가 정본이라 로컬 날짜를 남기지 않는다', () => {
     const local = { '2026-07-01': { isOff: true, callDetails: [] } }
-    const result = mergeWorkDataFromRows(local, { dailyRows: [], transportRows: [], fuelRows: [], maintRows: [], miscRows: [] })
-    assert.deepEqual(result['2026-07-01'], { isOff: true, callDetails: [] })
+    assert.deepEqual(mergeWorkDataFromRows(local, { dailyRows: [], transportRows: [] }), {})
+  })
+
+  test('슬라이스 D — dailyRows가 배열이 아니면(조회 실패 등) 로컬 맵을 그대로 둔다', () => {
+    const local = { '2026-07-01': { isOff: true, callDetails: [] } }
+    assert.deepEqual(mergeWorkDataFromRows(local, { dailyRows: null, transportRows: [] }), local)
+    assert.deepEqual(mergeWorkDataFromRows(local, { transportRows: [] }), local)
+  })
+
+  test('슬라이스 D — 서버에 있는 날짜만 남고 서버에 없는 로컬 날짜는 빠진다', () => {
+    const local = { '2026-07-01': { isOff: true, callDetails: [] }, '2026-07-02': { isOff: false, fixedCount: 3, callDetails: [] } }
+    const result = mergeWorkDataFromRows(local, {
+      dailyRows: [{ work_date: '2026-07-02', is_off: false, fixed_count: 3, raw: {} }],
+      transportRows: [],
+    })
+    assert.equal(result['2026-07-01'], undefined)
+    assert.equal(result['2026-07-02'].fixedCount, 3)
   })
 
   test('서버 fuel/maint/misc raw의 extra key·빈 필드는 기본값으로 흡수하고 병합을 중단하지 않는다', () => {

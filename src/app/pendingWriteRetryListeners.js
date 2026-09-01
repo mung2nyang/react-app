@@ -6,6 +6,8 @@
 import { hasPendingDayWrites, retryPendingDayWrites } from '../lib/pendingWorkDataWrites.js'
 import { guardBeforeUnload } from '../lib/durableWriteGuard.js'
 import { setPendingRetryPulse } from '../lib/pendingRetryPulse.js'
+import { getCloudOwnerKey } from '../lib/cloudSession.js'
+import { shouldCommitDayLogToCloud } from '../lib/mainDayLogRouting.js'
 
 const RETRY_INTERVAL_MS = 5000
 
@@ -34,12 +36,21 @@ export function attachPendingWriteRetryListeners(windowTarget) {
     timer = setInterval(runRetry, RETRY_INTERVAL_MS)
   }
 
+  // 슬라이스 D: 로그인 + 서버에 있는 메인 차량이면 그 일지는 Fail-Fast(재시도 큐 없음)다.
+  // 옛 durable 큐를 재시도해 서버 정본으로 맞춰진 Store를 덮지 않는다. 게스트·미동기화
+  // 메인 차량의 큐는 그대로 재시도한다(서버가 없으니 로컬 복구가 유일한 방법).
+  function retryDisabled() {
+    const ownerKey = getCloudOwnerKey()
+    return !!ownerKey && shouldCommitDayLogToCloud(ownerKey, 'main')
+  }
+
   function syncTimer() {
-    if (hasPendingDayWrites()) arm()
+    if (!retryDisabled() && hasPendingDayWrites()) arm()
     else disarm()
   }
 
   function runRetry() {
+    if (retryDisabled()) { disarm(); return }
     if (hasPendingDayWrites()) retryPendingDayWrites()
     syncTimer()
   }

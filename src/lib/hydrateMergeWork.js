@@ -27,7 +27,7 @@ function pickKnownKeys(raw, allowed) {
 
 /**
  * @param {Record<string, DayRecordLike>} localWorkData
- * @param {{ dailyRows?: Array<DailyLogRow>, transportRows?: Array<DetailRow>, fuelRows?: Array<DetailRow>, maintRows?: Array<DetailRow>, miscRows?: Array<DetailRow> }} rows
+ * @param {{ dailyRows?: Array<DailyLogRow>|null, transportRows?: Array<DetailRow>|null, fuelRows?: Array<DetailRow>|null, maintRows?: Array<DetailRow>|null, miscRows?: Array<DetailRow>|null }} rows
  * @param {Iterable<string>} [deletedDateKeys]
  */
 export function mergeWorkDataFromRows(localWorkData, { dailyRows, transportRows }, deletedDateKeys = []) {
@@ -57,7 +57,11 @@ export function mergeWorkDataFromRows(localWorkData, { dailyRows, transportRows 
   Object.values(byDate).forEach((day) => {
     day.callDetails = dedupeCallDetailsById(day.callDetails)
   })
-  const merged = { ...(localWorkData || {}), ...byDate }
+  // 슬라이스 D(2026-09-01): dailyRows가 배열이면(빈 배열 포함) 서버 날짜 맵이 정본이다.
+  // 로컬 dateKey를 밑에 깔면 서버에서 지운(또는 원래 없던) 날짜가 hydrate 뒤 부활한다
+  // (B·C와 같은 함정). fallback은 dailyRows가 배열이 아닐 때(조회 실패 등)만.
+  const base = Array.isArray(dailyRows) ? {} : (localWorkData || {})
+  const merged = { ...base, ...byDate }
   tombstoned.forEach((dateKey) => { delete merged[dateKey] })
   return merged
 }

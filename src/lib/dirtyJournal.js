@@ -82,3 +82,17 @@ export function getDirtyDomains(ownerKey) {
 export function clearDirty(ownerKey) {
   writeJournal(ownerKey, {})
 }
+
+/**
+ * 슬라이스 D — 로그인 hydrate가 서버 정본으로 그 도메인을 이미 맞췄을 때, 남아 있던
+ * 옛 dirty 표시 하나만 지운다(전체 clearDirty가 아니라). 없으면 아무 것도 안 한다.
+ * @param {string} ownerKey
+ * @param {string} domain
+ */
+export function clearDirtyDomain(ownerKey, domain) {
+  const journal = readJournal(ownerKey)
+  if (!(domain in journal)) return
+  const next = { ...journal }
+  delete next[domain]
+  writeJournal(ownerKey, next)
+}
