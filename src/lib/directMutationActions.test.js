@@ -20,7 +20,7 @@ const {
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { setHydration, getState, subscribe } = await import('../store/app-store.js')
 const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../store/persist.js')
-const { getPendingOps, hasPendingOps } = await import('./mutationOutbox.js')
+const { hasPendingOps } = await import('./mutationOutbox.js')
 
 function beginReady(userId, ownerKey) {
   resetHandlers()
@@ -36,7 +36,9 @@ function beginFailed(userId, ownerKey) {
   setHydration({ status: 'failed', userId, ownerKey })
 }
 
-function withFailingSetItem(shouldFail, fn) {
+// async: fn이 첫 await 뒤에 setItem을 부르는 경우(슬라이스 C 서버 삭제 성공 후 commit)도
+// 스파이가 살아 있게 fn 완료까지 기다렸다가 복원한다.
+async function withFailingSetItem(shouldFail, fn) {
   const proto = Object.getPrototypeOf(localStorage)
   const original = proto.setItem
   const spy = mock.method(proto, 'setItem', function patched(key, value) {
@@ -44,7 +46,7 @@ function withFailingSetItem(shouldFail, fn) {
     return original.call(this, key, value)
   })
   try {
-    return fn()
+    return await fn()
   } finally {
     spy.mock.restore()
   }
@@ -75,48 +77,104 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
     endCloudSession()
   })
 
-  test('ready 상태에서 성공: 로컬 반영 + outbox 비워짐 + 확정 성공 토스트', async () => {
+  test('ready 상태에서 성공: 본체 delete 1회, Store에서 사라짐, 재시도 큐 없음, 확정 성공 토스트', async () => {
     const ownerKey = 'dma-vehicle-success'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 901 }]
     writeJsonKey('cars', ownerKey, cars)
+    handlers.vehicles = { delete: () => ({ data: [{ id: 901 }], error: null }) }
 
     const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
 
     assert.deepEqual(result.cars, [])
     assert.deepEqual(readJsonKey('cars', ownerKey, []), [])
+    assert.deepEqual(getState().cars[ownerKey], [], 'Store에서도 사라져야 한다')
     assert.equal(countOf('vehicles', 'delete'), 1)
     assert.equal(hasPendingOps(ownerKey), false)
-    assert.match(result.toast, /삭제했습니다/)
+    assert.equal(result.failed, false)
+    assert.equal(result.toast, '차량을 삭제했습니다.')
     endCloudSession()
   })
 
-  test('ready 상태인데 원격 삭제가 throw로 실패: 로컬은 반영되고(낙관적) durable tombstone이 남으며, 확정 성공 토스트는 아니다', async () => {
+  test('슬라이스 C — ready + 원격 삭제 throw: Fail-Fast 토스트, Store/localStorage 저장 전 값, hasPendingOps false', async () => {
     const ownerKey = 'dma-vehicle-remote-fail'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 902 }]
     writeJsonKey('cars', ownerKey, cars)
     handlers.vehicles = { delete: () => { throw new Error('network down') } }
 
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
     const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
+    unsubscribe()
 
-    assert.deepEqual(result.cars, [], '로컬은 낙관적으로 반영된다(로컬 우선 + durable tombstone 전략)')
-    assert.equal(hasPendingOps(ownerKey), true, '실패한 삭제는 outbox에 durable하게 남아야 한다')
-    assert.equal(getPendingOps(ownerKey)[0].resourceType, 'vehicle')
-    assert.doesNotMatch(result.toast, /^차량을 삭제했습니다\.$/, '확정 성공 토스트가 아니라 대기 상태 안내여야 한다')
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.equal(result.failed, true)
+    assert.deepEqual(result.cars, cars, '호출부에는 저장 전 cars를 돌려줘야 한다')
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), cars, 'localStorage도 저장 전 값이어야 한다')
+    assert.equal(getState().cars[ownerKey], undefined, 'Store에 이 owner의 cars가 새로 생기면 안 된다')
+    assert.equal(hasPendingOps(ownerKey), false, '재시도 큐/tombstone에 남으면 안 된다')
+    assert.equal(notifyCount, 0)
     endCloudSession()
   })
 
-  test('ready 상태인데 Supabase가 { data:null, error }를 반환: 역시 outbox에 남는다', async () => {
+  test('슬라이스 C — ready + { data: null, error }: Fail-Fast 토스트, hasPendingOps false, 저장 전 값', async () => {
     const ownerKey = 'dma-vehicle-data-error'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 903 }]
     writeJsonKey('cars', ownerKey, cars)
     handlers.vehicles = { delete: () => ({ data: null, error: { message: 'RLS violation' } }) }
 
-    await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
-    assert.equal(hasPendingOps(ownerKey), true)
+    const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
+
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.equal(hasPendingOps(ownerKey), false)
+    assert.equal(getState().cars[ownerKey], undefined)
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), cars)
     endCloudSession()
+  })
+
+  test('슬라이스 C — 본체 delete가 0행이면(이미 없음/RLS): Fail-Fast 토스트, Store 유지, 성공 토스트 없음', async () => {
+    const ownerKey = 'dma-vehicle-zero-rows'
+    beginReady('user-1', ownerKey)
+    const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 907 }]
+    writeJsonKey('cars', ownerKey, cars)
+    handlers.vehicles = { delete: () => ({ data: [], error: null }) } // 삭제됐지만 0행
+
+    const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
+
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.doesNotMatch(result.toast, /삭제했습니다/)
+    assert.equal(countOf('vehicles', 'delete'), 1)
+    assert.equal(getState().cars[ownerKey], undefined)
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), cars, '0행 삭제는 Store/LS를 건드리면 안 된다')
+    assert.equal(hasPendingOps(ownerKey), false)
+    endCloudSession()
+  })
+
+  test('슬라이스 C — 세션 전환(delete await 이후 로그아웃): Store/localStorage 미반영', async () => {
+    const ownerKey = 'dma-vehicle-epoch'
+    beginReady('user-1', ownerKey)
+    const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 908 }]
+    writeJsonKey('cars', ownerKey, cars)
+    let releaseDelete = () => {}
+    const gate = new Promise((resolve) => { releaseDelete = resolve })
+    handlers.vehicles = { delete: () => gate.then(() => ({ data: [{ id: 908 }], error: null })) }
+
+    const promise = requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
+    await wait(10)
+    endCloudSession() // 응답 대기 중 로그아웃
+
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
+    releaseDelete()
+    await promise
+    unsubscribe()
+
+    assert.equal(notifyCount, 0)
+    assert.equal(getState().cars[ownerKey], undefined)
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), cars)
+    assert.equal(hasPendingOps(ownerKey), false)
   })
 
   test('retry 성공 후(hydrate 등으로 ready 전환) 같은 작업을 다시 하면 로컬·서버가 최종적으로 일치한다', async () => {
@@ -164,35 +222,34 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
   })
 })
 
-describe('실패 주입 — 도메인+outbox 원자적 쓰기 자체가 실패하는 경우', () => {
-  // 사용자 지시 10번: localStorage/outbox 저장 실패는 unhandled rejection이 아니라
-  // "실패했다"는 결과값 + 토스트로 UI에 전달돼야 한다. 예전에는 여기서 throw했지만,
-  // 이제는 항상 resolve하고 storageFailed로 알린다 — 그 계약이 실제로 지켜지는지,
-  // 그리고 롤백/notify/서버 호출 0회 보장도 여전히 유효한지 함께 확인한다.
-  test('outbox localStorage 쓰기가 실패하면 throw 없이 실패 토스트로 알리고, 도메인 값도 롤백되고 store/notify/서버 호출이 전부 0이다', async () => {
+describe('실패 주입 — 슬라이스 C: 서버 삭제 성공 뒤 로컬 commit이 실패하는 경우', () => {
+  // 슬라이스 C: 서버 삭제는 이미 끝난 뒤 cars localStorage 쓰기가 실패하면, throw 없이
+  // Fail-Fast 토스트 + 저장 전 값으로 알린다(다음 hydrate가 서버=빈 목록으로 맞춘다).
+  test('cars localStorage 쓰기가 실패하면 throw 없이 Fail-Fast 토스트, 로컬 목록은 저장 전 값, store/notify 불변', async () => {
     const ownerKey = 'dma-vehicle-atomic-fail'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 905 }]
     writeJsonKey('cars', ownerKey, cars)
-    const carsRawBefore = localStorage.getItem(storageKeyFor('cars', ownerKey))
+    handlers.vehicles = { delete: () => ({ data: [{ id: 905 }], error: null }) }
+    const carsKey = storageKeyFor('cars', ownerKey)
+    const carsRawBefore = localStorage.getItem(carsKey)
 
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
-    const outboxKey = `reactPracticeMutationOutbox:${ownerKey}`
 
     let result
     await assert.doesNotReject(async () => {
-      result = await withFailingSetItem((key) => key === outboxKey, () => requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' }))
+      result = await withFailingSetItem((key) => key === carsKey, () => requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' }))
     })
     unsubscribe()
 
-    assert.equal(result.blocked, null)
-    assert.match(result.toast, /저장에 실패했습니다/)
-    assert.deepEqual(result.cars, cars, '저장 실패 시 호출부에는 원래 cars를 그대로 돌려줘야 한다(유실된 것처럼 보이면 안 된다)')
-    assert.equal(localStorage.getItem(storageKeyFor('cars', ownerKey)), carsRawBefore, '도메인 localStorage가 원래 값으로 롤백돼야 한다')
-    assert.deepEqual(getState().cars[ownerKey], undefined, 'store에 아직 이 owner의 cars가 반영된 적 없어야 한다(이번 호출로 새로 생기면 안 된다)')
+    assert.equal(result.failed, true)
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.deepEqual(result.cars, cars, '호출부에는 저장 전 cars를 그대로 돌려줘야 한다')
+    assert.equal(localStorage.getItem(carsKey), carsRawBefore, 'cars localStorage는 저장 전 값이어야 한다')
+    assert.equal(getState().cars[ownerKey], undefined, 'store에 이 owner의 cars가 새로 생기면 안 된다')
     assert.equal(notifyCount, 0)
-    assert.equal(countOf('vehicles', 'delete'), 0, '로컬 저장조차 실패했으면 원격 호출로 넘어가면 안 된다')
+    assert.equal(countOf('vehicles', 'delete'), 1, '서버 삭제는 이미 성공했다(다음 hydrate가 로컬을 맞춘다)')
     endCloudSession()
   })
 })
@@ -213,15 +270,55 @@ describe('requestClientDeletion — 사용자 지시 10번 필수 시나리오',
     endCloudSession()
   })
 
-  test('ready 상태에서 성공하면 서버 호출 1회, outbox 비워짐', async () => {
+  test('ready 상태에서 성공: 본체 delete 1회, Store에서 사라짐, 재시도 큐 없음', async () => {
     const ownerKey = 'dma-client-success'
     beginReady('user-1', ownerKey)
     const clients = [{ id: 'client-1', companyName: '한진', supabaseId: 701 }]
     writeJsonKey('clients', ownerKey, clients)
+    handlers.clients = { delete: () => ({ data: [{ id: 701 }], error: null }) }
 
     const result = await requestClientDeletion({ ownerKey, userId: 'user-1', clients, clientId: 'client-1' })
     assert.deepEqual(result.clients, [])
     assert.equal(countOf('clients', 'delete'), 1)
+    assert.deepEqual(getState().clients[ownerKey], [], 'Store에서도 사라져야 한다')
+    assert.equal(hasPendingOps(ownerKey), false)
+    assert.equal(result.failed, false)
+    assert.match(result.toast, /거래처를 삭제했습니다/)
+    endCloudSession()
+  })
+
+  test('슬라이스 C — ready + 원격 삭제 throw: Fail-Fast 토스트, Store 저장 전 값, hasPendingOps false', async () => {
+    const ownerKey = 'dma-client-throw'
+    beginReady('user-1', ownerKey)
+    const clients = [{ id: 'client-1', companyName: '한진', supabaseId: 702 }]
+    writeJsonKey('clients', ownerKey, clients)
+    handlers.clients = { delete: () => { throw new Error('network down') } }
+
+    const result = await requestClientDeletion({ ownerKey, userId: 'user-1', clients, clientId: 'client-1' })
+
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.equal(result.failed, true)
+    assert.deepEqual(result.clients, clients)
+    assert.deepEqual(readJsonKey('clients', ownerKey, []), clients)
+    assert.equal(getState().clients[ownerKey], undefined)
+    assert.equal(hasPendingOps(ownerKey), false)
+    endCloudSession()
+  })
+
+  test('슬라이스 C — 본체 delete가 0행이면: Fail-Fast 토스트, Store 유지, 성공 토스트 없음', async () => {
+    const ownerKey = 'dma-client-zero-rows'
+    beginReady('user-1', ownerKey)
+    const clients = [{ id: 'client-1', companyName: '한진', supabaseId: 703 }]
+    writeJsonKey('clients', ownerKey, clients)
+    handlers.clients = { delete: () => ({ data: [], error: null }) }
+
+    const result = await requestClientDeletion({ ownerKey, userId: 'user-1', clients, clientId: 'client-1' })
+
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.doesNotMatch(result.toast, /삭제했습니다/)
+    assert.equal(countOf('clients', 'delete'), 1)
+    assert.equal(getState().clients[ownerKey], undefined)
+    assert.deepEqual(readJsonKey('clients', ownerKey, []), clients)
     assert.equal(hasPendingOps(ownerKey), false)
     endCloudSession()
   })

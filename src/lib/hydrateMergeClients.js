@@ -25,9 +25,12 @@ function numericOrEmpty(value) {
   return value !== undefined && isStringOrFiniteNumber(value) ? value : ''
 }
 
-/** @param {Array<LocalClient>} localClients @param {Array<ClientRow>} clientRows */
+/** @param {Array<LocalClient>} localClients @param {Array<ClientRow>|null|undefined} clientRows */
 export function mergeClientsFromRows(localClients, clientRows) {
-  if (!Array.isArray(clientRows) || !clientRows.length) return localClients
+  // 슬라이스 C(2026-09-01): clientRows가 배열이면(빈 배열 포함) 서버가 정본이다.
+  // 빈 배열을 로컬로 되돌리면 방금 삭제한 거래처가 hydrate 뒤 부활한다. fallback은
+  // 조회 실패로 배열이 아닐 때만. 빈 배열은 map을 통과해 []가 되고 미동기화 로컬만 덧붙는다.
+  if (!Array.isArray(clientRows)) return Array.isArray(localClients) ? localClients : []
   const clients = clientRows.map((row) => {
     const raw = row.raw && typeof row.raw === 'object' ? row.raw : /** @type {RawClientBackup} */ ({})
     /** @type {LocalClient} */

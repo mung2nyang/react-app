@@ -11,7 +11,7 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
-import { createFakeSupabase, wait } from '../testSupport/fakeSupabaseClient.js'
+import { createFakeSupabase, vehicleRowsFor, wait } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, callCounts, emptyOkHandlers } = createFakeSupabase()
 
@@ -88,6 +88,11 @@ test.afterEach(async () => {
   for (const leftoverRoot of leftover) {
     await act(async () => { leftoverRoot.unmount() })
   }
+  // 슬라이스 C: seedMainCar 등이 덮어쓴 vehicles/clients select를 빈 서버로 원복해
+  // 다음 테스트가 유출된 서버 행을 보지 않게 한다(이 파일은 handlers를 매 테스트
+  // 초기화하지 않는다).
+  handlers.vehicles.select = () => ({ data: [], error: null })
+  handlers.clients.select = () => ({ data: [], error: null })
   // 예약된 600ms 클라우드 동기화가 다음 테스트의 Supabase 카운트를 오염시키지 않게
   // 디바운스를 즉시 비운다. App이 이미 실제 syncQueue를 붙잡은 뒤에는 mock.module이
   // 횟수를 못 센다 — 횟수 spy는 pendingWorkDataWritesSyncSpy.test.js가 맡는다.
@@ -793,9 +798,13 @@ function seedPalletClient(ownerKey) {
 /** daily_logs upsert가 실제로 나가려면 메인 차량 supabaseId가 필요하다. */
 /** @param {string} ownerKey */
 function seedMainCar(ownerKey) {
-  commitCars(ownerKey, [
+  const cars = [
     /** @type {import('../domain/financeTypes.js').CarLike} */ ({ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 501 }),
-  ], { syncToCloud: false })
+  ]
+  commitCars(ownerKey, cars, { syncToCloud: false })
+  // 슬라이스 C: hydrate가 빈 배열을 "삭제됨"으로 보므로, 시드한 supabaseId 차량을
+  // 가짜 서버도 돌려줘야 hydrate가 지우지 않는다. afterEach에서 select를 원복한다.
+  handlers.vehicles.select = () => ({ data: vehicleRowsFor(cars), error: null })
 }
 
 /** @returns {Event} */

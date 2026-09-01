@@ -2,10 +2,10 @@
 // 컴포넌트가 부르는 고수준 서비스 함수들 — 컴포넌트는 이 함수들만 호출하고, 여기서
 // readiness 게이트 → 원격 mutation → 결과 토스트까지 처리한다.
 //
-// 슬라이스 A(기사 초대) · B(기사 상태변경/삭제)는 mutation outbox / durable / fallback /
-// 재시도 큐를 쓰지 않는다: readiness 후 서버에 직접 1회 쓰고, 성공했을 때만 Store를
-// 갱신한다(Fail-Fast). 실패하면 Store/LS/outbox를 더 쌓지 않고 지정 토스트만 띄운다.
-// 거래처 삭제(requestClientDeletion)는 아직 outbox 경로다(슬라이스 C).
+// 슬라이스 A(기사 초대) · B(기사 상태변경/삭제) · C(차량·거래처 삭제)는 mutation outbox /
+// tombstone / durable / 재시도 큐를 쓰지 않는다: readiness 후 서버에 직접 1회 쓰고,
+// 성공했을 때만 Store를 갱신한다(Fail-Fast). 실패하면 Store/LS/outbox를 더 쌓지 않고
+// 지정 토스트만 띄운다. 차량 삭제는 vehicleDeletion.js.
 //
 // 공용 커밋 프리미티브는 outboxCommit.js, 기사 초대는 requestDriverInviteSave.js에 있다.
 import { removeClient } from '../domain/clients.js'
@@ -15,22 +15,25 @@ import {
   blockedReasonForCloudWrite,
   blockedReasonForOwnerDataWrite,
   captureSession,
-  getSessionEpoch,
 } from './cloudSession.js'
-import { buildTombstoneOp } from './mutationOutbox.js'
-import { commitLocalOnly, commitWithOutboxAndFlush } from './outboxCommit.js'
-import { deleteDriverLinkOnSupabase, updateDriverLinkStatusOnSupabase } from './directMutations.js'
+import { commitLocalOnly } from './outboxCommit.js'
+import {
+  deleteClientFromSupabase,
+  deleteDriverLinkOnSupabase,
+  updateDriverLinkStatusOnSupabase,
+} from './directMutations.js'
 import { StaleSessionError } from './outboxErrors.js'
-import { commitDrivers } from '../store/commitHelpers.js'
+import { commitClients, commitDrivers } from '../store/commitHelpers.js'
 
 export { requestDriverInviteSave } from './requestDriverInviteSave.js'
 export { requestVehicleDeletion } from './vehicleDeletion.js'
 
-// 슬라이스 A와 동일 문구. 다른 도메인 outbox의 STORAGE_FAIL_TOAST는 건드리지 않는다.
-const DRIVER_SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const DRIVER_SESSION_CHANGED_TOAST = '세션이 바뀌어 저장을 중단했습니다. 다시 로그인한 뒤 시도해 주세요.'
+// 슬라이스 A~C 공통 문구. 다른 도메인 outbox의 STORAGE_FAIL_TOAST는 건드리지 않는다.
+const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+const SESSION_CHANGED_TOAST = '세션이 바뀌어 저장을 중단했습니다. 다시 로그인한 뒤 시도해 주세요.'
 
 /**
+ * 로그인 사용자의 거래처 삭제. 슬라이스 C: outbox/tombstone 없이 clients.delete 직접 1회.
  * @param {{ ownerKey: string, userId: string|null, clients: Array<import('../domain/clientTypes.js').ClientLike>, clientId: string }} params
  */
 export async function requestClientDeletion({ ownerKey, userId, clients, clientId }) {
@@ -46,13 +49,19 @@ export async function requestClientDeletion({ ownerKey, userId, clients, clientI
   if (blocked) return { clients, blocked, toast: blocked, failed: true, closeModal: false }
 
   const nextClients = removeClient(clients, clientId)
-  const op = buildTombstoneOp({ ownerKey, userId: userId || '', resourceType: 'client', resourceId: String(client.supabaseId), operation: 'delete', sessionEpoch: getSessionEpoch() })
-  const { toast, storageFailed } = await commitWithOutboxAndFlush({
-    domain: 'clients', ownerKey, domainValue: nextClients, op,
-    successToast: '거래처를 삭제했습니다.',
-    pendingToast: '거래처 삭제 요청을 저장했습니다. 연결이 복구되면 자동으로 반영됩니다.',
-  })
-  return { clients: storageFailed ? clients : nextClients, blocked: null, toast, failed: storageFailed, closeModal: !storageFailed }
+  const captured = captureSession()
+  try {
+    await deleteClientFromSupabase(client.supabaseId, captured)
+    assertSessionStillCurrent(captured)
+    commitClients(ownerKey, nextClients, { syncToCloud: false })
+    return { clients: nextClients, blocked: null, toast: '거래처를 삭제했습니다.', failed: false, closeModal: true }
+  } catch (error) {
+    if (error instanceof StaleSessionError) {
+      return { clients, blocked: null, toast: SESSION_CHANGED_TOAST, failed: true, closeModal: false }
+    }
+    console.error('[requestClientDeletion] 삭제 실패:', error)
+    return { clients, blocked: SAVE_FAIL_TOAST, toast: SAVE_FAIL_TOAST, failed: true, closeModal: false }
+  }
 }
 
 /**
@@ -78,9 +87,9 @@ export async function requestDriverStatusChange({ ownerKey, drivers, driverId, s
     commitDrivers(ownerKey, nextDrivers, { syncToCloud: false })
     return { drivers: nextDrivers, blocked: null, toast: statusToast }
   } catch (error) {
-    if (error instanceof StaleSessionError) return { drivers, blocked: null, toast: DRIVER_SESSION_CHANGED_TOAST }
+    if (error instanceof StaleSessionError) return { drivers, blocked: null, toast: SESSION_CHANGED_TOAST }
     console.error('[requestDriverStatusChange] 상태변경 실패:', error)
-    return { drivers, blocked: DRIVER_SAVE_FAIL_TOAST, toast: DRIVER_SAVE_FAIL_TOAST }
+    return { drivers, blocked: SAVE_FAIL_TOAST, toast: SAVE_FAIL_TOAST }
   }
 }
 
@@ -106,8 +115,8 @@ export async function requestDriverDeletion({ ownerKey, drivers, driverId, cloud
     commitDrivers(ownerKey, nextDrivers, { syncToCloud: false })
     return { drivers: nextDrivers, blocked: null, toast: '초대를 삭제했습니다.' }
   } catch (error) {
-    if (error instanceof StaleSessionError) return { drivers, blocked: null, toast: DRIVER_SESSION_CHANGED_TOAST }
+    if (error instanceof StaleSessionError) return { drivers, blocked: null, toast: SESSION_CHANGED_TOAST }
     console.error('[requestDriverDeletion] 삭제 실패:', error)
-    return { drivers, blocked: DRIVER_SAVE_FAIL_TOAST, toast: DRIVER_SAVE_FAIL_TOAST }
+    return { drivers, blocked: SAVE_FAIL_TOAST, toast: SAVE_FAIL_TOAST }
   }
 }

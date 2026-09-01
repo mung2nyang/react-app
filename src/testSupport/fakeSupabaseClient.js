@@ -104,3 +104,55 @@ export function createFakeSupabase() {
 export function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+// 슬라이스 C: hydrate가 "빈 배열 = 서버 정본(로컬 삭제)"으로 바뀌어서, 로컬 Store에
+// supabaseId 있는 차량/거래처를 시드한 테스트는 가짜 서버에도 같은 행을 돌려줘야
+// hydrate가 그 데이터를 지우지 않는다. buildVehicleRow/buildClientRow처럼 raw에
+// 로컬 객체를 통째로 담는다(mergeCars/ClientsFromRows가 raw.* 를 읽는다).
+
+/**
+ * @param {Array<import('../domain/financeTypes.js').CarLike>} cars
+ * @returns {Array<import('../store/atomicPersist.js').JsonValue>}
+ */
+export function vehicleRowsFor(cars) {
+  /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+  const rows = []
+  for (const car of cars || []) {
+    if (!car || car.supabaseId == null) continue
+    rows.push({
+      id: car.supabaseId,
+      number: car.number || '',
+      type: car.type === 'sub' ? 'sub' : 'main',
+      tonnage: car.tonnage || '',
+      driver_name: car.driverName || '',
+      raw: { id: car.id || '', number: car.number || '', driverName: car.driverName || '', driverPhone: car.driverPhone || '' },
+    })
+  }
+  return rows
+}
+
+/**
+ * @param {Array<import('../domain/clientTypes.js').ClientLike>} clients
+ * @returns {Array<import('../store/atomicPersist.js').JsonValue>}
+ */
+export function clientRowsFor(clients) {
+  /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+  const rows = []
+  for (const client of clients || []) {
+    if (!client || client.supabaseId == null) continue
+    rows.push({
+      id: client.supabaseId,
+      legacy_client_id: client.id || '',
+      company_name: client.companyName || '',
+      is_pinned: !!client.isPinned,
+      raw: {
+        phone: client.phone || '',
+        fixedRouteLinked: !!client.fixedRouteLinked,
+        fixedUnitPrice: String(client.fixedUnitPrice ?? ''),
+        palletOn: !!client.palletOn,
+        palletPrice: String(client.palletPrice ?? ''),
+      },
+    })
+  }
+  return rows
+}

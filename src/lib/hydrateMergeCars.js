@@ -55,11 +55,12 @@ function enumOrDefault(value, allowed, fallback) {
 
 /** @param {Array<LocalCar>} localCars @param {Array<VehicleRow>|null|undefined} vehicleRows */
 export function mergeCarsFromRows(localCars, vehicleRows) {
-  if (!Array.isArray(vehicleRows) || !vehicleRows.length) {
-    const next = dedupeCarsById(localCars)
-    return next.length === (Array.isArray(localCars) ? localCars.length : 0)
-      ? (localCars || next)
-      : next
+  // 슬라이스 C(2026-09-01): vehicleRows가 배열이면(빈 배열 포함) 서버가 정본이다.
+  // 빈 배열을 로컬로 되돌리면 방금 삭제한 차량이 hydrate 뒤 부활한다 — 아래 map을
+  // 그대로 통과시키면 서버 목록(빈 배열이면 [])에 미동기화 로컬 차량만 덧붙는다.
+  // fallback은 조회 실패로 배열이 아닐 때만.
+  if (!Array.isArray(vehicleRows)) {
+    return Array.isArray(localCars) ? localCars : []
   }
   const cars = vehicleRows.map((row) => {
     const raw = row.raw && typeof row.raw === 'object' ? row.raw : /** @type {RawCarBackup} */ ({})

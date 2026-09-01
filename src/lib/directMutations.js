@@ -34,9 +34,17 @@ export async function deleteVehicleFromSupabase(vehicleSupabaseId, captured) {
   const { error: dailyLogsError } = await supabase.from('daily_logs').delete().eq('vehicle_id', vehicleSupabaseId)
   assertSessionStillCurrent(captured)
   if (dailyLogsError) throw dailyLogsError
-  const { error } = await supabase.from('vehicles').delete().eq('id', vehicleSupabaseId)
+  // 슬라이스 C(2026-09-01): 본체 0행 삭제(이미 없음/RLS로 안 보임)를 성공으로 치면
+  // Store만 비고 서버 행이 남아 hydrate가 다시 그린다 — 실제로 지운 행이 0이면
+  // throw로 Fail-Fast. 자식 테이블 0행은 "이미 없음"이라 허용한다. (Supabase의
+  // delete().select()는 항상 배열을 준다. 배열이 아니면 이 정보가 없는 것이라
+  // 예전처럼 통과시킨다.)
+  const { data, error } = await supabase.from('vehicles').delete().eq('id', vehicleSupabaseId).select('id')
   assertSessionStillCurrent(captured)
   if (error) throw error
+  if (Array.isArray(data) && data.length === 0) {
+    throw new Error('삭제할 차량 행을 찾지 못했습니다.')
+  }
 }
 
 /**
@@ -53,9 +61,13 @@ export async function deleteClientFromSupabase(clientSupabaseId, captured) {
   assertSessionStillCurrent(captured)
   const unlinkError = unlinkResults.find((result) => result.error)?.error
   if (unlinkError) throw unlinkError
-  const { error } = await supabase.from('clients').delete().eq('id', clientSupabaseId)
+  // 슬라이스 C: 본체 0행 삭제는 성공이 아니다 — throw로 Fail-Fast(차량과 동일 계약).
+  const { data, error } = await supabase.from('clients').delete().eq('id', clientSupabaseId).select('id')
   assertSessionStillCurrent(captured)
   if (error) throw error
+  if (Array.isArray(data) && data.length === 0) {
+    throw new Error('삭제할 거래처 행을 찾지 못했습니다.')
+  }
 }
 
 /**

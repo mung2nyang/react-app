@@ -3,6 +3,7 @@ import { describe, test } from 'node:test'
 import {
   throwIfAnyHydrateError,
   mergeCarsFromRows,
+  mergeClientsFromRows,
   mergeDriversFromRows,
   mergeWorkDataFromRows,
   mergeExpenseKind,
@@ -163,10 +164,21 @@ describe('mergeWorkDataFromRows — deletedDateKeys(tombstone)는 절대 되살�
 })
 
 describe('mergeCarsFromRows', () => {
-  test('행이 없으면 로컬 값을 그대로 둔다(서버가 빈 걸 로컬 삭제 신호로 오해하지 않는다)', () => {
-    const local = [{ id: 'local-1', number: '11가1111' }]
-    assert.equal(mergeCarsFromRows(local, []), local)
-    assert.equal(mergeCarsFromRows(local, null), local)
+  test('슬라이스 C — 조회 실패(배열 아님)면 로컬 값을 그대로 두지만, 빈 배열은 서버 정본(삭제)이라 []다', () => {
+    const local = [{ id: 'local-1', number: '11가1111', supabaseId: 5001 }]
+    assert.equal(mergeCarsFromRows(local, null), local, '배열이 아니면(조회 실패) 로컬 유지')
+    assert.equal(mergeCarsFromRows(local, undefined), local)
+    assert.deepEqual(mergeCarsFromRows(local, []), [], '빈 배열이면 서버가 정본 — 로컬로 되돌리지 않는다')
+  })
+
+  test('슬라이스 C — 빈 배열이어도 미동기화(supabaseId 없음) 로컬 차량은 남는다', () => {
+    const local = [
+      { id: 'synced', number: '11가1111', supabaseId: 5002 },
+      { id: 'unsynced', number: '22나2222' },
+    ]
+    const merged = mergeCarsFromRows(local, [])
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0].id, 'unsynced')
   })
 
   test('서버 아직 동기화 안 된(supabaseId 없는) 로컬 차량은 서버 목록 뒤에 유지된다', () => {
@@ -241,6 +253,38 @@ describe('mergeDriversFromRows — 슬라이스 B 보완: 서버 빈 배열은 �
     const local = asLocal([{ id: 'drv-1', supabaseId: 500, inviteCode: '123456', status: 'pending', name: '기사' }])
     const rows = asRows([{ id: 500, invite_code: '123456', status: 'disconnected' }])
     assert.deepEqual(mergeDriversFromRows(local, cars, rows), [])
+  })
+})
+
+describe('mergeClientsFromRows — 슬라이스 C: 서버 빈 배열은 삭제 신호다', () => {
+  /** @param {Array<import('./hydrateMergeTypes.js').LocalClient>} c */
+  const asLocalClients = (c) => c
+
+  test('조회 실패(배열 아님)면 로컬 유지, 빈 배열은 서버 정본이라 []다', () => {
+    const local = asLocalClients([{ id: 'cli-1', companyName: '한진', supabaseId: 700 }])
+    assert.equal(mergeClientsFromRows(local, null), local)
+    assert.equal(mergeClientsFromRows(local, undefined), local)
+    assert.deepEqual(mergeClientsFromRows(local, []), [])
+  })
+
+  test('빈 배열이어도 미동기화(supabaseId 없음) 로컬 거래처는 남는다', () => {
+    const local = asLocalClients([
+      { id: 'synced', companyName: '한진', supabaseId: 701 },
+      { id: 'unsynced', companyName: '로컬거래처' },
+    ])
+    const merged = mergeClientsFromRows(local, [])
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0].id, 'unsynced')
+  })
+
+  test('서버 행이 있으면 기존처럼 병합한다', () => {
+    const local = asLocalClients([{ id: 'cli-1', companyName: '한진', supabaseId: 700, phone: '010-1' }])
+    /** @type {Array<import('./hydrateMergeTypes.js').ClientRow>} */
+    const rows = [{ id: 700, legacy_client_id: 'cli-1', company_name: '한진', is_pinned: false, raw: { phone: '010-1' } }]
+    const merged = mergeClientsFromRows(local, rows)
+    assert.equal(merged.length, 1)
+    assert.equal(merged[0].supabaseId, 700)
+    assert.equal(merged[0].phone, '010-1')
   })
 })
 

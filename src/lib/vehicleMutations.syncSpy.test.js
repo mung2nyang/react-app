@@ -141,7 +141,7 @@ test('Supabase 차량 삭제 성공은 scheduleCloudSync 0회·delete 6회다', 
   assert.equal(stubSupabaseCallCounts.update || 0, 0)
 })
 
-test('retryable 원격 삭제는 scheduleCloudSync 0회이고 delete는 시작분만큼이다', async () => {
+test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 scheduleCloudSync 0회, 자식 delete만 나간다', async () => {
   resetStubSupabaseCallCounts()
   stubSupabaseMethodImpls.delete = async () => { throw new Error('network down') }
   beginSessionEpoch('user-sync-retry', 'veh-sync-retry-del')
@@ -158,8 +158,9 @@ test('retryable 원격 삭제는 scheduleCloudSync 0회이고 delete는 시작�
     const result = await requestVehicleDeletion({
       ownerKey: owner, userId: 'user-sync-retry', cars: getState().cars[owner], vehicleId: 'car-r',
     })
-    assert.equal(result.failed, false)
-    assert.doesNotMatch(String(result.toast), /^차량을 삭제했습니다\.$/)
+    assert.equal(result.failed, true)
+    assert.equal(String(result.toast), '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
+    assert.deepEqual(getState().cars[owner].map((c) => c.id), ['car-r'], 'Store는 저장 전 값이어야 한다')
     assert.equal(scheduleCloudSyncCallCount, before)
     assert.equal(stubSupabaseCallCounts.delete, 4)
     assert.equal(stubSupabaseCallCounts.select || 0, 0)

@@ -6,7 +6,7 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
-import { createFakeSupabase, wait } from '../testSupport/fakeSupabaseClient.js'
+import { clientRowsFor, createFakeSupabase, vehicleRowsFor, wait } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers, callCounts } = createFakeSupabase()
 fakeSupabase.auth.getSession = async () => ({
@@ -90,6 +90,16 @@ test.afterEach(async () => {
   ])
 })
 
+// 슬라이스 C: hydrate가 "빈 배열 = 서버 정본(로컬 삭제)"으로 바뀌었다. supabaseId 있는
+// 로컬 차량/거래처를 시드한 테스트는 가짜 서버도 같은 행을 돌려줘야 hydrate가 그 데이터를
+// 지우지 않는다. getState를 라이브로 읽으므로 시드/UI 생성 순서와 무관하다.
+// (afterEach의 restoreDefaultHandlers가 select를 원복한다.)
+/** @param {string} ownerKey */
+function mirrorServerFromStore(ownerKey) {
+  handlers.vehicles.select = () => ({ data: vehicleRowsFor(getState().cars[ownerKey] || []), error: null })
+  handlers.clients.select = () => ({ data: clientRowsFor(getState().clients[ownerKey] || []), error: null })
+}
+
 /** @param {ParentNode} root @param {string} selector */
 function requireHtmlInput(root, selector) {
   const el = root.querySelector(selector)
@@ -137,6 +147,7 @@ async function renderApp() {
 
 test('거래처 폼에서 고정노선 두 곳을 켜면 최종 1곳이고 id가 유지된다', async () => {
   const ownerKey = 'user-boot-nav'
+  mirrorServerFromStore(ownerKey)
   commitClients(ownerKey, [
     { id: 'c-a', companyName: '에이', supabaseId: 'sb-a', fixedRouteLinked: true, fixedUnitPrice: '100000' },
   ], { syncToCloud: false })
@@ -214,6 +225,7 @@ test('같은 핀 그룹 드래그 순서는 persist와 hydrate 뒤에 유지된�
 
 test('차량 추가 직후 오늘 일지로 들어가 저장되고 새로고침 뒤에도 남는다', async () => {
   const ownerKey = 'user-boot-nav'
+  mirrorServerFromStore(ownerKey)
   commitCars(ownerKey, [{ id: 'main-1', type: 'main', number: '99하9999' }], { syncToCloud: false })
   window.history.pushState({}, '', '/app/cars')
   const { container, root } = await renderApp()
@@ -422,7 +434,15 @@ test('차량 insert 대기 중 번호를 바꿔도 서버 insert는 1회다', as
       release = () => resolve({ data: { id }, error: null })
     })
   }
-  handlers.vehicles.select = () => ({ data: serverVehicles.map((row) => ({ id: row.id, number: row.number, type: 'sub', raw: row.raw, legacy_log_id: row.number })), error: null })
+  // 슬라이스 C: hydrate가 빈 배열을 "삭제됨"으로 보므로, 시드한 supabaseId 차량(main-hold)도
+  // 서버 목록에 있어야 hydrate가 지우지 않는다.
+  handlers.vehicles.select = () => ({
+    data: /** @type {import('../store/atomicPersist.js').JsonValue} */ ([
+      { id: 'main-already', number: '10하1010', type: 'main', raw: { id: 'main-hold' }, legacy_log_id: '10하1010' },
+      ...serverVehicles.map((row) => ({ id: row.id, number: row.number || '', type: 'sub', raw: row.raw || {}, legacy_log_id: row.number || '' })),
+    ]),
+    error: null,
+  })
   handlers.vehicles.update = () => ({ data: null, error: null })
   commitCars(ownerKey, [{ id: 'main-hold', type: 'main', number: '10하1010', supabaseId: 'main-already' }], { syncToCloud: false })
   window.history.pushState({}, '', '/app/cars')
@@ -530,6 +550,7 @@ test('차량 관리 UI에서 한 대를 삭제해도 다른 차량과 일지는 
 
 test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store/outbox/API가 불변이다', async () => {
   const ownerKey = 'user-boot-nav'
+  mirrorServerFromStore(ownerKey)
   commitClients(ownerKey, [
     { id: 'cli-keep', companyName: '유지처', supabaseId: 'sb-keep' },
   ], { syncToCloud: false })
@@ -565,6 +586,7 @@ test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store
 
 test('hydration failed에서 차량 삭제 ConfirmModal이 유지되고 Store/outbox/API가 불변이다', async () => {
   const ownerKey = 'user-boot-nav'
+  mirrorServerFromStore(ownerKey)
   commitCars(ownerKey, [
     { id: 'car-keep', type: 'sub', number: '91마9191', driverName: '유', driverPhone: '010-9191-9191', supabaseId: 'sv-keep' },
   ], { syncToCloud: false })
