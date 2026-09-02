@@ -81,21 +81,23 @@ describe('콜상세 저장', () => {
 describe('수금 처리', () => {
   test('토글은 남은 금액을 한 번에 넣고, 다시 누르면 입금 전체를 비운다', () => {
     const added = upsertCallDetail([], { fare: '100,000', client: '한진' }, -1, dateKey, clients)
+    const detailId = added.items[0].id
     added.items[0].payments = [{ id: 'p1', amount: 30000 }]
     let data = saveDayRecord({}, dateKey, { callDetails: added.items })
-    data = toggleCallPaymentStatus(data, dateKey, 0).data
+    data = toggleCallPaymentStatus(data, dateKey, detailId).data
     assert.equal(data[dateKey].callDetails[0].payments.length, 2)
     assert.equal(data[dateKey].callDetails[0].paymentStatus, '수금 완료')
-    data = toggleCallPaymentStatus(data, dateKey, 0).data
+    data = toggleCallPaymentStatus(data, dateKey, detailId).data
     assert.deepEqual(data[dateKey].callDetails[0].payments, [])
     assert.equal(data[dateKey].callDetails[0].paymentStatus, '미수')
   })
 
   test('부분 입금은 월 미수금 합계에 반영된다', () => {
     const added = upsertCallDetail([], { fare: '100,000', client: '한진' }, -1, dateKey, clients)
+    const detailId = added.items[0].id
     let data = saveDayRecord({}, dateKey, { callDetails: added.items })
     assert.equal(monthCallUnpaidTotal(data, 2026, 4), 100000)
-    data = addPartialPayment(data, dateKey, 0, '40,000').data
+    data = addPartialPayment(data, dateKey, detailId, '40,000').data
     assert.equal(monthCallUnpaidTotal(data, 2026, 4), 60000)
   })
 })

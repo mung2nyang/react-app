@@ -6,6 +6,7 @@
 // 파일의 getReceivableItems를 그대로 가져다 쓴다(중복 구현 없음).
 // 재감사 3차(FAIL 지적 4번) — @ts-check 적용.
 import { getEffectiveDriverSettlementMode, getShortCarNum } from './cars.js'
+import { resolveCallDetailId } from './callDetailIds.js'
 import { parseCurrencyValue } from './money.js'
 import { getDetailPaymentSummary, getDriverCarWorkData, logData } from './financeCore.js'
 
@@ -33,7 +34,7 @@ export function getReceivableItems(settings = {}, workDataByLogId = {}) {
     })
   }
 
-  /** @type {Array<{ dateKey: string, detailIndex: number, logId: string, logLabel: string, client: string, fare: number, paidAmount: number, remainingAmount: number, paymentSummaryStatus: string, payments: Array<PaymentLike>, paymentDueDate: string, workDate: string, loadLoc: string, unloadLoc: string, remarks: string }>} */
+  /** @type {Array<{ dateKey: string, detailId: string, logId: string, logLabel: string, client: string, fare: number, paidAmount: number, remainingAmount: number, paymentSummaryStatus: string, payments: Array<PaymentLike>, paymentDueDate: string, workDate: string, loadLoc: string, unloadLoc: string, remarks: string }>} */
   const items = []
 
   sources.forEach((source) => {
@@ -44,7 +45,9 @@ export function getReceivableItems(settings = {}, workDataByLogId = {}) {
         return
       }
 
-      record.callDetails.forEach((detail, detailIndex) => {
+      record.callDetails.forEach((detail) => {
+        const detailId = resolveCallDetailId(detail)
+        if (!detailId) return
         const paymentSummary = getDetailPaymentSummary(detail)
         if (paymentSummary.status === 'paid') {
           return
@@ -52,7 +55,7 @@ export function getReceivableItems(settings = {}, workDataByLogId = {}) {
 
         items.push({
           dateKey,
-          detailIndex,
+          detailId,
           logId: source.logId,
           logLabel: source.logLabel,
           client: detail.client || '미지정 거래처',

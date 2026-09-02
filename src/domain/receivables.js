@@ -67,5 +67,5 @@ export function formatWorkMonth(monthKey) {
 }
 
 export function receivableItemKey(item) {
-  return `${item.logId}|${item.dateKey}|${item.detailIndex}`
+  return `${item.logId}|${item.dateKey}|${item.detailId}`
 }

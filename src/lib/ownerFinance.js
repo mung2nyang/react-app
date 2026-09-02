@@ -71,12 +71,12 @@ export function buildFinanceSettings(ownerKey = 'guest') {
  * @param {WorkDataByLogId} workDataByLogId
  * @param {string} logId
  * @param {string} dateKey
- * @param {number} detailIndex
- * @param {(store: Record<string, DayRecordLike>, dateKey: string, detailIndex: number) => { error?: string, data?: Record<string, DayRecordLike> }} apply
+ * @param {string} detailId
+ * @param {(store: Record<string, DayRecordLike>, dateKey: string, detailId: string) => { error?: string, data?: Record<string, DayRecordLike> }} apply
  */
-export function patchWorkLog(workDataByLogId, logId, dateKey, detailIndex, apply) {
+export function patchWorkLog(workDataByLogId, logId, dateKey, detailId, apply) {
   const store = workDataByLogId[logId] || {}
-  const result = apply(store, dateKey, detailIndex)
+  const result = apply(store, dateKey, detailId)
   if (result.error || !result.data) return { error: result.error, workDataByLogId }
   return { workDataByLogId: { ...workDataByLogId, [logId]: result.data } }
 }
@@ -95,7 +95,7 @@ export function markMonthlyReceivablesPaid(workDataByLogId, settings, clientName
 
   let next = workDataByLogId
   for (const item of targets) {
-    const result = markReceivableItemPaid(next[item.logId] || {}, item.dateKey, item.detailIndex, paidAt)
+    const result = markReceivableItemPaid(next[item.logId] || {}, item.dateKey, item.detailId, paidAt)
     if (result.error) continue
     next = { ...next, [item.logId]: result.data }
   }

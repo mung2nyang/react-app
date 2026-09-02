@@ -13,6 +13,9 @@
 
 export const MONTH_KEY = '2026-05'
 
+/** @type {string} receivables-invoices.test.js 부분입금·전액수금 시나리오용 */
+export const FIXTURE_DETAIL_ID_MAY10_MAIN = 'trp-fixture-may10-0'
+
 /** @type {FixtureSettings} */
 export const FIXTURE_SETTINGS = {
   paymentOn: true,
@@ -80,6 +83,7 @@ export const FIXTURE_WORK = {
       palletCount: 3,
       callDetails: [
         {
+          id: FIXTURE_DETAIL_ID_MAY10_MAIN,
           client: '한진',
           fare: '100,000',
           vatExempt: false,
@@ -91,18 +95,21 @@ export const FIXTURE_WORK = {
           payments: [],
         },
         {
+          id: 'trp-fixture-may10-1',
           client: '한진',
           fare: '0',
           vatExempt: true,
           distanceType: '공차',
         },
         {
+          id: 'trp-fixture-may10-2',
           client: '한진',
           fare: '20,000',
           distanceType: '혼짐',
           linkedLoadIndex: 'pending',
         },
         {
+          id: 'trp-fixture-may10-3',
           client: '한진',
           fare: '10,000',
           distanceType: '혼짐',
@@ -126,18 +133,18 @@ export const FIXTURE_WORK = {
   서울12가3456: {
     '2026-05-12': {
       callDetails: [
-        { client: '대한', fare: 200000, insuranceFee: '3,000', workDate: '2026-05-12' },
+        { id: 'trp-fixture-sub12-1', client: '대한', fare: 200000, insuranceFee: '3,000', workDate: '2026-05-12' },
       ],
       fixedCount: 1,
       fare: 250000,
     },
     '2026-04-01': {
-      callDetails: [{ client: '대한', fare: 999999 }],
+      callDetails: [{ id: 'trp-fixture-sub12-2', client: '대한', fare: 999999 }],
     },
   },
   부산33나1111: {
     '2026-05-20': {
-      callDetails: [{ client: '직접', fare: 80000 }],
+      callDetails: [{ id: 'trp-fixture-sub33-1', client: '직접', fare: 80000 }],
     },
   },
 }

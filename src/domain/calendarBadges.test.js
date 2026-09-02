@@ -77,7 +77,8 @@ describe('dayHasUnpaid — 달력 셀 미수 점', () => {
 
   test('완납된 콜상세만 있으면 false', () => {
     const data = unpaidData()
-    const { data: paidData, error } = addPartialPayment(data, dateKey, 0, '80,000')
+    const detailId = data[dateKey].callDetails[0].id
+    const { data: paidData, error } = addPartialPayment(data, dateKey, detailId, '80,000')
     assert.equal(error, undefined)
     assert.equal(dayHasUnpaid(paidData[dateKey], true), false)
   })

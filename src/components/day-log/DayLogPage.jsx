@@ -99,11 +99,11 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
 
   /** @param {string} id */
   function handleTogglePayment(id) {
-    const index = indexOfCall(id)
-    if (index < 0) return
-    const unpaid = getDetailPaymentSummary(draft.callDetails[index]).status !== 'paid'
+    const detail = draft.callDetails.find((item) => item.id === id)
+    if (!detail) return
+    const unpaid = getDetailPaymentSummary(detail).status !== 'paid'
     const wrapped = { [dateKey]: { ...draft, callDetails: draft.callDetails } }
-    const result = toggleCallPaymentStatus(wrapped, dateKey, index)
+    const result = toggleCallPaymentStatus(wrapped, dateKey, id)
     if (result.error) { showToast?.(result.error); return }
     patchDraft({ callDetails: result.data[dateKey].callDetails })
     showToast?.(unpaid ? '수금 처리했습니다.' : '수금을 취소했습니다.')

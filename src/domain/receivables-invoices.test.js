@@ -10,7 +10,7 @@ import {
   getTaxInvoiceSourceGroups,
   listTaxInvoiceEntries,
 } from './finance.js'
-import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
+import { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
 import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
 import { dueSoonItems, groupByClientMonth, groupItems } from './receivables.js'
 import { addPartialPayment, markReceivableItemPaid } from './payments.js'
@@ -68,13 +68,13 @@ describe('미수금 — 원본과 같은 운행 픽스처', () => {
 
 describe('부분 입금 — 원본 payments 규칙', () => {
   test('남은 금액보다 큰 입금은 거절한다', () => {
-    const result = addPartialPayment(clone(FIXTURE_WORK.main), '2026-05-10', 0, '200,000')
+    const result = addPartialPayment(clone(FIXTURE_WORK.main), '2026-05-10', FIXTURE_DETAIL_ID_MAY10_MAIN, '200,000')
     assert.equal(result.error, '남은 금액보다 큰 금액은 입력할 수 없습니다.')
   })
 
   test('부분 입금 후 remaining/status가 원본 getDetailPaymentSummary와 같다', () => {
-    const result = addPartialPayment(clone(FIXTURE_WORK.main), '2026-05-10', 0, '40,000', '2026-08-25T00:00:00.000Z')
-    const detail = result.data['2026-05-10'].callDetails[0]
+    const result = addPartialPayment(clone(FIXTURE_WORK.main), '2026-05-10', FIXTURE_DETAIL_ID_MAY10_MAIN, '40,000', '2026-08-25T00:00:00.000Z')
+    const detail = result.data['2026-05-10'].callDetails.find((item) => item.id === FIXTURE_DETAIL_ID_MAY10_MAIN)
     const ours = getDetailPaymentSummary(detail)
     const theirs = original.getDetailPaymentSummary(detail)
     same(ours, theirs)
@@ -84,12 +84,12 @@ describe('부분 입금 — 원본 payments 규칙', () => {
   })
 
   test('잔액 전액 입금하면 미수 목록에서 빠진다', () => {
-    const paid = markReceivableItemPaid(clone(FIXTURE_WORK.main), '2026-05-10', 0, '2026-08-25T00:00:00.000Z')
+    const paid = markReceivableItemPaid(clone(FIXTURE_WORK.main), '2026-05-10', FIXTURE_DETAIL_ID_MAY10_MAIN, '2026-08-25T00:00:00.000Z')
     const work = { ...clone(FIXTURE_WORK), main: paid.data }
     const ours = getReceivableItems(FIXTURE_SETTINGS, work)
-    const detail = paid.data['2026-05-10'].callDetails[0]
+    const detail = paid.data['2026-05-10'].callDetails.find((item) => item.id === FIXTURE_DETAIL_ID_MAY10_MAIN)
     assert.equal(original.getDetailPaymentSummary(detail).status, 'paid')
-    assert.equal(ours.some((item) => item.dateKey === '2026-05-10' && item.detailIndex === 0), false)
+    assert.equal(ours.some((item) => item.dateKey === '2026-05-10' && item.detailId === FIXTURE_DETAIL_ID_MAY10_MAIN), false)
   })
 
   test('월별 입금 완료는 해당 거래처·월 잔액을 0으로 만든다', () => {

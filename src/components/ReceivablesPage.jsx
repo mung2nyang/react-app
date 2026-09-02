@@ -50,8 +50,8 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
     onWorkChanged?.()
   }
 
-  function applyPatch(logId, dateKey, detailIndex, apply, successMessage) {
-    const result = patchWorkLog(workDataByLogId, logId, dateKey, detailIndex, apply)
+  function applyPatch(logId, dateKey, detailId, apply, successMessage) {
+    const result = patchWorkLog(workDataByLogId, logId, dateKey, detailId, apply)
     if (result.error) {
       showToast?.(result.error)
       return
@@ -63,8 +63,8 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
   }
 
   function payItem(item) {
-    applyPatch(item.logId, item.dateKey, item.detailIndex, (store, dateKey, detailIndex) => (
-      markReceivableItemPaid(store, dateKey, detailIndex)
+    applyPatch(item.logId, item.dateKey, item.detailId, (store, dateKey, detailId) => (
+      markReceivableItemPaid(store, dateKey, detailId)
     ), '입금 완료 처리했습니다.')
   }
 
@@ -76,15 +76,15 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
   }
 
   function confirmPartial(item) {
-    applyPatch(item.logId, item.dateKey, item.detailIndex, (store, dateKey, detailIndex) => (
-      addPartialPayment(store, dateKey, detailIndex, partialAmount)
+    applyPatch(item.logId, item.dateKey, item.detailId, (store, dateKey, detailId) => (
+      addPartialPayment(store, dateKey, detailId, partialAmount)
     ), '부분 입금을 등록했습니다.')
   }
 
   function undoPayment(item) {
     if (!window.confirm('가장 최근 입금 기록 1건을 취소하시겠습니까?')) return
-    applyPatch(item.logId, item.dateKey, item.detailIndex, (store, dateKey, detailIndex) => (
-      undoLastPayment(store, dateKey, detailIndex)
+    applyPatch(item.logId, item.dateKey, item.detailId, (store, dateKey, detailId) => (
+      undoLastPayment(store, dateKey, detailId)
     ), '입금 기록을 취소했습니다.')
   }
 

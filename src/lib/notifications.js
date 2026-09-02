@@ -26,7 +26,7 @@ export function collectNotifications(ownerKey = 'guest') {
   const workDataByLogId = loadWorkDataByLogId(ownerKey)
 
   overdueItems(getReceivableItems(settings, workDataByLogId)).forEach((item) => {
-    const id = `overdue:${item.logId}:${item.dateKey}:${item.detailIndex}`
+    const id = `overdue:${item.logId}:${item.dateKey}:${item.detailId}`
     if (dismissed.has(id)) return
     items.push({
       id,
