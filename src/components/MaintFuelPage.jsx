@@ -32,9 +32,9 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
   const total = monthTotal(items, kind, year, month)
   const kindLabel = KINDS.find((item) => item.value === kind)?.label || '정비'
 
-  function persist(next) {
+  async function persist(next) {
     try {
-      saveExpenses(ownerKey, next)
+      await saveExpenses(ownerKey, next)
       return true
     } catch (error) {
       console.error('비용 저장 실패:', error)
@@ -66,19 +66,19 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
     setModalOpen(true)
   }
 
-  function save() {
+  async function save() {
     const result = upsertExpense(readOwnerExpenses(ownerKey), { ...draft, kind: draft.kind || kind }, editingId)
     if (result.error) {
       showToast?.(result.error)
       return
     }
-    if (!persist(result.items)) return
+    if (!await persist(result.items)) return
     setModalOpen(false)
     showToast?.(editingId ? '내역을 수정했습니다.' : '내역을 등록했습니다.')
   }
 
-  function remove(id) {
-    if (!persist(removeExpense(readOwnerExpenses(ownerKey), id))) return
+  async function remove(id) {
+    if (!await persist(removeExpense(readOwnerExpenses(ownerKey), id))) return
     showToast?.('내역을 삭제했습니다.')
   }
 

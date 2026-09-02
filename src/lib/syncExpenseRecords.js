@@ -6,8 +6,16 @@ import { supabase } from '../supabaseClient.js'
 import { buildFuelRecordRow, groupFuelExpensesByDate } from '../domain/fuelRecords.js'
 import { buildMaintenanceRecordRow, groupMaintExpensesByDate } from '../domain/maintenanceRecords.js'
 import { buildMiscExpenseRecordRow, groupMiscExpensesByDate } from '../domain/miscExpenseRecords.js'
-import { KEYS, keyFor, readJson } from './cloudStorage.js'
 import { upsertDailyLog } from './syncWorkData.js'
+import { getState } from '../store/app-store.js'
+
+function expenseSyncInputs(ownerKey, expenses, workData) {
+  const logs = getState().workLogs[ownerKey] || {}
+  return {
+    expenses: expenses || getState().expenses[ownerKey] || [],
+    workData: workData || logs.main || {},
+  }
+}
 
 async function dailyLogIdsByDate(vehicleSupabaseId) {
   const { data: logs, error: logsError } = await supabase
@@ -18,19 +26,18 @@ async function dailyLogIdsByDate(vehicleSupabaseId) {
   return new Map((logs || []).map((row) => [row.work_date, row.id]))
 }
 
-export async function syncFuelRecords(userId, ownerKey, cars) {
+export async function syncFuelRecords(userId, ownerKey, cars, expenses, workData) {
   const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
   if (!mainCar?.supabaseId) return
-  const expenses = readJson(keyFor(KEYS.expenses, ownerKey), [])
-  const workData = readJson(keyFor(KEYS.work, ownerKey), {})
-  const fuelByDate = groupFuelExpensesByDate(expenses)
-  const dates = new Set([...Object.keys(workData || {}), ...Object.keys(fuelByDate)])
+  const input = expenseSyncInputs(ownerKey, expenses, workData)
+  const fuelByDate = groupFuelExpensesByDate(input.expenses)
+  const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(fuelByDate)])
   const idByDate = await dailyLogIdsByDate(mainCar.supabaseId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
     const fuelItems = fuelByDate[workDate] || []
-    const record = workData[workDate]
+    const record = input.workData[workDate]
     if (!record && !fuelItems.length) continue
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {
@@ -48,19 +55,18 @@ export async function syncFuelRecords(userId, ownerKey, cars) {
   }
 }
 
-export async function syncMaintenanceRecords(userId, ownerKey, cars) {
+export async function syncMaintenanceRecords(userId, ownerKey, cars, expenses, workData) {
   const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
   if (!mainCar?.supabaseId) return
-  const expenses = readJson(keyFor(KEYS.expenses, ownerKey), [])
-  const workData = readJson(keyFor(KEYS.work, ownerKey), {})
-  const maintByDate = groupMaintExpensesByDate(expenses)
-  const dates = new Set([...Object.keys(workData || {}), ...Object.keys(maintByDate)])
+  const input = expenseSyncInputs(ownerKey, expenses, workData)
+  const maintByDate = groupMaintExpensesByDate(input.expenses)
+  const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(maintByDate)])
   const idByDate = await dailyLogIdsByDate(mainCar.supabaseId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
     const maintItems = maintByDate[workDate] || []
-    const record = workData[workDate]
+    const record = input.workData[workDate]
     if (!record && !maintItems.length) continue
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {
@@ -78,19 +84,18 @@ export async function syncMaintenanceRecords(userId, ownerKey, cars) {
   }
 }
 
-export async function syncMiscExpenseRecords(userId, ownerKey, cars) {
+export async function syncMiscExpenseRecords(userId, ownerKey, cars, expenses, workData) {
   const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
   if (!mainCar?.supabaseId) return
-  const expenses = readJson(keyFor(KEYS.expenses, ownerKey), [])
-  const workData = readJson(keyFor(KEYS.work, ownerKey), {})
-  const miscByDate = groupMiscExpensesByDate(expenses)
-  const dates = new Set([...Object.keys(workData || {}), ...Object.keys(miscByDate)])
+  const input = expenseSyncInputs(ownerKey, expenses, workData)
+  const miscByDate = groupMiscExpensesByDate(input.expenses)
+  const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(miscByDate)])
   const idByDate = await dailyLogIdsByDate(mainCar.supabaseId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
     const miscItems = miscByDate[workDate] || []
-    const record = workData[workDate]
+    const record = input.workData[workDate]
     if (!record && !miscItems.length) continue
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {

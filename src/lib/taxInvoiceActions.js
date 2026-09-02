@@ -15,9 +15,9 @@ import { invoiceCanIssue, persistInvoiceRecord } from '../lib/invoices.js'
  * @param {InvoiceLike} params.modalItem
  * @param {(next: Array<InvoiceLike>) => void} params.persist
  * @param {(message: string) => void} [params.showToast]
- * @returns {boolean} true면 모달을 닫아도 됨
+ * @returns {Promise<boolean>} true면 모달을 닫아도 됨
  */
-export function saveTaxInvoiceDraft({ ownerKey, clients, records, modalItem, persist, showToast }) {
+export async function saveTaxInvoiceDraft({ ownerKey, clients, records, modalItem, persist, showToast }) {
   if (!modalItem.clientBizNumber) {
     showToast?.('사업자등록번호를 입력해 주세요.')
     return false
@@ -28,7 +28,7 @@ export function saveTaxInvoiceDraft({ ownerKey, clients, records, modalItem, per
   }
   const nextItem = { ...modalItem, updatedAt: new Date().toISOString() }
   if (nextItem.partyType === 'client') {
-    const taxResult = requestClientTaxInfo({
+    const taxResult = await requestClientTaxInfo({
       ownerKey,
       userId: getCloudUserId(),
       clients,

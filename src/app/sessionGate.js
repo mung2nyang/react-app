@@ -8,15 +8,15 @@
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 
 /**
- * @param {{ booting: boolean, session: AppSession | null }} args
+ * @param {{ booting: boolean, session: AppSession | null, guestModePersisted?: boolean }} args
  * @returns {SessionGateResult}
  *   loading: 부트 중이라 세션이 있는지 아직 모른다 — 로딩 문구만 보여준다.
- *   redirect: 부트가 끝났는데 세션이 없다 — /auth로 보낸다(세션 없이 새로고침/북마크로
- *     /app/... 딥링크 진입하는 것을 막는다).
- *   allow: 세션이 있다 — 요청한 화면을 그대로 그린다.
+ *   redirect: 부트가 끝났는데 세션이 없고 게스트 플래그도 없다 — /auth로 보낸다.
+ *   allow: 로그인/게스트 세션이 있거나, 게스트 모드가 localStorage에 확인됐다.
  */
-export function resolveSessionGate({ booting, session }) {
+export function resolveSessionGate({ booting, session, guestModePersisted = false }) {
   if (booting) return 'loading'
-  if (!session) return 'redirect'
-  return 'allow'
+  if (session) return 'allow'
+  if (guestModePersisted) return 'allow'
+  return 'redirect'
 }

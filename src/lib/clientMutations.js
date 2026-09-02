@@ -1,6 +1,9 @@
 // @ts-check
 // Step 7: 거래처 추가/수정/순서 변경. readiness 전에 Store/localStorage를 바꾸지 않는다.
 // 거래처 단일 진실원: 단가·세무정보 부분 수정도 이 파일의 request*만 쓴다(saveClients 우회 금지).
+//
+// 슬라이스 E Phase 1: 로그인(getCloudOwnerKey()===ownerKey)이면 LS·dirty·syncAll 없이
+// 서버 직접 1회(바뀐 행만) 후 Store(메모리)만. 게스트는 예전과 100% 동일(commitOrToast).
 import {
   reorderClients,
   updateClientFixedUnitPrice,
@@ -8,6 +11,7 @@ import {
   upsertClient,
 } from '../domain/clients.js'
 import { blockedReasonForOwnerDataWrite } from './cloudSession.js'
+import { isCloudClientOwner, reorderedClientIds, saveClientsToCloud } from './clientCloudSave.js'
 import { commitClients } from '../store/commitHelpers.js'
 import { STORAGE_FAIL_TOAST } from './outboxCommit.js'
 
@@ -32,28 +36,46 @@ function commitOrToast(ownerKey, previous, next, okToast, logLabel) {
 }
 
 /**
+ * previous/next를 참조 동일성으로 비교해 실제로 바뀐(=새 객체가 된) 거래처 id 목록.
+ * @param {Array<ClientLike>} previous @param {Array<ClientLike>} next
+ * @returns {Array<string>}
+ */
+function changedClientIds(previous, next) {
+  /** @type {Array<string>} */
+  const ids = []
+  next.forEach((item, index) => {
+    if (item.id && item !== previous[index]) ids.push(item.id)
+  })
+  return ids
+}
+
+/**
  * @param {{ ownerKey: string, clients: Array<ClientLike>, draft: ClientDraft, editingId: string|null, userId?: string|null }} params
  */
-export function requestClientSave({ ownerKey, clients, draft, editingId, userId }) {
+export async function requestClientSave({ ownerKey, clients, draft, editingId, userId }) {
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
   if (blocked) return { clients, toast: blocked, failed: true, saved: null }
   const result = upsertClient(clients, draft, editingId)
   if (result.error) return { clients, toast: result.error, failed: true, saved: null }
-  const committed = commitOrToast(
-    ownerKey, clients, result.clients,
-    editingId ? '거래처를 수정했습니다.' : '거래처를 등록했습니다.',
-    '[clientMutations] 거래처 저장 실패:',
-  )
-  return {
-    ...committed,
-    saved: committed.failed ? null : (result.clients.find((item) => item.id === result.id) || null),
+  const okToast = editingId ? '거래처를 수정했습니다.' : '거래처를 등록했습니다.'
+  const savedFrom = (/** @type {Array<ClientLike>} */ list) => list.find((item) => item.id === result.id) || null
+  if (isCloudClientOwner(ownerKey)) {
+    const out = await saveClientsToCloud({
+      ownerKey, userId, previous: clients, next: result.clients,
+      changedIds: result.id ? [result.id] : [], okToast,
+    })
+    return { ...out, saved: out.failed ? null : savedFrom(out.clients) }
   }
+  const committed = commitOrToast(
+    ownerKey, clients, result.clients, okToast, '[clientMutations] 거래처 저장 실패:',
+  )
+  return { ...committed, saved: committed.failed ? null : savedFrom(result.clients) }
 }
 
 /**
  * @param {{ ownerKey: string, clients: Array<ClientLike>, fromId: string, toId: string, userId?: string|null }} params
  */
-export function requestClientReorder({ ownerKey, clients, fromId, toId, userId }) {
+export async function requestClientReorder({ ownerKey, clients, fromId, toId, userId }) {
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
   if (blocked) return { clients, toast: blocked, failed: true, rejected: true }
   if (fromId === toId) return { clients, toast: null, failed: false, rejected: true }
@@ -65,6 +87,13 @@ export function requestClientReorder({ ownerKey, clients, fromId, toId, userId }
   const next = reorderClients(clients, fromId, toId)
   const unchanged = next.length === clients.length && next.every((item, index) => item.id === clients[index].id)
   if (unchanged) return { clients, toast: null, failed: false, rejected: true }
+  if (isCloudClientOwner(ownerKey)) {
+    const out = await saveClientsToCloud({
+      ownerKey, userId, previous: clients, next,
+      changedIds: reorderedClientIds(clients, next), okToast: null,
+    })
+    return { ...out, rejected: false }
+  }
   return {
     ...commitOrToast(ownerKey, clients, next, null, '[clientMutations] 거래처 순서 저장 실패:'),
     rejected: false,
@@ -74,19 +103,31 @@ export function requestClientReorder({ ownerKey, clients, fromId, toId, userId }
 /**
  * @param {{ ownerKey: string, clients: Array<ClientLike>, clientId: string, nextPrice: number|string, userId?: string|null }} params
  */
-export function requestClientFixedUnitPrice({ ownerKey, clients, clientId, nextPrice, userId }) {
+export async function requestClientFixedUnitPrice({ ownerKey, clients, clientId, nextPrice, userId }) {
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
   if (blocked) return { clients, toast: blocked, failed: true }
   const next = updateClientFixedUnitPrice(clients, clientId, nextPrice)
+  if (isCloudClientOwner(ownerKey)) {
+    return saveClientsToCloud({
+      ownerKey, userId, previous: clients, next,
+      changedIds: changedClientIds(clients, next), okToast: null,
+    })
+  }
   return commitOrToast(ownerKey, clients, next, null, '[clientMutations] 거래처 단가 저장 실패:')
 }
 
 /**
  * @param {{ ownerKey: string, clients: Array<ClientLike>, companyName: string, patch: Partial<ClientLike>, userId?: string|null }} params
  */
-export function requestClientTaxInfo({ ownerKey, clients, companyName, patch, userId }) {
+export async function requestClientTaxInfo({ ownerKey, clients, companyName, patch, userId }) {
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
   if (blocked) return { clients, toast: blocked, failed: true }
   const next = updateClientTaxInfo(clients, companyName, patch)
+  if (isCloudClientOwner(ownerKey)) {
+    return saveClientsToCloud({
+      ownerKey, userId, previous: clients, next,
+      changedIds: changedClientIds(clients, next), okToast: null,
+    })
+  }
   return commitOrToast(ownerKey, clients, next, null, '[clientMutations] 거래처 세무정보 저장 실패:')
 }

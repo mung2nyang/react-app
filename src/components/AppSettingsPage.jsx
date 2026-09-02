@@ -8,9 +8,14 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast 
   const locked = useHydrationLock()
   const settings = useOwnerSettings(ownerKey)
 
-  function patch(nextPatch) {
-    const next = savePracticeSettings(ownerKey, nextPatch)
-    applyTheme(next.theme)
+  async function patch(nextPatch) {
+    try {
+      const next = await savePracticeSettings(ownerKey, nextPatch)
+      applyTheme(next.theme)
+    } catch (error) {
+      console.error('설정 저장 실패:', error)
+      showToast?.('저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
+    }
   }
 
   return (

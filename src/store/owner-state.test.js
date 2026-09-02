@@ -8,7 +8,9 @@ import { describe, test } from 'node:test'
 const { writeJsonKey, storageKeyFor, storageKeyForLog } = await import('./persist.js')
 const { getState, subscribe } = await import('./app-store.js')
 const { initializeOwnerFromPersist, replaceOwnerState } = await import('./owner-state.js')
-const { commitCars, commitLogWorkData } = await import('./commitHelpers.js')
+const { commitCars, commitLogWorkData, commitSettings } = await import('./commitHelpers.js')
+const { beginSessionEpoch, endCloudSession } = await import('../lib/cloudSession.js')
+const { normalizeSettings } = await import('../domain/practiceSettings.js')
 
 function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)
@@ -385,5 +387,49 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     assert.equal(afterDay?.callDetails?.[0]?.loadLoc, '상차')
     assert.equal(getState().expenses[owner]?.filter((/** @type {{ kind: string }} */ item) => item.kind === 'fuel').length, 1)
     assert.equal(getState().expenses[owner]?.length, 1)
+  })
+})
+
+describe('initializeOwnerFromPersist — 슬라이스 E 로그인 settings theme merge', () => {
+  test('(a) hydrate 후 init 시뮬 — callDetail·fixedRoutePresets 유지, theme만 LS에서 병합', () => {
+    const owner = 'init-cloud-settings-merge'
+    beginSessionEpoch(owner, owner)
+    const presets = [{ id: 'r1', loadLoc: 'A', unloadLoc: 'B' }]
+    commitSettings(owner, normalizeSettings({
+      fixedOn: true,
+      callDetail: true,
+      unitPrice: 9000,
+      fixedRoutePresets: presets,
+      theme: 'light',
+    }), { syncToCloud: false })
+    writeJsonKey('settings', owner, { theme: 'dark' })
+    initializeOwnerFromPersist(owner)
+    const settings = getState().settings[owner]
+    assert.equal(settings?.callDetail, true)
+    assert.equal(settings?.unitPrice, 9000)
+    assert.equal(settings?.fixedRoutePresets?.length, 1)
+    assert.equal(settings?.fixedRoutePresets?.[0]?.id, 'r1')
+    assert.equal(settings?.theme, 'dark')
+    endCloudSession()
+  })
+
+  test('(b) theme LS 복원 — Store callDetail은 유지하고 theme만 dark로', () => {
+    const owner = 'init-cloud-theme-only'
+    beginSessionEpoch(owner, owner)
+    commitSettings(owner, normalizeSettings({ fixedOn: true, callDetail: true, theme: 'light' }), { syncToCloud: false })
+    writeJsonKey('settings', owner, { theme: 'dark' })
+    initializeOwnerFromPersist(owner)
+    assert.equal(getState().settings[owner]?.theme, 'dark')
+    assert.equal(getState().settings[owner]?.callDetail, true)
+    endCloudSession()
+  })
+
+  test('(c) 게스트 cloud=false — settings LS 전체를 그대로 읽는다(회귀)', () => {
+    endCloudSession()
+    const owner = 'init-guest-settings-full'
+    writeJsonKey('settings', owner, { theme: 'dark', unitPrice: 5000, callDetail: true })
+    writeJsonKey('workData', owner, {})
+    initializeOwnerFromPersist(owner)
+    assert.deepEqual(getState().settings[owner], { theme: 'dark', unitPrice: 5000, callDetail: true })
   })
 })

@@ -48,6 +48,8 @@ function createQuery(method) {
     in() { return query },
     order() { return query },
     select() { return query },
+    single() { return query },
+    maybeSingle() { return query },
     /**
      * @param {(value: StubQueryResult) => unknown} [onFulfilled]
      * @param {(reason: unknown) => unknown} [onRejected]
@@ -60,7 +62,7 @@ function createQuery(method) {
 }
 
 mock.module('../supabaseClient.js', {
-  exports: {
+  namedExports: {
     supabase: {
       from() {
         return {

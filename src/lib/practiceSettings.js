@@ -5,15 +5,30 @@
 import { readJsonKey } from '../store/persist.js'
 import { commitSettings } from '../store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
-import { readOwnerSettings } from '../store/ownerDataHooks.js'
+import { readOwnerProfile, readOwnerSettings } from '../store/ownerDataHooks.js'
+import {
+  assertSessionStillCurrent,
+  blockedReasonForOwnerDataWrite,
+  captureSession,
+  getCloudOwnerKey,
+  getCloudUserId,
+} from './cloudSession.js'
+import { upsertProfileOnSupabase } from './profileCloudCommit.js'
 
 export function loadPracticeSettings(ownerKey = 'guest') {
   return normalizeSettings(readJsonKey('settings', ownerKey, {}))
 }
 
-export function savePracticeSettings(ownerKey, patch) {
+export async function savePracticeSettings(ownerKey, patch) {
   const next = normalizeSettings({ ...readOwnerSettings(ownerKey), ...(patch || {}) })
-  return commitSettings(ownerKey, next)
+  if (getCloudOwnerKey() !== ownerKey) return commitSettings(ownerKey, next)
+  const userId = getCloudUserId()
+  const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
+  if (blocked) throw new Error(blocked)
+  const captured = captureSession()
+  await upsertProfileOnSupabase(/** @type {string} */ (userId), readOwnerProfile(ownerKey), next)
+  assertSessionStillCurrent(captured)
+  return commitSettings(ownerKey, next, { syncToCloud: false })
 }
 
 export function applyTheme(theme) {

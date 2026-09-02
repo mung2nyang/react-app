@@ -4,7 +4,7 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
-mock.module('../supabaseClient.js', { exports: { supabase: fakeSupabase } })
+mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { syncVehicles } = await import('./syncVehiclesClients.js')
 const { flushMutationOutbox, resetOutboxQueuesForTests } = await import('./outboxFlush.js')

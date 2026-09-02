@@ -38,7 +38,7 @@ export function useExpenseForm(ownerKey, dateKey, showToast) {
   // React state를 따로 안 바꾼다 — expenses는 이제 store 구독값이라 성공하면 store의
   // notify를 통해 저절로 최신값으로 리렌더된다(거짓 "저장됨" 화면이 구조적으로 불가능).
   /** @param {Array<ExpenseItem>} next */
-  function persist(next) { saveExpenses(ownerKey, next) }
+  async function persist(next) { await saveExpenses(ownerKey, next) }
 
   /** @param {string} kind */
   function openAdd(kind) {
@@ -63,22 +63,20 @@ export function useExpenseForm(ownerKey, dateKey, showToast) {
   }
 
   /** @param {string} id */
-  function remove(id) {
+  async function remove(id) {
     try {
-      // readOwnerExpenses로 다시 읽는다 — 렌더에 쓰인 expenses(위 useOwnerExpenses)가
-      // 최신이 아닐 아주 짧은 창(같은 틱 안에서 store가 또 바뀐 경우)까지 방어한다.
-      persist(/** @type {Array<ExpenseItem>} */ (readOwnerExpenses(ownerKey)).filter((item) => item.id !== id))
+      await persist(/** @type {Array<ExpenseItem>} */ (readOwnerExpenses(ownerKey)).filter((item) => item.id !== id))
     } catch (error) {
       console.error('비용 삭제 실패:', error)
       showToast?.('삭제하지 못했습니다. 저장 공간을 확인해 주세요.')
     }
   }
 
-  function save() {
+  async function save() {
     const result = upsertExpense(/** @type {Array<ExpenseItem>} */ (readOwnerExpenses(ownerKey)), { ...draft, date: dateKey }, editingId)
     if (result.error) { showToast?.(result.error); return }
     try {
-      persist(result.items)
+      await persist(result.items)
     } catch (error) {
       // 모달을 안 닫는다 — draft가 그대로 남아 있어야 사용자가 다시 저장을 시도할 수
       // 있다(재감사 FAIL 지적 9번 "pending draft가 조용히 유실되지 않도록").

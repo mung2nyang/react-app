@@ -3,10 +3,13 @@
 // dirty journal 값을 "하나의 쓰기 목록"으로 합치는 이 계산 자체를 store 오케스트레이션
 // (state 반영/notify/schedule)과 분리해서 독립적으로 테스트하기 위해서다.
 //
-// 예전엔 markDirty()가 도메인 값 쓰기와 별도로 자기 localStorage.setItem을 호출했다 —
-// 그 호출만 실패해도(용량 초과 등) "도메인은 새 값인데 journal은 갱신 안 됨" 같은
-// 불일치가 생길 수 있었다. 이제 여기서 journal의 "다음 값"까지 미리(쓰기 없이) 계산해
-// 도메인 값들과 같은 배열에 담아 두고, 호출부가 writeAllOrNothing 한 번으로 전부 쓴다.
+// 슬라이스 E(2026-09-01): 로그인 세션에서는 업무 도메인을 localStorage에 미러하지
+// 않고 dirty journal로 동기화를 예약하지도 않는다(서버가 정본, 저장은 서버 직접 1회).
+// 아래 CLOUD_MEMORY_ONLY_DOMAINS가 그 owner일 때 persist·dirty 쓰기에서 빠진다.
+// 게스트(cloudOwnerKey null)는 예전과 100% 동일하다.
+//
+// 로그인 업무 도메인은 persist·dirty에서 뺀다. settings는 아래 persist 분기에서
+// theme만 LS에 남긴다.
 import { storageKeyFor } from './persist.js'
 import { planDirtyWrite } from '../lib/dirtyJournal.js'
 
@@ -18,14 +21,44 @@ import { planDirtyWrite } from '../lib/dirtyJournal.js'
  */
 
 /**
+ * 로그인 사용자에게 localStorage 미러를 두지 않는 업무 도메인.
+ * dismissedNotifications는 여기 없다. settings는 theme만 별도 persist.
+ * @type {ReadonlySet<string>}
+ */
+export const CLOUD_MEMORY_ONLY_DOMAINS = new Set([
+  'cars', 'clients', 'drivers', 'workData', 'expenses', 'invoices', 'profile', 'workDataDeletedDates',
+])
+
+/**
+ * @param {string} domain @param {string} ownerKey @param {string|null} cloudOwnerKey
+ */
+export function isCloudMemoryOnly(domain, ownerKey, cloudOwnerKey) {
+  return cloudOwnerKey != null && ownerKey === cloudOwnerKey && CLOUD_MEMORY_ONLY_DOMAINS.has(domain)
+}
+
+/**
+ * @param {Array<BatchEntry>} entries @param {string|null} cloudOwnerKey
+ * @returns {boolean} entries가 모두 로그인 메모리 전용 업무 도메인이면 true(있어야).
+ */
+export function allEntriesCloudMemoryOnly(entries, cloudOwnerKey) {
+  return entries.length > 0 && entries.every((entry) => isCloudMemoryOnly(entry.domain, entry.ownerKey, cloudOwnerKey))
+}
+
+/**
  * @param {Array<BatchEntry>} entries
- * @param {{ persist: boolean, syncToCloud: boolean }} options
+ * @param {{ persist: boolean, syncToCloud: boolean, cloudOwnerKey?: string|null }} options
  * @returns {Array<import('./atomicPersist.js').KeyedWrite>}
  */
-export function buildBatchWrites(entries, { persist, syncToCloud }) {
+export function buildBatchWrites(entries, { persist, syncToCloud, cloudOwnerKey = null }) {
   const writes = []
   if (persist) {
     entries.forEach(({ domain, ownerKey, value }) => {
+      if (isCloudMemoryOnly(domain, ownerKey, cloudOwnerKey)) return
+      if (cloudOwnerKey != null && ownerKey === cloudOwnerKey && domain === 'settings') {
+        const theme = value && typeof value === 'object' && 'theme' in value && value.theme === 'dark' ? 'dark' : 'light'
+        writes.push({ key: storageKeyFor(domain, ownerKey), value: { theme } })
+        return
+      }
       writes.push({ key: storageKeyFor(domain, ownerKey), value })
     })
   }
@@ -34,11 +67,13 @@ export function buildBatchWrites(entries, { persist, syncToCloud }) {
     // (실제로는 항상 단일 owner지만, 여기서 미리 단정하지 않는다).
     const domainsByOwner = new Map()
     entries.forEach(({ domain, ownerKey }) => {
+      if (isCloudMemoryOnly(domain, ownerKey, cloudOwnerKey)) return
+      if (cloudOwnerKey != null && ownerKey === cloudOwnerKey && domain === 'settings') return
       if (!domainsByOwner.has(ownerKey)) domainsByOwner.set(ownerKey, [])
       domainsByOwner.get(ownerKey).push(domain)
     })
     domainsByOwner.forEach((domains, ownerKey) => {
-      writes.push(planDirtyWrite(ownerKey, domains))
+      if (domains.length) writes.push(planDirtyWrite(ownerKey, domains))
     })
   }
   return writes

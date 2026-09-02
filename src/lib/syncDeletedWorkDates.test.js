@@ -9,7 +9,7 @@ import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 import { StaleSessionError } from './outboxErrors.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf } = createFakeSupabase()
-mock.module('../supabaseClient.js', { exports: { supabase: fakeSupabase } })
+mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { syncDeletedWorkDates } = await import('./syncDeletedWorkDates.js')
 const { beginSessionEpoch, captureSession, endCloudSession } = await import('./cloudSession.js')

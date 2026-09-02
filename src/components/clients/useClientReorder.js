@@ -17,11 +17,11 @@ export function useClientReorder(ownerKey, clients, showToast) {
   }
 
   /** @param {string} targetId */
-  function onDrop(targetId) {
+  async function onDrop(targetId) {
     if (!dragId) return
-    const result = requestClientReorder({ ownerKey, userId: getCloudUserId(), clients, fromId: dragId, toId: targetId })
-    if (result.toast) showToast?.(result.toast)
     setDragId(null)
+    const result = await requestClientReorder({ ownerKey, userId: getCloudUserId(), clients, fromId: dragId, toId: targetId })
+    if (result.toast) showToast?.(result.toast)
   }
 
   function onDragEnd() {

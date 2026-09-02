@@ -5,6 +5,7 @@
 import { commitBatch } from './app-store.js'
 import { storageKeyForLog } from './persist.js'
 import { dedupeCarsById } from '../domain/cars.js'
+import { getCloudOwnerKey } from '../lib/cloudSession.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
@@ -45,10 +46,11 @@ export function commitWorkData(ownerKey, data, options = {}) {
 export function commitLogWorkData(ownerKey, logId, data) {
   if (!logId || logId === 'main') return commitWorkData(ownerKey, data)
   const jsonValue = /** @type {import('./atomicPersist.js').JsonValue} */ (data)
+  const cloud = getCloudOwnerKey() === ownerKey
   commitBatch([], {
-    persist: true,
+    persist: !cloud,
     syncToCloud: false,
-    extraWrites: [{ key: storageKeyForLog(ownerKey, logId), value: jsonValue }],
+    extraWrites: cloud ? [] : [{ key: storageKeyForLog(ownerKey, logId), value: jsonValue }],
     mergeWorkLogs: { ownerKey, extra: { [logId]: data } },
   })
   return data

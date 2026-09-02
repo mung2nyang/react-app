@@ -19,6 +19,12 @@ import { isAlreadyInAppOnBoot } from './bootHomeGuard.js'
 import AuthRoute from './AuthRoute.jsx'
 import AppShell from './AppShell.jsx'
 import RequireSession from './RequireSession.jsx'
+import {
+  clearGuestModePersisted,
+  GUEST_APP_SESSION,
+  isGuestModePersisted,
+  setGuestModePersisted,
+} from './guestSessionPersist.js'
 import '../account-flow.css'
 import '../side-menu.css'
 
@@ -71,12 +77,20 @@ export default function App() {
     restoreSessionOnBoot().then((restored) => {
       if (cancelled) return
       if (restored) {
+        clearGuestModePersisted()
         const message = restored.hydrateError ? '로그인은 유지됐지만 클라우드 데이터를 일부 못 불러왔습니다.' : undefined
         if (isAlreadyInAppOnBoot(homePathRef.current)) {
           setSession(restored.session)
           if (message) setToast(message)
         } else {
           goHome(restored.session, message)
+        }
+      } else if (isGuestModePersisted()) {
+        const guestSession = GUEST_APP_SESSION
+        if (isAlreadyInAppOnBoot(homePathRef.current)) {
+          setSession(guestSession)
+        } else {
+          goHome(guestSession)
         }
       }
       setBooting(false)
@@ -111,6 +125,7 @@ export default function App() {
       try { await supabase.auth.signOut() } catch { /* ignore */ }
     }
     endCloudSession()
+    clearGuestModePersisted()
     setSession(null)
     navigate('/auth', { replace: true })
   }
@@ -131,12 +146,14 @@ export default function App() {
               onForgotPassword={() => setForgotOpen(true)}
               onGuest={() => {
                 endCloudSession()
+                setGuestModePersisted(true)
                 goHome(
-                  { name: '비회원', accountType: 'owner_driver', guestMode: true },
+                  GUEST_APP_SESSION,
                   '비회원 모드로 시작합니다. 언제든 마이페이지에서 로그인할 수 있어요.',
                 )
               }}
               onLogin={async (/** @type {AppSession} */ user) => {
+                clearGuestModePersisted()
                 if (user?.userId) {
                   try {
                     await hydrateFromSupabase(user.userId, user.userId)
@@ -148,6 +165,7 @@ export default function App() {
                 goHome({ ...user, guestMode: false })
               }}
               onSignup={async (/** @type {AppSession} */ user) => {
+                clearGuestModePersisted()
                 if (user?.userId) {
                   try {
                     await hydrateFromSupabase(user.userId, user.userId)

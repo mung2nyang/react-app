@@ -22,17 +22,14 @@
 /** @typedef {import('./mutationOutbox.js').OutboxResultStatus} OutboxResultStatus */
 import { KEYS, keyFor, readJson } from './cloudStorage.js'
 import { assertSessionStillCurrent, captureSession, isSessionStillCurrent } from './cloudSession.js'
+import { getState } from '../store/app-store.js'
 import { getPendingOps, OUTBOX_RESULT, removeOutboxOp } from './mutationOutbox.js'
 import { reconcileDriverAfterUpsertAndRemoveOp, rollbackDriverUpsertAndRemoveOp } from './outboxRollback.js'
 import { syncVehicles } from './syncVehiclesClients.js'
 import {
-  deleteClientFromSupabase,
-  deleteDriverLinkOnSupabase,
-  deleteVehicleFromSupabase,
-  findOverlappingDriverLinkOnSupabase,
-  findExistingDriverLinkInsert,
-  updateDriverLinkStatusOnSupabase,
-  upsertDriverLinkOnSupabase,
+  deleteClientFromSupabase, deleteDriverLinkOnSupabase, deleteVehicleFromSupabase,
+  findOverlappingDriverLinkOnSupabase, findExistingDriverLinkInsert,
+  updateDriverLinkStatusOnSupabase, upsertDriverLinkOnSupabase,
 } from './directMutations.js'
 import { PermanentFailureError, StaleSessionError } from './outboxErrors.js'
 
@@ -48,7 +45,9 @@ async function executeDriverUpsertOp(op, captured) {
   // 하던 대로, 기사 배정을 실제로 시도하기 전에 차량부터 먼저 반영해 supabaseId를 확보한다.
   await syncVehicles(op.userId, op.ownerKey)
   assertSessionStillCurrent(captured)
-  const cars = /** @type {Array<CarRecord>} */ (readJson(keyFor(KEYS.cars, op.ownerKey), []))
+  // 슬라이스 E: 로그인 cars는 LS 미러가 없다 — syncVehicles가 병합한 supabaseId는 Store에만.
+  // Store를 우선 읽고, 이 owner가 Store에 없을 때만(게스트/미부트) 예전처럼 LS 폴백.
+  const cars = /** @type {Array<CarRecord>} */ (getState().cars[op.ownerKey] ?? readJson(keyFor(KEYS.cars, op.ownerKey), []))
   const car = cars.find((item) => item.number === op.payload.vehicleNumber)
   if (!car?.supabaseId) throw new Error('선택한 차량이 아직 클라우드에 동기화되지 않았습니다.')
 

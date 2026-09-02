@@ -57,6 +57,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   // 목록은 이 화면의 clients prop(MainPageRoute.jsx가 넘긴다)이라 그쪽을 써야 한다.
   const fixedRouteClient = getFixedRouteClient({ clients })
   const palletVisible = !!(settings.fixedOn && fixedRouteClient?.palletOn)
+  const showCallDetailList = settings.callDetail || draft.callDetails.length > 0
   const editingCallItem = editingCallId ? draft.callDetails.find((item) => item.id === editingCallId) || null : null
   const previousCallItem = draft.callDetails.length > 0 ? draft.callDetails[draft.callDetails.length - 1] : null
   const messageItem = messageCallId ? draft.callDetails.find((item) => item.id === messageCallId) : null
@@ -124,35 +125,33 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
           </div>
         )}
 
-        {/* 재감사(FAIL 지적 5번) — settings.callDetail이 꺼져 있으면 콜상세 목록·추가
-            폼 전체를 숨긴다(고정노선만 쓰는 사업장은 이 섹션이 필요 없다는 설정 계약 —
-            practiceSettings.js의 normalizeSettings 참고: fixedOn이 꺼져 있으면 이
-            설정 자체가 항상 true로 강제된다). */}
+        {/* callDetail OFF여도 기존 callDetails 카드는 보여 준다 — 추가 진입만 canAdd로 막는다. */}
+        {showCallDetailList && (
+          <CallDetailList
+            details={draft.callDetails}
+            settings={settings}
+            clients={clients}
+            canAdd={settings.callDetail}
+            onEdit={(id) => openCallForm(id)}
+            onDelete={(id) => patchDraft({ callDetails: /** @type {Array<DayDraft['callDetails'][number]>} */ (removeCallDetail(draft.callDetails, indexOfCall(id))) })}
+            onTogglePayment={handleTogglePayment}
+            onMessage={(id) => setMessageCallId(id)}
+            onAdd={() => openCallForm(null)}
+          />
+        )}
         {settings.callDetail && (
-          <>
-            <CallDetailList
-              details={draft.callDetails}
-              settings={settings}
+          <InlineSheet open={callFormOpen} className="call-detail-inline-host">
+            <CallDetailForm
+              key={editingCallId ?? 'new'}
+              value={editingCallItem}
+              previousItem={editingCallId ? null : previousCallItem}
+              dateKey={dateKey}
               clients={clients}
-              onEdit={(id) => openCallForm(id)}
-              onDelete={(id) => patchDraft({ callDetails: /** @type {Array<DayDraft['callDetails'][number]>} */ (removeCallDetail(draft.callDetails, indexOfCall(id))) })}
-              onTogglePayment={handleTogglePayment}
-              onMessage={(id) => setMessageCallId(id)}
-              onAdd={() => openCallForm(null)}
+              settings={settings}
+              onSave={handleSaveCall}
+              onClose={() => dispatch({ type: 'closeCallForm' })}
             />
-            <InlineSheet open={callFormOpen} className="call-detail-inline-host">
-              <CallDetailForm
-                key={editingCallId ?? 'new'}
-                value={editingCallItem}
-                previousItem={editingCallId ? null : previousCallItem}
-                dateKey={dateKey}
-                clients={clients}
-                settings={settings}
-                onSave={handleSaveCall}
-                onClose={() => dispatch({ type: 'closeCallForm' })}
-              />
-            </InlineSheet>
-          </>
+          </InlineSheet>
         )}
 
         <DayLogExpenses

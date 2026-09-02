@@ -18,9 +18,9 @@ import CallDetailCard from './CallDetailCard.jsx'
  * @param {(id: string) => void} props.onDelete
  * @param {(id: string) => void} props.onTogglePayment
  * @param {(id: string) => void} props.onMessage
- * @param {() => void} props.onAdd
+ * @param {boolean} [canAdd] false면 "+추가" 진입 버튼만 숨긴다(기존 카드는 유지).
  */
-export default function CallDetailList({ details, settings, clients, onEdit, onDelete, onTogglePayment, onMessage, onAdd }) {
+export default function CallDetailList({ details, settings, clients, canAdd = true, onEdit, onDelete, onTogglePayment, onMessage, onAdd }) {
   const callFare = callFareTotal({ isOff: false, callDetails: details })
   const callVat = callVatTotal({ isOff: false, callDetails: details })
   const totalDistance = details.reduce((sum, item) => sum + (parseFloat(item.distanceKm || '') || 0), 0)
@@ -31,7 +31,9 @@ export default function CallDetailList({ details, settings, clients, onEdit, onD
     <div className="modal-section call-detail-section">
       <div className="modal-section-title">
         <span>운행 일지 세부 입력</span>
-        <button type="button" className="compact-add-btn" onClick={onAdd}>+ 추가</button>
+        {canAdd && (
+          <button type="button" className="compact-add-btn" onClick={onAdd}>+ 추가</button>
+        )}
       </div>
       {details.map((item) => (
         <CallDetailCard
@@ -59,9 +61,11 @@ export default function CallDetailList({ details, settings, clients, onEdit, onD
           </div>
         </div>
       )}
-      <div className="call-detail-add-row">
-        <button type="button" className="call-detail-add-btn" onClick={onAdd}>+ 운행 일지 추가</button>
-      </div>
+      {canAdd && (
+        <div className="call-detail-add-row">
+          <button type="button" className="call-detail-add-btn" onClick={onAdd}>+ 운행 일지 추가</button>
+        </div>
+      )}
     </div>
   )
 }

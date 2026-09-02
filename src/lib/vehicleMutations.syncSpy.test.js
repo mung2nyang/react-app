@@ -6,7 +6,7 @@ import { mock, test } from 'node:test'
 
 let scheduleCloudSyncCallCount = 0
 mock.module('./syncQueue.js', {
-  exports: {
+  namedExports: {
     scheduleCloudSync: () => { scheduleCloudSyncCallCount += 1 },
     flushCloudSync: async () => {},
   },
@@ -26,7 +26,7 @@ function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)
 }
 
-test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패는 0회다', () => {
+test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패는 0회다', async () => {
   resetStubSupabaseCallCounts()
   const ownerOk = 'veh-sync-ok'
   const ownerFail = 'veh-sync-fail'
@@ -38,7 +38,7 @@ test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패
   const apiBefore = totalStubCalls()
   let notifyCount = 0
   const unsubOk = subscribe(() => { notifyCount += 1 })
-  const ok = requestVehicleSave({
+  const ok = await requestVehicleSave({
     ownerKey: ownerOk,
     cars: getState().cars[ownerOk],
     editingId: 'car-ok',
@@ -77,7 +77,7 @@ test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패
     return originalError.call(console, first, second)
   })
   try {
-    const failed = requestVehicleSave({
+    const failed = await requestVehicleSave({
       ownerKey: ownerFail,
       cars: getState().cars[ownerFail],
       editingId: 'car-fail',

@@ -2,6 +2,15 @@
 // useOwnerProfile / readOwnerProfile.
 import { readJsonKey } from '../store/persist.js'
 import { commitProfile } from '../store/commitHelpers.js'
+import { readOwnerSettings } from '../store/ownerDataHooks.js'
+import {
+  assertSessionStillCurrent,
+  blockedReasonForOwnerDataWrite,
+  captureSession,
+  getCloudOwnerKey,
+  getCloudUserId,
+} from './cloudSession.js'
+import { upsertProfileOnSupabase } from './profileCloudCommit.js'
 
 export const EMPTY_PROFILE = {
   bizName: '',
@@ -23,7 +32,14 @@ export function loadProfile(ownerKey = 'guest') {
   return { ...EMPTY_PROFILE, ...(parsed && typeof parsed === 'object' ? parsed : {}) }
 }
 
-export function saveProfile(ownerKey, profile) {
+export async function saveProfile(ownerKey, profile) {
   const next = { ...EMPTY_PROFILE, ...(profile || {}) }
-  return commitProfile(ownerKey, next)
+  if (getCloudOwnerKey() !== ownerKey) return commitProfile(ownerKey, next)
+  const userId = getCloudUserId()
+  const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
+  if (blocked) throw new Error(blocked)
+  const captured = captureSession()
+  await upsertProfileOnSupabase(/** @type {string} */ (userId), next, readOwnerSettings(ownerKey))
+  assertSessionStillCurrent(captured)
+  return commitProfile(ownerKey, next, { syncToCloud: false })
 }

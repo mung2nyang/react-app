@@ -5,11 +5,12 @@
 import { supabase } from '../supabaseClient.js'
 import { getState, setHydration } from '../store/app-store.js'
 import { replaceOwnerState } from '../store/owner-state.js'
-import { clearDirtyDomain, getDirtyDomains, hasDirty } from './dirtyJournal.js'
+import { clearDirty } from './dirtyJournal.js'
 import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
 import { singleFlight } from './singleFlight.js'
 import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, isSessionStillCurrent } from './cloudSession.js'
-import { collectPracticeSnapshot } from './cloudStorage.js'
+import { normalizeSettings } from '../domain/practiceSettings.js'
+import { readPersistDomain } from '../store/persistDomainRead.js'
 import { hasPendingOps } from './mutationOutbox.js'
 import { flushMutationOutbox } from './outboxFlush.js'
 import { reconcileCars, reconcileClients, reconcileDrivers } from './outboxReconcile.js'
@@ -27,9 +28,6 @@ import { expenseFromFuelRecord, replaceFuelExpenses } from '../domain/fuelRecord
 import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/maintenanceRecords.js'
 import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpenseRecords.js'
 import { mergeTaxInvoiceRecords } from '../domain/taxInvoices.js'
-import { scheduleCloudSync } from './syncQueue.js'
-
-/** @typedef {import('../store/app-store.js').DomainValue} DomainValue */
 
 /** @param {string} userId @param {string} ownerKey */
 export function hydrateFromSupabase(userId, ownerKey) {
@@ -50,6 +48,15 @@ function finishHydration(myEpoch, patch) {
   setHydration({ ...patch, epoch: myEpoch })
 }
 
+/** settings LS에서 theme만 읽는다. 파싱 실패를 light로 오인하지 않는다. @param {string} ownerKey */
+function localThemeIfReadable(ownerKey) {
+  const read = readPersistDomain('settings', ownerKey)
+  if (!read.ok || !read.value || typeof read.value !== 'object' || Array.isArray(read.value)) return null
+  if (!('theme' in read.value)) return null
+  if (read.value.theme === 'dark' || read.value.theme === 'light') return read.value.theme
+  return null
+}
+
 /** @param {string} userId @param {string} ownerKey @param {number} myEpoch */
 async function performHydrate(userId, ownerKey, myEpoch) {
   setHydration({ status: 'hydrating', userId, ownerKey, epoch: myEpoch })
@@ -65,22 +72,31 @@ async function performHydrate(userId, ownerKey, myEpoch) {
       profiles: profileRes.error, vehicles: vehiclesRes.error, clients: clientsRes.error, driver_links: linksRes.error,
     })
 
-    const localSnapshot = collectPracticeSnapshot(ownerKey)
     const settingsJson = (profileRes.data?.settings && typeof profileRes.data.settings === 'object') ? profileRes.data.settings : {}
-    const profileSnapshot = settingsJson.practiceSnapshot || {}
+    const lsTheme = localThemeIfReadable(ownerKey)
+    const serverSettings = (settingsJson && typeof settingsJson === 'object') ? settingsJson : {}
 
-    let nextWorkData = (profileSnapshot.workData && typeof profileSnapshot.workData === 'object') ? profileSnapshot.workData : localSnapshot.workData
-    let nextCars = Array.isArray(profileSnapshot.cars) ? profileSnapshot.cars : localSnapshot.cars
-    let nextClients = Array.isArray(profileSnapshot.clients) ? profileSnapshot.clients : localSnapshot.clients
-    let nextDrivers = Array.isArray(profileSnapshot.drivers) ? profileSnapshot.drivers : localSnapshot.drivers
-    const nextSettings = (profileSnapshot.settings && typeof profileSnapshot.settings === 'object') ? profileSnapshot.settings : localSnapshot.settings
-    let nextExpenses = Array.isArray(profileSnapshot.expenses) ? profileSnapshot.expenses : localSnapshot.expenses
-    let nextInvoices = Array.isArray(profileSnapshot.invoices) ? profileSnapshot.invoices : localSnapshot.invoices
+    /** @type {Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>} */
+    let nextWorkData = {}
+    /** @type {Array<import('../domain/financeTypes.js').CarLike>} */
+    let nextCars = []
+    /** @type {Array<import('../domain/clientTypes.js').ClientLike>} */
+    let nextClients = []
+    let nextDrivers = /** @type {Array<import('./outboxTypes.js').DriverRecord>} */ ([])
+    const restSettings = { ...serverSettings }
+    delete restSettings.practiceSnapshot
+    const nextSettings = normalizeSettings({
+      ...restSettings,
+      theme: (restSettings.theme === 'dark' || restSettings.theme === 'light') ? restSettings.theme : (lsTheme || 'light'),
+    })
+    let nextExpenses = /** @type {Array<import('./hydrateMergeTypes.js').JsonRecord>} */ ([])
+    let nextInvoices = /** @type {Array<import('../domain/financeTaxInvoiceEntries.js').InvoiceLike>} */ ([])
 
-    const nextProfile = mergeProfileRow(localSnapshot.profile, profileRes.data)
+    const nextProfile = mergeProfileRow({}, profileRes.data)
     nextCars = reconcileCars(ownerKey, mergeCarsFromRows(nextCars, vehiclesRes.data || []))
     nextClients = reconcileClients(ownerKey, mergeClientsFromRows(nextClients, clientsRes.data || []))
-    nextDrivers = reconcileDrivers(ownerKey, mergeDriversFromRows(nextDrivers, nextCars, linksRes.data || []), localSnapshot.drivers)
+    const localDrivers = getState().drivers[ownerKey] || []
+    nextDrivers = reconcileDrivers(ownerKey, mergeDriversFromRows(localDrivers, nextCars, linksRes.data || []), localDrivers)
 
     const mainCar = findMainCar(nextCars)
     if (mainCar?.supabaseId) {
@@ -103,9 +119,9 @@ async function performHydrate(userId, ownerKey, myEpoch) {
       nextWorkData = mergeWorkDataFromRows(nextWorkData, {
         dailyRows: dailyRes.data, transportRows: transportRes.data || [], fuelRows: fuelRes.data || [], maintRows: maintRes.data || [], miscRows: miscRes.data || [],
       }, Object.keys(readOwnerWorkDataTombstones(ownerKey)))
-      nextExpenses = mergeExpenseKind({ kind: 'fuel', currentExpenses: nextExpenses, snapshotExpenses: profileSnapshot.expenses, previousExpenses: localSnapshot.expenses, rows: fuelRes.data || [], mapRow: expenseFromFuelRecord, replace: replaceFuelExpenses })
-      nextExpenses = mergeExpenseKind({ kind: 'maint', currentExpenses: nextExpenses, snapshotExpenses: profileSnapshot.expenses, previousExpenses: localSnapshot.expenses, rows: maintRes.data || [], mapRow: expenseFromMaintenanceRecord, replace: replaceMaintExpenses })
-      nextExpenses = mergeExpenseKind({ kind: 'misc', currentExpenses: nextExpenses, snapshotExpenses: profileSnapshot.expenses, previousExpenses: localSnapshot.expenses, rows: miscRes.data || [], mapRow: expenseFromMiscRecord, replace: replaceMiscExpenses })
+      nextExpenses = mergeExpenseKind({ kind: 'fuel', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: fuelRes.data || [], mapRow: expenseFromFuelRecord, replace: replaceFuelExpenses })
+      nextExpenses = mergeExpenseKind({ kind: 'maint', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: maintRes.data || [], mapRow: expenseFromMaintenanceRecord, replace: replaceMaintExpenses })
+      nextExpenses = mergeExpenseKind({ kind: 'misc', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: miscRes.data || [], mapRow: expenseFromMiscRecord, replace: replaceMiscExpenses })
     }
 
     const taxInvoicesRes = await supabase.from('tax_invoices').select('*').eq('user_id', userId)
@@ -114,32 +130,14 @@ async function performHydrate(userId, ownerKey, myEpoch) {
 
     const nextSnapshot = {
       workData: nextWorkData, cars: nextCars, clients: nextClients, drivers: nextDrivers,
-      profile: nextProfile, settings: nextSettings, expenses: nextExpenses, invoices: nextInvoices,
+      profile: nextProfile, settings: nextSettings,
+      expenses: /** @type {import('../domain/expenseTypes.js').ExpenseItem[]} */ (nextExpenses), invoices: nextInvoices,
     }
 
-    // 슬라이스 D: 로그인 일지는 서버 daily_logs가 정본이다(위 mergeWorkDataFromRows).
-    // 남아 있던 옛 workData dirty 표시로 로컬 맵을 다시 덮으면 서버 정본이 죽고,
-    // hydrate 끝의 hasDirty→scheduleCloudSync가 전체 맵을 재업로드한다. 그 표시만 지운다.
-    clearDirtyDomain(ownerKey, 'workData')
-    const dirtyDomains = getDirtyDomains(ownerKey)
-    if (dirtyDomains.length) {
-      const freshLocal = collectPracticeSnapshot(ownerKey)
-      // getDirtyDomains는 string[]이라(domain/dirtyJournal.js가 실제로 어떤 도메인이
-      // 아직 안 지워졌는지 문자열로 기록·조회한다), nextSnapshot/freshLocal의 8개
-      // 구체 필드 중 어느 것인지 TS가 정적으로 못 좁힌다 — 8개 필드가 실제로 전부
-      // app-store.js의 DomainValue(object 또는 문자열/객체 배열)와 같은 모양이므로,
-      // 그 정확한 타입의 레코드로 단언해서 동적 키 접근을 허용한다(any/unknown 아님).
-      const snapshotAsRecord = /** @type {Record<string, DomainValue>} */ (nextSnapshot)
-      const freshLocalAsRecord = /** @type {Record<string, DomainValue>} */ (freshLocal)
-      dirtyDomains.forEach((domain) => {
-        if (domain in snapshotAsRecord) snapshotAsRecord[domain] = freshLocalAsRecord[domain]
-      })
-    }
-
+    clearDirty(ownerKey)
     if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
-      replaceOwnerState(ownerKey, nextSnapshot, { sync: false })
+      replaceOwnerState(ownerKey, nextSnapshot, { sync: false, persist: false })
       finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
-      if (hasDirty(ownerKey)) scheduleCloudSync()
       if (hasPendingOps(ownerKey)) flushMutationOutbox(ownerKey).catch((error) => console.error('outbox 플러시 실패:', error))
     } else {
       // 스냅샷은 반영하지 않는다. 이 세대가 아직 hydrating이면 스위치를 닫아 영원히 잠기지 않게 한다.

@@ -4,13 +4,14 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase, wait } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
-mock.module('../supabaseClient.js', { exports: { supabase: fakeSupabase } })
+mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { hydrateFromSupabase, retryHydrate } = await import('./hydrate.js')
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { getState } = await import('../store/app-store.js')
 const { markDirty, getDirtyDomains } = await import('./dirtyJournal.js')
 const { readJsonKey, writeJsonKey } = await import('../store/persist.js')
+const { commitDrivers } = await import('../store/commitHelpers.js')
 const { buildTombstoneOp, buildMutationOp, planOutboxAppend } = await import('./mutationOutbox.js')
 const { writeAllOrNothing } = await import('../store/atomicPersist.js')
 
@@ -124,7 +125,8 @@ describe('dirtyJournal 통합 — failed → 로컬 편집 → retry → ready �
 
     await retryHydrate()
     assert.equal(getState().hydration.status, 'ready')
-    assert.equal(readJsonKey('profile', ownerKey, {}).name, '로컬에서 편집한 이름')
+    assert.equal(getState().profile[ownerKey]?.name, '서버 이름(오래됨)', '슬라이스 E: dirty 로컬 프로필로 서버 hydrate를 덮지 않는다')
+    assert.equal(readJsonKey('profile', ownerKey, {}).name, '로컬에서 편집한 이름', '기존 LS 키는 지우지 않는다')
     endCloudSession()
   })
 })
@@ -199,12 +201,12 @@ describe('사용자 지시 6번 — 로그아웃 후 같은 owner로 즉시 재�
 
     assert.equal(countOf('profiles', 'select'), 2, '재로그인이 이전 in-flight에 합류했다면 새 조회가 나가지 않아 1회에 머물렀을 것이다')
     assert.equal(getState().hydration.status, 'ready', '재로그인이 옛 Promise에 합류해 계속 idle/hydrating으로 멈춰 있으면 안 된다')
-    assert.equal(readJsonKey('profile', ownerKey, {}).name, '재로그인 이후 최신 이름')
+    assert.equal(getState().profile[ownerKey]?.name, '재로그인 이후 최신 이름')
 
     releaseFirst() // 로그아웃 이전 요청도 뒤늦게 응답하지만 세대 검사로 무시돼야 한다.
     await firstHydratePromise
     assert.equal(getState().hydration.status, 'ready', '로그아웃 이전 요청의 뒤늦은 완료가 재로그인의 ready 상태를 덮으면 안 된다')
-    assert.equal(readJsonKey('profile', ownerKey, {}).name, '재로그인 이후 최신 이름', '옛 요청의 오래된 이름으로 되돌아가면 안 된다')
+    assert.equal(getState().profile[ownerKey]?.name, '재로그인 이후 최신 이름', '옛 요청의 오래된 이름으로 되돌아가면 안 된다')
     endCloudSession()
   })
 })
@@ -277,7 +279,7 @@ describe('hydrate — outbox tombstone/pending 재적용 (사용자 지시 4번)
 
     await hydrateFromSupabase(userId, ownerKey)
     assert.equal(getState().hydration.status, 'ready')
-    const cars = readJsonKey('cars', ownerKey, [])
+    const cars = getState().cars[ownerKey] || []
     assert.equal(cars.some((car) => car.supabaseId === 900), false, '삭제 대기 중인 차량이 hydrate로 부활하면 안 된다')
     endCloudSession()
   })
@@ -287,7 +289,7 @@ describe('hydrate — outbox tombstone/pending 재적용 (사용자 지시 4번)
     Object.assign(handlers, emptyOkHandlers())
     const ownerKey = 'audit4-hydrate-pending-driver'
     const userId = 'user-hydrate-pending-driver'
-    writeJsonKey('drivers', ownerKey, [{ id: 'local-driver-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '기사' }])
+    commitDrivers(ownerKey, [{ id: 'local-driver-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '기사' }], { syncToCloud: false })
     handlers.driver_links = { select: () => ({ data: [{ id: 700, invite_code: '123456', status: 'pending', vehicle_id: null, assignment_start: '2026-08-01', assignment_end: null }], error: null }) }
 
     seedOutboxOp(ownerKey, buildMutationOp({
@@ -297,7 +299,7 @@ describe('hydrate — outbox tombstone/pending 재적용 (사용자 지시 4번)
 
     await hydrateFromSupabase(userId, ownerKey)
     assert.equal(getState().hydration.status, 'ready')
-    const drivers = readJsonKey('drivers', ownerKey, [])
+    const drivers = getState().drivers[ownerKey] || []
     const driver = drivers.find((item) => item.id === 'local-driver-1')
     assert.equal(driver?.status, 'linked', '서버가 아직 pending을 반환해도 로컬의 pending mutation(linked 의도)이 유지돼야 한다')
     endCloudSession()
@@ -328,11 +330,70 @@ describe('hydrate — 레거시 fuel raw는 스키마 throw 없이 ready로 닫�
 
     await hydrateFromSupabase(userId, ownerKey)
     assert.equal(getState().hydration.status, 'ready')
-    const day = readJsonKey('workData', ownerKey, {})['2026-08-01']
+    const day = getState().workLogs[ownerKey]?.main?.['2026-08-01']
     assert.equal(day?.fuelItems, undefined)
-    const expenses = readJsonKey('expenses', ownerKey, [])
+    const expenses = getState().expenses[ownerKey] || []
     assert.equal(expenses.filter((item) => item.kind === 'fuel').length, 1)
     assert.equal(expenses[0].id, 'fuel-1')
+    endCloudSession()
+  })
+})
+
+describe('슬라이스 E — hydrate는 LS 업무 밑바탕을 쓰지 않고 프로필·설정을 Store에 넣는다', () => {
+  test('서버 vehicles가 비면 LS cars를 Store에 올리지 않고 LS 키도 지우지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-e-ls-cars'
+    const userId = 'user-hydrate-e-ls-cars'
+    const seeded = [{ id: 'ls-car', number: '11가1111', type: 'main', supabaseId: 1 }]
+    writeJsonKey('cars', ownerKey, seeded)
+    handlers.vehicles = { select: () => ({ data: [], error: null }) }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.deepEqual(getState().cars[ownerKey] || [], [])
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), seeded)
+    endCloudSession()
+  })
+
+  test('프로필·설정은 서버 행이 Store이고 hydrate가 LS profile/settings 키를 덮지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-e-profile-settings'
+    const userId = 'user-hydrate-e-profile-settings'
+    writeJsonKey('profile', ownerKey, { name: 'LS이름' })
+    writeJsonKey('settings', ownerKey, { theme: 'dark', unitPrice: 1111 })
+    handlers.profiles = {
+      select: () => ({
+        data: { id: userId, name: '서버이름', settings: { theme: 'light', unitPrice: 7777, callDetail: true } },
+        error: null,
+      }),
+    }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(getState().profile[ownerKey]?.name, '서버이름')
+    assert.equal(getState().settings[ownerKey]?.unitPrice, 7777)
+    assert.equal(getState().settings[ownerKey]?.callDetail, true)
+    assert.equal(getState().settings[ownerKey]?.theme, 'light')
+    assert.equal(readJsonKey('profile', ownerKey, {}).name, 'LS이름')
+    assert.equal(readJsonKey('settings', ownerKey, {}).unitPrice, 1111)
+    endCloudSession()
+  })
+
+  test('settings LS 파싱 실패를 빈 설정으로 오인해 다른 업무 키를 지우지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-e-settings-parse'
+    const userId = 'user-hydrate-e-settings-parse'
+    const seededCars = [{ id: 'keep-car', number: '22나2222' }]
+    writeJsonKey('cars', ownerKey, seededCars)
+    localStorage.setItem(`reactPracticeSettings:${ownerKey}`, '{not json')
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(localStorage.getItem(`reactPracticeSettings:${ownerKey}`), '{not json')
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), seededCars)
     endCloudSession()
   })
 })

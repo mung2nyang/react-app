@@ -5,7 +5,7 @@ import { mock, test } from 'node:test'
 
 let scheduleCloudSyncCallCount = 0
 mock.module('../lib/syncQueue.js', {
-  exports: {
+  namedExports: {
     scheduleCloudSync: () => { scheduleCloudSyncCallCount += 1 },
     flushCloudSync: async () => {},
   },
@@ -53,10 +53,10 @@ function wipeOwnerMemory(owner) {
   ], { persist: false, syncToCloud: false, replaceWorkLogs: { ownerKey: owner, next: { main: {} } } })
 }
 
-test('saveProfile 결과는 persist 왕복 후 initialize에서 복원된다', () => {
+test('saveProfile 결과는 persist 왕복 후 initialize에서 복원된다', async () => {
   const owner = 'roundtrip-profile'
   resetStubSupabaseCallCounts()
-  saveProfile(owner, { name: '홍길동', bizRepresentative: '대표자', accountHolder: '예금주', phone: '010' })
+  await saveProfile(owner, { name: '홍길동', bizRepresentative: '대표자', accountHolder: '예금주', phone: '010' })
   assert.equal(readPersistDomain('profile', owner).kind, 'value')
   const before = layers(owner)
   wipeOwnerMemory(owner)

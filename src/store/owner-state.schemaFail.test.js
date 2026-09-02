@@ -5,7 +5,7 @@ import { mock, test } from 'node:test'
 
 let scheduleCloudSyncCallCount = 0
 mock.module('../lib/syncQueue.js', {
-  exports: {
+  namedExports: {
     scheduleCloudSync: () => { scheduleCloudSyncCallCount += 1 },
     flushCloudSync: async () => {},
   },

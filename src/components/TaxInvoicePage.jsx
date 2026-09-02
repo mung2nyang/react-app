@@ -68,8 +68,8 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }
   const issuerReady = settings.bizName && settings.bizNumber && settings.userName && settings.bizType && settings.bizItem
 
   /** @param {Array<InvoiceLike>} next */
-  function persist(next) {
-    saveInvoices(ownerKey, next)
+  async function persist(next) {
+    await saveInvoices(ownerKey, next)
   }
 
   /** @param {InvoiceLike} item */
@@ -81,18 +81,17 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }
     })
   }
 
-  function saveDraft() {
+  async function saveDraft() {
     if (!modalItem) return
-    if (saveTaxInvoiceDraft({
+    const closed = await saveTaxInvoiceDraft({
       ownerKey,
       clients,
       records: readOwnerInvoices(ownerKey),
       modalItem,
       persist,
       showToast,
-    })) {
-      setModalItem(null)
-    }
+    })
+    if (closed) setModalItem(null)
   }
 
   /**

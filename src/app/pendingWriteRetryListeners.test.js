@@ -21,14 +21,14 @@ let retryPendingDayWritesFn = () => {}
 let guardBeforeUnloadFn = () => {}
 
 mock.module('../lib/pendingWorkDataWrites.js', {
-  exports: {
+  namedExports: {
     hasPendingDayWrites: () => hasPendingDayWritesImpl(),
     retryPendingDayWrites: () => { retryPendingDayWritesFn() },
     registerPendingDayWrite: () => false,
   },
 })
 mock.module('../lib/durableWriteGuard.js', {
-  exports: {
+  namedExports: {
     guardBeforeUnload: (/** @type {Event} */ event) => { guardBeforeUnloadFn(event) },
     hasAnyUnsafeRegistration: () => hasAnyUnsafeRegistrationImpl(),
   },

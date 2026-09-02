@@ -1,4 +1,4 @@
-import { resetStubSupabaseCallCounts, stubSupabaseCallCounts } from '../testSupport/stubSupabaseClient.js'
+import { resetStubSupabaseCallCounts, stubSupabaseCallCounts, stubSupabaseMethodImpls } from '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
@@ -9,7 +9,7 @@ const { requestVehicleSave } = await import('./vehicleMutations.js')
 const { requestClientSave, requestClientReorder, requestClientFixedUnitPrice, requestClientTaxInfo } = await import('./clientMutations.js')
 const { requestVehicleDeletion } = await import('./directMutationActions.js')
 const { readJsonKey, readLogWorkData, storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
-const { beginSessionEpoch } = await import('./cloudSession.js')
+const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { hasDirty } = await import('./dirtyJournal.js')
 const { pendingOwnerForLog } = await import('./pendingLogOwner.js')
 const { registerPendingDayWrite, retryPendingDayWrites, getPendingDayWrite, pendingDayWriteCount } = await import('./pendingWorkDataWrites.js')
@@ -54,7 +54,7 @@ function patch(fixedCount) {
 }
 
 describe('requestVehicleSave — 서브 로그 키 이동', () => {
-  test('번호 변경 시 옛 키는 사라지고 새 키만 남는다', () => {
+  test('번호 변경 시 옛 키는 사라지고 새 키만 남는다', async () => {
     const owner = 'veh-rename-ok'
     const oldNum = '11가1111'
     const newNum = '22나2222'
@@ -62,7 +62,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
       id: 'car-sub-1', type: 'sub', number: oldNum, driverName: '김', driverPhone: '010-1111-1111', supabaseId: 'v1',
     }], { syncToCloud: false })
     commitLogWorkData(owner, oldNum, { '2026-08-10': { isOff: false, fixedCount: 4 } })
-    const result = requestVehicleSave({
+    const result = await requestVehicleSave({
       ownerKey: owner,
       cars: getState().cars[owner],
       editingId: 'car-sub-1',
@@ -79,7 +79,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
     assert.equal(logRead.value['2026-08-10'].fixedCount, 4)
   })
 
-  test('번호 변경 persist 실패 시 cars/workLogs/localStorage가 전부 롤백된다', () => {
+  test('번호 변경 persist 실패 시 cars/workLogs/localStorage가 전부 롤백된다', async () => {
     const owner = 'veh-rename-fail'
     const oldNum = '33다3333'
     const newNum = '44라4444'
@@ -96,7 +96,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
     })
     const errSpy = spyQuotaConsole('[vehicleMutations] 차량 저장 실패:')
     try {
-      const result = requestVehicleSave({
+      const result = await requestVehicleSave({
         ownerKey: owner,
         cars: getState().cars[owner],
         editingId: 'car-sub-2',
@@ -117,7 +117,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
     }
   })
 
-  test('중간 setItem 실패와 removeItem 실패 모두 원문을 롤백한다', () => {
+  test('중간 setItem 실패와 removeItem 실패 모두 원문을 롤백한다', async () => {
     const owner = 'veh-rename-remove-fail'
     const oldNum = '55마5555'
     const newNum = '66바6666'
@@ -139,7 +139,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
     const unsubscribe = subscribe(() => { notifyCount += 1 })
     const apiBefore = totalStubCalls()
     try {
-      const result = requestVehicleSave({
+      const result = await requestVehicleSave({
         ownerKey: owner,
         cars: getState().cars[owner],
         editingId: 'car-sub-rm',
@@ -163,7 +163,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
 
 describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
   /** @param {'getItem'|'parse'|'schema'} kind */
-  function runReadFail(kind) {
+  async function runReadFail(kind) {
     const owner = `veh-read-${kind}`
     const oldNum = '77사7777'
     const newNum = '88아8888'
@@ -195,7 +195,7 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
     const apiBefore = totalStubCalls()
     const dirtyBefore = hasDirty(owner)
     try {
-      const result = requestVehicleSave({
+      const result = await requestVehicleSave({
         ownerKey: owner,
         cars: getState().cars[owner],
         editingId: 'car-read-fail',
@@ -219,12 +219,12 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
     }
   }
 
-  test('getItem 예외', () => { runReadFail('getItem') })
-  test('JSON.parse 실패', () => { runReadFail('parse') })
-  test('스키마 불일치', () => { runReadFail('schema') })
-  test('잘못된 날짜·fixedCount·callDetails는 번호 변경을 막는다', () => {
+  test('getItem 예외', async () => { await runReadFail('getItem') })
+  test('JSON.parse 실패', async () => { await runReadFail('parse') })
+  test('스키마 불일치', async () => { await runReadFail('schema') })
+  test('잘못된 날짜·fixedCount·callDetails는 번호 변경을 막는다', async () => {
     /** @param {string} label @param {string} raw */
-    function assertBlocked(label, raw) {
+    async function assertBlocked(label, raw) {
       const owner = `veh-nested-${label}`
       const oldNum = '77사7777'
       commitCars(owner, [{
@@ -237,7 +237,7 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
       const queueRaw = localStorage.getItem(durableKey(pendingOwnerForLog(owner, oldNum)))
       let notifyCount = 0
       const unsub = subscribe(() => { notifyCount += 1 })
-      const result = requestVehicleSave({
+      const result = await requestVehicleSave({
         ownerKey: owner,
         cars: getState().cars[owner],
         editingId: 'car-nested',
@@ -250,18 +250,18 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
       assert.equal(JSON.stringify(getState().workLogs[owner]), logsSnap, label)
       assert.equal(localStorage.getItem(durableKey(pendingOwnerForLog(owner, oldNum))), queueRaw, label)
     }
-    assertBlocked('bad-date', JSON.stringify({ '2026-02-30': patch(1) }))
-    assertBlocked('count-str', JSON.stringify({ '2026-08-13': { isOff: false, fixedCount: '2' } }))
-    assertBlocked('count-neg', JSON.stringify({ '2026-08-13': { isOff: false, fixedCount: -2 } }))
-    assertBlocked('count-float', JSON.stringify({ '2026-08-13': { isOff: false, fixedCount: 1.5 } }))
-    assertBlocked('payments', JSON.stringify({
+    await assertBlocked('bad-date', JSON.stringify({ '2026-02-30': patch(1) }))
+    await assertBlocked('count-str', JSON.stringify({ '2026-08-13': { isOff: false, fixedCount: '2' } }))
+    await assertBlocked('count-neg', JSON.stringify({ '2026-08-13': { isOff: false, fixedCount: -2 } }))
+    await assertBlocked('count-float', JSON.stringify({ '2026-08-13': { isOff: false, fixedCount: 1.5 } }))
+    await assertBlocked('payments', JSON.stringify({
       '2026-08-13': { isOff: false, callDetails: [{ id: 'x', payments: { amount: 1 } }] },
     }))
   })
 })
 
 describe('pending 큐와 번호 변경·삭제', () => {
-  test('옛 번호 quota pending B → 번호 변경 → retry 후 새 번호에 B, 옛 로그·옛 큐 없음', () => {
+  test('옛 번호 quota pending B → 번호 변경 → retry 후 새 번호에 B, 옛 로그·옛 큐 없음', async () => {
     const owner = 'veh-pending-move'
     const oldNum = '11가0001'
     const newNum = '11가0002'
@@ -285,7 +285,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     assert.equal(getPendingDayWrite(oldPending, dateKey)?.fixedCount, 9)
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
-    const result = requestVehicleSave({
+    const result = await requestVehicleSave({
       ownerKey: owner,
       cars: getState().cars[owner],
       editingId: 'car-pend',
@@ -305,7 +305,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     assert.equal(pendingDayWriteCount(), 0)
   })
 
-  test('번호 변경은 callback·fallback·unsafe를 새 pending owner로 옮기고 다른 owner는 유지한다', () => {
+  test('번호 변경은 callback·fallback·unsafe를 새 pending owner로 옮기고 다른 owner는 유지한다', async () => {
     const owner = 'veh-callback-move'
     const other = 'veh-other-keep'
     const oldNum = '41가4101'
@@ -346,7 +346,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const unsubscribe = subscribe(() => { notifyCount += 1 })
     const apiBefore = totalStubCalls()
     const dirtyOtherBefore = hasDirty(other)
-    const result = requestVehicleSave({
+    const result = await requestVehicleSave({
       ownerKey: owner,
       cars: getState().cars[owner],
       editingId: 'car-cb',
@@ -371,7 +371,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     assert.equal(getState().workLogs[other][keepNum][dateKey].fixedCount, 8)
   })
 
-  test('새 durable 키 쓰기 실패 시 옛 pending·callback·unsafe가 남는다', () => {
+  test('새 durable 키 쓰기 실패 시 옛 pending·callback·unsafe가 남는다', async () => {
     const owner = 'veh-durable-write-fail'
     const oldNum = '51가5101'
     const newNum = '51가5102'
@@ -403,7 +403,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const unsubscribe = subscribe(() => { notifyCount += 1 })
     const apiBefore = totalStubCalls()
     try {
-      const result = requestVehicleSave({
+      const result = await requestVehicleSave({
         ownerKey: owner,
         cars: getState().cars[owner],
         editingId: 'car-dw',
@@ -427,7 +427,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     }
   })
 
-  test('unsafe overlay는 번호 변경 시 새 pending owner로 이관된다', () => {
+  test('unsafe overlay는 번호 변경 시 새 pending owner로 이관된다', async () => {
     const owner = 'veh-unsafe-move'
     const oldNum = '21가2101'
     const newNum = '21가2102'
@@ -445,7 +445,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
       fixedRouteCounts: {},
     }
     markUnsafeRegistrationFailure(oldPending, dateKey, unsafePatch)
-    const result = requestVehicleSave({
+    const result = await requestVehicleSave({
       ownerKey: owner,
       cars: getState().cars[owner],
       editingId: 'car-unsafe',
@@ -546,7 +546,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     assert.equal(getState().workLogs[owner][num], undefined)
   })
 
-  test('cleanup 실패 시 최신 patch가 새 번호 큐에 남는다', () => {
+  test('cleanup 실패 시 최신 patch가 새 번호 큐에 남는다', async () => {
     const owner = 'veh-cleanup-fail'
     const oldNum = '13가1313'
     const newNum = '14나1414'
@@ -556,7 +556,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     }], { syncToCloud: false })
     commitLogWorkData(owner, oldNum, { [dateKey]: { isOff: false, fixedCount: 2 } })
     registerPendingDayWrite(pendingOwnerForLog(owner, oldNum), dateKey, patch(7))
-    const moved = requestVehicleSave({
+    const moved = await requestVehicleSave({
       ownerKey: owner,
       cars: getState().cars[owner],
       editingId: 'car-cu',
@@ -579,7 +579,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     assert.equal(getPendingDayWrite(newPending, dateKey)?.fixedCount, 7)
   })
 
-  test('durable 읽기 실패 시 번호 변경을 진행하지 않는다', () => {
+  test('durable 읽기 실패 시 번호 변경을 진행하지 않는다', async () => {
     const owner = 'veh-durable-unread'
     const oldNum = '15다1515'
     const newNum = '16라1616'
@@ -596,7 +596,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
     try {
-      const result = requestVehicleSave({
+      const result = await requestVehicleSave({
         ownerKey: owner,
         cars: getState().cars[owner],
         editingId: 'car-du',
@@ -613,7 +613,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
 })
 
 describe('requestClientSave / requestClientReorder', () => {
-  test('거래처 persist 실패 시 Store가 롤백되고 console.error가 1회다', () => {
+  test('거래처 persist 실패 시 Store가 롤백되고 console.error가 1회다', async () => {
     const owner = 'cli-quota-fail'
     commitClients(owner, [{ id: 'keep', companyName: '유지' }], { syncToCloud: false })
     const proto = Object.getPrototypeOf(localStorage)
@@ -625,7 +625,7 @@ describe('requestClientSave / requestClientReorder', () => {
     })
     const errSpy = spyQuotaConsole('[clientMutations] 거래처 저장 실패:')
     try {
-      const result = requestClientSave({
+      const result = await requestClientSave({
         ownerKey: owner,
         clients: getState().clients[owner] || [],
         editingId: null,
@@ -641,26 +641,26 @@ describe('requestClientSave / requestClientReorder', () => {
     }
   })
 
-  test('핀/비핀 교차 재정렬은 persist를 호출하지 않는다', () => {
+  test('핀/비핀 교차 재정렬은 persist를 호출하지 않는다', async () => {
     const owner = 'cli-cross-drag'
     const clients = [
       { id: 'pin', companyName: '핀', isPinned: true },
       { id: 'rest', companyName: '일반', isPinned: false },
     ]
     commitClients(owner, clients, { syncToCloud: false })
-    const result = requestClientReorder({ ownerKey: owner, clients, fromId: 'pin', toId: 'rest' })
+    const result = await requestClientReorder({ ownerKey: owner, clients, fromId: 'pin', toId: 'rest' })
     assert.equal(result.rejected, true)
     assert.deepEqual(getState().clients[owner].map((item) => item.id), ['pin', 'rest'])
   })
 
-  test('hydration failed면 차량 추가가 Store를 바꾸지 않는다', () => {
+  test('hydration failed면 차량 추가가 Store를 바꾸지 않는다', async () => {
     const owner = 'veh-hyd-fail'
     resetStubSupabaseCallCounts()
     beginSessionEpoch('user-hyd-fail', owner)
     setHydration({ status: 'failed', userId: 'user-hyd-fail', ownerKey: owner })
     commitCars(owner, [], { syncToCloud: false })
     const before = JSON.stringify(getState().cars[owner])
-    const result = requestVehicleSave({
+    const result = await requestVehicleSave({
       ownerKey: owner,
       cars: getState().cars[owner],
       editingId: null,
@@ -671,14 +671,14 @@ describe('requestClientSave / requestClientReorder', () => {
     assert.equal(totalStubCalls(), 0)
   })
 
-  test('hydration failed면 거래처 추가가 Store와 localStorage를 바꾸지 않는다', () => {
+  test('hydration failed면 거래처 추가가 Store와 localStorage를 바꾸지 않는다', async () => {
     const owner = 'cli-hyd-fail'
     beginSessionEpoch('user-cli-hyd', owner)
     setHydration({ status: 'failed', userId: 'user-cli-hyd', ownerKey: owner })
     commitClients(owner, [], { syncToCloud: false })
     const beforeStore = JSON.stringify(getState().clients[owner])
     const beforeLs = localStorage.getItem(storageKeyFor('clients', owner))
-    const result = requestClientSave({
+    const result = await requestClientSave({
       ownerKey: owner,
       clients: getState().clients[owner] || [],
       editingId: null,
@@ -689,15 +689,17 @@ describe('requestClientSave / requestClientReorder', () => {
     assert.equal(localStorage.getItem(storageKeyFor('clients', owner)), beforeLs)
   })
 
-  test('requestClientFixedUnitPrice는 단가만 바꾸고 hydration failed면 Store를 유지한다', () => {
+  test('requestClientFixedUnitPrice는 로그인에서 서버 1회 후 Store만 바꾸고, 서버 실패는 Fail-Fast로 롤백한다', async () => {
     const owner = 'cli-unit-price'
+    resetStubSupabaseCallCounts()
     beginSessionEpoch('user-unit', owner)
     setHydration({ status: 'ready', userId: 'user-unit', ownerKey: owner })
     commitClients(owner, [
-      { id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: 10000 },
+      { id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: 10000, supabaseId: 901 },
       { id: 'c2', companyName: '대한', fixedUnitPrice: 20000 },
     ], { syncToCloud: false })
-    const ok = requestClientFixedUnitPrice({
+    const updateBefore = stubSupabaseCallCounts.update
+    const ok = await requestClientFixedUnitPrice({
       ownerKey: owner,
       userId: 'user-unit',
       clients: getState().clients[owner] || [],
@@ -707,10 +709,33 @@ describe('requestClientSave / requestClientReorder', () => {
     assert.equal(ok.failed, false)
     assert.equal(getState().clients[owner].find((c) => c.id === 'c1')?.fixedUnitPrice, 15000)
     assert.equal(getState().clients[owner].find((c) => c.id === 'c2')?.fixedUnitPrice, 20000)
+    assert.equal(stubSupabaseCallCounts.update, updateBefore + 1)
+    assert.equal(localStorage.getItem(storageKeyFor('clients', owner)), null)
 
-    setHydration({ status: 'failed', userId: 'user-unit', ownerKey: owner })
+    // 서버 실패 → Fail-Fast 토스트, Store는 저장 전으로 롤백
     const before = JSON.stringify(getState().clients[owner])
-    const blocked = requestClientFixedUnitPrice({
+    stubSupabaseMethodImpls.update = async () => ({ data: null, error: { message: 'network down' } })
+    const errSpy = mock.method(console, 'error', () => {})
+    try {
+      const failed = await requestClientFixedUnitPrice({
+        ownerKey: owner,
+        userId: 'user-unit',
+        clients: getState().clients[owner] || [],
+        clientId: 'c1',
+        nextPrice: 88888,
+      })
+      assert.equal(failed.failed, true)
+      assert.equal(failed.toast, '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
+      assert.equal(JSON.stringify(getState().clients[owner]), before)
+    } finally {
+      errSpy.mock.restore()
+      resetStubSupabaseCallCounts()
+    }
+
+    // hydration failed면 서버 0회, Store 그대로
+    setHydration({ status: 'failed', userId: 'user-unit', ownerKey: owner })
+    const before2 = JSON.stringify(getState().clients[owner])
+    const blocked = await requestClientFixedUnitPrice({
       ownerKey: owner,
       userId: 'user-unit',
       clients: getState().clients[owner] || [],
@@ -718,18 +743,20 @@ describe('requestClientSave / requestClientReorder', () => {
       nextPrice: 99999,
     })
     assert.equal(blocked.failed, true)
-    assert.equal(JSON.stringify(getState().clients[owner]), before)
+    assert.equal(JSON.stringify(getState().clients[owner]), before2)
   })
 
-  test('requestClientTaxInfo는 세무 필드만 바꾸고 persist 실패 시 Store를 유지한다', () => {
+  test('requestClientTaxInfo는 로그인에서 세무 필드만 서버 반영하고, 서버 실패는 Store를 저장 전으로 되돌린다', async () => {
     const owner = 'cli-tax-info'
+    resetStubSupabaseCallCounts()
     beginSessionEpoch('user-tax', owner)
     setHydration({ status: 'ready', userId: 'user-tax', ownerKey: owner })
     commitClients(owner, [
-      { id: 't1', companyName: '세무거래처', bizNumber: '111' },
+      { id: 't1', companyName: '세무거래처', bizNumber: '111', supabaseId: 801 },
       { id: 't2', companyName: '다른곳', bizNumber: '222' },
     ], { syncToCloud: false })
-    const ok = requestClientTaxInfo({
+    const updateBefore = stubSupabaseCallCounts.update
+    const ok = await requestClientTaxInfo({
       ownerKey: owner,
       userId: 'user-tax',
       clients: getState().clients[owner] || [],
@@ -740,18 +767,14 @@ describe('requestClientSave / requestClientReorder', () => {
     assert.equal(getState().clients[owner].find((c) => c.id === 't1')?.bizNumber, '999-88-77777')
     assert.equal(getState().clients[owner].find((c) => c.id === 't1')?.taxEmail, 'a@b.c')
     assert.equal(getState().clients[owner].find((c) => c.id === 't2')?.bizNumber, '222')
+    assert.equal(stubSupabaseCallCounts.update, updateBefore + 1)
+    assert.equal(localStorage.getItem(storageKeyFor('clients', owner)), null)
 
-    const proto = Object.getPrototypeOf(localStorage)
-    const original = proto.setItem
-    const failKey = storageKeyFor('clients', owner)
-    const spy = mock.method(proto, 'setItem', function patched(/** @type {string} */ key, /** @type {string} */ value) {
-      if (key === failKey && value.includes('boom')) throw new Error('quota exceeded (simulated)')
-      return original.call(localStorage, key, value)
-    })
-    const errSpy = spyQuotaConsole('[clientMutations] 거래처 세무정보 저장 실패:')
     const before = JSON.stringify(getState().clients[owner])
+    stubSupabaseMethodImpls.update = async () => { throw new Error('network down') }
+    const errSpy = mock.method(console, 'error', () => {})
     try {
-      const fail = requestClientTaxInfo({
+      const fail = await requestClientTaxInfo({
         ownerKey: owner,
         userId: 'user-tax',
         clients: getState().clients[owner] || [],
@@ -759,15 +782,15 @@ describe('requestClientSave / requestClientReorder', () => {
         patch: { bizNumber: 'boom' },
       })
       assert.equal(fail.failed, true)
-      errSpy.assertOnce()
+      assert.equal(fail.toast, '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
       assert.equal(JSON.stringify(getState().clients[owner]), before)
     } finally {
-      errSpy.restore()
-      spy.mock.restore()
+      errSpy.mock.restore()
+      resetStubSupabaseCallCounts()
     }
   })
 
-  test('계정 B ready에서 stale owner A 저장은 A/B Store·localStorage·notify·API가 불변이다', () => {
+  test('계정 B ready에서 stale owner A 저장은 A/B Store·localStorage·notify·API가 불변이다', async () => {
     const ownerA = 'stale-owner-a'
     const ownerB = 'ready-owner-b'
     beginSessionEpoch('user-b', ownerB)
@@ -789,11 +812,11 @@ describe('requestClientSave / requestClientReorder', () => {
     const apiBefore = totalStubCalls()
     let notifyCount = 0
     const unsub = subscribe(() => { notifyCount += 1 })
-    const clientSave = requestClientSave({
+    const clientSave = await requestClientSave({
       ownerKey: ownerA, userId: 'user-a', clients: getState().clients[ownerA], editingId: null,
       draft: { companyName: '침범' },
     })
-    const carSave = requestVehicleSave({
+    const carSave = await requestVehicleSave({
       ownerKey: ownerA, userId: 'user-a', cars: getState().cars[ownerA], editingId: null,
       draft: { number: '33다3333', type: 'sub', driverName: '가', driverPhone: '010-0000-0000' },
     })
@@ -810,5 +833,105 @@ describe('requestClientSave / requestClientReorder', () => {
     assert.equal(localStorage.getItem(storageKeyFor('clients', ownerB)), snap.lsB)
     assert.equal(localStorage.getItem(storageKeyFor('cars', ownerA)), snap.carsLsA)
     assert.equal(localStorage.getItem(storageKeyFor('cars', ownerB)), snap.carsLsB)
+  })
+})
+
+describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 1회 + Store 메모리만', () => {
+  test('로그인+ready 차량 저장: reactPracticeCars setItem 0회, hasDirty 없음, 서버 insert 1회, Store 반영', async () => {
+    const owner = 'slice-e-veh-ok'
+    resetStubSupabaseCallCounts()
+    beginSessionEpoch('user-e1', owner)
+    setHydration({ status: 'ready', userId: 'user-e1', ownerKey: owner })
+    commitCars(owner, [], { syncToCloud: false })
+    const carsKey = storageKeyFor('cars', owner)
+    const proto = Object.getPrototypeOf(localStorage)
+    const original = proto.setItem
+    let carsSetItemCount = 0
+    const spy = mock.method(proto, 'setItem', function patched(/** @type {string} */ key, /** @type {string} */ value) {
+      if (key === carsKey) carsSetItemCount += 1
+      return original.call(localStorage, key, value)
+    })
+    try {
+      const result = await requestVehicleSave({
+        ownerKey: owner, userId: 'user-e1', cars: getState().cars[owner] || [],
+        editingId: null, draft: { number: '77서7777', type: 'main' },
+      })
+      assert.equal(result.failed, false)
+      assert.equal(result.toast, '차량을 등록했습니다.')
+      assert.equal(carsSetItemCount, 0, 'reactPracticeCars 키에 setItem이 없어야 한다')
+      assert.equal(hasDirty(owner), false, 'dirty journal에 이 owner가 없어야 한다')
+      assert.equal(stubSupabaseCallCounts.insert, 1, '서버 insert 1회')
+      assert.equal(getState().cars[owner].some((c) => c.number === '77서7777'), true, 'Store에 반영')
+      assert.equal(localStorage.getItem(carsKey), null, 'LS에는 미러 없음')
+    } finally {
+      spy.mock.restore()
+      resetStubSupabaseCallCounts()
+      endCloudSession()
+    }
+  })
+
+  test('로그인 저장: 서버 throw / {data:null,error}는 Fail-Fast, Store는 저장 전, LS 불변', async () => {
+    const owner = 'slice-e-veh-fail'
+    beginSessionEpoch('user-e2', owner)
+    setHydration({ status: 'ready', userId: 'user-e2', ownerKey: owner })
+    commitCars(owner, [{ id: 'keep', number: '00가0000', type: 'main', supabaseId: 1 }], { syncToCloud: false })
+    const before = JSON.stringify(getState().cars[owner])
+    const carsKey = storageKeyFor('cars', owner)
+    const lsBefore = localStorage.getItem(carsKey)
+    const errSpy = mock.method(console, 'error', () => {})
+    try {
+      for (const impl of [
+        async () => { throw new Error('network down') },
+        async () => ({ data: null, error: { message: 'RLS' } }),
+      ]) {
+        resetStubSupabaseCallCounts()
+        stubSupabaseMethodImpls.insert = impl
+        stubSupabaseMethodImpls.select = async () => ({ data: [], error: null })
+        const result = await requestVehicleSave({
+          ownerKey: owner, userId: 'user-e2', cars: getState().cars[owner],
+          editingId: null, draft: { number: '99자9999', type: 'sub', driverName: '가', driverPhone: '010-0000-0000' },
+        })
+        assert.equal(result.failed, true)
+        assert.equal(result.toast, '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
+        assert.equal(JSON.stringify(getState().cars[owner]), before, 'Store는 저장 전 값')
+        assert.equal(localStorage.getItem(carsKey), lsBefore, 'cars LS 불변')
+      }
+    } finally {
+      errSpy.mock.restore()
+      resetStubSupabaseCallCounts()
+      endCloudSession()
+    }
+  })
+
+  test('hydration failed면 로그인 차량 저장은 서버 0회 + Store 불변', async () => {
+    const owner = 'slice-e-veh-hydfail'
+    resetStubSupabaseCallCounts()
+    beginSessionEpoch('user-e3', owner)
+    setHydration({ status: 'failed', userId: 'user-e3', ownerKey: owner })
+    commitCars(owner, [], { syncToCloud: false })
+    const before = JSON.stringify(getState().cars[owner])
+    const result = await requestVehicleSave({
+      ownerKey: owner, userId: 'user-e3', cars: getState().cars[owner] || [],
+      editingId: null, draft: { number: '11하1111', type: 'main' },
+    })
+    assert.equal(result.failed, true)
+    assert.equal(stubSupabaseCallCounts.insert || 0, 0)
+    assert.equal(stubSupabaseCallCounts.update || 0, 0)
+    assert.equal(JSON.stringify(getState().cars[owner]), before)
+    endCloudSession()
+  })
+
+  test('게스트 차량 저장은 여전히 reactPracticeCars:guest에 남는다(회귀)', async () => {
+    endCloudSession()
+    const owner = 'guest'
+    commitCars(owner, [], { syncToCloud: false })
+    localStorage.removeItem(storageKeyFor('cars', owner))
+    const result = await requestVehicleSave({
+      ownerKey: owner, userId: null, cars: getState().cars[owner] || [],
+      editingId: null, draft: { number: '22게2222', type: 'main' },
+    })
+    assert.equal(result.failed, false)
+    const persisted = readJsonKey('cars', owner, /** @type {Array<{ number: string }>} */ ([]))
+    assert.equal(persisted.some((c) => c.number === '22게2222'), true, '게스트는 LS 정본 유지')
   })
 })

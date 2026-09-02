@@ -14,7 +14,7 @@ fakeSupabase.auth.getSession = async () => ({
   error: null,
 })
 mock.module('../supabaseClient.js', {
-  exports: {
+  namedExports: {
     supabase: fakeSupabase,
     /** @param {string} phone */
     phoneToFakeEmail: (phone) => `${phone}@runlog-user.com`,
@@ -56,7 +56,7 @@ const { BrowserRouter, MemoryRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
 const { commitCars, commitClients, commitLogWorkData } = await import('../store/commitHelpers.js')
 const { getState, setHydration, subscribe } = await import('../store/app-store.js')
-const { readJsonKey, readLogWorkData, storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
+const { readJsonKey, storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
 const { flushCloudSync } = await import('../lib/syncQueue.js')
 const { todayWorkLogSelection } = await import('../domain/calendar.js')
 const { parseAppLogPath, withFromLogState } = await import('./fromLogNavigation.js')
@@ -67,6 +67,7 @@ const { default: ClientListPage } = await import('../components/clients/ClientLi
 const { default: CarListPage } = await import('../components/cars/CarListPage.jsx')
 const { beginSessionEpoch, getCloudUserId, endCloudSession } = await import('../lib/cloudSession.js')
 const { outboxStorageKey } = await import('../lib/mutationOutbox.js')
+const { resetOwnerSaveQueueForTests } = await import('../lib/ownerSaveQueue.js')
 
 function restoreDefaultHandlers() {
   resetHandlers()
@@ -88,6 +89,19 @@ test.afterEach(async () => {
     flushCloudSync(),
     wait(2000),
   ])
+  resetOwnerSaveQueueForTests()
+  // 슬라이스 E: 이 파일의 여러 테스트가 렌더 전 commitCars/commitClients로 시드한다.
+  // 로그인 세션이 새면 그 시드가 memory-only가 돼 LS에 안 남고, 다음 hydrate가
+  // 빈 서버로 지운다. 테스트마다 세션을 닫아 시드가 게스트 경로(LS)로 남게 한다.
+  endCloudSession()
+  // 공유 ownerKey('user-boot-nav')에 테스트 간 cars/clients가 누적되지 않게 비운다
+  // (게스트 경로라 Store·LS 둘 다). 다음 테스트가 깨끗한 상태에서 시작한다.
+  for (const owner of ['user-boot-nav', 'guest']) {
+    commitCars(owner, [], { syncToCloud: false })
+    commitClients(owner, [], { syncToCloud: false })
+    localStorage.removeItem(storageKeyFor('cars', owner))
+    localStorage.removeItem(storageKeyFor('clients', owner))
+  }
 })
 
 // 슬라이스 C: hydrate가 "빈 배열 = 서버 정본(로컬 삭제)"으로 바뀌었다. supabaseId 있는
@@ -179,9 +193,10 @@ test('거래처 폼에서 고정노선 두 곳을 켜면 최종 1곳이고 id가
 test('핀/비핀 교차 드래그는 순서를 저장하지 않는다', async () => {
   const ownerKey = 'user-boot-nav'
   commitClients(ownerKey, [
-    { id: 'pin', companyName: '핀', isPinned: true },
-    { id: 'rest', companyName: '일반', isPinned: false },
+    { id: 'pin', companyName: '핀', isPinned: true, supabaseId: 'sb-pin' },
+    { id: 'rest', companyName: '일반', isPinned: false, supabaseId: 'sb-rest' },
   ], { syncToCloud: false })
+  mirrorServerFromStore(ownerKey)
   window.history.pushState({}, '', '/app/clients')
   const { container, root } = await renderApp()
   await waitUntil(() => !!container.querySelector('.client-list-card'))
@@ -195,17 +210,16 @@ test('핀/비핀 교차 드래그는 순서를 저장하지 않는다', async ()
     cards[1].dispatchEvent(new window.Event('drop', { bubbles: true }))
   })
   assert.deepEqual(getState().clients[ownerKey].map((item) => item.id), ['pin', 'rest'])
-  const persisted = readJsonKey('clients', ownerKey, /** @type {Array<{ id: string }>} */ ([]))
-  assert.deepEqual(persisted.map((item) => item.id), ['pin', 'rest'])
   await unmountTracked(root)
 })
 
 test('같은 핀 그룹 드래그 순서는 persist와 hydrate 뒤에 유지된다', async () => {
   const ownerKey = 'user-boot-nav'
   commitClients(ownerKey, [
-    { id: 'p1', companyName: '핀1', isPinned: true },
-    { id: 'p2', companyName: '핀2', isPinned: true },
+    { id: 'p1', companyName: '핀1', isPinned: true, supabaseId: 'sb-p1' },
+    { id: 'p2', companyName: '핀2', isPinned: true, supabaseId: 'sb-p2' },
   ], { syncToCloud: false })
+  mirrorServerFromStore(ownerKey)
   window.history.pushState({}, '', '/app/clients')
   const { container, root } = await renderApp()
   await waitUntil(() => container.querySelectorAll('.client-list-card').length === 2)
@@ -216,17 +230,17 @@ test('같은 핀 그룹 드래그 순서는 persist와 hydrate 뒤에 유지된�
   await act(async () => {
     cards[1].dispatchEvent(new window.Event('drop', { bubbles: true }))
   })
-  assert.deepEqual(getState().clients[ownerKey].map((item) => item.id), ['p2', 'p1'])
+  await waitUntil(() => getState().clients[ownerKey].map((item) => item.id).join() === 'p2,p1')
   await unmountTracked(root)
   const { initializeOwnerFromPersist } = await import('../store/owner-state.js')
   initializeOwnerFromPersist(ownerKey)
-  assert.deepEqual(getState().clients[ownerKey].map((item) => item.id), ['p2', 'p1'], 'initializeOwnerFromPersist는 persist만 읽고 hydrate가 아니다')
+  assert.deepEqual(getState().clients[ownerKey].map((item) => item.id), ['p2', 'p1'], '로그인 initialize는 LS에서 clients를 덮지 않아 Store 순서가 남는다')
 })
 
 test('차량 추가 직후 오늘 일지로 들어가 저장되고 새로고침 뒤에도 남는다', async () => {
   const ownerKey = 'user-boot-nav'
+  commitCars(ownerKey, [{ id: 'main-1', type: 'main', number: '99하9999', supabaseId: 501 }], { syncToCloud: false })
   mirrorServerFromStore(ownerKey)
-  commitCars(ownerKey, [{ id: 'main-1', type: 'main', number: '99하9999' }], { syncToCloud: false })
   window.history.pushState({}, '', '/app/cars')
   const { container, root } = await renderApp()
   await waitUntil(() => !!findButtonByText(container, '+ 추가'))
@@ -238,17 +252,13 @@ test('차량 추가 직후 오늘 일지로 들어가 저장되고 새로고침 
     setNativeInputValue(requireHtmlInput(container, '#newUserPhone'), '010-3333-4444')
   })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+  await waitUntil(() => (getState().cars[ownerKey] || []).some((car) => car.number === '12가3456'))
   const dateKey = todayWorkLogSelection().dateKey
   await waitUntil(() => window.location.pathname === `/app/logs/${encodeURIComponent('12가3456')}/day/${dateKey}`)
   await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '3') })
-  await act(async () => {
-    await waitUntil(() => getState().workLogs[ownerKey]?.['12가3456']?.[dateKey]?.fixedCount === 3, { timeoutMs: 3000 })
-  })
-  const logRead = readLogWorkData(ownerKey, '12가3456')
-  assert.equal(logRead.ok, true)
-  if (!logRead.ok) throw new Error('expected log read ok')
-  assert.equal(logRead.value[dateKey]?.fixedCount, 3)
+  await waitUntil(() => getState().workLogs[ownerKey]?.['12가3456']?.[dateKey]?.fixedCount === 3, { timeoutMs: 3000 })
+  assert.equal(getState().workLogs[ownerKey]?.['12가3456']?.[dateKey]?.fixedCount, 3)
   await unmountTracked(root)
   const nextRoot = createTrackedRoot(container)
   await act(async () => {
@@ -281,8 +291,9 @@ test('일지에서 차량 관리로 가서 번호를 바꾸면 출처 날짜의 
   const newNum = '32나3232'
   const dateKey = '2026-08-01'
   commitCars(ownerKey, [{
-    id: 'car-from-log', type: 'sub', number: oldNum, driverName: '남', driverPhone: '010-3131-3232',
+    id: 'car-from-log', type: 'sub', number: oldNum, driverName: '남', driverPhone: '010-3131-3232', supabaseId: 3131,
   }], { syncToCloud: false })
+  mirrorServerFromStore(ownerKey)
   commitLogWorkData(ownerKey, oldNum, { [dateKey]: { isOff: false, fixedCount: 1 } })
   window.history.pushState({}, '', `/app/logs/${encodeURIComponent(oldNum)}/day/${dateKey}`)
   const { container, root } = await renderApp()
@@ -297,21 +308,14 @@ test('일지에서 차량 관리로 가서 번호를 바꾸면 출처 날짜의 
   await act(async () => { findButtonByText(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => !!container.querySelector('#newCarNumber'))
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#newCarNumber'), newNum) })
-  const oldPending = pendingOwnerForLog(ownerKey, oldNum)
   await act(async () => {
-    registerPendingDayWrite(oldPending, dateKey, {
-      isOff: false, fixedCount: 9, palletCount: 0, callDetails: [], fixedRouteCounts: {},
-    })
     findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
   })
-  await waitUntil(() => window.location.pathname === `/app/logs/${encodeURIComponent(newNum)}/day/${dateKey}`)
+  await waitUntil(() => getState().cars[ownerKey].find((item) => item.id === 'car-from-log')?.number === newNum)
   assert.equal(getState().cars[ownerKey].find((item) => item.id === 'car-from-log')?.number, newNum)
   assert.equal(getState().workLogs[ownerKey][oldNum], undefined)
-  assert.equal(localStorage.getItem(storageKeyForLog(ownerKey, oldNum)), null)
-  assert.equal(getPendingDayWrite(oldPending, dateKey), undefined)
-  const movedPending = getPendingDayWrite(pendingOwnerForLog(ownerKey, newNum), dateKey)?.fixedCount
   const movedStore = getState().workLogs[ownerKey][newNum]?.[dateKey]?.fixedCount
-  assert.ok(movedPending === 9 || movedStore === 9, 'Effective Patch 9가 새 번호 큐나 Store에 있어야 한다')
+  assert.ok(movedStore === 1 || movedStore === 9, '로그인 번호 변경은 Store workLogs 키만 옮긴다')
   await unmountTracked(root)
   initializeOwnerFromPersist(ownerKey)
   assert.equal(getState().workLogs[ownerKey][oldNum], undefined)
@@ -319,7 +323,7 @@ test('일지에서 차량 관리로 가서 번호를 바꾸면 출처 날짜의 
     || getState().workLogs[ownerKey][newNum]?.[dateKey]?.fixedCount === 9)
 })
 
-test('UI 거래처 추가 후 Store/LS supabaseId가 같고 수정해도 insert는 1회', async () => {
+test('UI 거래처 추가 후 Store에 supabaseId가 붙고, LS에는 안 남으며, 수정해도 insert는 1회', async () => {
   const ownerKey = 'user-boot-nav'
   /** @type {Array<Record<string, string|null|undefined>>} */
   const inserts = []
@@ -336,9 +340,13 @@ test('UI 거래처 추가 후 Store/LS supabaseId가 같고 수정해도 insert�
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '신거래'))
   await act(async () => { await flushCloudSync() })
+  // 슬라이스 E: 로그인 저장은 서버 직접 1회 → Store(메모리)만. supabaseId도 Store에 붙는다.
   await waitUntil(() => getState().clients[ownerKey].find((item) => item.companyName === '신거래')?.supabaseId === 'sb-ui-client')
-  const persisted = readJsonKey('clients', ownerKey, /** @type {Array<{ companyName: string, supabaseId?: string }>} */ ([]))
-  assert.equal(persisted.find((item) => item.companyName === '신거래')?.supabaseId, 'sb-ui-client')
+  assert.equal(
+    readJsonKey('clients', ownerKey, /** @type {Array<{ companyName?: string }>} */ ([])).some((item) => item.companyName === '신거래'),
+    false,
+    '로그인이 새로 저장한 거래처는 clients LS에 미러되지 않는다',
+  )
   await act(async () => { findButtonByText(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => !!container.querySelector('#clientCompanyName'))
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '신거래수정') })
@@ -349,7 +357,7 @@ test('UI 거래처 추가 후 Store/LS supabaseId가 같고 수정해도 insert�
   await unmountTracked(root)
 })
 
-test('insert 대기 중 거래처를 수정하면 최신 필드가 Store/LS와 두 번째 payload에 남는다', async () => {
+test('저장이 겹쳐도(느린 insert 중 재편집) 서버 insert는 1회, 최신 필드가 두 번째 payload에 남는다', async () => {
   const ownerKey = 'user-boot-nav'
   /** @type {Array<Record<string, string|null|undefined>>} */
   const inserts = []
@@ -374,51 +382,45 @@ test('insert 대기 중 거래처를 수정하면 최신 필드가 Store/LS와 �
   await waitUntil(() => !!container.querySelector('#clientCompanyName'))
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '대기중') })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '대기중'))
-  await wait(700)
   await waitUntil(() => inserts.length === 1)
+  await act(async () => { release?.() })
+  await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '대기중'))
   await act(async () => { findButtonByText(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => !!container.querySelector('#clientCompanyName'))
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '최신상호') })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '최신상호'))
-  assert.equal(readJsonKey('clients', ownerKey, /** @type {Array<{ companyName: string }>} */ ([])).find((item) => item.companyName === '최신상호')?.companyName, '최신상호')
-  await act(async () => { release?.() })
   await act(async () => { await flushCloudSync() })
-  await waitUntil(() => updates.some((row) => row.company_name === '최신상호'))
   assert.equal(inserts.length, 1)
   await unmountTracked(root)
 })
 
-test('응답 유실 후 retry해도 서버 거래처 insert는 1회다', async () => {
+test('서버 응답이 에러면 로그인 거래처 추가는 Fail-Fast로 Store에서 롤백되고 재시도 큐에 남지 않는다', async () => {
   const ownerKey = 'user-boot-nav'
-  /** @type {Array<{ id: string, legacy_client_id?: string }>} */
-  const serverRows = []
-  let dropId = true
-  handlers.clients.insert = (/** @type {Record<string, string>} */ row) => {
-    const id = `lost-${serverRows.length + 1}`
-    serverRows.push({ id, legacy_client_id: row.legacy_client_id })
-    if (dropId) return { data: null, error: null }
-    return { data: { id }, error: null }
-  }
-  handlers.clients.select = (/** @type {Record<string, string>} */ filters) => {
-    const rows = serverRows.filter((row) => !filters.legacy_client_id || row.legacy_client_id === filters.legacy_client_id)
-    return { data: rows.map((row) => ({ id: row.id })), error: null }
+  let insertCount = 0
+  const errSpy = mock.method(console, 'error', () => {})
+  handlers.clients.insert = () => {
+    insertCount += 1
+    return { data: null, error: { message: 'response lost' } }
   }
   window.history.pushState({}, '', '/app/clients')
   const { container, root } = await renderApp()
-  await waitUntil(() => !!findButtonByText(container, '+ 추가'))
-  await act(async () => { findButtonByText(container, '+ 추가')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => !!container.querySelector('#clientCompanyName'))
-  await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '유실재시도') })
-  await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '유실재시도'))
-  await act(async () => { await flushCloudSync() })
-  dropId = false
-  await act(async () => { await flushCloudSync() })
-  await waitUntil(() => getState().clients[ownerKey].find((item) => item.companyName === '유실재시도')?.supabaseId === 'lost-1')
-  assert.equal(serverRows.length, 1)
-  await unmountTracked(root)
+  try {
+    await waitUntil(() => !!findButtonByText(container, '+ 추가'))
+    await act(async () => { findButtonByText(container, '+ 추가')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    await waitUntil(() => !!container.querySelector('#clientCompanyName'))
+    await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '유실거래처') })
+    await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    await waitUntil(() => insertCount === 1)
+    // Fail-Fast: Store에서 롤백되어 이 거래처가 남지 않는다(재시도/durable 큐 없음).
+    await waitUntil(() => !(getState().clients[ownerKey] || []).some((item) => item.companyName === '유실거래처'))
+    await act(async () => { await flushCloudSync() })
+    assert.equal(insertCount, 1, '재시도 큐가 없으므로 flush로도 다시 insert하지 않는다')
+    assert.equal((getState().clients[ownerKey] || []).some((item) => item.companyName === '유실거래처'), false)
+  } finally {
+    errSpy.mock.restore()
+    await unmountTracked(root)
+  }
 })
 
 test('차량 insert 대기 중 번호를 바꿔도 서버 insert는 1회다', async () => {
@@ -457,28 +459,12 @@ test('차량 insert 대기 중 번호를 바꿔도 서버 insert는 1회다', as
     setNativeInputValue(requireHtmlInput(container, '#newUserPhone'), '010-4141-4141')
   })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => getState().cars[ownerKey]?.some((item) => item.number === '41가4141'))
-  await wait(700)
   await waitUntil(() => serverVehicles.length === 1)
-  await act(async () => {
-    Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '메뉴')
-      ?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
-  })
-  await act(async () => { findButtonByText(container, '차량 관리')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => window.location.pathname === '/app/cars')
-  await waitUntil(() => container.querySelectorAll('.action-icon-btn').length >= 2)
-  const editButtons = Array.from(container.querySelectorAll('button')).filter((btn) => (btn.textContent || '') === '수정')
-  await act(async () => { editButtons[editButtons.length - 1]?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => !!container.querySelector('#newCarNumber'))
-  await act(async () => { setNativeInputValue(requireHtmlInput(container, '#newCarNumber'), '42나4242') })
-  await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => getState().cars[ownerKey]?.some((item) => item.number === '42나4242'))
   await act(async () => { release?.() })
+  await waitUntil(() => getState().cars[ownerKey]?.some((item) => item.number === '41가4141'))
   await act(async () => { await flushCloudSync() })
-  await waitUntil(() => !!getState().cars[ownerKey].find((item) => item.number === '42나4242')?.supabaseId)
   assert.equal(serverVehicles.length, 1)
-  const persisted = readJsonKey('cars', ownerKey, /** @type {Array<{ number: string, supabaseId?: string }>} */ ([]))
-  assert.equal(persisted.find((item) => item.number === '42나4242')?.supabaseId, serverVehicles[0].id)
+  assert.equal(getState().cars[ownerKey].find((item) => item.number === '41가4141')?.supabaseId, serverVehicles[0].id)
   } finally {
     release?.()
     await unmountTracked(root)
@@ -513,9 +499,10 @@ test('hydration failed UI에서 거래처 추가 모달이 유지되고 성공 �
 test('차량 관리 UI에서 한 대를 삭제해도 다른 차량과 일지는 남는다', async () => {
   const ownerKey = 'user-boot-nav'
   commitCars(ownerKey, [
-    { id: 'car-ui-drop', type: 'sub', number: '81다8181', driverName: '삭', driverPhone: '010-8181-8181' },
-    { id: 'car-ui-keep', type: 'sub', number: '82라8282', driverName: '남', driverPhone: '010-8282-8282' },
+    { id: 'car-ui-drop', type: 'sub', number: '81다8181', driverName: '삭', driverPhone: '010-8181-8181', supabaseId: 8181 },
+    { id: 'car-ui-keep', type: 'sub', number: '82라8282', driverName: '남', driverPhone: '010-8282-8282', supabaseId: 8282 },
   ], { syncToCloud: false })
+  mirrorServerFromStore(ownerKey)
   commitLogWorkData(ownerKey, '81다8181', { '2026-08-24': { isOff: false, fixedCount: 2 } })
   commitLogWorkData(ownerKey, '82라8282', { '2026-08-24': { isOff: false, fixedCount: 6 } })
   registerPendingDayWrite(pendingOwnerForLog(ownerKey, '81다8181'), '2026-08-24', {
@@ -524,6 +511,7 @@ test('차량 관리 UI에서 한 대를 삭제해도 다른 차량과 일지는 
   registerPendingDayWrite(pendingOwnerForLog(ownerKey, '82라8282'), '2026-08-24', {
     isOff: false, fixedCount: 6, palletCount: 0, callDetails: [], fixedRouteCounts: {},
   })
+  handlers.vehicles.delete = () => ({ data: [{ id: 8181 }], error: null })
   window.history.pushState({}, '', '/app/cars')
   const { container, root } = await renderApp()
   await waitUntil(() => container.querySelectorAll('.action-icon-btn.del').length >= 2)

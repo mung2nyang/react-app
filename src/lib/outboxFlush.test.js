@@ -4,7 +4,7 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf } = createFakeSupabase()
-mock.module('../supabaseClient.js', { exports: { supabase: fakeSupabase } })
+mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { flushMutationOutbox, resetOutboxQueuesForTests } = await import('./outboxFlush.js')
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')

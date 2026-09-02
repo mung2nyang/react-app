@@ -74,8 +74,8 @@ export default function CarListPage({ ownerKey = 'guest', onBack, showToast }) {
     setModalOpen(true)
   }
 
-  function save() {
-    const result = requestVehicleSave({ ownerKey, userId: getCloudUserId(), cars, draft, editingId })
+  async function save() {
+    const result = await requestVehicleSave({ ownerKey, userId: getCloudUserId(), cars, draft, editingId })
     if (result.toast) showToast?.(result.toast)
     if (result.failed) return
     setModalOpen(false)

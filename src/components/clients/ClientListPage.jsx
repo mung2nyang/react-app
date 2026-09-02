@@ -67,8 +67,8 @@ export default function ClientListPage({ ownerKey = 'guest', onBack, showToast }
     setModalOpen(true)
   }
 
-  function save() {
-    const result = requestClientSave({ ownerKey, userId: getCloudUserId(), clients, draft, editingId })
+  async function save() {
+    const result = await requestClientSave({ ownerKey, userId: getCloudUserId(), clients, draft, editingId })
     if (result.toast) showToast?.(result.toast)
     if (result.failed) return
     setModalOpen(false)

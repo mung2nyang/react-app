@@ -7,9 +7,10 @@
 // 결과를 렌더로 옮기기만 한다(Step 0-4 감사 보완 — 비로그인 딥링크 테스트가 그 함수를 쓴다).
 import { Navigate } from 'react-router-dom'
 import { resolveSessionGate } from './sessionGate.js'
+import { isGuestModePersisted } from './guestSessionPersist.js'
 
 export default function RequireSession({ session, booting, children }) {
-  const gate = resolveSessionGate({ booting, session })
+  const gate = resolveSessionGate({ booting, session, guestModePersisted: isGuestModePersisted() })
   if (gate === 'loading') return <div className="page">불러오는 중...</div>
   if (gate === 'redirect') return <Navigate to="/auth" replace />
   return children

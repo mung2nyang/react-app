@@ -10,7 +10,10 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
   const sessionPhone = session?.phone || ''
 
   function update(field, value) {
-    saveProfile(ownerKey, { ...profile, [field]: value })
+    void saveProfile(ownerKey, { ...profile, [field]: value }).catch((error) => {
+      console.error('개인정보 저장 실패:', error)
+      showToast?.('저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
+    })
   }
 
   const guest = !!session?.guestMode

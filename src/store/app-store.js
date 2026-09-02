@@ -4,7 +4,7 @@
 // 와 storageKeyForLog. initializeOwnerFromPersist는 owner-state.js.
 
 import { writeAllOrNothing } from './atomicPersist.js'
-import { buildBatchWrites } from './batchWrites.js'
+import { allEntriesCloudMemoryOnly, buildBatchWrites } from './batchWrites.js'
 import { scheduleCloudSync } from '../lib/syncQueue.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
@@ -133,8 +133,12 @@ function applyDomainToState(domain, ownerKey, value) {
  */
 export function commitBatch(entries, options = {}) {
   const { persist = true, syncToCloud = true, extraWrites = [], mergeWorkLogs, replaceWorkLogs } = options
-  const writes = [...buildBatchWrites(entries, { persist, syncToCloud })]
-  if (persist && extraWrites.length) writes.push(...extraWrites)
+  // 슬라이스 E: 로그인 세션이면 업무 도메인은 localStorage·dirty에 안 쓴다(Store 메모리만).
+  const cloudOwnerKey = state.hydration.userId ? state.hydration.ownerKey : null
+  const memoryOnly = allEntriesCloudMemoryOnly(entries, cloudOwnerKey)
+  const writes = [...buildBatchWrites(entries, { persist, syncToCloud, cloudOwnerKey })]
+  // 로그인 세션의 extraWrites(서브 일지 키 등)도 LS에 안 쓴다. 게스트만 남긴다.
+  if (persist && extraWrites.length && cloudOwnerKey == null) writes.push(...extraWrites)
   if (writes.length) writeAllOrNothing(writes)
 
   entries.forEach(({ domain, ownerKey, value }) => {
@@ -148,7 +152,7 @@ export function commitBatch(entries, options = {}) {
     state.workLogs = { ...state.workLogs, [replaceWorkLogs.ownerKey]: replaceWorkLogs.next }
   }
   notify()
-  if (syncToCloud && entries.length) scheduleCloudSync()
+  if (syncToCloud && entries.length && !memoryOnly) scheduleCloudSync()
   return entries.map((entry) => entry.value)
 }
 

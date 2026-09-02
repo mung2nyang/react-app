@@ -11,7 +11,9 @@
 // 반영되고 profile은 아직 안 반영된" 중간 state를 볼 수 있었다.
 import { readLogWorkData } from './persist.js'
 import { readPersistDomain } from './persistDomainRead.js'
-import { commitBatch } from './app-store.js'
+import { commitBatch, getState } from './app-store.js'
+import { CLOUD_MEMORY_ONLY_DOMAINS } from './batchWrites.js'
+import { getCloudOwnerKey } from '../lib/cloudSession.js'
 import { dedupeCarsById } from '../domain/cars.js'
 
 /** @typedef {import('./persist.js').PersistDomain} PersistDomain */
@@ -39,18 +41,36 @@ const SLICE_DOMAINS = ['cars', 'clients', 'settings', 'expenses', 'invoices', 'd
  * localStorage에 이미 저장된 값을 store에 읽어 들인다. 아무것도 새로 쓰지 않고,
  * 클라우드 동기화도 예약하지 않는다. 도메인/서브 일지 중 하나라도 읽기·스키마가
  * 실패하면 Store와 workLogs를 전혀 바꾸지 않고 notify 0회로 끝낸다.
+ *
+ * 슬라이스 E: 로그인 세션(getCloudOwnerKey() === ownerKey)이면 업무 도메인은 LS에서
+ * Store로 넣지 않는다 — 부트 시점엔 hydrate가 이미 서버 정본을 Store에 넣었고, 여기서
+ * 옛 LS를 다시 얹으면 그 정본을 덮는다. 로그인 LS에 남는 dismissedNotifications만 읽는다.
  * @param {string} ownerKey
  */
 export function initializeOwnerFromPersist(ownerKey) {
+  const cloud = getCloudOwnerKey() === ownerKey
   /** @type {Array<import('./app-store.js').BatchEntry>} */
   const entries = []
   for (const domain of SLICE_DOMAINS) {
+    if (cloud && CLOUD_MEMORY_ONLY_DOMAINS.has(domain)) continue
     const read = readPersistDomain(domain, ownerKey)
     if (!read.ok) return
+    if (cloud && domain === 'settings') {
+      const raw = read.value && typeof read.value === 'object' ? read.value : {}
+      const theme = 'theme' in raw && raw.theme === 'dark' ? 'dark' : 'light'
+      const existing = getState().settings[ownerKey]
+      const base = existing && typeof existing === 'object' ? existing : {}
+      entries.push({ domain, ownerKey, value: { ...base, theme } })
+      continue
+    }
     const value = domain === 'cars' && Array.isArray(read.value)
       ? dedupeCarsById(/** @type {Array<CarLike>} */ (read.value))
       : read.value
     entries.push({ domain, ownerKey, value })
+  }
+  if (cloud) {
+    if (entries.length) commitBatch(entries, { persist: false, syncToCloud: false })
+    return
   }
   const workRead = readLogWorkData(ownerKey, 'main')
   if (!workRead.ok) return
@@ -96,10 +116,10 @@ export function initializeOwnerFromPersist(ownerKey) {
  * 끝난다 — 중간에 구독자가 절반만 반영된 snapshot을 볼 일이 없다.
  * @param {string} ownerKey
  * @param {OwnerSnapshot} [snapshot]
- * @param {{ sync?: boolean }} [options]
+ * @param {{ sync?: boolean, persist?: boolean }} [options]
  */
 export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
-  const { sync = true } = options
+  const { sync = true, persist = true } = options
   /** @type {Array<import('./app-store.js').BatchEntry>} */
   const entries = []
   if (snapshot.workData && typeof snapshot.workData === 'object') entries.push({ domain: 'workData', ownerKey, value: snapshot.workData })
@@ -111,5 +131,5 @@ export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
   if (Array.isArray(snapshot.expenses)) entries.push({ domain: 'expenses', ownerKey, value: snapshot.expenses })
   if (Array.isArray(snapshot.invoices)) entries.push({ domain: 'invoices', ownerKey, value: snapshot.invoices })
   if (!entries.length) return
-  commitBatch(entries, { persist: true, syncToCloud: sync })
+  commitBatch(entries, { persist, syncToCloud: sync })
 }

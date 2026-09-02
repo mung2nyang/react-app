@@ -7,7 +7,7 @@ import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
 const { mock } = await import('node:test')
-mock.module('../supabaseClient.js', { exports: { supabase: fakeSupabase } })
+mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
 const { shouldCommitDayLogToCloud } = await import('./mainDayLogRouting.js')
