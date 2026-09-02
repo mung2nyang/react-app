@@ -4,7 +4,7 @@ import {
   buildFinanceSettings,
   markMonthlyReceivablesPaid,
   patchWorkLog,
-  persistWorkDataByLogId,
+  persistReceivableWorkDataChange,
 } from '../lib/ownerFinance.js'
 import { getReceivableItems } from '../lib/finance.js'
 import {
@@ -25,6 +25,7 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
   const [partialKey, setPartialKey] = useState('')
   const [partialAmount, setPartialAmount] = useState('')
   const [historyKey, setHistoryKey] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const cars = useOwnerCars(ownerKey)
   const practiceSettings = useOwnerSettings(ownerKey)
@@ -45,21 +46,37 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
   const detailTotal = detailItems.reduce((sum, item) => sum + item.remainingAmount, 0)
   const dueDates = detailItems.map((item) => item.paymentDueDate).filter(Boolean).sort()
 
-  function persist(next) {
-    persistWorkDataByLogId(ownerKey, next)
-    onWorkChanged?.()
+  async function persist(next, successMessage) {
+    if (saving) return false
+    setSaving(true)
+    try {
+      const result = await persistReceivableWorkDataChange(ownerKey, next)
+      if (!result.ok) {
+        if (result.toast) showToast?.(result.toast)
+        if (result.partial) {
+          setPartialKey('')
+          setPartialAmount('')
+          onWorkChanged?.()
+        }
+        return false
+      }
+      setPartialKey('')
+      setPartialAmount('')
+      if (successMessage) showToast?.(successMessage)
+      onWorkChanged?.()
+      return true
+    } finally {
+      setSaving(false)
+    }
   }
 
-  function applyPatch(logId, dateKey, detailId, apply, successMessage) {
+  async function applyPatch(logId, dateKey, detailId, apply, successMessage) {
     const result = patchWorkLog(workDataByLogId, logId, dateKey, detailId, apply)
     if (result.error) {
       showToast?.(result.error)
       return
     }
-    persist(result.workDataByLogId)
-    setPartialKey('')
-    setPartialAmount('')
-    showToast?.(successMessage)
+    await persist(result.workDataByLogId, successMessage)
   }
 
   function payItem(item) {
@@ -68,11 +85,24 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
     ), '입금 완료 처리했습니다.')
   }
 
-  function payGroup(clientName, monthKey, stay) {
-    persist(markMonthlyReceivablesPaid(workDataByLogId, settings, clientName, monthKey))
-    showToast?.(`${clientName} ${parseInt(monthKey.slice(5, 7), 10)}월분 미수금을 수금 완료 처리했습니다.`)
-    if (stay && detail) return
-    setDetail(null)
+  async function payGroup(clientName, monthKey, stay) {
+    if (saving) return
+    const next = markMonthlyReceivablesPaid(workDataByLogId, settings, clientName, monthKey)
+    setSaving(true)
+    try {
+      const result = await persistReceivableWorkDataChange(ownerKey, next)
+      if (!result.ok) {
+        if (result.toast) showToast?.(result.toast)
+        if (result.partial) onWorkChanged?.()
+        return
+      }
+      showToast?.(`${clientName} ${parseInt(monthKey.slice(5, 7), 10)}월분 미수금을 수금 완료 처리했습니다.`)
+      onWorkChanged?.()
+      if (stay && detail) return
+      setDetail(null)
+    } finally {
+      setSaving(false)
+    }
   }
 
   function confirmPartial(item) {
@@ -129,7 +159,7 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
         </div>
         {!compact && (
           <div className="car-action-btns">
-            <button type="button" className="action-icon-btn" onClick={() => payItem(item)}>이 건 입금 완료</button>
+            <button type="button" className="action-icon-btn" onClick={() => payItem(item)} disabled={saving}>이 건 입금 완료</button>
             <button
               type="button"
               className="action-icon-btn"
@@ -154,7 +184,7 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
               value={formatCurrencyInput(partialAmount)}
               onChange={(e) => setPartialAmount(e.target.value)}
             />
-            <button type="button" className="modal-btn confirm" onClick={() => confirmPartial(item)}>확인</button>
+            <button type="button" className="modal-btn confirm" onClick={() => confirmPartial(item)} disabled={saving}>확인</button>
           </div>
         )}
       </div>
@@ -186,7 +216,7 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
         {detailItems.map((item) => renderItemCard(item, false))}
 
         {detailItems.length > 0 && (
-          <button type="button" className="personal-account-btn" onClick={() => payGroup(detail.client, detail.monthKey, true)}>
+          <button type="button" className="personal-account-btn" onClick={() => payGroup(detail.client, detail.monthKey, true)} disabled={saving}>
             전체 입금 완료 처리
           </button>
         )}
@@ -229,7 +259,7 @@ export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast,
               </div>
               <div className="receivable-card-actions">
                 <button type="button" className="action-icon-btn" onClick={() => setDetail({ client: group.client, monthKey: group.monthKey })}>상세</button>
-                <button type="button" className="action-icon-btn" onClick={() => payGroup(group.client, group.monthKey, false)}>입금 완료</button>
+                <button type="button" className="action-icon-btn" onClick={() => payGroup(group.client, group.monthKey, false)} disabled={saving}>입금 완료</button>
               </div>
             </div>
           ))}
