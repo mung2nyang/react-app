@@ -15,38 +15,15 @@ function BackIcon() {
   )
 }
 
-function OwnerIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <path d="M3 14.5v-2l2.5-1.4 1.6-3.7A2.3 2.3 0 0 1 9.2 6h5.6a2.3 2.3 0 0 1 2.1 1.4l1.6 3.7 2.5 1.4v4.2"></path>
-      <path d="M5 18h14M6 11h12"></path>
-      <circle cx="6.8" cy="17.5" r="2.5"></circle>
-      <circle cx="17.2" cy="17.5" r="2.5"></circle>
-    </svg>
-  )
-}
-
-function DriverIcon() {
-  return (
-    <svg viewBox="0 0 24 24">
-      <circle cx="12" cy="7" r="4"></circle>
-      <path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"></path>
-      <path d="M9 21v-4h6v4"></path>
-    </svg>
-  )
-}
-
 export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword, showToast }) {
   const [view, setView] = useState('intro')
   const [busy, setBusy] = useState(false)
   const [login, setLogin] = useState({ name: '', phone: '', password: '' })
   const [signup, setSignup] = useState({
-    role: 'owner_driver',
     name: '',
     phone: '',
     password: '',
     passwordConfirm: '',
-    inviteCode: '',
   })
 
   const loginReady =
@@ -54,15 +31,11 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
     login.phone.replace(/\D/g, '').length >= 10 &&
     login.password.length >= 6
 
-  const inviteDigits = signup.inviteCode.replace(/\D/g, '')
-  const invitePartial =
-    signup.role === 'employed_driver' && inviteDigits.length > 0 && inviteDigits.length < 6
   const signupReady =
     signup.name.trim() &&
     signup.phone.replace(/\D/g, '').length >= 10 &&
     signup.password.length >= 6 &&
-    signup.password === signup.passwordConfirm &&
-    !invitePartial
+    signup.password === signup.passwordConfirm
 
   function openLogin() {
     setLogin({ name: '', phone: '', password: '' })
@@ -71,12 +44,10 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
 
   function openSignup() {
     setSignup({
-      role: 'owner_driver',
       name: '',
       phone: '',
       password: '',
       passwordConfirm: '',
-      inviteCode: '',
     })
     setView('signup')
   }
@@ -118,14 +89,14 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
         return
       }
       if (data?.user) {
-        await ensureProfileRow(data.user.id, signup.role, signup.name.trim(), signup.phone.trim())
+        await ensureProfileRow(data.user.id, 'owner_driver', signup.name.trim(), signup.phone.trim())
       }
       showToast('회원가입이 완료되었습니다.')
       onSignup({
         name: signup.name.trim(),
         phone: signup.phone.trim(),
-        accountType: signup.role,
-        inviteCode: signup.role === 'employed_driver' ? signup.inviteCode : '',
+        accountType: 'owner_driver',
+        inviteCode: '',
         userId: data?.user?.id || null,
       })
     } catch (error) {
@@ -248,34 +219,6 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
           </p>
         </div>
 
-        <div className="auth-role-tabs" role="radiogroup" aria-label="사용자 유형">
-          <button
-            type="button"
-            className={`auth-role-tab${signup.role === 'owner_driver' ? ' active' : ''}`}
-            role="radio"
-            aria-checked={signup.role === 'owner_driver'}
-            onClick={() => setSignup({ ...signup, role: 'owner_driver', inviteCode: '' })}
-          >
-            <div className="auth-role-tab-icon"><OwnerIcon /></div>
-            <span>차주</span>
-          </button>
-          <button
-            type="button"
-            className={`auth-role-tab${signup.role === 'employed_driver' ? ' active' : ''}`}
-            role="radio"
-            aria-checked={signup.role === 'employed_driver'}
-            onClick={() => setSignup({ ...signup, role: 'employed_driver' })}
-          >
-            <div className="auth-role-tab-icon"><DriverIcon /></div>
-            <span>소속 기사</span>
-          </button>
-        </div>
-        <p className="auth-role-subtitle">
-          {signup.role === 'owner_driver'
-            ? '본인 차량 일지 및 기사를 관리해요.'
-            : '초대 코드나 전화번호로 사장님과 연결해요.'}
-        </p>
-
         <div className="auth-form-fields">
           <div className="auth-field">
             <label htmlFor="signupName">이름</label>
@@ -324,22 +267,6 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
               onChange={(e) => setSignup({ ...signup, passwordConfirm: e.target.value })}
             />
           </div>
-          {signup.role === 'employed_driver' && (
-            <div className="auth-invite-row">
-              <div className="auth-invite-text">
-                <strong>기사 초대코드 (선택)</strong>
-                <p>사장님에게 받은 6자리 코드가 있으면 입력해 주세요. 나중에 마이페이지에서도 연결할 수 있습니다.</p>
-              </div>
-              <input
-                className="auth-input-box auth-code-box"
-                inputMode="numeric"
-                maxLength={6}
-                placeholder="000000"
-                value={signup.inviteCode}
-                onChange={(e) => setSignup({ ...signup, inviteCode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-              />
-            </div>
-          )}
         </div>
         <div className="auth-bottom-sticky">
           <button

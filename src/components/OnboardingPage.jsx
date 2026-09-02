@@ -1,17 +1,10 @@
 import { useState } from 'react'
 
 const BANNER = '/images/banner_image.png'
+const STEP_SEQUENCE = [1, 2, 3, 4]
 
-function getStepSequence(accountType) {
-  const seq = [1, 2, 3]
-  if (accountType !== 'employed_driver') {
-    seq.push(4, 5)
-  }
-  return seq
-}
-
-export default function OnboardingPage({ accountType, onFinish }) {
-  const [stepSequence] = useState(() => getStepSequence(accountType))
+// accountType prop은 App.jsx가 아직 넘기지만 9-A에서 분기 제거 — 시퀀스는 항상 STEP_SEQUENCE.
+export default function OnboardingPage({ accountType: _accountType, onFinish }) {
   const [stepIndex, setStepIndex] = useState(0)
   const [wizard, setWizard] = useState({
     workStyle: null,
@@ -21,13 +14,12 @@ export default function OnboardingPage({ accountType, onFinish }) {
     cargoTonnageOn: false,
     platformOn: false,
     distanceOn: false,
-    settlementMode: null,
     carNumber: '',
     carTonnage: '',
   })
 
-  const step = stepSequence[stepIndex]
-  const isLast = stepIndex === stepSequence.length - 1
+  const step = STEP_SEQUENCE[stepIndex]
+  const isLast = stepIndex === STEP_SEQUENCE.length - 1
   const showPallet = wizard.workStyle === 'fixed' || wizard.workStyle === 'both'
 
   let nextDisabled = false
@@ -143,24 +135,9 @@ export default function OnboardingPage({ accountType, onFinish }) {
           </div>
         )}
 
-        {step === 5 && (
-          <div className="onboarding-step-view">
-            <div className="onboarding-heading">
-              <h1>정산은 어떤 방식으로<br />하시나요?</h1>
-              <p>기본 정산 방식을 정해두면 차량마다 다시 고르지 않아도 돼요.</p>
-            </div>
-            <div className="onboarding-options-list">
-              <button type="button" className={`onboarding-card-btn${wizard.settlementMode === 'company' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, settlementMode: 'company' })}>회사 정산</button>
-              <button type="button" className={`onboarding-card-btn${wizard.settlementMode === 'driver_direct' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, settlementMode: 'driver_direct' })}>기사 직접 정산</button>
-              <button type="button" className={`onboarding-card-btn${wizard.settlementMode === 'employee' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, settlementMode: 'employee' })}>직원 기사</button>
-              <button type="button" className={`onboarding-card-btn${wizard.settlementMode === 'none' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, settlementMode: 'none' })}>계산서 미사용</button>
-            </div>
-          </div>
-        )}
-
         <div className="onboarding-bottom-group">
           <button type="button" className="onboarding-skip-link" onClick={goNext}>건너뛰기 &gt;</button>
-          <div className="onboarding-step-counter">{stepIndex + 1}/{stepSequence.length}</div>
+          <div className="onboarding-step-counter">{stepIndex + 1}/{STEP_SEQUENCE.length}</div>
           <button type="button" className="onboarding-btn-primary" disabled={nextDisabled} onClick={goNext}>
             {isLast ? '완료하기' : '다음'}
           </button>
