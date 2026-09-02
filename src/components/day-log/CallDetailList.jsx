@@ -18,7 +18,8 @@ import CallDetailCard from './CallDetailCard.jsx'
  * @param {(id: string) => void} props.onDelete
  * @param {(id: string) => void} props.onTogglePayment
  * @param {(id: string) => void} props.onMessage
- * @param {boolean} [canAdd] false면 "+추가" 진입 버튼만 숨긴다(기존 카드는 유지).
+ * @param {boolean} [props.canAdd] false면 "+추가" 진입 버튼만 숨긴다(기존 카드는 유지).
+ * @param {() => void} props.onAdd
  */
 export default function CallDetailList({ details, settings, clients, canAdd = true, onEdit, onDelete, onTogglePayment, onMessage, onAdd }) {
   const callFare = callFareTotal({ isOff: false, callDetails: details })

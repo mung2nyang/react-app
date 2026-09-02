@@ -9,6 +9,8 @@ import { useReceivablesActions } from './useReceivablesActions.js'
 import { useConfirm } from './useConfirm.jsx'
 import ReceivableItemCard from './ReceivableItemCard.jsx'
 
+/** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
+
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
@@ -29,13 +31,14 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
   const detailItems = useMemo(() => (
     monthKey && clientName ? groupItems(items, clientName, monthKey) : []
   ), [items, clientName, monthKey])
-  const detailTotal = detailItems.reduce((sum, item) => sum + item.remainingAmount, 0)
-  const dueDates = detailItems.map((item) => item.paymentDueDate).filter(Boolean).sort()
+  const detailTotal = detailItems.reduce((/** @type {number} */ sum, /** @type {ReceivableItemLike} */ item) => sum + item.remainingAmount, 0)
+  const dueDates = detailItems.map((/** @type {ReceivableItemLike} */ item) => item.paymentDueDate).filter(Boolean).sort()
 
   if (!monthKey || !clientName) {
     return <Navigate to="/app/receivables" replace />
   }
 
+  /** @param {string} key */
   function togglePartial(key) {
     actions.setPartialKey(actions.partialKey === key ? '' : key)
     actions.setPartialAmount('')
@@ -63,7 +66,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
       </section>
 
       {detailItems.length === 0 && <div className="empty-state">모든 미수금이 입금 완료 처리되었습니다.</div>}
-      {detailItems.map((item) => (
+      {detailItems.map((/** @type {ReceivableItemLike} */ item) => (
         <ReceivableItemCard
           key={receivableItemKey(item)}
           item={item}

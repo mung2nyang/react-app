@@ -15,6 +15,25 @@ import { getDetailPaymentSummary, getDriverCarWorkData, logData } from './financ
 /** @typedef {import('./callDetail.js').PaymentLike} PaymentLike */
 
 /**
+ * @typedef {Object} ReceivableItemLike
+ * @property {string} dateKey
+ * @property {string} detailId
+ * @property {string} logId
+ * @property {string} logLabel
+ * @property {string} client
+ * @property {number} fare
+ * @property {number} paidAmount
+ * @property {number} remainingAmount
+ * @property {string} paymentSummaryStatus
+ * @property {Array<PaymentLike>} payments
+ * @property {string} paymentDueDate
+ * @property {string} workDate
+ * @property {string} loadLoc
+ * @property {string} unloadLoc
+ * @property {string} remarks
+ */
+
+/**
  * @param {FinanceSettings} [settings]
  * @param {WorkDataByLogId} [workDataByLogId]
  */
@@ -34,7 +53,7 @@ export function getReceivableItems(settings = {}, workDataByLogId = {}) {
     })
   }
 
-  /** @type {Array<{ dateKey: string, detailId: string, logId: string, logLabel: string, client: string, fare: number, paidAmount: number, remainingAmount: number, paymentSummaryStatus: string, payments: Array<PaymentLike>, paymentDueDate: string, workDate: string, loadLoc: string, unloadLoc: string, remarks: string }>} */
+  /** @type {Array<ReceivableItemLike>} */
   const items = []
 
   sources.forEach((source) => {

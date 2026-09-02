@@ -11,6 +11,10 @@ import {
   undoLastPayment,
 } from '../../lib/workData.js'
 
+/** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
+/** @typedef {import('../../domain/financeTypes.js').WorkDataByLogId} WorkDataByLogId */
+/** @typedef {import('../../domain/day-record.js').DayRecordLike} DayRecordLike */
+
 /**
  * @param {Object} params
  * @param {string} params.ownerKey
@@ -33,7 +37,7 @@ export function useReceivablesActions({
     setPartialAmount('')
   }
 
-  async function persist(next, successMessage) {
+  async function persist(/** @type {WorkDataByLogId} */ next, /** @type {string} [successMessage] */ successMessage) {
     if (saving) return false
     setSaving(true)
     try {
@@ -55,7 +59,13 @@ export function useReceivablesActions({
     }
   }
 
-  async function applyPatch(logId, dateKey, detailId, apply, successMessage) {
+  async function applyPatch(
+    /** @type {string} */ logId,
+    /** @type {string} */ dateKey,
+    /** @type {string} */ detailId,
+    /** @type {(store: Record<string, DayRecordLike>, dateKey: string, detailId: string) => { data?: Record<string, DayRecordLike>, error?: string }} */ apply,
+    /** @type {string} [successMessage] */ successMessage,
+  ) {
     const result = patchWorkLog(workDataByLogId, logId, dateKey, detailId, apply)
     if (result.error) {
       showToast?.(result.error)
@@ -64,6 +74,7 @@ export function useReceivablesActions({
     await persist(result.workDataByLogId, successMessage)
   }
 
+  /** @param {ReceivableItemLike} item */
   function payItem(item) {
     applyPatch(item.logId, item.dateKey, item.detailId, (store, dateKey, detailId) => (
       markReceivableItemPaid(store, dateKey, detailId)
@@ -90,12 +101,14 @@ export function useReceivablesActions({
     }
   }
 
+  /** @param {ReceivableItemLike} item */
   function confirmPartial(item) {
     applyPatch(item.logId, item.dateKey, item.detailId, (store, dateKey, detailId) => (
       addPartialPayment(store, dateKey, detailId, partialAmount)
     ), '부분 입금을 등록했습니다.')
   }
 
+  /** @param {ReceivableItemLike} item */
   async function undoPayment(item) {
     const ok = await confirm('가장 최근 입금 기록 1건을 취소하시겠습니까?')
     if (!ok) return

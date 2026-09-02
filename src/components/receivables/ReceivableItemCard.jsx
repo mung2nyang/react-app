@@ -2,9 +2,12 @@
 import { formatWon, formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
 import { formatWorkMonth, getDdayLabel, receivableItemKey } from '../../lib/receivables.js'
 
+/** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
+/** @typedef {import('../../domain/callDetail.js').PaymentLike} PaymentLike */
+
 /**
  * @param {Object} props
- * @param {Object} props.item
+ * @param {ReceivableItemLike} props.item
  * @param {boolean} props.compact
  * @param {boolean} props.hasSubCars
  * @param {boolean} [props.saving]
@@ -55,7 +58,7 @@ export default function ReceivableItemCard({
             입금 내역 {payments.length}건
           </button>
         )}
-        {historyKey === key && payments.map((payment) => (
+        {historyKey === key && payments.map((/** @type {PaymentLike} */ payment) => (
           <div key={payment.id || payment.paidAt} className="receivable-payment-history-row">
             <span>{payment.paidAt ? new Date(payment.paidAt).toLocaleString('ko-KR') : '-'}</span>
             <span>{formatWon(parseCurrencyValue(payment.amount))}</span>

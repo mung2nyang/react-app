@@ -9,6 +9,8 @@ import { useReceivablesActions } from './useReceivablesActions.js'
 import { useConfirm } from './useConfirm.jsx'
 import ReceivableItemCard from './ReceivableItemCard.jsx'
 
+/** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
+
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
@@ -52,7 +54,7 @@ export default function ReceivablesListPage({ ownerKey = 'guest', onBack, showTo
                 <div className="client-card-title"><strong>{group.client}</strong></div>
                 <div className="car-sub-text">{formatWorkMonth(group.monthKey)}</div>
                 {hasSubCars && (
-                  <div className="car-sub-text">{[...new Map(group.items.map((item) => [item.logId, item.logLabel])).values()].join(' · ')}</div>
+                  <div className="car-sub-text">{[...new Map(group.items.map((/** @type {ReceivableItemLike} */ item) => [item.logId, item.logLabel])).values()].join(' · ')}</div>
                 )}
                 <div className="receivable-group-summary">
                   <span>미수금</span>
@@ -72,7 +74,7 @@ export default function ReceivablesListPage({ ownerKey = 'guest', onBack, showTo
       {tab === 'due' && (
         <>
           {dueItems.length === 0 && <div className="empty-state">D-3 이내 또는 연체된 미수금이 없습니다.</div>}
-          {dueItems.map((item) => (
+          {dueItems.map((/** @type {ReceivableItemLike} */ item) => (
             <ReceivableItemCard
               key={receivableItemKey(item)}
               item={item}
