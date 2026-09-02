@@ -6,7 +6,7 @@ import { formatWorkMonth, groupItems, receivableItemKey } from '../../lib/receiv
 import { parseClientParam, parseMonthParam } from './receivablesPaths.js'
 import { useReceivablesData } from './useReceivablesData.js'
 import { useReceivablesActions } from './useReceivablesActions.js'
-import { useConfirm } from './useConfirm.js'
+import { useConfirm } from './useConfirm.jsx'
 import ReceivableItemCard from './ReceivableItemCard.jsx'
 
 /**
