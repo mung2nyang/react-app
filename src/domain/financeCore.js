@@ -1,25 +1,19 @@
 // @ts-check
-// finance.js(647줄)를 쪼갠 조각 중 하나. 결제 요약·수수료·기사 정산 총계 같은
-// 기본 순수 계산과 getMonthlyFareRevenue(달력/월 매출 합계)만 담는다. 나머지는
-// financeReceivables.js/financeOwnerDetail.js/financeTaxInvoiceGroups.js/
-// financeTaxInvoiceEntries.js로 나눴고, finance.js는 이 5개를 재수출하는 배럴만
-// 남았다 — 기존 `from './finance.js'` 참조는 한 곳도 안 고쳐도 된다.
+// finance.js 분할 조각 — 결제·수수료·월 매출(getMonthlyFareRevenue) 등 순수 계산.
+// finance.js는 이 모듈군을 재수출하는 배럴만 남았다.
 import {
-  getEffectiveDriverSettlementMode,
   getShortCarNum,
   isVehicleRevenueSharedWithOwner,
 } from './cars.js'
 import { getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
 import { isDateWithinAssignment } from './drivers.js'
 import { parseCurrencyValue } from './money.js'
-
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./financeTypes.js').DriverLinkLike} DriverLinkLike */
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('./financeTypes.js').WorkDataByLogId} WorkDataByLogId */
 /** @typedef {import('./day-record.js').DayRecordLike} DayRecordLike */
-
 /** @param {WorkDataByLogId} workDataByLogId @param {string} logId */
 export function logData(workDataByLogId, logId) {
   if (!workDataByLogId) return {}
@@ -132,10 +126,7 @@ export function getMonthlyFareRevenue(monthKey, settings = {}, workDataByLogId =
 
   const sources = [{ logId: 'main', label: '메인 차량', data: logData(workDataByLogId, 'main') }]
   cars.filter((car) => car.type === 'sub' && isVehicleRevenueSharedWithOwner(car)).forEach((car) => {
-    const mode = getEffectiveDriverSettlementMode(car, settings)
-    if (mode === 'company' || mode === 'employee') {
-      sources.push({ logId: car.number, label: getShortCarNum(car.number), data: getDriverCarWorkData(car, workDataByLogId) })
-    }
+    sources.push({ logId: car.number, label: getShortCarNum(car.number), data: getDriverCarWorkData(car, workDataByLogId) })
   })
 
   let totalFare = 0
@@ -189,4 +180,19 @@ export function getMonthlyFareRevenue(monthKey, settings = {}, workDataByLogId =
   })
 
   return { totalFare, tripCount, byVehicle }
+}
+/** @param {string} monthKey @param {FinanceSettings} _settings @param {Array<CarLike>} subCars */
+export function getMonthlyDriverSalaryExpense(monthKey, _settings, subCars) {
+  const monthStart = `${monthKey}-01`
+  /** @type {Array<{ date: string, label: string, amount: number }>} */
+  const items = []
+  let total = 0
+  for (const car of subCars || []) {
+    if (car.driverPayMode !== 'salary') continue
+    const amount = parseCurrencyValue(car.driverSalaryAmount)
+    if (amount <= 0) continue
+    items.push({ date: monthStart, label: car.driverName || getShortCarNum(car.number), amount })
+    total += amount
+  }
+  return { total, items: items.sort((a, b) => a.date.localeCompare(b.date)) }
 }

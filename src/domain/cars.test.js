@@ -43,13 +43,14 @@ describe('차량 저장 — 기사명·정산·수수료', () => {
     assert.equal(result.error, '기사명과 연락처를 확인해 주세요.')
   })
 
-  test('기사차량 수수료와 정산 방식을 저장한다', () => {
+  test('기사차량 월급제 정산 방식을 저장한다', () => {
     const result = upsertCar([], {
       number: '서울12가3456',
       type: 'sub',
       driverName: '김기사',
       driverPhone: '010-1234-5678',
-      settlementMode: 'driver_direct',
+      driverPayMode: 'salary',
+      driverSalaryAmount: '2,000,000',
       commEnabled: true,
       commType: 'percent',
       commission: '15',
@@ -57,10 +58,37 @@ describe('차량 저장 — 기사명·정산·수수료', () => {
     assert.equal(result.error, undefined)
     assert.equal(result.cars[0].driverName, '김기사')
     assert.equal(result.cars[0].driverPhone, '010-1234-5678')
-    assert.equal(result.cars[0].settlementMode, 'driver_direct')
+    assert.equal(result.cars[0].driverPayMode, 'salary')
+    assert.equal(result.cars[0].driverSalaryAmount, '2000000')
+    assert.equal(result.cars[0].commEnabled, false)
+    assert.equal(result.cars[0].commission, '')
+  })
+
+  test('매출제는 commEnabled 없이 %만 입력해도 수수료가 저장된다', () => {
+    const result = upsertCar([], {
+      number: '서울12가3456',
+      type: 'sub',
+      driverName: '김기사',
+      driverPhone: '010-1234-5678',
+      driverPayMode: 'revenue',
+      commType: 'percent',
+      commission: '15',
+    })
+    assert.equal(result.error, undefined)
     assert.equal(result.cars[0].commEnabled, true)
-    assert.equal(result.cars[0].commType, 'percent')
     assert.equal(result.cars[0].commission, '15')
+  })
+
+  test('월급제인데 급여액이 없으면 거절한다', () => {
+    const result = upsertCar([], {
+      number: '서울12가3456',
+      type: 'sub',
+      driverName: '김기사',
+      driverPhone: '010-1234-5678',
+      driverPayMode: 'salary',
+      driverSalaryAmount: '',
+    })
+    assert.equal(result.error, '월급제는 급여 금액을 입력해 주세요.')
   })
 })
 

@@ -1,6 +1,6 @@
 // @ts-check
 import {
-  CAR_SETTLEMENT_MODES, COMM_TYPES, INFO_TYPES, PAYMENT_TERM_VALUES, isAllowedEnum,
+  CAR_SETTLEMENT_MODES, COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, PAYMENT_TERM_VALUES, isAllowedEnum,
 } from './persistDomainEnums.js'
 
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
@@ -38,7 +38,8 @@ const BUSINESS_INFO_KEYS = ['sameAsOwner', 'name', 'bizNumber', 'representative'
 const CAR_KEYS = [
   'id', 'supabaseId', 'number', 'tonnage', 'type', 'settlementMode', 'commEnabled', 'commType',
   'commission', 'insuranceOn', 'logEnabled', 'driverLinkEnabled', 'shareRevenueWithOwner',
-  'archived', 'driverName', 'driverPhone', 'driverLinkId', 'infoType', 'personalInfo', 'businessInfo',
+  'archived', 'driverName', 'driverPhone', 'driverLinkId', 'driverPayMode', 'driverSalaryAmount',
+  'infoType', 'personalInfo', 'businessInfo',
 ]
 const CLIENT_KEYS = [
   'id', 'companyName', 'managerName', 'phone', 'bizNumber', 'paymentTerm', 'paymentTermValue',
@@ -80,6 +81,8 @@ export function isPersistedCar(value) {
   if ('driverName' in value && typeof value.driverName !== 'string') return false
   if ('driverPhone' in value && typeof value.driverPhone !== 'string') return false
   if ('driverLinkId' in value && typeof value.driverLinkId !== 'string') return false
+  if ('driverPayMode' in value && !isAllowedEnum(value.driverPayMode, DRIVER_PAY_MODES)) return false
+  if ('driverSalaryAmount' in value && typeof value.driverSalaryAmount !== 'string') return false
   if ('infoType' in value && !isAllowedEnum(value.infoType, INFO_TYPES)) return false
   if ('personalInfo' in value && !isStringRecord(value.personalInfo, PERSONAL_INFO_KEYS)) return false
   if ('businessInfo' in value && !isStringRecord(value.businessInfo, BUSINESS_INFO_KEYS)) return false

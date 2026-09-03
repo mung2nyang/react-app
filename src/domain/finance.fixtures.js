@@ -61,6 +61,9 @@ export const FIXTURE_SETTINGS = {
       commEnabled: true,
       commType: 'direct',
       commission: '20,000',
+      driverName: '박기사',
+      driverPayMode: 'salary',
+      driverSalaryAmount: '2000000',
     },
   ],
   driverLinks: [

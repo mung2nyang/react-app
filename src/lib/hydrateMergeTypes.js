@@ -38,7 +38,7 @@
 // 결과에는 절대 쓰지 않는다).
 /** @typedef {Partial<import('./outboxTypes.js').DriverRecord> & { driverName?: string }} LocalDriver */
 
-/** @typedef {{ id: string|number, raw?: RawCarBackup|null, number?: string, type?: string, tonnage?: string, driver_name?: string, settlement_mode?: string|null, comm_enabled?: boolean, comm_type?: string|null, comm_value?: string|number }} VehicleRow */
+/** @typedef {{ id: string|number, raw?: RawCarBackup|null, number?: string, type?: string, tonnage?: string, driver_name?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean, comm_type?: string|null, comm_value?: string|number }} VehicleRow */
 
 /** @typedef {{ id: string|number, raw?: RawClientBackup|null, company_name?: string, legacy_client_id?: string, is_pinned?: boolean }} ClientRow */
 

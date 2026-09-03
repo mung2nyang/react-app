@@ -9,6 +9,7 @@ export const INFO_TYPES = /** @type {const} */ (['existing', 'new'])
 export const PAYMENT_TERM_VALUES = /** @type {const} */ ([
   'same_day', 'after_days', 'next_month_day', 'next_month_end', 'second_month_day', 'second_month_end',
 ])
+export const DRIVER_PAY_MODES = /** @type {const} */ (['revenue', 'salary'])
 export const DRIVER_SETTLEMENT_MODES = /** @type {const} */ ([
   'company', 'driver_direct', 'employee', 'none',
 ])

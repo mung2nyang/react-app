@@ -5,10 +5,13 @@
 // 재감사 3차(FAIL 지적 4번) — @ts-check 적용. 이 함수의 반환 모양은
 // components/revenue/OwnerMonthlyCards.jsx가 ReturnType으로 그대로 참조하므로,
 // 필드 이름·구조를 바꾸면 그쪽도 같이 깨진다(타입 체크가 잡아 준다).
-import { getEffectiveDriverSettlementMode, getShortCarNum, isVehicleRevenueSharedWithOwner } from './cars.js'
+import { getShortCarNum, isVehicleRevenueSharedWithOwner } from './cars.js'
 import { getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
 import { parseCurrencyValue } from './money.js'
-import { getCallDetailCommissionAmount, getCallDetailDurationMinutes, getDriverCarWorkData, logData } from './financeCore.js'
+import {
+  getCallDetailCommissionAmount, getCallDetailDurationMinutes, getDriverCarWorkData,
+  getMonthlyDriverSalaryExpense, logData,
+} from './financeCore.js'
 import { getReceivableItems } from './financeReceivables.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
@@ -34,16 +37,14 @@ import { getReceivableItems } from './financeReceivables.js'
  */
 export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings = {}, workDataByLogId = {}, expenses = []) {
   const cars = Array.isArray(settings.cars) ? settings.cars : []
+  const subCarsInScope = cars.filter((car) => car.type === 'sub' && isVehicleRevenueSharedWithOwner(car))
 
   /** @type {Array<{ logId: string, label: string, data: Record<string, import('./day-record.js').DayRecordLike> }>} */
   const sources = []
   if (scope !== 'driver') sources.push({ logId: 'main', label: '메인 차량', data: logData(workDataByLogId, 'main') })
   if (scope !== 'owner') {
-    cars.filter((car) => car.type === 'sub' && isVehicleRevenueSharedWithOwner(car)).forEach((car) => {
-      const mode = getEffectiveDriverSettlementMode(car, settings)
-      if (mode === 'company' || mode === 'employee') {
-        sources.push({ logId: car.number, label: getShortCarNum(car.number), data: getDriverCarWorkData(car, workDataByLogId) })
-      }
+    subCarsInScope.forEach((car) => {
+      sources.push({ logId: car.number, label: getShortCarNum(car.number), data: getDriverCarWorkData(car, workDataByLogId) })
     })
   }
 
@@ -144,6 +145,10 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
     })
   }
 
+  const { total: salaryTotal, items: salaryItems } = scope !== 'owner'
+    ? getMonthlyDriverSalaryExpense(monthKey, settings, subCarsInScope)
+    : { total: 0, items: [] }
+
   /** @param {{date: string}} a @param {{date: string}} b */
   const sortByDate = (a, b) => a.date.localeCompare(b.date)
   maintItems.sort(sortByDate)
@@ -161,7 +166,7 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
   const miscTotal = miscItems.reduce((sum, i) => sum + i.amount, 0)
 
   const incomeTotal = fareTotal - commissionTotal + fuelSubsidyTotal
-  const expenseTotal = maintTotal + fuelTotal + miscTotal
+  const expenseTotal = maintTotal + fuelTotal + miscTotal + salaryTotal
 
   const unpaidItems = getReceivableItems(settings, workDataByLogId).filter((item) => {
     if (!item.workDate.startsWith(monthKey) || item.remainingAmount <= 0) return false
@@ -189,6 +194,7 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
       maint: { total: maintTotal, items: maintItems },
       fuel: { total: fuelTotal, items: fuelItems },
       misc: { total: miscTotal, items: miscItems },
+      salary: { total: salaryTotal, items: salaryItems },
     },
     unpaid: { total: unpaidTotal, count: unpaidItems.length, items: unpaidItems },
   }

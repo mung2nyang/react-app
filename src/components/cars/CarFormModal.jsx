@@ -1,7 +1,6 @@
 // @ts-check
-import { SETTLEMENT_MODES, getSettlementModeMeta } from '../../lib/cars.js'
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
-import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
+import { formatPercentInput } from '../../lib/money.js'
 
 /**
  * @typedef {Object} CarFormDraft
@@ -10,7 +9,8 @@ import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
  * @property {'main'|'sub'} type
  * @property {string} driverName
  * @property {string} driverPhone
- * @property {string} settlementMode
+ * @property {string} driverPayMode
+ * @property {string} driverSalaryAmount
  * @property {boolean} commEnabled
  * @property {string} commType
  * @property {string} commission
@@ -26,14 +26,23 @@ import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
  */
 export default function CarFormModal({ draft, setDraft, editingId, onCancel, onSave }) {
   const isSub = draft.type === 'sub'
-  const settlementMeta = getSettlementModeMeta(draft.settlementMode)
+  const isSalary = draft.driverPayMode === 'salary'
 
-  /** @param {'percent'|'direct'} nextType */
-  function setCommType(nextType) {
+  function setRevenueMode() {
     setDraft((prev) => ({
       ...prev,
-      commType: nextType,
-      commission: prev.commType === nextType ? prev.commission : '',
+      driverPayMode: 'revenue',
+      commEnabled: true,
+      commType: 'percent',
+    }))
+  }
+
+  function setSalaryMode() {
+    setDraft((prev) => ({
+      ...prev,
+      driverPayMode: 'salary',
+      commEnabled: false,
+      commission: '',
     }))
   }
 
@@ -41,7 +50,7 @@ export default function CarFormModal({ draft, setDraft, editingId, onCancel, onS
   function onCommissionChange(value) {
     setDraft((prev) => ({
       ...prev,
-      commission: prev.commType === 'direct' ? formatCurrencyInput(value) : formatPercentInput(value),
+      commission: formatPercentInput(value),
     }))
   }
 
@@ -70,49 +79,53 @@ export default function CarFormModal({ draft, setDraft, editingId, onCancel, onS
               <input id="newUserPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.driverPhone} onChange={(e) => setDraft({ ...draft, driverPhone: formatPhoneNumber(e.target.value) })} />
             </div>
             <div className="form-group">
-              <label htmlFor="newCarSettlementMode">계산서 처리 방식</label>
-              <select id="newCarSettlementMode" className="input-box" value={draft.settlementMode} onChange={(e) => {
-                const next = e.target.value
-                if (!SETTLEMENT_MODES.some((item) => item.value === next)) return
-                setDraft({ ...draft, settlementMode: next })
-              }}>
-                {SETTLEMENT_MODES.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-              </select>
-              <p className="car-settlement-mode-guide">{settlementMeta.description}</p>
-            </div>
-            <div className="setting-item">
-              <div className="car-option-copy">
-                <label htmlFor="newCarCommToggle">기사(차량) 수수료 적용</label>
-                <p>정산 시 이 차량(기사)에게서 공제할 수수료를 설정합니다.</p>
-              </div>
-              <label className="switch">
-                <input id="newCarCommToggle" type="checkbox" checked={draft.commEnabled} onChange={(e) => setDraft({ ...draft, commEnabled: e.target.checked })} />
-                <span className="slider"></span>
-              </label>
-            </div>
-            {draft.commEnabled && (
-              <div className="car-commission-panel">
-                <div className="car-commission-heading">
-                  <strong>기사(차량) 수수료 입력</strong>
-                  <span>정산 시 설정한 방식으로 자동 계산됩니다.</span>
-                </div>
-                <div className="car-commission-type" role="group" aria-label="기사(차량) 수수료 입력 방식">
-                  <button type="button" className={draft.commType === 'percent' ? 'active' : ''} aria-pressed={draft.commType === 'percent'} onClick={() => setCommType('percent')}>
-                    <span>%</span> 비율
+              <label htmlFor="newCarSettlementValue">정산</label>
+              <p className="car-settlement-mode-guide">
+                {isSalary
+                  ? '건당(또는 월) 고정으로 기사에게 지급할 금액을 설정합니다.'
+                  : '해당 차량(기사) 운행 매출 중 기사에게 지급할 비율(%)을 설정합니다.'}
+              </p>
+              <div className="car-commission-value">
+                <div className="car-commission-type" role="group" aria-label="정산 방식">
+                  <button
+                    type="button"
+                    className={!isSalary ? 'active' : ''}
+                    aria-pressed={!isSalary}
+                    onClick={setRevenueMode}
+                  >
+                    매출제
                   </button>
-                  <button type="button" className={draft.commType === 'direct' ? 'active' : ''} aria-pressed={draft.commType === 'direct'} onClick={() => setCommType('direct')}>
-                    <span>₩</span> 금액
+                  <button
+                    type="button"
+                    className={isSalary ? 'active' : ''}
+                    aria-pressed={isSalary}
+                    onClick={setSalaryMode}
+                  >
+                    월급제
                   </button>
                 </div>
-                <label className="car-commission-value" htmlFor="newCarCommission">
-                  <span>{draft.commType === 'direct' ? '기사(차량) 건당 수수료' : '기사(차량) 수수료율'}</span>
-                  <span className="car-commission-input">
-                    <input id="newCarCommission" inputMode={draft.commType === 'direct' ? 'numeric' : 'decimal'} placeholder="0" value={draft.commission} onChange={(e) => onCommissionChange(e.target.value)} />
-                    <b>{draft.commType === 'direct' ? '원' : '%'}</b>
-                  </span>
-                </label>
+                <span className="car-commission-input">
+                  {isSalary ? (
+                    <input
+                      id="newCarSettlementValue"
+                      inputMode="numeric"
+                      placeholder="0"
+                      value={draft.driverSalaryAmount || ''}
+                      onChange={(e) => setDraft({ ...draft, driverSalaryAmount: e.target.value.replace(/\D/g, '') })}
+                    />
+                  ) : (
+                    <input
+                      id="newCarSettlementValue"
+                      inputMode="decimal"
+                      placeholder="0"
+                      value={draft.commission}
+                      onChange={(e) => onCommissionChange(e.target.value)}
+                    />
+                  )}
+                  <b>{isSalary ? '원' : '%'}</b>
+                </span>
               </div>
-            )}
+            </div>
           </>
         )}
         <p className="car-type-hint">{isSub ? '기사 차량으로 등록됩니다. (기사 연동은 나중에)' : '메인 차량으로 등록됩니다.'}</p>

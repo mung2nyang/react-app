@@ -76,6 +76,7 @@ export function applyPracticeSnapshot(ownerKey, snapshot = {}) {
 
 export function buildVehicleRow(userId, car, index) {
   const logId = car.type === 'sub' ? car.number : 'main'
+  const salaryDigits = String(car.driverSalaryAmount || '').replace(/\D/g, '')
   return {
     user_id: userId,
     legacy_log_id: logId,
@@ -87,6 +88,8 @@ export function buildVehicleRow(userId, car, index) {
     comm_type: car.commType || null,
     comm_value: car.commission != null ? String(car.commission) : null,
     settlement_mode: car.settlementMode || null,
+    driver_pay_mode: car.driverPayMode || null,
+    driver_salary_amount: car.driverPayMode === 'salary' && salaryDigits ? Number(salaryDigits) : null,
     driver_link_id: car.driverLinkId || null,
     driver_name: car.driverName || null,
     archived: !!car.archived,

@@ -83,7 +83,7 @@ export default function OwnerRevenueView({ ownerKey }) {
         </div>
       </div>
 
-      {!yearly && <OwnerMonthlyCards key={`${scope}-${year}-${month}`} detail={monthly} />}
+      {!yearly && <OwnerMonthlyCards key={`${scope}-${year}-${month}`} detail={monthly} scope={scope} />}
 
       {yearly && (
         <>

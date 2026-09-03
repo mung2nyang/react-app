@@ -42,8 +42,8 @@ function RevenueDetailRow({ label, amount, items, showDate = false }) {
   )
 }
 
-/** @param {{ detail: OwnerMonthlyDetail }} props */
-export default function OwnerMonthlyCards({ detail }) {
+/** @param {{ detail: OwnerMonthlyDetail, scope?: string }} props */
+export default function OwnerMonthlyCards({ detail, scope }) {
   return (
     <>
       <div className="summary-card revenue-net-card">
@@ -112,6 +112,13 @@ export default function OwnerMonthlyCards({ detail }) {
           items={detail.expense.misc.items.map((item) => ({ ...item, amount: -item.amount }))}
           showDate
         />
+        {scope !== 'owner' && (
+          <RevenueDetailRow
+            label="기사 급여"
+            amount={-detail.expense.salary.total}
+            items={detail.expense.salary.items.map((item) => ({ ...item, amount: -item.amount }))}
+          />
+        )}
         <div className="summary-row total revenue-expense-total">
           <span>합계</span>
           <span className="summary-value">-{(Number(detail.expense.total) || 0).toLocaleString('ko-KR')} 원</span>

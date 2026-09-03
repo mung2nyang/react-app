@@ -13,6 +13,8 @@
  * @property {string} [driverName]
  * @property {string} [driverPhone]
  * @property {string} [settlementMode]
+ * @property {string} [driverPayMode]
+ * @property {string} [driverSalaryAmount]
  * @property {boolean} [commEnabled]
  * @property {string} [commType]
  * @property {string} [commission]
@@ -70,20 +72,20 @@ function driverFieldsFromDraft(draft, type) {
     return {
       driverName: '',
       driverPhone: '',
-      settlementMode: 'default',
       commEnabled: false,
       commType: 'percent',
       commission: '',
     }
   }
   const commType = draft.commType === 'direct' ? 'direct' : 'percent'
-  const commEnabled = !!draft.commEnabled
+  const driverPayMode = draft.driverPayMode === 'salary' ? 'salary' : 'revenue'
+  const commEnabled = driverPayMode === 'revenue'
+  const driverSalaryAmount = String(draft.driverSalaryAmount || '').replace(/\D/g, '')
   return {
     driverName: String(draft.driverName || '').trim(),
     driverPhone: String(draft.driverPhone || '').trim(),
-    settlementMode: SETTLEMENT_MODES.some((item) => item.value === draft.settlementMode)
-      ? draft.settlementMode
-      : 'company',
+    driverPayMode,
+    driverSalaryAmount: driverPayMode === 'salary' ? driverSalaryAmount : '',
     commEnabled,
     commType,
     commission: commEnabled ? String(draft.commission || '').trim() : '',
@@ -106,6 +108,9 @@ export function upsertCar(cars, draft, editingId) {
     const phoneDigits = extra.driverPhone.replace(/\D/g, '')
     if (!extra.driverName || phoneDigits.length < 10) {
       return { error: '기사명과 연락처를 확인해 주세요.', cars }
+    }
+    if (extra.driverPayMode === 'salary' && !(Number(extra.driverSalaryAmount) > 0)) {
+      return { error: '월급제는 급여 금액을 입력해 주세요.', cars }
     }
   }
 

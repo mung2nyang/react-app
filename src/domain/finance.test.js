@@ -97,9 +97,11 @@ describe('같은 운행 픽스처 — 원본 vs react-app', () => {
   test('월 운송료 합계', () => {
     const ours = getMonthlyFareRevenue(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
     const theirs = original.getMonthlyFareRevenue(MONTH_KEY)
-    assert.equal(ours.totalFare, theirs.totalFare)
-    assert.equal(ours.tripCount, theirs.tripCount)
-    same(ours.byVehicle, theirs.byVehicle)
+    // Step 9-B: isVehicleRevenueSharedWithOwner 단일 게이트 — shareRevenueWithOwner 서브차량은
+    // settlementMode와 무관하게 포함(부산33나1111 운임 80,000·1회 추가).
+    assert.equal(ours.totalFare, theirs.totalFare + 80000)
+    assert.equal(ours.tripCount, theirs.tripCount + 1)
+    assert.notEqual(JSON.stringify(ours.byVehicle), JSON.stringify(theirs.byVehicle))
   })
 
   test('차주 월 손익', () => {
@@ -238,9 +240,61 @@ describe('getOwnerMonthlyFinanceDetail — 비용은 canonical expenses에서만
   test('scope=driver(기사 손익)에는 오너의 expenses가 섞여 들어가면 안 된다', () => {
     const ownerExpenses = [{ id: 'owner-only', kind: 'maint', date: '2026-05-10', name: '오너 정비', cost: 50000 }]
     const driverDetail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', FIXTURE_SETTINGS, FIXTURE_WORK, ownerExpenses)
-    assert.equal(driverDetail.expense.total, 0, '기사 손익에는 오너의 정비/주유/기타 비용이 들어가면 안 된다')
+    assert.equal(driverDetail.expense.maint.total, 0, '기사 손익에는 오너의 정비 비용이 들어가면 안 된다')
+    assert.equal(driverDetail.expense.fuel.total, 0, '기사 손익에는 오너의 주유 비용이 들어가면 안 된다')
+    assert.equal(driverDetail.expense.misc.total, 0, '기사 손익에는 오너의 기타 비용이 들어가면 안 된다')
     const ownerDetail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, ownerExpenses)
     assert.equal(ownerDetail.expense.total, 50000, '같은 expenses가 owner 화면에는 정상 반영돼야 한다(비교용)')
+  })
+})
+
+describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
+  const salaryAmount = 2000000
+  const salaryCarNumber = '부산33나1111'
+
+  test("scope='owner'에서는 salary가 0으로 제외된다", () => {
+    const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, FIXTURE_EXPENSES)
+    assert.equal(detail.expense.salary.total, 0)
+  })
+
+  test("scope='driver'/'all'에서는 월급제 차량 급여가 expense.salary.total·netProfit에 반영된다", () => {
+    for (const scope of ['driver', 'all']) {
+      const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, scope, FIXTURE_SETTINGS, FIXTURE_WORK, [])
+      const withoutSalary = getOwnerMonthlyFinanceDetail(MONTH_KEY, scope, {
+        ...FIXTURE_SETTINGS,
+        cars: FIXTURE_SETTINGS.cars.map((car) => (
+          car.number === salaryCarNumber ? { ...car, driverPayMode: 'revenue', driverSalaryAmount: '' } : car
+        )),
+      }, FIXTURE_WORK, [])
+      assert.equal(detail.expense.salary.total, salaryAmount, scope)
+      assert.equal(detail.netProfit, withoutSalary.netProfit - salaryAmount, scope)
+    }
+  })
+
+  test('매출제 차량은 급여 계산에서 제외된다', () => {
+    const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', {
+      ...FIXTURE_SETTINGS,
+      cars: FIXTURE_SETTINGS.cars.map((car) => (
+        car.number === salaryCarNumber ? { ...car, driverPayMode: 'revenue' } : car
+      )),
+    }, FIXTURE_WORK, [])
+    assert.equal(detail.expense.salary.total, 0)
+  })
+
+  test('급여액이 0 이하면 제외된다', () => {
+    const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', {
+      ...FIXTURE_SETTINGS,
+      cars: FIXTURE_SETTINGS.cars.map((car) => (
+        car.number === salaryCarNumber ? { ...car, driverSalaryAmount: '0' } : car
+      )),
+    }, FIXTURE_WORK, [])
+    assert.equal(detail.expense.salary.total, 0)
+  })
+
+  test('salary 항목 label은 car.driverName(박기사)을 쓴다', () => {
+    const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', FIXTURE_SETTINGS, FIXTURE_WORK, [])
+    assert.equal(detail.expense.salary.items.length, 1)
+    assert.equal(detail.expense.salary.items[0].label, '박기사')
   })
 })
 
@@ -275,8 +329,8 @@ describe('숫자 비교표용 스냅샷', () => {
     const sales = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK)
     const purchase = getTaxInvoiceSourceGroups(MONTH_KEY, 'purchase', FIXTURE_SETTINGS, FIXTURE_WORK)
     const rows = [
-      ['월 운송료 합계', revenue.totalFare, original.getMonthlyFareRevenue(MONTH_KEY).totalFare],
-      ['월 운행 횟수', revenue.tripCount, original.getMonthlyFareRevenue(MONTH_KEY).tripCount],
+      ['월 운송료 합계', revenue.totalFare, original.getMonthlyFareRevenue(MONTH_KEY).totalFare + 80000],
+      ['월 운행 횟수', revenue.tripCount, original.getMonthlyFareRevenue(MONTH_KEY).tripCount + 1],
       ['차주 순이익', owner.netProfit, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').netProfit],
       ['차주 부가세', owner.vatAmount, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').vatAmount],
       ['운임 수수료', owner.income.commission.total, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').income.commission.total],

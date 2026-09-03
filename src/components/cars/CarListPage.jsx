@@ -18,7 +18,8 @@ import { useOwnerCars } from '../../store/ownerDataHooks.js'
  * @property {'main'|'sub'} type
  * @property {string} driverName
  * @property {string} driverPhone
- * @property {string} settlementMode
+ * @property {string} driverPayMode
+ * @property {string} driverSalaryAmount
  * @property {boolean} commEnabled
  * @property {string} commType
  * @property {string} commission
@@ -27,7 +28,7 @@ import { useOwnerCars } from '../../store/ownerDataHooks.js'
 /** @type {CarFormDraft} */
 const emptyDraft = {
   number: '', tonnage: '', type: 'main', driverName: '', driverPhone: '',
-  settlementMode: 'company', commEnabled: false, commType: 'percent', commission: '',
+  driverPayMode: 'revenue', driverSalaryAmount: '', commEnabled: false, commType: 'percent', commission: '',
 }
 const DELETE_CAR_CONFIRM = '해당 차량을 삭제하시겠습니까? 이 차량으로 기록된 운행 내역도 함께 삭제되며 복구할 수 없습니다.'
 
@@ -66,7 +67,8 @@ export default function CarListPage({ ownerKey = 'guest', onBack, showToast }) {
       type: car.type === 'sub' ? 'sub' : 'main',
       driverName: car.driverName || '',
       driverPhone: car.driverPhone || '',
-      settlementMode: car.settlementMode && car.settlementMode !== 'default' ? car.settlementMode : 'company',
+      driverPayMode: car.driverPayMode || 'revenue',
+      driverSalaryAmount: car.driverSalaryAmount != null ? String(car.driverSalaryAmount) : '',
       commEnabled: !!car.commEnabled,
       commType: car.commType === 'direct' ? 'direct' : 'percent',
       commission: String(car.commission ?? ''),
