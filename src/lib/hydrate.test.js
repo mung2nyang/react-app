@@ -397,3 +397,41 @@ describe('슬라이스 E — hydrate는 LS 업무 밑바탕을 쓰지 않고 프
     endCloudSession()
   })
 })
+
+describe('Step 9 슬라이스 A — hydrate가 기사 차량 daily_logs도 logId별로 병합한다', () => {
+  test('main·sub 각각 vehicle_id로 조회해 workLogs.main / workLogs[번호]에 넣는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-sub-daylogs'
+    const userId = 'user-hydrate-sub-daylogs'
+    handlers.vehicles = {
+      select: () => ({
+        data: [
+          { id: 501, type: 'main', number: '11가1111', raw: { id: 'c-main' } },
+          { id: 802, type: 'sub', number: '22나2222', raw: { id: 'c-sub', driverName: '박기사' } },
+        ],
+        error: null,
+      }),
+    }
+    handlers.daily_logs = {
+      select: (filters) => {
+        if (String(filters?.vehicle_id) === '501') {
+          return { data: [{ work_date: '2026-08-01', is_off: false, fixed_count: 3, raw: {} }], error: null }
+        }
+        if (String(filters?.vehicle_id) === '802') {
+          return { data: [{ work_date: '2026-08-02', is_off: false, fixed_count: 7, raw: {} }], error: null }
+        }
+        return { data: [], error: null }
+      },
+    }
+    handlers.transport_details = { select: () => ({ data: [], error: null }) }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(getState().workLogs[ownerKey]?.main?.['2026-08-01']?.fixedCount, 3)
+    assert.equal(getState().workLogs[ownerKey]?.['22나2222']?.['2026-08-02']?.fixedCount, 7)
+    assert.equal(getState().workLogs[ownerKey]?.main?.['2026-08-02'], undefined, '서브 날짜가 메인에 섞이면 안 된다')
+    assert.equal(countOf('daily_logs', 'select'), 2)
+    endCloudSession()
+  })
+})

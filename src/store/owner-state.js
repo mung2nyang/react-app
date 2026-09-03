@@ -100,6 +100,7 @@ export function initializeOwnerFromPersist(ownerKey) {
 /**
  * @typedef {Object} OwnerSnapshot
  * @property {Record<string, DayRecordLike>} [workData]
+ * @property {Record<string, Record<string, DayRecordLike>>} [workLogs] logId → 날짜별 기록(슬라이스 A)
  * @property {Array<CarLike>} [cars]
  * @property {Array<ClientLike>} [clients]
  * @property {Array<DriverRecord>} [drivers]
@@ -122,7 +123,13 @@ export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
   const { sync = true, persist = true } = options
   /** @type {Array<import('./app-store.js').BatchEntry>} */
   const entries = []
-  if (snapshot.workData && typeof snapshot.workData === 'object') entries.push({ domain: 'workData', ownerKey, value: snapshot.workData })
+  const workLogs = snapshot.workLogs && typeof snapshot.workLogs === 'object' ? snapshot.workLogs : null
+  if (workLogs) {
+    const mainData = workLogs.main && typeof workLogs.main === 'object' ? workLogs.main : {}
+    entries.push({ domain: 'workData', ownerKey, value: mainData })
+  } else if (snapshot.workData && typeof snapshot.workData === 'object') {
+    entries.push({ domain: 'workData', ownerKey, value: snapshot.workData })
+  }
   if (Array.isArray(snapshot.cars)) entries.push({ domain: 'cars', ownerKey, value: dedupeCarsById(snapshot.cars) })
   if (Array.isArray(snapshot.clients)) entries.push({ domain: 'clients', ownerKey, value: snapshot.clients })
   if (Array.isArray(snapshot.drivers)) entries.push({ domain: 'drivers', ownerKey, value: snapshot.drivers })
@@ -131,5 +138,9 @@ export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
   if (Array.isArray(snapshot.expenses)) entries.push({ domain: 'expenses', ownerKey, value: snapshot.expenses })
   if (Array.isArray(snapshot.invoices)) entries.push({ domain: 'invoices', ownerKey, value: snapshot.invoices })
   if (!entries.length) return
+  if (workLogs) {
+    commitBatch(entries, { persist, syncToCloud: sync, replaceWorkLogs: { ownerKey, next: workLogs } })
+    return
+  }
   commitBatch(entries, { persist, syncToCloud: sync })
 }

@@ -112,6 +112,25 @@ test.afterEach(async () => {
 function mirrorServerFromStore(ownerKey) {
   handlers.vehicles.select = () => ({ data: vehicleRowsFor(getState().cars[ownerKey] || []), error: null })
   handlers.clients.select = () => ({ data: clientRowsFor(getState().clients[ownerKey] || []), error: null })
+  // Step 9 슬라이스 A: hydrate가 전 차량 daily_logs를 조회하므로 Store workLogs를 서버처럼 돌려준다.
+  handlers.daily_logs = {
+    upsert: () => ({ data: { id: 9000 }, error: null }),
+    select: (filters) => {
+      const cars = getState().cars[ownerKey] || []
+      const logs = getState().workLogs[ownerKey] || {}
+      const car = cars.find((item) => String(item.supabaseId) === String(filters?.vehicle_id))
+      const logId = !car ? null : (car.type === 'main' ? 'main' : car.number)
+      const byDate = (logId && logs[logId]) || {}
+      const data = Object.entries(byDate).map(([work_date, record]) => ({
+        work_date,
+        is_off: !!record?.isOff,
+        fixed_count: record?.fixedCount || 0,
+        raw: record || {},
+      }))
+      return { data, error: null }
+    },
+  }
+  handlers.transport_details = { select: () => ({ data: [], error: null }) }
 }
 
 /** @param {ParentNode} root @param {string} selector */

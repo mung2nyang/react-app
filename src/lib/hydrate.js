@@ -20,10 +20,9 @@ import {
   mergeCarsFromRows,
   mergeClientsFromRows,
   mergeDriversFromRows,
-  findMainCar,
-  mergeWorkDataFromRows,
   mergeExpenseKind,
 } from './hydrateMerge.js'
+import { mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
 import { expenseFromFuelRecord, replaceFuelExpenses } from '../domain/fuelRecords.js'
 import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/maintenanceRecords.js'
 import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpenseRecords.js'
@@ -78,6 +77,8 @@ async function performHydrate(userId, ownerKey, myEpoch) {
 
     /** @type {Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>} */
     let nextWorkData = {}
+    /** @type {Record<string, Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>>} */
+    let nextWorkLogs = { main: {} }
     /** @type {Array<import('../domain/financeTypes.js').CarLike>} */
     let nextCars = []
     /** @type {Array<import('../domain/clientTypes.js').ClientLike>} */
@@ -98,27 +99,31 @@ async function performHydrate(userId, ownerKey, myEpoch) {
     const localDrivers = getState().drivers[ownerKey] || []
     nextDrivers = reconcileDrivers(ownerKey, mergeDriversFromRows(localDrivers, nextCars, linksRes.data || []), localDrivers)
 
-    const mainCar = findMainCar(nextCars)
+    // Step 9 슬라이스 A: supabaseId 있는 전 차량(main+기사) daily_logs/transport 병합.
+    // 메인 tombstone만 적용(서브는 Fail-Fast라 tombstone 미사용 — 착수지시 확인 1·2).
+    const mainTombstoneKeys = Object.keys(readOwnerWorkDataTombstones(ownerKey))
+    const { workLogs, mainCar } = await mergeVehicleDayLogsFromServer({
+      cars: nextCars,
+      mainTombstoneKeys,
+      fetchDaily: (vehicleId) => supabase.from('daily_logs').select('*').eq('vehicle_id', vehicleId),
+      fetchTransport: (vehicleId) => supabase.from('transport_details').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
+      throwIfAnyHydrateError,
+    })
+    nextWorkLogs = workLogs
+    nextWorkData = workLogs.main || {}
+
     if (mainCar?.supabaseId) {
-      const [dailyRes, transportRes, fuelRes, maintRes, miscRes] = await Promise.all([
-        supabase.from('daily_logs').select('*').eq('vehicle_id', mainCar.supabaseId),
-        supabase.from('transport_details').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
+      const [fuelRes, maintRes, miscRes] = await Promise.all([
         supabase.from('fuel_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
         supabase.from('maintenance_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
         supabase.from('misc_expense_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
       ])
       throwIfAnyHydrateError({
-        daily_logs: dailyRes.error, transport_details: transportRes.error, fuel_records: fuelRes.error,
-        maintenance_records: maintRes.error, misc_expense_records: miscRes.error,
+        fuel_records: fuelRes.error,
+        maintenance_records: maintRes.error,
+        misc_expense_records: miscRes.error,
       })
 
-      // 재감사 3차(FAIL 지적 1번) — 아직 서버에 삭제를 못 알린 날짜(tombstone)는
-      // 이 hydrate가 방금 받은 서버 rows로도 절대 되살아나지 않는다.
-      // 슬라이스 D: null을 []로 위장하지 않는다 — 조회 실패는 위에서 이미 throw했고,
-      // mergeWorkDataFromRows가 Array.isArray로만 "서버 정본" 여부를 가린다.
-      nextWorkData = mergeWorkDataFromRows(nextWorkData, {
-        dailyRows: dailyRes.data, transportRows: transportRes.data || [], fuelRows: fuelRes.data || [], maintRows: maintRes.data || [], miscRows: miscRes.data || [],
-      }, Object.keys(readOwnerWorkDataTombstones(ownerKey)))
       nextExpenses = mergeExpenseKind({ kind: 'fuel', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: fuelRes.data || [], mapRow: expenseFromFuelRecord, replace: replaceFuelExpenses })
       nextExpenses = mergeExpenseKind({ kind: 'maint', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: maintRes.data || [], mapRow: expenseFromMaintenanceRecord, replace: replaceMaintExpenses })
       nextExpenses = mergeExpenseKind({ kind: 'misc', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: miscRes.data || [], mapRow: expenseFromMiscRecord, replace: replaceMiscExpenses })
@@ -129,7 +134,7 @@ async function performHydrate(userId, ownerKey, myEpoch) {
     nextInvoices = mergeTaxInvoiceRecords(nextInvoices, taxInvoicesRes.data || [])
 
     const nextSnapshot = {
-      workData: nextWorkData, cars: nextCars, clients: nextClients, drivers: nextDrivers,
+      workData: nextWorkData, workLogs: nextWorkLogs, cars: nextCars, clients: nextClients, drivers: nextDrivers,
       profile: nextProfile, settings: nextSettings,
       expenses: /** @type {import('../domain/expenseTypes.js').ExpenseItem[]} */ (nextExpenses), invoices: nextInvoices,
     }

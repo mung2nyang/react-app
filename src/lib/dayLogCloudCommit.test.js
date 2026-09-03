@@ -34,12 +34,6 @@ function withDay(ownerKey, record) {
   commitWorkData(ownerKey, { [DK]: record }, { syncToCloud: false })
 }
 
-/** @param {string} ownerKey @param {string} dateKey @returns {number|undefined} */
-function storedFixedCount(ownerKey, dateKey) {
-  const stored = /** @type {Record<string, { fixedCount?: number }>} */ (readJsonKey('workData', ownerKey, {}))
-  return stored[dateKey]?.fixedCount
-}
-
 describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
   test('게스트(세션 없음)면 { cloud: false } — 호출부가 로컬 경로를 탄다', async () => {
     endCloudSession()
@@ -47,10 +41,30 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
     assert.deepEqual(r, { cloud: false })
   })
 
-  test('서브 일지(logId != main)면 { cloud: false }', async () => {
+  test('서버에 없는 서브 차량 번호면 { cloud: false }', async () => {
     beginLoggedIn('u1', 'dlc-sub')
     const r = await commitMainDayLogToCloud({ ownerKey: 'dlc-sub', logId: '11가1111', dateKey: DK, previousData: {}, nextData: { [DK]: { fixedCount: 1 } } })
     assert.deepEqual(r, { cloud: false })
+    endCloudSession()
+  })
+
+  test('로그인+supabaseId 있는 서브 차량: Fail-Fast로 서버 저장 후 logId Store 반영', async () => {
+    beginLoggedIn('u1', 'dlc-sub-ok')
+    commitCars('dlc-sub-ok', [
+      { id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 },
+      { id: 'car-sub', type: 'sub', number: '11가1111', supabaseId: 801, driverName: '김기사', driverPhone: '01012345678' },
+    ], { syncToCloud: false })
+    withDay('dlc-sub-ok', { fixedCount: 1, callDetails: [] })
+
+    const r = await commitMainDayLogToCloud({
+      ownerKey: 'dlc-sub-ok', logId: '11가1111', dateKey: DK,
+      previousData: {}, nextData: { [DK]: { fixedCount: 5, callDetails: [] } },
+    })
+
+    assert.deepEqual(r, { cloud: true, ok: true, toast: null })
+    assert.equal(countOf('daily_logs', 'upsert'), 1)
+    assert.equal(getState().workLogs['dlc-sub-ok']?.['11가1111']?.[DK]?.fixedCount, 5)
+    assert.equal(getState().workLogs['dlc-sub-ok']?.main?.[DK]?.fixedCount, 1, '메인 일지는 건드리면 안 된다')
     endCloudSession()
   })
 
@@ -88,7 +102,6 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
     assert.deepEqual(r, { cloud: true, ok: false, toast: FAIL_FAST })
     assert.equal(countOf('daily_logs', 'upsert'), 1)
     assert.equal(getState().workLogs['dlc-throw']?.main?.[DK]?.fixedCount, 2)
-    assert.equal(storedFixedCount('dlc-throw', DK), 2, 'localStorage도 저장 전 값')
     endCloudSession()
   })
 
@@ -114,7 +127,6 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
     assert.deepEqual(r, { cloud: true, ok: true, toast: null })
     assert.equal(countOf('daily_logs', 'upsert'), 1, '그 날짜 1회만')
     assert.equal(getState().workLogs['dlc-ok']?.main?.[DK]?.fixedCount, 9)
-    assert.equal(storedFixedCount('dlc-ok', DK), 9)
     endCloudSession()
   })
 

@@ -1,17 +1,13 @@
 // @ts-check
-// 슬라이스 D(2026-09-01): 로그인 사용자의 메인 차량 일지(날짜 저장·빈 날 삭제, 콜상세)를
-// durable journal / fallback / unsafe overlay / tombstone / retryPendingDayWrites /
-// syncWorkData 일괄 upsert에 맡기지 않고, 그 날짜 daily_logs(+transport_details)에
-// 직접 1회 쓰고 성공했을 때만 Store를 갱신한다(Fail-Fast). 실패하면 Store/LS/durable을
-// 더 쌓지 않고 지정 토스트만 돌려준다.
-//
-// 게스트·서브 일지·미동기화 메인 차량은 { cloud: false }를 돌려줘 호출부(useDayDraft)가
-// 예전 로컬 경로(saveLogWorkDataWithTombstoneCheck)를 그대로 타게 한다.
+// 슬라이스 D + Step 9 슬라이스 A: 로그인 일지를 durable/retry 없이 그 날짜
+// daily_logs(+transport_details)에 직접 1회 쓰고 성공 시에만 Store 반영(Fail-Fast).
+// vehicleSupabaseIdForLog로 main·기사 차량을 고르고, Store는 commitLogWorkData로 logId별 반영.
+// 게스트·미동기화(supabaseId 없음)는 { cloud: false } → 호출부가 로컬 경로를 탄다.
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
 import { supabase } from '../supabaseClient.js'
 import { getState } from '../store/app-store.js'
-import { commitWorkData } from '../store/commitHelpers.js'
+import { commitLogWorkData } from '../store/commitHelpers.js'
 import {
   assertCloudWriteReady,
   assertSessionStillCurrent,
@@ -19,7 +15,7 @@ import {
   getCloudUserId,
 } from './cloudSession.js'
 import { StaleSessionError } from './outboxErrors.js'
-import { mainCarSupabaseId, shouldCommitDayLogToCloud } from './mainDayLogRouting.js'
+import { shouldCommitDayLogToCloud, vehicleSupabaseIdForLog } from './mainDayLogRouting.js'
 import { parseEntityNumber } from './cloudStorage.js'
 import { upsertDailyLog } from './syncWorkData.js'
 
@@ -129,7 +125,7 @@ export function changedDayLogDateKeys(previousData, nextData) {
 export async function commitMainDayLogToCloud({ ownerKey, logId, dateKey, previousData, nextData }) {
   if (!shouldCommitDayLogToCloud(ownerKey, logId)) return { cloud: false }
   const userId = /** @type {string} */ (getCloudUserId())
-  const vehicleId = mainCarSupabaseId(ownerKey)
+  const vehicleId = vehicleSupabaseIdForLog(ownerKey, logId)
   if (vehicleId == null) return { cloud: false }
 
   try {
@@ -142,7 +138,7 @@ export async function commitMainDayLogToCloud({ ownerKey, logId, dateKey, previo
   try {
     await writeDayKeyToServer(userId, vehicleId, ownerKey, dateKey, previousData, nextData, captured)
     assertSessionStillCurrent(captured)
-    commitWorkData(ownerKey, nextData, { syncToCloud: false })
+    commitLogWorkData(ownerKey, logId, nextData)
     return { cloud: true, ok: true, toast: null }
   } catch (error) {
     if (error instanceof StaleSessionError) return { cloud: true, ok: false, toast: SESSION_CHANGED_TOAST }
@@ -161,7 +157,7 @@ export async function commitMainDayLogToCloud({ ownerKey, logId, dateKey, previo
 export async function commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, previousData, nextData }) {
   if (!shouldCommitDayLogToCloud(ownerKey, logId)) return { cloud: false }
   const userId = /** @type {string} */ (getCloudUserId())
-  const vehicleId = mainCarSupabaseId(ownerKey)
+  const vehicleId = vehicleSupabaseIdForLog(ownerKey, logId)
   if (vehicleId == null) return { cloud: false }
 
   try {
@@ -193,7 +189,7 @@ export async function commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, pr
   }
 
   const failedDateKeys = dateKeys.filter((dateKey) => !appliedDateKeys.includes(dateKey))
-  if (appliedDateKeys.length > 0) commitWorkData(ownerKey, partialNext, { syncToCloud: false })
+  if (appliedDateKeys.length > 0) commitLogWorkData(ownerKey, logId, partialNext)
 
   const ok = failedDateKeys.length === 0
   const partial = appliedDateKeys.length > 0 && failedDateKeys.length > 0
