@@ -1,0 +1,34 @@
+# 자동 검증 관문(CI): push/PR 마다 GitHub가 직접 테스트·타입검사·빌드를 돌린다.
+# 결과는 저장소 상단의 초록 ✓ / 빨강 ✗ 로 표시된다. 코드를 읽지 않아도 ✗만 보면 된다.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: 의존성 설치
+        run: npm ci
+
+      # 아래 3개는 하나가 실패해도 나머지를 계속 돌려서 전체 그림을 보여준다.
+      - name: 테스트 (npm test)
+        if: ${{ !cancelled() }}
+        run: npm test
+
+      - name: 타입 검사 (npm run typecheck)
+        if: ${{ !cancelled() }}
+        run: npm run typecheck
+
+      - name: 빌드 (npm run build)
+        if: ${{ !cancelled() }}
+        run: npm run build
