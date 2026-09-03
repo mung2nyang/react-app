@@ -1,5 +1,9 @@
 # 자동 검증 관문(CI): push/PR 마다 GitHub가 직접 테스트·타입검사·빌드를 돌린다.
 # 결과는 저장소 상단의 초록 ✓ / 빨강 ✗ 로 표시된다. 코드를 읽지 않아도 ✗만 보면 된다.
+#
+# finance.test.js / receivables-invoices.test.js 는 옆 저장소(ubiquitous-parakeet)의
+# 원본 바닐라 파일과 계산 결과를 대조한다(src/lib/originalWindow.js). 그래서 CI도
+# 두 저장소를 나란히 받아야 한다 — 아래 checkout 2개가 그 역할.
 name: CI
 
 on:
@@ -10,12 +14,26 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: react-app
     steps:
-      - uses: actions/checkout@v4
+      - name: react-app 받기
+        uses: actions/checkout@v4
+        with:
+          path: react-app
+
+      - name: ubiquitous-parakeet(원본 대조용) 받기
+        uses: actions/checkout@v4
+        with:
+          repository: mung2nyang/ubiquitous-parakeet
+          path: ubiquitous-parakeet
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
+          cache-dependency-path: react-app/package-lock.json
 
       - name: 의존성 설치
         run: npm ci
