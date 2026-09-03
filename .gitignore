@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 작업 중 생기는 로그·측정 덤프, 일회성 스크립트 (커밋 대상 아님)
+/_scratch/
+supabase/.temp/
