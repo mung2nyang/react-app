@@ -23,7 +23,9 @@ export default function RevenuePage({ ownerKey = 'guest', session, onBack }) {
 
   return (
     <PageShell title="매출" onBack={onBack}>
-      {isDriver ? <DriverRevenueView ownerKey={ownerKey} /> : <OwnerRevenueView ownerKey={ownerKey} />}
+      {isDriver
+        ? <DriverRevenueView ownerKey={ownerKey} />
+        : <OwnerRevenueView ownerKey={ownerKey} />}
     </PageShell>
   )
 }

@@ -1,6 +1,8 @@
 // @ts-check
 // 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 고용 기사 손익 화면(운송료만,
 // 정비/주유 등 비용 개념 없음 — 원본 그대로).
+// Step 9 슬라이스 C-2 개정: 소속기사 세션은 최소권한 hydrate로 본인 배정 차량
+// 데이터만 들고 오므로 화면단 필터링(driverRevenueScope) 불필요 — 제거.
 import { useMemo, useState } from 'react'
 import { shiftMonth } from '../../lib/calendar.js'
 import { getMonthlyFareRevenue } from '../../lib/finance.js'
@@ -46,7 +48,11 @@ export default function DriverRevenueView({ ownerKey }) {
   }, [year, settings, workDataByLogId])
 
   const yearTotal = yearlyRows.reduce((sum, row) => sum + row.totalFare, 0)
-  const showVehicles = monthly.byVehicle.length > 1
+  const vehicleRows = useMemo(
+    () => monthly.byVehicle.filter((row) => row.fare !== 0 || row.tripCount !== 0),
+    [monthly.byVehicle],
+  )
+  const showVehicles = vehicleRows.length > 1
 
   /** @param {number} delta */
   function shift(delta) {
@@ -73,7 +79,7 @@ export default function DriverRevenueView({ ownerKey }) {
           </div>
           {showVehicles && (
             <div className="revenue-vehicle-list">
-              {monthly.byVehicle.map((vehicle) => (
+              {vehicleRows.map((vehicle) => (
                 <div key={vehicle.logId} className="revenue-vehicle-row">
                   <div>
                     <strong>{vehicle.label}</strong>

@@ -57,6 +57,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
   const workByLogId = useOwnerWorkDataByLogId(ownerKey)
   const navigate = useNavigate()
   const location = useLocation()
+  const viewerIsEmployedDriver = session?.accountType === 'employed_driver'
   const cloud = isCloudSession(session) || !!getCloudUserId()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
@@ -157,12 +158,15 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
           <CarListItem
             key={String(car.id || car.number || `car-${index}`)}
             car={car}
+            assignedView={viewerIsEmployedDriver}
             onEdit={() => openEdit(car)}
             onDelete={() => setPendingDelete(car)}
           />
         ))}
       </div>
-      <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>
+      {!viewerIsEmployedDriver && (
+        <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>
+      )}
       {modalOpen && (
         <CarFormModal
           draft={draft}

@@ -2,16 +2,17 @@
 /**
  * @param {Object} props
  * @param {import('../../domain/financeTypes.js').CarLike} props.car
+ * @param {boolean} [props.assignedView]
  * @param {() => void} props.onEdit
  * @param {() => void} props.onDelete
  */
-export default function CarListItem({ car, onEdit, onDelete }) {
+export default function CarListItem({ car, assignedView = false, onEdit, onDelete }) {
   return (
     <div className="management-list-card">
       <div className="management-card-copy">
         <div className="car-info-text">
           <span className={`management-badge ${car.type === 'main' ? 'main' : 'sub'}`}>
-            {car.type === 'main' ? '메인' : '기사차량'}
+            {car.type === 'main' ? '메인' : assignedView ? '배정차량' : '기사차량'}
           </span>
           {car.number}
         </div>
