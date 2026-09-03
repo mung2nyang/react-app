@@ -1637,6 +1637,40 @@
   color: #ffffff;
 }
 
+.revenue-driver-select {
+  position: relative;
+  margin-top: 10px;
+}
+
+.revenue-driver-select .input-box {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 40px;
+}
+
+.revenue-driver-select-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  pointer-events: none;
+  display: inline-flex;
+  color: var(--sub-text-color);
+  flex-shrink: 0;
+}
+
+.revenue-driver-select-chevron svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .revenue-net-card {
   margin-bottom: 12px;
 }

@@ -15,6 +15,10 @@ import { normalizeSettings } from '../domain/practiceSettings.js'
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
 const EMPTY_WORK_DATA = /** @type {Record<string, DayRecordLike>} */ ({})
+/** 손익·미수·계산서용 — owner에 workLogs가 없을 때 고정 참조(useSyncExternalStore). */
+const EMPTY_WORK_DATA_BY_LOG_ID = /** @type {import('../domain/financeTypes.js').WorkDataByLogId} */ ({
+  main: EMPTY_WORK_DATA,
+})
 // 재감사 2차(FAIL 지적 2번) — useExpenseForm.js가 마운트 시 한 번만 loadExpenses로
 // 스냅샷을 뜨고 그 이후엔 다시 안 읽어서, 그 사이 다른 경로(hydrate, 다른 탭, 또는
 // 같은 화면의 다른 조작)로 store에 반영된 항목이 다음 save()/remove()에서 통째로
@@ -58,19 +62,22 @@ export function useOwnerWorkData(ownerKey) {
 }
 
 /**
- * 손익·계산서·미수용 logId→일지 맵. 기존 `loadWorkDataByLogId`와 같이 main만 담는다
- * (서브 일지 persist 창구는 이 이관 범위 밖). `{ main }` 래퍼는 getSnapshot에 넣지 않는다.
+ * 손익·계산서·미수용 logId→일지 맵(Step 9 슬라이스 C).
+ * `workLogs[ownerKey]` 전체(main + 서브 차량번호)를 그대로 돌려준다 — 계산 엔진은
+ * 이미 logId별 소스를 순회하므로, 여기만 main에 묶여 있으면 매출/미수에 기사가 안 잡힌다.
+ * store 참조를 유지해 useSyncExternalStore 스냅샷이 안정적이다.
  * @param {string} ownerKey
  * @returns {import('../domain/financeTypes.js').WorkDataByLogId}
  */
 export function readOwnerWorkDataByLogId(ownerKey) {
-  return { main: readOwnerWorkData(ownerKey) }
+  const logs = getState().workLogs[ownerKey]
+  if (!logs || typeof logs !== 'object') return EMPTY_WORK_DATA_BY_LOG_ID
+  return logs
 }
 
 /** @param {string} ownerKey */
 export function useOwnerWorkDataByLogId(ownerKey) {
-  const main = useOwnerWorkData(ownerKey)
-  return useMemo(() => ({ main }), [main])
+  return useSyncExternalStore(subscribe, () => readOwnerWorkDataByLogId(ownerKey))
 }
 
 /**
