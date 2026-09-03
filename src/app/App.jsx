@@ -11,7 +11,7 @@ import { flushCloudSync } from '../lib/syncQueue.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { supabase } from '../supabaseClient.js'
-import { restoreSessionOnBoot } from './boot.js'
+import { restoreSessionOnBoot, buildCloudAppSession, ownerKeyFromSession } from './boot.js'
 import { AccountFlowBodyClass, PendingWriteRetryBridge, SyncFlushBridge } from './providers.jsx'
 import { initializeOwnerFromPersist } from '../store/owner-state.js'
 import { useOwnerSettings } from '../store/ownerDataHooks.js'
@@ -39,7 +39,7 @@ export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const ownerKey = session?.userId || (session?.guestMode ? 'guest' : session?.phone) || 'guest'
+  const ownerKey = ownerKeyFromSession(session)
   const practiceSettings = useOwnerSettings(ownerKey)
   const inAccountFlow = location.pathname.startsWith('/auth') || location.pathname === '/onboarding'
 
@@ -154,15 +154,23 @@ export default function App() {
               }}
               onLogin={async (/** @type {AppSession} */ user) => {
                 clearGuestModePersisted()
+                /** @type {AppSession} */
+                let next = { ...user, guestMode: false }
                 if (user?.userId) {
+                  next = await buildCloudAppSession(user.userId, {
+                    name: user.name,
+                    phone: user.phone,
+                  })
                   try {
-                    await hydrateFromSupabase(user.userId, user.userId)
+                    await hydrateFromSupabase(user.userId, ownerKeyFromSession(next), {
+                      employedDriver: !!next.linkedOwnerId,
+                    })
                   } catch (error) {
                     console.error(error)
                     showToast('로그인은 됐지만 클라우드 데이터를 일부 못 불러왔습니다.')
                   }
                 }
-                goHome({ ...user, guestMode: false })
+                goHome(next)
               }}
               onSignup={async (/** @type {AppSession} */ user) => {
                 clearGuestModePersisted()
@@ -204,6 +212,7 @@ export default function App() {
                 showToast={showToast}
                 onBackToAuth={() => handleLogout()}
                 onGoAuth={() => handleLogout({ signOut: true })}
+                onSessionUpdate={(/** @type {AppSession} */ next) => setSession(next)}
               />
             </RequireSession>
           )}

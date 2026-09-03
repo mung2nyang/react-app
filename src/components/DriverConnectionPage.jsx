@@ -145,7 +145,9 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
         </div>
       ))}
 
-      <button type="button" className="management-add-fab" onClick={openAdd}>+ 초대</button>
+      {cloud && (
+        <button type="button" className="management-add-fab" onClick={openAdd}>+ 초대</button>
+      )}
 
       {modalOpen && (
         <DriverFormModal

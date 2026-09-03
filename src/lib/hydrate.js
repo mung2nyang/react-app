@@ -27,12 +27,13 @@ import { expenseFromFuelRecord, replaceFuelExpenses } from '../domain/fuelRecord
 import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/maintenanceRecords.js'
 import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpenseRecords.js'
 import { mergeTaxInvoiceRecords } from '../domain/taxInvoices.js'
+import { buildEmployedDriverSnapshot } from './hydrateEmployedDriver.js'
 
-/** @param {string} userId @param {string} ownerKey */
-export function hydrateFromSupabase(userId, ownerKey) {
+/** @param {string} userId @param {string} ownerKey @param {{ employedDriver?: boolean }} [options] */
+export function hydrateFromSupabase(userId, ownerKey, options = {}) {
   return singleFlight(`hydrate:${ownerKey}`, () => {
     const myEpoch = beginSessionEpoch(userId, ownerKey)
-    return performHydrate(userId, ownerKey, myEpoch)
+    return performHydrate(userId, ownerKey, myEpoch, options)
   })
 }
 
@@ -56,11 +57,33 @@ function localThemeIfReadable(ownerKey) {
   return null
 }
 
-/** @param {string} userId @param {string} ownerKey @param {number} myEpoch */
-async function performHydrate(userId, ownerKey, myEpoch) {
+/** @param {string} userId @param {string} ownerKey @param {number} myEpoch @param {{ employedDriver?: boolean }} [options] */
+async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
   setHydration({ status: 'hydrating', userId, ownerKey, epoch: myEpoch })
 
   try {
+    // employed_driver: profiles/vehicles 행 SELECT 금지 — 호출부가 linkedOwnerId일 때만 켠다.
+    // (테스트는 userId≠ownerKey로 격리하므로 그 비교로 판별하면 안 된다.)
+    if (options.employedDriver) {
+      const nextSnapshot = await buildEmployedDriverSnapshot({
+        userId,
+        ownerKey,
+        throwIfAnyHydrateError,
+        localDrivers: getState().drivers[ownerKey] || [],
+      })
+      clearDirty(ownerKey)
+      if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
+        replaceOwnerState(ownerKey, nextSnapshot, { sync: false, persist: false })
+        finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
+        if (hasPendingOps(ownerKey)) {
+          flushMutationOutbox(ownerKey).catch((error) => console.error('outbox 플러시 실패:', error))
+        }
+      } else {
+        finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
+      }
+      return nextSnapshot
+    }
+
     const [profileRes, vehiclesRes, clientsRes, linksRes] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('vehicles').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
@@ -163,5 +186,8 @@ export async function retryHydrate() {
   const userId = getCloudUserId()
   const ownerKey = getCloudOwnerKey()
   if (!userId || !ownerKey) return undefined
-  return hydrateFromSupabase(userId, ownerKey)
+  const { fetchLinkedDriverLink } = await import('./driverLinkRpc.js')
+  const link = await fetchLinkedDriverLink(userId)
+  const employedDriver = !!(link?.owner_id && String(link.owner_id) === String(ownerKey))
+  return hydrateFromSupabase(userId, ownerKey, { employedDriver })
 }

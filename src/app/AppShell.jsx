@@ -29,6 +29,7 @@ const PAGE_PATH = {
   report: 'report',
   invoices: 'tax',
   drivers: 'drivers',
+  invite: 'me/invite',
   revenue: 'revenue',
   profile: 'me/profile',
   settings: 'me/settings',
@@ -48,8 +49,9 @@ function pagePath(page) {
  * @param {(message: string) => void} [props.showToast]
  * @param {() => void} [props.onBackToAuth]
  * @param {() => void} [props.onGoAuth]
+ * @param {(session: AppSession) => void} [props.onSessionUpdate]
  */
-export default function AppShell({ ownerKey, session, showToast, onBackToAuth, onGoAuth }) {
+export default function AppShell({ ownerKey, session, showToast, onBackToAuth, onGoAuth, onSessionUpdate }) {
   const location = useLocation()
   const rawNavigate = useNavigate()
   // 재감사 4차(FAIL 지적 3번) — DayLogPage 헤더의 "뒤로가기"만 durableWriteGuard로
@@ -121,6 +123,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
           onOpenNotifs={() => { bumpNotifTick(); setNotifOpen(true) }}
           onBackToAuth={onBackToAuth}
           onGoAuth={onGoAuth}
+          onSessionUpdate={onSessionUpdate}
           navigate={navigate}
           goToPage={goToPage}
         />

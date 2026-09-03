@@ -1,6 +1,8 @@
 // @ts-check
+import { useState } from 'react'
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
 import { formatPercentInput } from '../../lib/money.js'
+import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
 
 /**
  * @typedef {Object} CarFormDraft
@@ -14,6 +16,9 @@ import { formatPercentInput } from '../../lib/money.js'
  * @property {boolean} commEnabled
  * @property {string} commType
  * @property {string} commission
+ * @property {string} inviteCode
+ * @property {string} inviteStartDate
+ * @property {string|null} inviteDriverId
  */
 
 /**
@@ -23,10 +28,18 @@ import { formatPercentInput } from '../../lib/money.js'
  * @param {string|null} props.editingId
  * @param {() => void} props.onCancel
  * @param {() => void} props.onSave
+ * @param {boolean} [props.cloud]
+ * @param {Array<import('../../lib/outboxTypes.js').DriverRecord>} [props.drivers]
+ * @param {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>|null|undefined} [props.dayLogByDate]
  */
-export default function CarFormModal({ draft, setDraft, editingId, onCancel, onSave }) {
+export default function CarFormModal({
+  draft, setDraft, editingId, onCancel, onSave,
+  cloud = false, drivers = [], dayLogByDate = null,
+}) {
   const isSub = draft.type === 'sub'
   const isSalary = draft.driverPayMode === 'salary'
+  const [connectTab, setConnectTab] = useState(/** @type {'link'|'log'} */ ('link'))
+  const showConnect = isSub && cloud
 
   function setRevenueMode() {
     setDraft((prev) => ({
@@ -87,22 +100,8 @@ export default function CarFormModal({ draft, setDraft, editingId, onCancel, onS
               </p>
               <div className="car-commission-value">
                 <div className="car-commission-type" role="group" aria-label="정산 방식">
-                  <button
-                    type="button"
-                    className={!isSalary ? 'active' : ''}
-                    aria-pressed={!isSalary}
-                    onClick={setRevenueMode}
-                  >
-                    매출제
-                  </button>
-                  <button
-                    type="button"
-                    className={isSalary ? 'active' : ''}
-                    aria-pressed={isSalary}
-                    onClick={setSalaryMode}
-                  >
-                    월급제
-                  </button>
+                  <button type="button" className={!isSalary ? 'active' : ''} aria-pressed={!isSalary} onClick={setRevenueMode}>매출제</button>
+                  <button type="button" className={isSalary ? 'active' : ''} aria-pressed={isSalary} onClick={setSalaryMode}>월급제</button>
                 </div>
                 <span className="car-commission-input">
                   {isSalary ? (
@@ -128,7 +127,19 @@ export default function CarFormModal({ draft, setDraft, editingId, onCancel, onS
             </div>
           </>
         )}
-        <p className="car-type-hint">{isSub ? '기사 차량으로 등록됩니다. (기사 연동은 나중에)' : '메인 차량으로 등록됩니다.'}</p>
+        {showConnect ? (
+          <CarDriverConnectPanel
+            tab={connectTab}
+            onTab={setConnectTab}
+            logEnabled={!!editingId}
+            inviteCode={draft.inviteCode || ''}
+            onInviteCode={(code) => setDraft({ ...draft, inviteCode: code })}
+            drivers={drivers}
+            dayLogByDate={dayLogByDate}
+          />
+        ) : (
+          <p className="car-type-hint">{isSub ? '기사 차량으로 등록됩니다.' : '메인 차량으로 등록됩니다.'}</p>
+        )}
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
           <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>

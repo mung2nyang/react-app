@@ -65,6 +65,9 @@
  * 없이 쓰이고 있어 실제 컬럼 타입을 여기서 명시한다).
  * @typedef {object} DriverLinkRow
  * @property {number|string} id
+ * @property {string} [owner_id]
+ * @property {string|null} [driver_id]
+ * @property {string|null} [vehicle_id]
  * @property {string} [invite_code]
  * @property {string|null} [assignment_start]
  * @property {string|null} [assignment_end]
@@ -79,6 +82,7 @@
  * @property {string} [name]
  * @property {string} [phone]
  * @property {string} [accountType]
+ * @property {string|null} [linkedOwnerId] 연동된 차주 id(employed_driver일 때 ownerKey로 씀)
  * @property {boolean} [guestMode]
  */
 

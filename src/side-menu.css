@@ -439,6 +439,42 @@
   font-size: var(--fs-2);
 }
 
+.car-driver-connect {
+  margin: 0 0 16px;
+}
+
+.car-driver-connect-tabs {
+  margin-bottom: 12px;
+}
+
+.car-driver-connect-copy {
+  margin: 0 0 12px;
+  color: var(--text-color);
+  font-size: var(--fs-2);
+  line-height: 1.55;
+}
+
+.car-daylog-preview {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.car-daylog-preview li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  font-size: var(--fs-2);
+}
+}
+
 .client-list {
   display: flex;
   flex-direction: column;

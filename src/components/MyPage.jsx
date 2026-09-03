@@ -1,4 +1,5 @@
-import { useOwnerProfile } from '../store/ownerDataHooks.js'
+import { useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
+import { isCloudSession } from '../lib/cloudSession.js'
 
 function PersonIcon() {
   return (
@@ -85,7 +86,11 @@ const SHORTCUTS = [
 
 export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) {
   const profile = useOwnerProfile(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
   const employed = session?.accountType === 'employed_driver'
+  const isOwner = !employed && drivers.length > 0
+  const roleReady = employed || isOwner
+  const cloud = isCloudSession(session)
   const displayName = profile.name || (session?.name && session.name !== '비회원' ? session.name : '') || (employed ? '기사' : '대표자')
 
   return (
@@ -103,7 +108,9 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) 
         <span className="mypage-profile-copy">
           <strong>개인정보</strong>
           <span className="mypage-role-user-row">
-            <span className="mypage-role-pill">{employed ? '소속 기사' : '차주'}</span>
+            {roleReady && (
+              <span className="mypage-role-pill">{employed ? '소속 기사' : '차주'}</span>
+            )}
             <span className="mypage-user-name">{displayName}</span>
           </span>
         </span>
@@ -136,14 +143,26 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) 
           </svg>
           <span>앱 설정</span>
         </button>
-        <button type="button" className="mypage-notice-link" onClick={() => onOpen('drivers')}>
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M19 8v6M16 11h6"></path>
-          </svg>
-          <span>기사연동관리</span>
-        </button>
+        {isOwner && (
+          <button type="button" className="mypage-notice-link" onClick={() => onOpen('drivers')}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M19 8v6M16 11h6"></path>
+            </svg>
+            <span>기사연동관리</span>
+          </button>
+        )}
+        {cloud && !employed && (
+          <button type="button" className="mypage-notice-link" onClick={() => onOpen('invite')}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M19 8v6M16 11h6"></path>
+            </svg>
+            <span>초대코드로 차주 연동</span>
+          </button>
+        )}
         <button type="button" className="mypage-notice-link" onClick={() => onOpen('soon', '문자 문구 설정')}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>

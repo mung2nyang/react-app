@@ -8,6 +8,7 @@ import {
   CarManagementPage,
   ClientManagementPage,
   DriverConnectionPage,
+  InviteRedeemPage,
   MaintFuelPage,
   MyPage,
   PersonalInfoPage,
@@ -30,12 +31,13 @@ import {
  * @param {() => void} props.onOpenNotifs
  * @param {() => void} [props.onBackToAuth]
  * @param {() => void} [props.onGoAuth]
+ * @param {(session: AppSession) => void} [props.onSessionUpdate]
  * @param {(to: import('react-router-dom').To | number, options?: import('react-router-dom').NavigateOptions) => void} props.navigate
  * @param {(page: string, title?: string, backFallback?: string) => void} props.goToPage
  */
 export default function AppShellRoutes({
   ownerKey, session, showToast, bumpNotifTick, notifCount,
-  onOpenMenu, onOpenNotifs, onBackToAuth, onGoAuth, navigate, goToPage,
+  onOpenMenu, onOpenNotifs, onBackToAuth, onGoAuth, onSessionUpdate, navigate, goToPage,
 }) {
   function mainPage() {
     return (
@@ -56,7 +58,7 @@ export default function AppShellRoutes({
       <Route index element={mainPage()} />
       <Route path="day/:date" element={mainPage()} />
       <Route path="logs/:logId/day/:date" element={mainPage()} />
-      <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
+      <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate('/app')} />} />
       <Route path="clients" element={<ClientManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
       <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} onOpen={(/** @type {string} */ page, /** @type {string} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} />} />
       <Route path="me/profile" element={<PersonalInfoPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate('/app')} onGoAuth={onGoAuth} />} />
@@ -66,6 +68,7 @@ export default function AppShellRoutes({
       <Route path="report" element={<ReportPage ownerKey={ownerKey} onBack={() => navigate('/app')} />} />
       <Route path="tax" element={<TaxInvoicePage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
       <Route path="drivers" element={<DriverConnectionPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => { navigate('/app'); bumpNotifTick() }} />} />
+      <Route path="me/invite" element={<InviteRedeemPage session={session} showToast={showToast} onBack={() => navigate('/app/me')} onLinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); navigate('/app') }} />} />
       <Route path="revenue" element={<RevenuePage ownerKey={ownerKey} session={session ?? undefined} onBack={() => navigate('/app')} />} />
       <Route path="soon" element={<ComingSoonRoute />} />
     </Routes>

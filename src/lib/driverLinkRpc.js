@@ -70,3 +70,64 @@ export function driverLinkRowNeedsUpdate(row, { inviteCode, assignmentStart, ass
     || (row.invite_code != null && row.invite_code !== inviteCode)
   )
 }
+
+/**
+ * 기사가 초대코드로 스스로를 차주에 연결. Fail-Fast — durable 큐 없음.
+ * @param {string} inviteCode
+ * @returns {Promise<DriverLinkRow>}
+ */
+export async function redeemDriverInviteCode(inviteCode) {
+  // hydrate ready를 요구하지 않는다 — 연동 전·hydrate 실패 상태에서도 초대코드로
+  // 차주에 붙을 수 있어야 한다. auth만 확인(RPC도 auth.uid() 검사).
+  const { data: authData, error: authError } = await supabase.auth.getSession()
+  if (authError || !authData?.session?.user) {
+    throw new Error('로그인이 필요합니다.')
+  }
+  const { data, error } = await supabase.rpc('redeem_driver_invite_code', {
+    p_invite_code: String(inviteCode || '').trim(),
+  })
+  if (error) throw new Error(error.message || '초대코드 연동에 실패했습니다.')
+  const row = /** @type {DriverLinkRow|undefined} */ (Array.isArray(data) ? data[0] : data)
+  if (!row) throw new Error('서버가 연동 결과를 돌려주지 않았습니다.')
+  return row
+}
+
+/**
+ * 로그인 사용자가 이미 linked인 driver_links 행(자기 행만 — RLS).
+ * @param {string} userId
+ * @returns {Promise<DriverLinkRow|null>}
+ */
+export async function fetchLinkedDriverLink(userId) {
+  if (!userId) return null
+  const { data, error } = await supabase
+    .from('driver_links')
+    .select('*')
+    .eq('driver_id', userId)
+    .eq('status', 'linked')
+    .maybeSingle()
+  if (error) {
+    console.warn('[driverLinkRpc] linked 조회 실패', error)
+    return null
+  }
+  return data ? /** @type {DriverLinkRow} */ (data) : null
+}
+
+/** @returns {Promise<Array<{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null }>>} */
+export async function fetchAssignedVehicleSummary() {
+  const { data, error } = await supabase.rpc('get_assigned_vehicle_summary')
+  if (error) throw error
+  return Array.isArray(data) ? data : []
+}
+
+/**
+ * @param {string} ownerId
+ * @returns {Promise<{ name?: string, business_name?: string, settings?: object|null }|null>}
+ */
+export async function fetchLinkedOwnerProfileSettings(ownerId) {
+  const { data, error } = await supabase.rpc('get_linked_owner_profile_settings', {
+    p_owner_id: ownerId,
+  })
+  if (error) throw error
+  const row = Array.isArray(data) ? data[0] : data
+  return row || null
+}

@@ -1,19 +1,13 @@
-// Step 2 부트 시퀀스: 새로고침 시 Supabase 세션을 복원한다 (migration-audit-plan.md Step 2,
-// migration-plan.md 3.11 "부트"). React 없이 순수 async 함수로 두고 App.jsx가 마운트 시
-// 한 번만 부른다. 로그인 상태가 아니면 null을 돌려줘 기존처럼 screen='auth'로 남는다 —
-// 게스트/로그아웃 동작은 전혀 바꾸지 않는다.
+// @ts-check
+// Step 2 부트 시퀀스: 새로고침 시 Supabase 세션을 복원한다.
+// 슬라이스 E(소속기사): linked driver_links가 있으면 accountType=employed_driver,
+// linkedOwnerId로 hydrate ownerKey를 잡는다.
 import { supabase } from '../supabaseClient.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
 import { singleFlight } from '../lib/singleFlight.js'
+import { fetchLinkedDriverLink } from '../lib/driverLinkRpc.js'
 
-/**
- * @typedef {Object} RestoredSession
- * @property {string} userId
- * @property {string} name
- * @property {string} phone
- * @property {string} accountType
- * @property {boolean} guestMode
- */
+/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 
 /**
  * @param {string} userId
@@ -39,14 +33,40 @@ async function fetchAccountProfile(userId) {
 }
 
 /**
- * @returns {Promise<{ session: RestoredSession, hydrateError: boolean } | null>}
- *   활성 Supabase 세션이 없으면 null. 있으면 세션 정보 + hydrate 성공 여부.
- *   hydrate가 실패해도 세션 자체는 돌려준다 — App.jsx가 로그인은 유지한 채 토스트만 띄운다.
+ * 프로필 + driver_links linked 행으로 AppSession을 만든다.
+ * @param {string} userId
+ * @param {{ name?: string, phone?: string }} [overrides]
+ * @returns {Promise<AppSession>}
+ */
+export async function buildCloudAppSession(userId, overrides = {}) {
+  const profile = await fetchAccountProfile(userId)
+  const link = await fetchLinkedDriverLink(userId)
+  const linkedOwnerId = link?.owner_id ? String(link.owner_id) : null
+  return {
+    userId,
+    name: overrides.name || profile.name || '',
+    phone: overrides.phone || profile.phone || '',
+    accountType: linkedOwnerId ? 'employed_driver' : (profile.accountType || 'owner_driver'),
+    linkedOwnerId,
+    guestMode: false,
+  }
+}
+
+/**
+ * @param {import('../lib/outboxTypes.js').AppSession|null|undefined} session
+ * @returns {string}
+ */
+export function ownerKeyFromSession(session) {
+  if (session?.linkedOwnerId) return session.linkedOwnerId
+  if (session?.userId) return session.userId
+  if (session?.guestMode) return 'guest'
+  return session?.phone || 'guest'
+}
+
+/**
+ * @returns {Promise<{ session: AppSession, hydrateError: boolean } | null>}
  */
 export function restoreSessionOnBoot() {
-  // Step 0-4 감사 보완 2차(8번): React StrictMode가 App.jsx의 부트 이펙트를 두 번
-  // 실행해도 세션 조회 + hydrate가 실제로는 한 번만 나가게 한다. 두 번째 호출은 첫
-  // 번째가 반환한 같은 Promise를 그대로 받는다.
   return singleFlight('boot:restoreSession', performRestoreSessionOnBoot)
 }
 
@@ -62,17 +82,16 @@ async function performRestoreSessionOnBoot() {
   }
 
   const userId = authUser.id
-  const profile = await fetchAccountProfile(userId)
-  const session = {
-    userId,
-    name: profile.name || authUser.user_metadata?.name || '',
-    phone: profile.phone || authUser.phone || '',
-    accountType: profile.accountType || 'owner_driver',
-    guestMode: false,
-  }
+  const session = await buildCloudAppSession(userId, {
+    name: authUser.user_metadata?.name || '',
+    phone: authUser.phone || '',
+  })
+  if (!session.name) session.name = authUser.user_metadata?.name || ''
+  if (!session.phone) session.phone = authUser.phone || ''
 
+  const ownerKey = ownerKeyFromSession(session)
   try {
-    await hydrateFromSupabase(userId, userId)
+    await hydrateFromSupabase(userId, ownerKey, { employedDriver: !!session.linkedOwnerId })
     return { session, hydrateError: false }
   } catch (error) {
     console.error('[boot] hydrate 실패, 로컬 데이터로 계속합니다.', error)
