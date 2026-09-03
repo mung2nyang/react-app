@@ -27,7 +27,7 @@ test('차량을 커밋하면 기사 초대 모달이 리마운트 없이 할당 
     await act(async () => {
       root.render(React.createElement(DriverConnectionPage, {
         ownerKey,
-        session: null,
+        session: { userId: 'sot-cars-drivers-owner', guestMode: false },
         onBack: () => {},
       }))
     })

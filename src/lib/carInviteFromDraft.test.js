@@ -14,9 +14,9 @@ describe('carInviteFromDraft', () => {
       userId: 'u1',
       drivers: [],
       cars: [],
-      saved: { id: 'c1', number: '12가3456', type: 'sub' },
+      saved: { id: 'c1', number: '12가3456', type: /** @type {'sub'} */ ('sub') },
       inviteDraft: {
-        type: 'sub',
+        type: /** @type {'sub'} */ ('sub'),
         number: '12가3456',
         driverName: 'Kim',
         driverPhone: '010-1234-5678',
