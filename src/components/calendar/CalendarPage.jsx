@@ -60,8 +60,7 @@ export default function CalendarPage({
   const settings = useOwnerSettings(ownerKey)
   const clients = useOwnerClients(ownerKey)
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
-  const activeFixedOn = isMain ? !!settings.fixedOn : !!settings.subFixedOn
-  const unitPrice = activeFixedOn ? resolveFixedUnitPrice({ clients }) : 0
+  const unitPrice = resolveFixedUnitPrice({ clients })
 
   const cars = useOwnerCars(ownerKey)
   const profile = useOwnerProfile(ownerKey)

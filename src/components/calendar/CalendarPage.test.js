@@ -353,3 +353,44 @@ test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수
     container.remove()
   }
 })
+
+test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님(매출과 동일)', async () => {
+  const ownerKey = 'test-calendar-fixedon-false-main'
+  const dateKey = '2026-08-20'
+  const monthKey = '2026-08'
+  commitClients(ownerKey, [
+    { id: 'client-fx', companyName: '고정노선', fixedRouteLinked: true, fixedUnitPrice: 25000 },
+  ], { syncToCloud: false })
+  commitSettings(ownerKey, normalizeSettings({ fixedOn: false, paymentOn: true }), { syncToCloud: false })
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] },
+  }, { syncToCloud: false })
+
+  const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
+  const revenue = getOwnerMonthlyFinanceDetail(monthKey, 'owner', buildFinanceSettings(ownerKey), workDataByLogId, [])
+  const expectedFixed = 75000
+  assert.equal(revenue.income.fare.total, expectedFixed, '매출도 fixedOn과 무관하게 고정횟수×단가')
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, logId: 'main', onSelectDay: () => {} }),
+      ))
+    })
+    const fareSummary = monthWorkFareSummary(workDataByLogId.main, 2026, 7, 25000)
+    assert.equal(fareSummary.fixedFare, expectedFixed)
+    assert.ok(fareSummary.fixedFare > 0)
+    assert.ok(
+      container.textContent.includes('75,000 원'),
+      `달력 고정운임이 매출과 같은 75,000원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
+    )
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
