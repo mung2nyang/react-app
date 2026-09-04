@@ -2,10 +2,12 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { getDriverSelfMonthlyDetail } from './driverSelfRevenue.js'
+import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.js'
 import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('./financeTypes.js').DriverLinkLike} DriverLinkLike */
 
 const REVENUE_CAR = /** @type {CarLike} */ (FIXTURE_SETTINGS.cars.find((c) => c.number === '서울12가3456'))
 const SALARY_CAR = /** @type {CarLike} */ (FIXTURE_SETTINGS.cars.find((c) => c.number === '부산33나1111'))
@@ -20,11 +22,13 @@ const SALARY = 2000000
 
 /**
  * @param {Array<CarLike>} cars
+ * @param {Array<DriverLinkLike>} [driverLinks]
  * @returns {FinanceSettings}
  */
-function settingsWithCars(cars) {
+function settingsWithCars(cars, driverLinks = FIXTURE_SETTINGS.driverLinks) {
   return {
     ...FIXTURE_SETTINGS,
+    driverLinks,
     cars: [
       /** @type {CarLike} */ ({ type: 'main', number: '서울00가0000' }),
       ...cars,
@@ -33,7 +37,7 @@ function settingsWithCars(cars) {
 }
 
 describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
-  test('(b) {main: 트립} 입력 직후와 동일 — 순이익 = 운송료 × % − 산재', () => {
+  test('(b) {main: 트립} 입력 직후와 동일 — 순이익 = 배정기간 내 운송료 × % − 산재', () => {
     const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
     assert.equal(detail.income.fare.total, FARE_TOTAL)
     assert.equal(detail.tripCount, TRIP_COUNT)
@@ -53,7 +57,7 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     assert.equal(detail.netProfit, 0)
   })
 
-  test('(c) insuranceOn이면 산재 차감 (totals link=null, fare 기준 commission)', () => {
+  test('(c) insuranceOn이면 산재 차감 (totals link 필터, totals 기준 commission)', () => {
     const withIns = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
     const withoutIns = getDriverSelfMonthlyDetail(
       MONTH_KEY,
@@ -111,5 +115,56 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     assert.ok(withExp.expense.total > 0)
     assert.equal(withExp.expense.maint.total, 50000)
     assert.equal(withExp.expense.fuel.total, 80000)
+  })
+
+  test('① 배정기간 밖 트립은 정산액에서 제외된다', () => {
+    const car = /** @type {CarLike} */ ({ ...REVENUE_CAR, insuranceOn: false })
+    /** @type {import('./financeTypes.js').WorkDataByLogId} */
+    const work = {
+      main: {
+        '2026-05-10': {
+          callDetails: [{ id: 'in-range', client: '대한', fare: 100000 }],
+        },
+        '2026-05-25': {
+          callDetails: [{ id: 'out-of-range', client: '대한', fare: 100000 }],
+        },
+      },
+    }
+    const narrowLinks = /** @type {Array<DriverLinkLike>} */ ([{
+      id: 'link-narrow',
+      vehicleNumber: '서울12가3456',
+      assignmentStart: '2026-05-01',
+      assignmentEnd: '2026-05-15',
+      status: 'linked',
+    }])
+    const fullLinks = /** @type {Array<DriverLinkLike>} */ ([{
+      id: 'link-full',
+      vehicleNumber: '서울12가3456',
+      assignmentStart: '2026-05-01',
+      assignmentEnd: '2026-05-31',
+      status: 'linked',
+    }])
+    const narrow = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([car], narrowLinks), work)
+    const full = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([car], fullLinks), work)
+    assert.equal(narrow.netProfit, 15000, '배정기간 안 100,000 × 15%')
+    assert.equal(full.netProfit, 30000, '월 전체 200,000 × 15%')
+    assert.ok(narrow.netProfit < full.netProfit)
+    assert.equal(narrow.income.fare.total, 200000, '운송료 표시 라인은 배정기간 필터 안 함')
+  })
+
+  test('② settlement == 차주 all 탭 salary (같은 트립·main↔번호판)', () => {
+    const plateWork = FIXTURE_WORK['서울12가3456']
+    const settings = settingsWithCars([REVENUE_CAR])
+    const self = getDriverSelfMonthlyDetail(MONTH_KEY, settings, { main: plateWork })
+    const ownerAll = getOwnerMonthlyFinanceDetail(
+      MONTH_KEY,
+      'all',
+      settings,
+      { main: {}, '서울12가3456': plateWork },
+      [],
+    )
+    assert.equal(self.income.settlement.total, SHARE_NET)
+    assert.equal(ownerAll.expense.salary.total, SHARE_NET)
+    assert.equal(self.income.settlement.total, ownerAll.expense.salary.total)
   })
 })
