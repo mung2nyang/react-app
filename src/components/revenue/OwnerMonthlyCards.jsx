@@ -1,11 +1,18 @@
 // @ts-check
 // 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 오너 월별 손익 카드 3장
 // (순이익/수입/지출)과 그 안의 접이식 상세 행.
+// D-2: variant='driverSelf' — 소속기사 본인 화면(기사 정산 라인, 기사 급여 숨김).
 import { useState } from 'react'
 import { dateLabel, won } from './revenueFormat.js'
 
 /** @typedef {ReturnType<typeof import('../../domain/finance.js').getOwnerMonthlyFinanceDetail>} OwnerMonthlyDetail */
 /** @typedef {{ label: string, amount: number, date?: string }} DetailLine */
+/** @typedef {{ total: number, items: Array<DetailLine>, label?: string }} SettlementBucket */
+/**
+ * @typedef {Omit<OwnerMonthlyDetail, 'income'> & {
+ *   income: OwnerMonthlyDetail['income'] & { settlement?: SettlementBucket }
+ * }} MonthlyCardsDetail
+ */
 
 /**
  * @param {Object} props
@@ -42,8 +49,13 @@ function RevenueDetailRow({ label, amount, items, showDate = false }) {
   )
 }
 
-/** @param {{ detail: OwnerMonthlyDetail, scope?: string }} props */
-export default function OwnerMonthlyCards({ detail, scope }) {
+/**
+ * @param {{ detail: MonthlyCardsDetail, scope?: string, variant?: 'owner'|'driverSelf' }} props
+ */
+export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) {
+  const isDriverSelf = variant === 'driverSelf'
+  const settlement = isDriverSelf ? detail.income.settlement : null
+
   return (
     <>
       <div className="summary-card revenue-net-card">
@@ -75,6 +87,13 @@ export default function OwnerMonthlyCards({ detail, scope }) {
       <div className="summary-card revenue-net-card">
         <div className="summary-title">운송 수입</div>
         <RevenueDetailRow label="운송료" amount={detail.income.fare.total} items={detail.income.fare.items} />
+        {settlement && (
+          <RevenueDetailRow
+            label={settlement.label || '기사 정산'}
+            amount={settlement.total}
+            items={settlement.items}
+          />
+        )}
         <RevenueDetailRow
           label="운임 수수료"
           amount={-detail.income.commission.total}
@@ -112,7 +131,7 @@ export default function OwnerMonthlyCards({ detail, scope }) {
           items={detail.expense.misc.items.map((item) => ({ ...item, amount: -item.amount }))}
           showDate
         />
-        {scope !== 'owner' && (
+        {!isDriverSelf && scope !== 'owner' && (
           <RevenueDetailRow
             label="기사 급여"
             amount={-detail.expense.salary.total}

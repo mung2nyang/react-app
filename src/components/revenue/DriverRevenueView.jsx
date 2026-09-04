@@ -1,16 +1,13 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 고용 기사 손익 화면(운송료만,
-// 정비/주유 등 비용 개념 없음 — 원본 그대로).
-// Step 9 슬라이스 C-2 개정: 소속기사 세션은 최소권한 hydrate로 본인 배정 차량
-// 데이터만 들고 오므로 화면단 필터링(driverRevenueScope) 불필요 — 제거.
+// 소속기사 매출 화면(D-2): 차주와 같은 카드 UI, 본인 정산 기준. scope 탭 없음.
 import { useMemo, useState } from 'react'
+import { getDriverSelfMonthlyDetail } from '../../domain/driverSelfRevenue.js'
 import { shiftMonth } from '../../lib/calendar.js'
-import { getMonthlyFareRevenue } from '../../lib/finance.js'
-import { formatWon } from '../../lib/money.js'
 import { buildFinanceSettings } from '../../lib/ownerFinance.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
+import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { DateNav } from './RevenueNav.jsx'
-import { monthKeyOf } from './revenueFormat.js'
+import { monthKeyOf, won } from './revenueFormat.js'
 
 /** @param {{ ownerKey: string }} props */
 export default function DriverRevenueView({ ownerKey }) {
@@ -34,25 +31,21 @@ export default function DriverRevenueView({ ownerKey }) {
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
 
   const monthly = useMemo(
-    () => getMonthlyFareRevenue(monthKeyOf(year, month), settings, workDataByLogId),
+    () => getDriverSelfMonthlyDetail(monthKeyOf(year, month), settings, workDataByLogId),
     [year, month, settings, workDataByLogId],
   )
 
   const yearlyRows = useMemo(() => {
+    /** @type {Array<{ month: number, netProfit: number }>} */
     const rows = []
     for (let m = 0; m < 12; m++) {
-      const result = getMonthlyFareRevenue(monthKeyOf(year, m), settings, workDataByLogId)
-      rows.push({ month: m + 1, ...result })
+      const detail = getDriverSelfMonthlyDetail(monthKeyOf(year, m), settings, workDataByLogId)
+      rows.push({ month: m + 1, netProfit: detail.netProfit })
     }
     return rows
   }, [year, settings, workDataByLogId])
 
-  const yearTotal = yearlyRows.reduce((sum, row) => sum + row.totalFare, 0)
-  const vehicleRows = useMemo(
-    () => monthly.byVehicle.filter((row) => row.fare !== 0 || row.tripCount !== 0),
-    [monthly.byVehicle],
-  )
-  const showVehicles = vehicleRows.length > 1
+  const yearNet = yearlyRows.reduce((sum, row) => sum + row.netProfit, 0)
 
   /** @param {number} delta */
   function shift(delta) {
@@ -61,55 +54,31 @@ export default function DriverRevenueView({ ownerKey }) {
 
   return (
     <>
-      <div className="settings-segmented-control maint-fuel-tabs">
-        <button type="button" className={`toggle-btn${!yearly ? ' active-work' : ''}`} onClick={() => setTab('monthly')}>월매출</button>
-        <button type="button" className={`toggle-btn${yearly ? ' active-work' : ''}`} onClick={() => setTab('yearly')}>년매출</button>
+      <div className="revenue-top-card">
+        <div className="maint-fuel-nav">
+          <DateNav yearly={yearly} viewDate={viewDate} year={year} month={month} onViewDate={setViewDate} onShift={shift} />
+        </div>
+        <div className="settings-segmented-control maint-fuel-tabs">
+          <button type="button" className={`toggle-btn${yearly ? ' active-work' : ''}`} onClick={() => setTab('yearly')}>년 매출</button>
+          <button type="button" className={`toggle-btn${!yearly ? ' active-work' : ''}`} onClick={() => setTab('monthly')}>월 매출</button>
+        </div>
       </div>
 
-      <div className="maint-fuel-nav">
-        <DateNav yearly={yearly} viewDate={viewDate} year={year} month={month} onViewDate={setViewDate} onShift={shift} />
-      </div>
-
-      {!yearly && (
-        <>
-          <div className="revenue-summary-card">
-            <div className="revenue-summary-label">{year}년 {month + 1}월 총 운송료</div>
-            <div className="revenue-summary-amount">{formatWon(monthly.totalFare)}</div>
-            <div className="revenue-summary-sub">총 {monthly.tripCount}회 운행</div>
-          </div>
-          {showVehicles && (
-            <div className="revenue-vehicle-list">
-              {vehicleRows.map((vehicle) => (
-                <div key={vehicle.logId} className="revenue-vehicle-row">
-                  <div>
-                    <strong>{vehicle.label}</strong>
-                    <div className="revenue-vehicle-meta">{vehicle.tripCount}회 운행</div>
-                  </div>
-                  <strong>{formatWon(vehicle.fare)}</strong>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
-      )}
+      {!yearly && <OwnerMonthlyCards key={`${year}-${month}`} detail={monthly} variant="driverSelf" />}
 
       {yearly && (
         <>
-          <div className="revenue-summary-card">
-            <div className="revenue-summary-label">{year}년 총 운송료</div>
-            <div className="revenue-summary-amount">{formatWon(yearTotal)}</div>
-          </div>
           <div className="revenue-year-list">
             {yearlyRows.map((row) => (
               <div key={row.month} className="revenue-year-row">
                 <span>{row.month}월</span>
-                <strong>{formatWon(row.totalFare)}</strong>
+                <span className={row.netProfit < 0 ? 'negative' : ''}>{won(row.netProfit)}</span>
               </div>
             ))}
-            <div className="revenue-year-row total">
-              <span>합계</span>
-              <strong>{formatWon(yearTotal)}</strong>
-            </div>
+          </div>
+          <div className="revenue-year-total">
+            <span>{year}년 순이익 합계</span>
+            <strong className={yearNet < 0 ? 'negative' : ''}>{won(yearNet)}</strong>
           </div>
         </>
       )}
