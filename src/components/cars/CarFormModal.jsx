@@ -30,12 +30,10 @@ import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
  * @param {() => void} props.onSave
  * @param {boolean} [props.cloud]
  * @param {Array<import('../../lib/outboxTypes.js').DriverRecord>} [props.drivers]
- * @param {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>|null|undefined} [props.dayLogByDate]
- * @param {(vehicleNumber: string) => void} [props.onOpenVehicleLog]
  */
 export default function CarFormModal({
   draft, setDraft, editingId, onCancel, onSave,
-  cloud = false, drivers = [], dayLogByDate = null, onOpenVehicleLog,
+  cloud = false, drivers = [],
 }) {
   const isSub = draft.type === 'sub'
   const isSalary = draft.driverPayMode === 'salary'
@@ -136,9 +134,6 @@ export default function CarFormModal({
             inviteCode={draft.inviteCode || ''}
             onInviteCode={(code) => setDraft({ ...draft, inviteCode: code })}
             drivers={drivers}
-            dayLogByDate={dayLogByDate}
-            vehicleNumber={draft.number}
-            onOpenVehicleLog={onOpenVehicleLog}
           />
         ) : (
           <p className="car-type-hint">{isSub ? '기사 차량으로 등록됩니다.' : '메인 차량으로 등록됩니다.'}</p>

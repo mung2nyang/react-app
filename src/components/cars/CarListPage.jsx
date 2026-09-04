@@ -1,5 +1,5 @@
 // @ts-check
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ConfirmModal from '../ConfirmModal.jsx'
 import CarFormModal from './CarFormModal.jsx'
@@ -11,7 +11,7 @@ import { getCloudUserId, isCloudSession } from '../../lib/cloudSession.js'
 import { todayWorkLogSelection } from '../../lib/calendar.js'
 import { generateInviteCode } from '../../lib/drivers.js'
 import { saveInviteAfterVehicle, todayIsoDate } from '../../lib/carInviteFromDraft.js'
-import { useOwnerCars, useOwnerDrivers, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers } from '../../store/ownerDataHooks.js'
 
 /**
  * @typedef {Object} CarFormDraft
@@ -54,7 +54,6 @@ function todayLogPath(/** @type {{ type?: string, number?: string }} */ car) {
 export default function CarListPage({ ownerKey = 'guest', session = null, onBack, showToast }) {
   const cars = useOwnerCars(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
-  const workByLogId = useOwnerWorkDataByLogId(ownerKey)
   const navigate = useNavigate()
   const location = useLocation()
   const viewerIsEmployedDriver = session?.accountType === 'employed_driver'
@@ -63,11 +62,6 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
   const [pendingDelete, setPendingDelete] = useState(/** @type {import('../../domain/financeTypes.js').CarLike|null} */ (null))
-
-  const dayLogByDate = useMemo(() => {
-    if (!draft.number || draft.type !== 'sub') return null
-    return workByLogId?.[draft.number] || null
-  }, [workByLogId, draft.number, draft.type])
 
   function openAdd() {
     setEditingId(null)
@@ -176,11 +170,6 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
           onSave={save}
           cloud={cloud}
           drivers={drivers}
-          dayLogByDate={dayLogByDate}
-          onOpenVehicleLog={(vehicleNumber) => {
-            setModalOpen(false)
-            navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}`)
-          }}
         />
       )}
       {pendingDelete && (

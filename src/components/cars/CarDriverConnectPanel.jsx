@@ -1,6 +1,5 @@
 // @ts-check
 /** @typedef {import('../../lib/outboxTypes.js').DriverRecord} DriverRecord */
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 import { generateInviteCode } from '../../lib/drivers.js'
 
 /**
@@ -12,17 +11,10 @@ import { generateInviteCode } from '../../lib/drivers.js'
  * @param {string} props.inviteCode
  * @param {(code: string) => void} props.onInviteCode
  * @param {Array<DriverRecord>} props.drivers
- * @param {Record<string, DayRecordLike>|null|undefined} props.dayLogByDate
- * @param {string} [props.vehicleNumber]
- * @param {(vehicleNumber: string) => void} [props.onOpenVehicleLog]
  */
 export default function CarDriverConnectPanel({
-  tab, onTab, logEnabled, inviteCode, onInviteCode, drivers, dayLogByDate,
-  vehicleNumber = '', onOpenVehicleLog,
+  tab, onTab, logEnabled, inviteCode, onInviteCode, drivers,
 }) {
-  const dates = Object.keys(dayLogByDate || {}).sort().reverse().slice(0, 7)
-  const canOpenLog = logEnabled && String(vehicleNumber || '').trim() !== ''
-
   return (
     <div className="car-driver-connect">
       <div className="settings-segmented-control maint-fuel-tabs car-driver-connect-tabs" role="tablist">
@@ -79,35 +71,7 @@ export default function CarDriverConnectPanel({
 
       {tab === 'log' && (
         <div className="car-driver-connect-body">
-          {!logEnabled && (
-            <p className="car-type-hint">저장 후 이 차량의 운행 일지를 확인할 수 있습니다.</p>
-          )}
-          {canOpenLog && (
-            <button
-              type="button"
-              className="theme-toggle-btn car-open-vehicle-log"
-              onClick={() => onOpenVehicleLog?.(String(vehicleNumber).trim())}
-            >
-              이 차량 일지 열기
-            </button>
-          )}
-          {logEnabled && dates.length === 0 && (
-            <p className="car-type-hint">이 차량의 운행 기록이 없습니다.</p>
-          )}
-          {logEnabled && dates.length > 0 && (
-            <ul className="car-daylog-preview">
-              {dates.map((dateKey) => {
-                const record = dayLogByDate?.[dateKey]
-                const trips = Array.isArray(record?.callDetails) ? record.callDetails.length : 0
-                return (
-                  <li key={dateKey}>
-                    <span>{dateKey}</span>
-                    <span>{trips}건</span>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
+          <p className="car-type-hint">기사 연동 없이, 차주가 운행 일지를 직접 작성합니다.</p>
         </div>
       )}
     </div>
