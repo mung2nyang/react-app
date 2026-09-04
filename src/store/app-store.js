@@ -12,6 +12,7 @@ import { scheduleCloudSync } from '../lib/syncQueue.js'
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../lib/hydrateMergeTypes.js').LocalProfile} ProfileLike */
@@ -38,6 +39,7 @@ import { scheduleCloudSync } from '../lib/syncQueue.js'
  * @property {Record<string, Array<ClientLike>>} clients
  * @property {Record<string, FinanceSettings>} settings
  * @property {Record<string, Array<ExpenseItem>>} expenses
+ * @property {Record<string, Array<DriverExpenseItem>>} driverExpenses 서브 차량 비용(메모리 전용, hydrate replace)
  * @property {Record<string, Array<InvoiceLike>>} invoices
  * @property {Record<string, Array<DriverRecord>>} drivers
  * @property {Record<string, ProfileLike>} profile
@@ -53,6 +55,7 @@ const state = {
   clients: {},
   settings: {},
   expenses: {},
+  driverExpenses: {},
   invoices: {},
   drivers: {},
   profile: {},
@@ -84,8 +87,8 @@ export function getState() {
 /**
  * @typedef {Record<string, DayRecordLike>|FinanceSettings|ProfileLike|
  *   import('../domain/workDataTombstones.js').WorkDataTombstones|Array<CarLike>|
- *   Array<ClientLike>|Array<DriverRecord>|Array<ExpenseItem>|Array<InvoiceLike>|
- *   Array<string>} DomainValue
+ *   Array<ClientLike>|Array<DriverRecord>|Array<ExpenseItem>|Array<DriverExpenseItem>|
+ *   Array<InvoiceLike>|Array<string>} DomainValue
  */
 
 /**
@@ -125,14 +128,20 @@ function applyDomainToState(domain, ownerKey, value) {
  */
 
 /**
+ * @typedef {Object} DriverExpensesReplace
+ * @property {string} ownerKey
+ * @property {Array<DriverExpenseItem>} next
+ */
+
+/**
  * persist 성공 후에만 state/notify. extraWrites는 서브 로그 키처럼 persist 도메인 밖
  * 키를 같은 all-or-nothing에 넣는다.
  * @param {Array<BatchEntry>} entries
- * @param {{ persist?: boolean, syncToCloud?: boolean, extraWrites?: Array<import('./atomicPersist.js').KeyedWrite>, mergeWorkLogs?: WorkLogsMerge, replaceWorkLogs?: WorkLogsReplace }} [options]
+ * @param {{ persist?: boolean, syncToCloud?: boolean, extraWrites?: Array<import('./atomicPersist.js').KeyedWrite>, mergeWorkLogs?: WorkLogsMerge, replaceWorkLogs?: WorkLogsReplace, replaceDriverExpenses?: DriverExpensesReplace }} [options]
  * @returns {Array<DomainValue>}
  */
 export function commitBatch(entries, options = {}) {
-  const { persist = true, syncToCloud = true, extraWrites = [], mergeWorkLogs, replaceWorkLogs } = options
+  const { persist = true, syncToCloud = true, extraWrites = [], mergeWorkLogs, replaceWorkLogs, replaceDriverExpenses } = options
   // 슬라이스 E: 로그인 세션이면 업무 도메인은 localStorage·dirty에 안 쓴다(Store 메모리만).
   const cloudOwnerKey = state.hydration.userId ? state.hydration.ownerKey : null
   const memoryOnly = allEntriesCloudMemoryOnly(entries, cloudOwnerKey)
@@ -150,6 +159,10 @@ export function commitBatch(entries, options = {}) {
   }
   if (replaceWorkLogs) {
     state.workLogs = { ...state.workLogs, [replaceWorkLogs.ownerKey]: replaceWorkLogs.next }
+  }
+  // driverExpenses는 PersistDomain 밖 — replace만(merge 없음). 빈 배열도 스테일 제거.
+  if (replaceDriverExpenses) {
+    state.driverExpenses = { ...state.driverExpenses, [replaceDriverExpenses.ownerKey]: replaceDriverExpenses.next }
   }
   notify()
   if (syncToCloud && entries.length && !memoryOnly) scheduleCloudSync()

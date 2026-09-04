@@ -41,7 +41,7 @@ describe('app-store — 초기 state 모양', () => {
     const state = getState()
     assert.equal(state.hydration.status, 'idle')
     assert.equal(state.hydration.userId, null)
-    for (const slice of ['workLogs', 'cars', 'clients', 'settings', 'expenses', 'invoices', 'drivers', 'profile', 'dismissedNotifications']) {
+    for (const slice of ['workLogs', 'cars', 'clients', 'settings', 'expenses', 'driverExpenses', 'invoices', 'drivers', 'profile', 'dismissedNotifications']) {
       assert.ok(typeof state[slice] === 'object' && state[slice] !== null, `${slice} 슬라이스가 있어야 한다`)
     }
   })

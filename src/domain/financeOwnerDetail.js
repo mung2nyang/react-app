@@ -14,29 +14,25 @@ import {
 } from './financeCore.js'
 import { getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.js'
 import { getReceivableItems } from './financeReceivables.js'
+import { selectExpensesForScope, sweepExpenseItems } from './financeOwnerExpenseSweep.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('./financeTypes.js').WorkDataByLogId} WorkDataByLogId */
-/** @typedef {{ id?: string, kind: string, date: string, name?: string, category?: string, fuelType?: string, cost?: number, subsidy?: number, liters?: number|string }} ExpenseLike */
+/** @typedef {import('./financeOwnerExpenseSweep.js').ExpenseLike} ExpenseLike */
 
-// Step 6 재감사(FAIL 지적 2번) — 비용(정비/주유/기타) 단일 계약: 정본은 expenses
-// 스토어(lib/expenses.js가 저장하는 배열, day-log/의 useExpenseForm.js가 즉시
-// 저장으로 쓰는 바로 그 데이터)다. 예전엔 여기서 record.maintItems/fuelItems/
-// miscItems(클라우드 hydrate가 daily_logs/fuel_records/... 테이블을 병합해서만
-// 채우는 필드 — hydrateMerge.js의 mergeWorkDataFromRows)를 읽어서, 일지 화면에서
-// 방금 추가한 비용이 새로고침·클라우드 동기화 전까지는 매출 화면에 전혀 안 잡히는
-// 이중 저장 버그가 있었다. expenses 배열은 날짜별로 소유자 전체에 걸쳐 있고
-// (차량별로 안 나뉜다 — 이 앱의 비용 데이터 모델 자체가 그렇다), scope로도 나뉘지
-// 않는다 — sources 루프 밖에서 monthKey로 한 번만 걸러 계산한다. record.maintItems/
-// fuelItems/miscItems는 더 이상 여기서 읽지 않는다(중복 계산 금지).
+// 비용(정비/주유/기타/유가보조금)은 financeOwnerExpenseSweep이 담당한다.
+// expenses[ownerKey] = 차주 본인(메인 차량 hydrate) → scope owner·all.
+// driverExpenses[ownerKey] = 서브(기사) 차량 읽기전용 → scope driver·all.
+// 두 버킷을 섞지 않는다(Q3). record.maintItems/fuelItems/miscItems는 읽지 않는다.
 /**
  * @param {string} monthKey
  * @param {string} scope
  * @param {FinanceSettings} [settings]
  * @param {WorkDataByLogId} [workDataByLogId]
  * @param {Array<ExpenseLike>} [expenses]
+ * @param {Array<ExpenseLike>} [driverExpenses]
  */
-export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings = {}, workDataByLogId = {}, expenses = []) {
+export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings = {}, workDataByLogId = {}, expenses = [], driverExpenses = []) {
   const cars = Array.isArray(settings.cars) ? settings.cars : []
   const subCarsInScope = cars.filter((car) => car.type === 'sub' && isVehicleRevenueSharedWithOwner(car))
 
@@ -61,15 +57,6 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
   const fareByClient = new Map()
   /** @type {Map<string, number>} */
   const commissionByClient = new Map()
-  /** @type {Array<{ date: string, label: string, amount: number }>} */
-  const maintItems = []
-  /** @type {Array<{ date: string, label: string, amount: number }>} */
-  const fuelItems = []
-  /** @type {Array<{ date: string, label: string, amount: number }>} */
-  const miscItems = []
-  /** @type {Array<{ date: string, label: string, amount: number }>} */
-  const fuelSubsidyItems = []
-  let fuelSubsidyTotal = 0
 
   sources.forEach((source) => {
     const isMain = source.logId === 'main'
@@ -121,42 +108,14 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
     })
   })
 
-  // 재감사 2차(FAIL 지적 3번) — expenses는 차량 구분 없이 소유자 전체에 걸친 하나의
-  // 배열이라, 항상 "메인 차량(owner)" 소속으로 다뤄야 한다 — sources 배열 자체가
-  // scope==='driver'일 때 'main'을 아예 안 넣는 것과 같은 기준으로, 여기서도
-  // scope==='driver'면 아예 훑지 않는다. 1차 수정 때 이 gate를 빠뜨려서, scope='driver'
-  // 화면에서도 오너의 정비/주유/기타 비용이 기사 손익에 섞여 들어가는 오염이 있었다.
-  if (scope !== 'driver') {
-    ;(Array.isArray(expenses) ? expenses : []).forEach((item) => {
-      const date = String(item?.date || '')
-      if (!date.startsWith(monthKey)) return
-      if (item.kind === 'maint') {
-        maintItems.push({ date, label: item.name || item.category || '정비', amount: parseCurrencyValue(item.cost) })
-      } else if (item.kind === 'fuel') {
-        const cost = parseCurrencyValue(item.cost)
-        const subsidy = parseCurrencyValue(item.subsidy)
-        fuelItems.push({ date, label: `${item.fuelType || '주유'}${item.liters ? ` ${item.liters}L` : ''}`, amount: cost })
-        if (subsidy > 0) {
-          fuelSubsidyItems.push({ date, label: item.fuelType || '주유', amount: subsidy })
-          fuelSubsidyTotal += subsidy
-        }
-      } else if (item.kind === 'misc') {
-        miscItems.push({ date, label: item.name || item.category || '기타', amount: parseCurrencyValue(item.cost) })
-      }
-    })
-  }
+  const {
+    maintItems, fuelItems, miscItems, fuelSubsidyItems, fuelSubsidyTotal,
+  } = sweepExpenseItems(monthKey, selectExpensesForScope(scope, expenses, driverExpenses))
 
   const salaryPart = scope !== 'owner' ? getMonthlyDriverSalaryExpense(monthKey, settings, subCarsInScope) : null
   const sharePart = scope !== 'owner' ? getMonthlyDriverRevenueShareExpense(monthKey, settings, subCarsInScope, workDataByLogId) : null
   const salaryTotal = (salaryPart?.total || 0) + (sharePart?.total || 0)
   const salaryItems = (salaryPart?.items || []).concat(sharePart?.items || []).sort((a, b) => a.date.localeCompare(b.date))
-
-  /** @param {{date: string}} a @param {{date: string}} b */
-  const sortByDate = (a, b) => a.date.localeCompare(b.date)
-  maintItems.sort(sortByDate)
-  fuelItems.sort(sortByDate)
-  miscItems.sort(sortByDate)
-  fuelSubsidyItems.sort(sortByDate)
 
   const fareItems = Array.from(fareByClient.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => b.amount - a.amount)
   const commissionItems = Array.from(commissionByClient.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => b.amount - a.amount)

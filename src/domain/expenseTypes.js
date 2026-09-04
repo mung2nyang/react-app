@@ -32,4 +32,10 @@
  * @property {string|number} [liters]
  */
 
+/**
+ * 차주 화면 읽기전용 — 서브(기사) 차량 비용. ExpenseItem에 vehicleNumber만 덧붙인 형태.
+ * expenses 배열·ExpenseItem 정본에는 넣지 않는다(Q3).
+ * @typedef {ExpenseItem & { vehicleNumber: string }} DriverExpenseItem
+ */
+
 export {}

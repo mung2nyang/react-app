@@ -158,6 +158,31 @@ test('홈 월간 정산 카드의 운임 수수료 = 매출 income.commission.to
   }
 })
 
+test('driverExpenses가 있어도 owner scope income.commission.total은 불변(홈 정산 SoT)', () => {
+  const ownerKey = 'test-calendar-commission-driver-exp'
+  const dateKey = '2026-08-10'
+  const monthKey = '2026-08'
+  commitClients(ownerKey, [
+    {
+      id: 'client-comm2', companyName: '수수료거래처2', fixedRouteLinked: true, fixedUnitPrice: 10000,
+      commEnabled: true, commType: 'percent', commValue: 10,
+    },
+  ], { syncToCloud: false })
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-comm2', client: '수수료거래처2', fare: 100000 }] },
+  }, { syncToCloud: false })
+  const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
+  const settings = buildFinanceSettings(ownerKey)
+  const driverExpenses = [
+    { id: 'drv-m', kind: 'maint', date: '2026-08-10', name: '기사정비', cost: 99999, vehicleNumber: '서울12가3456' },
+  ]
+  const without = getOwnerMonthlyFinanceDetail(monthKey, 'owner', settings, workDataByLogId, [], [])
+  const withDriver = getOwnerMonthlyFinanceDetail(monthKey, 'owner', settings, workDataByLogId, [], driverExpenses)
+  assert.equal(without.income.commission.total, 10000)
+  assert.equal(withDriver.income.commission.total, without.income.commission.total)
+  assert.equal(withDriver.expense.maint.total, 0, 'owner scope는 driverExpenses를 비용에 넣지 않는다')
+})
+
 test('수수료가 없으면 정산 카드에 운임 수수료 행이 없고 합계는 monthWorkFareSummary.total과 같다', async () => {
   const ownerKey = 'test-calendar-commission-zero'
   const dateKey = '2026-08-12'

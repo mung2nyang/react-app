@@ -197,3 +197,8 @@ export {
   useOwnerDrivers,
   useOwnerProfile,
 } from './ownerProfileDriversHooks.js'
+
+export {
+  readOwnerDriverExpenses,
+  useOwnerDriverExpenses,
+} from './ownerDriverExpensesHooks.js'

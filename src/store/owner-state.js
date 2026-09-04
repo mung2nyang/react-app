@@ -93,6 +93,7 @@ export function initializeOwnerFromPersist(ownerKey) {
 }
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../lib/hydrateMergeTypes.js').LocalProfile} ProfileLike */
@@ -107,6 +108,7 @@ export function initializeOwnerFromPersist(ownerKey) {
  * @property {ProfileLike} [profile]
  * @property {FinanceSettings} [settings]
  * @property {Array<ExpenseItem>} [expenses]
+ * @property {Array<DriverExpenseItem>} [driverExpenses] 메모리 전용 — 있으면 통째 replace
  * @property {Array<InvoiceLike>} [invoices]
  */
 
@@ -137,10 +139,14 @@ export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
   if (snapshot.settings && typeof snapshot.settings === 'object') entries.push({ domain: 'settings', ownerKey, value: snapshot.settings })
   if (Array.isArray(snapshot.expenses)) entries.push({ domain: 'expenses', ownerKey, value: snapshot.expenses })
   if (Array.isArray(snapshot.invoices)) entries.push({ domain: 'invoices', ownerKey, value: snapshot.invoices })
-  if (!entries.length) return
+  /** @type {import('./app-store.js').DriverExpensesReplace|undefined} */
+  const replaceDriverExpenses = Array.isArray(snapshot.driverExpenses)
+    ? { ownerKey, next: snapshot.driverExpenses }
+    : undefined
+  if (!entries.length && !replaceDriverExpenses) return
   if (workLogs) {
-    commitBatch(entries, { persist, syncToCloud: sync, replaceWorkLogs: { ownerKey, next: workLogs } })
+    commitBatch(entries, { persist, syncToCloud: sync, replaceWorkLogs: { ownerKey, next: workLogs }, replaceDriverExpenses })
     return
   }
-  commitBatch(entries, { persist, syncToCloud: sync })
+  commitBatch(entries, { persist, syncToCloud: sync, replaceDriverExpenses })
 }

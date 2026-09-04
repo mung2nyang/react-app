@@ -28,6 +28,7 @@ import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/ma
 import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpenseRecords.js'
 import { mergeTaxInvoiceRecords } from '../domain/taxInvoices.js'
 import { buildEmployedDriverSnapshot } from './hydrateEmployedDriver.js'
+import { fetchOwnerDriverExpenses } from './hydrateOwnerDriverExpenses.js'
 
 /** @param {string} userId @param {string} ownerKey @param {{ employedDriver?: boolean }} [options] */
 export function hydrateFromSupabase(userId, ownerKey, options = {}) {
@@ -73,7 +74,8 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
       })
       clearDirty(ownerKey)
       if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
-        replaceOwnerState(ownerKey, nextSnapshot, { sync: false, persist: false })
+        // driverExpenses는 차주 hydrate 전용 — 소속기사 세션에서는 빈 배열로 replace(스테일 제거).
+        replaceOwnerState(ownerKey, { ...nextSnapshot, driverExpenses: [] }, { sync: false, persist: false })
         finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
         if (hasPendingOps(ownerKey)) {
           flushMutationOutbox(ownerKey).catch((error) => console.error('outbox 플러시 실패:', error))
@@ -152,6 +154,8 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
       nextExpenses = mergeExpenseKind({ kind: 'misc', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: miscRes.data || [], mapRow: expenseFromMiscRecord, replace: replaceMiscExpenses })
     }
 
+    const nextDriverExpenses = await fetchOwnerDriverExpenses(nextCars, throwIfAnyHydrateError)
+
     const taxInvoicesRes = await supabase.from('tax_invoices').select('*').eq('user_id', userId)
     throwIfAnyHydrateError({ tax_invoices: taxInvoicesRes.error })
     nextInvoices = mergeTaxInvoiceRecords(nextInvoices, taxInvoicesRes.data || [])
@@ -159,7 +163,9 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     const nextSnapshot = {
       workData: nextWorkData, workLogs: nextWorkLogs, cars: nextCars, clients: nextClients, drivers: nextDrivers,
       profile: nextProfile, settings: nextSettings,
-      expenses: /** @type {import('../domain/expenseTypes.js').ExpenseItem[]} */ (nextExpenses), invoices: nextInvoices,
+      expenses: /** @type {import('../domain/expenseTypes.js').ExpenseItem[]} */ (nextExpenses),
+      driverExpenses: nextDriverExpenses,
+      invoices: nextInvoices,
     }
 
     clearDirty(ownerKey)

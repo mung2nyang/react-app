@@ -248,6 +248,31 @@ describe('getOwnerMonthlyFinanceDetail — 비용은 canonical expenses에서만
   })
 })
 
+describe('getOwnerMonthlyFinanceDetail — driverExpenses 버킷(Q1)', () => {
+  const ownerOnly = [{ id: 'own-m', kind: 'maint', date: '2026-05-10', name: '차주', cost: 10000 }]
+  const driverOnly = [
+    { id: 'drv-m', kind: 'maint', date: '2026-05-10', name: '기사', cost: 30000, vehicleNumber: '서울12가3456' },
+    { id: 'drv-f', kind: 'fuel', date: '2026-05-10', fuelType: '주유', cost: 20000, subsidy: 4000, liters: 10, vehicleNumber: '서울12가3456' },
+  ]
+
+  test('owner=expenses만, driver=driverExpenses만, all=합(+subsidy 동일)', () => {
+    const owner = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, ownerOnly, driverOnly)
+    assert.equal(owner.expense.maint.total, 10000)
+    assert.equal(owner.expense.fuel.total, 0)
+    assert.equal(owner.income.fuelSubsidy.total, 0)
+
+    const driver = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', FIXTURE_SETTINGS, FIXTURE_WORK, ownerOnly, driverOnly)
+    assert.equal(driver.expense.maint.total, 30000)
+    assert.equal(driver.expense.fuel.total, 20000)
+    assert.equal(driver.income.fuelSubsidy.total, 4000)
+
+    const all = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'all', FIXTURE_SETTINGS, FIXTURE_WORK, ownerOnly, driverOnly)
+    assert.equal(all.expense.maint.total, 40000)
+    assert.equal(all.expense.fuel.total, 20000)
+    assert.equal(all.income.fuelSubsidy.total, 4000)
+  })
+})
+
 describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
   const salaryAmount = 2000000
   /** 픽스처 김기사(매출제 15%, 산재 ON): 450000×15%−3000 */

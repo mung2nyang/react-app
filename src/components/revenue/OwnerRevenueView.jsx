@@ -6,12 +6,12 @@ import { isVehicleRevenueSharedWithOwner } from '../../domain/cars.js'
 import { shiftMonth } from '../../lib/calendar.js'
 import { getOwnerMonthlyFinanceDetail } from '../../lib/finance.js'
 import { buildFinanceSettings } from '../../lib/ownerFinance.js'
-import { useOwnerCars, useOwnerDrivers, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDriverExpenses, useOwnerDrivers, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
 import { DateNav } from './RevenueNav.jsx'
 import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { monthKeyOf, won } from './revenueFormat.js'
 import { scopeSettingsToVehicle, scopeWorkDataToVehicle } from './driverRevenueScope.js'
-
+import { filterDriverExpensesByVehicle } from '../../domain/financeOwnerExpenseSweep.js'
 const SCOPES = [
   { value: 'all', label: '전체 손익' },
   { value: 'owner', label: '차주' },
@@ -43,6 +43,7 @@ export default function OwnerRevenueView({ ownerKey }) {
   }, [ownerKey, cars, practiceSettings, profile, drivers])
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const expenses = useOwnerExpenses(ownerKey)
+  const driverExpensesAll = useOwnerDriverExpenses(ownerKey)
 
   const subCars = useMemo(
     () => (Array.isArray(cars) ? cars : []).filter(
@@ -76,20 +77,24 @@ export default function OwnerRevenueView({ ownerKey }) {
     () => (scopedForDriver ? scopeWorkDataToVehicle(workDataByLogId, driverVehicle) : workDataByLogId),
     [scopedForDriver, workDataByLogId, driverVehicle],
   )
+  const driverExpenses = useMemo(
+    () => (scopedForDriver ? filterDriverExpensesByVehicle(driverExpensesAll, driverVehicle) : driverExpensesAll),
+    [scopedForDriver, driverExpensesAll, driverVehicle],
+  )
 
   const monthly = useMemo(
-    () => getOwnerMonthlyFinanceDetail(monthKeyOf(year, month), scope, financeSettings, financeWork, expenses),
-    [year, month, scope, financeSettings, financeWork, expenses],
+    () => getOwnerMonthlyFinanceDetail(monthKeyOf(year, month), scope, financeSettings, financeWork, expenses, driverExpenses),
+    [year, month, scope, financeSettings, financeWork, expenses, driverExpenses],
   )
 
   const yearlyRows = useMemo(() => {
     const rows = []
     for (let m = 0; m < 12; m++) {
-      const detail = getOwnerMonthlyFinanceDetail(monthKeyOf(year, m), scope, financeSettings, financeWork, expenses)
+      const detail = getOwnerMonthlyFinanceDetail(monthKeyOf(year, m), scope, financeSettings, financeWork, expenses, driverExpenses)
       rows.push({ month: m + 1, netProfit: detail.netProfit })
     }
     return rows
-  }, [year, scope, financeSettings, financeWork, expenses])
+  }, [year, scope, financeSettings, financeWork, expenses, driverExpenses])
 
   const yearNet = yearlyRows.reduce((sum, row) => sum + row.netProfit, 0)
   const showDriverSelect = scope === 'driver' && subCars.length > 1
