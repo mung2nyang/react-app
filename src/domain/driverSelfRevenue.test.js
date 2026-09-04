@@ -76,7 +76,7 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     assert.equal(detail.income.settlement.label, '기사 정산(월급)')
   })
 
-  test('expense.total === 0', () => {
+  test('expense.total === 0 (expenses 없을 때)', () => {
     const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
     assert.equal(detail.expense.total, 0)
     assert.equal(detail.expense.salary.total, 0)
@@ -95,5 +95,21 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     assert.ok(ownerShare > 0)
     assert.ok(!detail.income.settlement.items.some((i) => i.amount === ownerShare))
     assert.equal(detail.income.total, detail.income.settlement.total)
+  })
+
+  test('지출이 있어도 netProfit은 정산액 유지(Q1)', () => {
+    /** @type {Array<import('./expenseTypes.js').ExpenseItem>} */
+    const expenses = [
+      { id: 'maint-1', kind: 'maint', date: '2026-05-12', name: '오일', cost: 50000 },
+      { id: 'fuel-1', kind: 'fuel', date: '2026-05-12', fuelType: '주유', cost: 80000, subsidy: 0, liters: 40 },
+    ]
+    const without = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK, [])
+    const withExp = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK, expenses)
+    assert.equal(withExp.netProfit, SHARE_NET)
+    assert.equal(withExp.netProfit, without.netProfit)
+    assert.equal(withExp.income.total, SHARE_NET)
+    assert.ok(withExp.expense.total > 0)
+    assert.equal(withExp.expense.maint.total, 50000)
+    assert.equal(withExp.expense.fuel.total, 80000)
   })
 })

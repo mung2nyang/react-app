@@ -1,17 +1,20 @@
 // @ts-check
 // employed_driver hydrate: use RPCs instead of profiles/vehicles row SELECT.
-// Skip clients / fuel / maint / misc / tax invoices (least privilege).
+// Skip clients / tax invoices (least privilege). 비용 3종은 배정 차량 기준으로 조회.
 //
 // 소속기사 일지 키: UI·일일운행은 workLogs.main 만 쓴다. mergeVehicleDayLogsFromServer
 // 는 sub 차량을 번호판 키로 넣으므로, 여기서 main 으로 재매핑한다.
-// TODO(multi-vehicle): 배정 차량 2대+ 이면 현재는 cars[0]만 main 에 넣고 나머지는
-// 버린다(나중 슬라이스에서 다중 배정 UI·집계와 함께 처리).
+// TODO(multi-vehicle): 배정 차량 2대+ 이면 현재는 cars[0]만 main·expenses 에 쓰고
+// 나머지는 버린다(나중 슬라이스에서 다중 배정 UI·집계와 함께 처리).
+import { expenseFromFuelRecord, replaceFuelExpenses } from '../domain/fuelRecords.js'
+import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/maintenanceRecords.js'
+import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpenseRecords.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 import {
   fetchAssignedVehicleSummary,
   fetchLinkedOwnerProfileSettings,
 } from './driverLinkRpc.js'
-import { mergeDriversFromRows } from './hydrateMerge.js'
+import { mergeDriversFromRows, mergeExpenseKind } from './hydrateMerge.js'
 import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
 import { supabase } from '../supabaseClient.js'
 
@@ -19,6 +22,7 @@ import { supabase } from '../supabaseClient.js'
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
 /**
  * @param {{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null }} row
@@ -62,6 +66,31 @@ export function remapEmployedDriverWorkLogs(workLogs, cars) {
   }
   const plateData = workLogs && workLogs[plateKey] ? workLogs[plateKey] : {}
   return { main: plateData }
+}
+
+/**
+ * hydrate.js:138-153 과 동일 — mergeExpenseKind / expenseFrom*Record 재사용.
+ * @param {string|number} vehicleId
+ * @param {(labeled: Record<string, import('./hydrateMergeTypes.js').SupabaseQueryError>) => void} throwIfAnyHydrateError
+ * @returns {Promise<Array<ExpenseItem>>}
+ */
+async function fetchExpensesForAssignedVehicle(vehicleId, throwIfAnyHydrateError) {
+  const [fuelRes, maintRes, miscRes] = await Promise.all([
+    supabase.from('fuel_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
+    supabase.from('maintenance_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
+    supabase.from('misc_expense_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
+  ])
+  throwIfAnyHydrateError({
+    fuel_records: fuelRes.error,
+    maintenance_records: maintRes.error,
+    misc_expense_records: miscRes.error,
+  })
+  /** @type {Array<import('./hydrateMergeTypes.js').JsonRecord>} */
+  let nextExpenses = []
+  nextExpenses = mergeExpenseKind({ kind: 'fuel', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: fuelRes.data || [], mapRow: expenseFromFuelRecord, replace: replaceFuelExpenses })
+  nextExpenses = mergeExpenseKind({ kind: 'maint', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: maintRes.data || [], mapRow: expenseFromMaintenanceRecord, replace: replaceMaintExpenses })
+  nextExpenses = mergeExpenseKind({ kind: 'misc', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: miscRes.data || [], mapRow: expenseFromMiscRecord, replace: replaceMiscExpenses })
+  return /** @type {Array<ExpenseItem>} */ (nextExpenses)
 }
 
 /**
@@ -126,6 +155,11 @@ export async function buildEmployedDriverSnapshot({
   })
   const workLogs = remapEmployedDriverWorkLogs(rawWorkLogs, nextCars)
 
+  const assignedVehicleId = nextCars[0]?.supabaseId
+  const nextExpenses = assignedVehicleId != null
+    ? await fetchExpensesForAssignedVehicle(assignedVehicleId, throwIfAnyHydrateError)
+    : []
+
   return {
     workData: workLogs.main || {},
     workLogs,
@@ -134,7 +168,7 @@ export async function buildEmployedDriverSnapshot({
     drivers: nextDrivers,
     profile: nextProfile,
     settings: nextSettings,
-    expenses: [],
+    expenses: nextExpenses,
     invoices: [],
   }
 }

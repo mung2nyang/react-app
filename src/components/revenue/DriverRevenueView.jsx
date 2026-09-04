@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { getDriverSelfMonthlyDetail } from '../../domain/driverSelfRevenue.js'
 import { shiftMonth } from '../../lib/calendar.js'
 import { buildFinanceSettings } from '../../lib/ownerFinance.js'
-import { useOwnerCars, useOwnerDrivers, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
 import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { DateNav } from './RevenueNav.jsx'
 import { monthKeyOf, won } from './revenueFormat.js'
@@ -21,6 +21,7 @@ export default function DriverRevenueView({ ownerKey }) {
   const practiceSettings = useOwnerSettings(ownerKey)
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
+  const expenses = useOwnerExpenses(ownerKey)
   const settings = useMemo(() => {
     void cars
     void practiceSettings
@@ -31,19 +32,19 @@ export default function DriverRevenueView({ ownerKey }) {
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
 
   const monthly = useMemo(
-    () => getDriverSelfMonthlyDetail(monthKeyOf(year, month), settings, workDataByLogId),
-    [year, month, settings, workDataByLogId],
+    () => getDriverSelfMonthlyDetail(monthKeyOf(year, month), settings, workDataByLogId, expenses),
+    [year, month, settings, workDataByLogId, expenses],
   )
 
   const yearlyRows = useMemo(() => {
     /** @type {Array<{ month: number, netProfit: number }>} */
     const rows = []
     for (let m = 0; m < 12; m++) {
-      const detail = getDriverSelfMonthlyDetail(monthKeyOf(year, m), settings, workDataByLogId)
+      const detail = getDriverSelfMonthlyDetail(monthKeyOf(year, m), settings, workDataByLogId, expenses)
       rows.push({ month: m + 1, netProfit: detail.netProfit })
     }
     return rows
-  }, [year, settings, workDataByLogId])
+  }, [year, settings, workDataByLogId, expenses])
 
   const yearNet = yearlyRows.reduce((sum, row) => sum + row.netProfit, 0)
 

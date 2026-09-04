@@ -2,6 +2,7 @@
 // 소속기사 본인 매출 손익 — workLogs.main 전제(택 A + §6-J).
 // base = getOwnerMonthlyFinanceDetail(owner scope) → main 만 읽음.
 // 정산액 = fare.total·tripCount 기준 commission − 산재(totals, link=null).
+// 지출 카드는 expenses 로 채우되 netProfit 은 정산액 유지(Q1).
 import { getShortCarNum, isVehicleRevenueSharedWithOwner } from './cars.js'
 import {
   calculateDriverVehicleCommission,
@@ -14,6 +15,7 @@ import { parseCurrencyValue } from './money.js'
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('./financeTypes.js').WorkDataByLogId} WorkDataByLogId */
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
+/** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
 
 const EMPTY_BUCKET = { total: 0, items: /** @type {Array<{ date: string, label: string, amount: number }>} */ ([]) }
 
@@ -44,9 +46,10 @@ function firstAssignedSubCar(settings) {
  * @param {string} monthKey
  * @param {FinanceSettings} [settings]
  * @param {WorkDataByLogId} [workDataByLogId]
+ * @param {Array<ExpenseItem>} [expenses]
  */
-export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLogId = {}) {
-  const base = getOwnerMonthlyFinanceDetail(monthKey, 'owner', settings, workDataByLogId, [])
+export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLogId = {}, expenses = []) {
+  const base = getOwnerMonthlyFinanceDetail(monthKey, 'owner', settings, workDataByLogId, expenses)
   const assigned = firstAssignedSubCar(settings)
   const monthStart = `${monthKey}-01`
 
@@ -88,12 +91,6 @@ export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLo
       settlement: { total: settlementTotal, items, label },
       total: settlementTotal,
     },
-    expense: {
-      total: 0,
-      maint: EMPTY_BUCKET,
-      fuel: EMPTY_BUCKET,
-      misc: EMPTY_BUCKET,
-      salary: EMPTY_BUCKET,
-    },
+    expense: base.expense,
   }
 }

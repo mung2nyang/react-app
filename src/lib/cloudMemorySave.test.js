@@ -170,6 +170,28 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     endCloudSession()
   })
 
+  test('소속기사(ownerKey=linkedOwner, cars=sub): saveExpenses가 syncFuelRecords(fuel insert)에 도달', async () => {
+    const ownerKey = 'owner-linked-exp'
+    const userId = 'driver-user-exp'
+    beginReady(userId, ownerKey)
+    commitCars(ownerKey, [{
+      id: 'car-sub-1', type: 'sub', number: '서울12가3456', supabaseId: 'veh-assigned-1',
+    }], { syncToCloud: false })
+    handlers.daily_logs = {
+      select: () => ({ data: [{ id: 77, work_date: '2026-09-04' }], error: null }),
+      upsert: () => ({ data: { id: 77 }, error: null }),
+    }
+    handlers.fuel_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
+    handlers.maintenance_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
+    handlers.misc_expense_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
+    /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */
+    const next = [{ id: 'fuel-driver-1', kind: 'fuel', date: '2026-09-04', name: '주유', cost: 5000 }]
+    await saveExpenses(ownerKey, next)
+    assert.ok(countOf('fuel_records', 'insert') >= 1, '소속기사도 fuel_records insert까지 도달해야 한다')
+    assert.equal(firstItemId(getState().expenses[ownerKey]), 'fuel-driver-1')
+    endCloudSession()
+  })
+
   test('saveExpenses 서버 실패: Store 유지', async () => {
     const ownerKey = 'cms-exp-fail'
     beginReady('user-1', ownerKey)
