@@ -177,6 +177,10 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
           cloud={cloud}
           drivers={drivers}
           dayLogByDate={dayLogByDate}
+          onOpenVehicleLog={(vehicleNumber) => {
+            setModalOpen(false)
+            navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}`)
+          }}
         />
       )}
       {pendingDelete && (

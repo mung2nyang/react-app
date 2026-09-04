@@ -11,14 +11,13 @@ import { collectNotifications, dismissNotification } from '../lib/notifications.
 import { todayWorkLogSelection } from '../lib/calendar.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { useOwnerCars, useOwnerDrivers } from '../store/ownerDataHooks.js'
-import { getShortCarNum } from '../domain/cars.js'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import AppShellRoutes from './AppShellRoutes.jsx'
 import { withFromLogState } from './fromLogNavigation.js'
+import { buildSubLogMenuItems } from './subLogMenuItems.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 /** @typedef {{ id: string, page?: string, title?: string }} NotificationItem */
-/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 
 // 옛 appPage 식별자 → 실제 라우트 경로. SideMenu/MyPage/알림패널이 공유한다.
 /** @type {Record<string, string>} */
@@ -76,15 +75,10 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const isOwnerSession = !session?.linkedOwnerId
-  const subLogItems = useMemo(() => {
-    if (!isOwnerSession) return /** @type {Array<{ number: string, label: string }>} */ ([])
-    return (Array.isArray(cars) ? cars : [])
-      .filter((/** @type {CarLike} */ car) => car?.type === 'sub' && car.logEnabled && String(car.number || '').trim())
-      .map((/** @type {CarLike} */ car) => {
-        const number = String(car.number || '').trim()
-        return { number, label: getShortCarNum(number) }
-      })
-  }, [isOwnerSession, cars])
+  const subLogItems = useMemo(
+    () => buildSubLogMenuItems(cars, isOwnerSession),
+    [cars, isOwnerSession],
+  )
 
   const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick, drivers])
   const bumpNotifTick = () => setNotifTick((n) => n + 1)
