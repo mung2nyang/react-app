@@ -3,12 +3,11 @@
 import { getShortCarNum } from '../domain/cars.js'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {{ number: string, label: string }} SubLogMenuItem */
 
 /**
  * @param {Array<CarLike>|null|undefined} cars
- * @param {Array<DriverRecord>|null|undefined} drivers
+ * @param {Array<{ status?: string, vehicleNumber?: string }>|null|undefined} drivers
  * @param {boolean} isOwnerSession 소속기사(linkedOwnerId)면 false
  * @returns {Array<SubLogMenuItem>}
  */

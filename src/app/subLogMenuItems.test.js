@@ -12,9 +12,9 @@ describe('buildSubLogMenuItems — §1-A 연동 없는 sub만', () => {
       { id: 's3', type: 'sub', number: '대구44다2222' },
       { id: 's4', type: 'sub', number: '  ' },
     ], [
-      { id: 'd1', status: 'linked', vehicleNumber: '서울12가3456' },
-      { id: 'd2', status: 'pending', vehicleNumber: '부산33나1111' },
-      { id: 'd3', status: /** @type {any} */ ('disconnected'), vehicleNumber: '대구44다2222' },
+      { status: 'linked', vehicleNumber: '서울12가3456' },
+      { status: 'pending', vehicleNumber: '부산33나1111' },
+      { status: 'disconnected', vehicleNumber: '대구44다2222' },
     ], true)
     assert.deepEqual(items, [
       { number: '대구44다2222', label: '2222' },

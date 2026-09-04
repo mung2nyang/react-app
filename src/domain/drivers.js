@@ -1,9 +1,17 @@
+// @ts-check
 // Step 4 도메인 폴더 이동: drivers.js의 순수 계산부. localStorage I/O(loadDrivers/
 // saveDrivers)는 lib/drivers.js에 남아 이 파일을 재수출한다.
 //
 // 2026-09-01 보리 지시: 날짜/기간 겹침 계산 차단(findOverlappingDriverLink 등)은
 // 요구한 적 없는 코드라 제거했다. 남긴 규칙은 "같은 차량번호는 한 기사에게만"
 // 하나뿐이다(기간 무관, 연결 해제된 기사는 제외).
+/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {{ number?: string, type?: string }} CarRef */
+/** @typedef {Pick<DriverRecord, 'name'|'phone'|'inviteCode'|'vehicleNumber'|'startDate'|'endDate'> & { assignmentStart?: string, assignmentEnd?: string }} DriverDraft */
+
+/**
+ * @param {Array<{ inviteCode?: string }>|null|undefined} [items]
+ */
 export function generateInviteCode(items = []) {
   const used = new Set((items || []).map((item) => item.inviteCode))
   let code = ''
@@ -13,6 +21,9 @@ export function generateInviteCode(items = []) {
   return code
 }
 
+/**
+ * @param {Array<DriverRecord>|null|undefined} items
+ */
 export function countByStatus(items) {
   const list = items || []
   return {
@@ -21,6 +32,13 @@ export function countByStatus(items) {
   }
 }
 
+/**
+ * @param {Array<DriverRecord>} items
+ * @param {DriverDraft} draft
+ * @param {string|null|undefined} [editingId]
+ * @param {Array<CarRef>|null|undefined} [cars]
+ * @returns {{ items: Array<DriverRecord>, error?: string, id?: string }}
+ */
 export function upsertDriver(items, draft, editingId = null, cars = []) {
   const name = String(draft.name || '').trim()
   const phone = String(draft.phone || '').trim()
@@ -52,7 +70,7 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
   if (vehicleNumber) {
     const taken = list.some((item) => (
       item.id !== editingId
-      && item.status !== 'disconnected'
+      && String(item.status || '') !== 'disconnected'
       && String(item.vehicleNumber || '').trim() === vehicleNumber
     ))
     if (taken) return { error: '이미 다른 기사에게 할당된 차량입니다.', items }
@@ -71,14 +89,30 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
   return { items: list }
 }
 
+/**
+ * @param {Array<DriverRecord>} items
+ * @param {string} id
+ * @param {'pending'|'linked'} status
+ * @returns {Array<DriverRecord>}
+ */
 export function setDriverStatus(items, id, status) {
   return (items || []).map((item) => (item.id === id ? { ...item, status } : item))
 }
 
+/**
+ * @param {Array<DriverRecord>} items
+ * @param {string} id
+ * @returns {Array<DriverRecord>}
+ */
 export function removeDriver(items, id) {
   return (items || []).filter((item) => item.id !== id)
 }
 
+/**
+ * @param {string} dateKey
+ * @param {string|null|undefined} assignmentStart
+ * @param {string|null|undefined} assignmentEnd
+ */
 export function isDateWithinAssignment(dateKey, assignmentStart, assignmentEnd) {
   if (!assignmentStart) return true
   if (dateKey < assignmentStart) return false
