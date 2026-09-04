@@ -12,6 +12,7 @@
 // Step 0-4 감사 보완: 달력 셀 클릭으로 들어왔다는 표시(location.state.from)를 남겨서,
 // 일지를 닫을 때 진짜 뒤로가기(navigate(-1))와 직접 진입 시의 교체 이동을 구분한다
 // (resolveWorkLogCloseTarget — workLogNavigation.js).
+// Step 9 슬라이스 B: `/app/logs/:logId` 서브 차량 달력 + 일지 닫기 시 그 달력 복귀.
 import { useEffect } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import CalendarPage from '../components/calendar/CalendarPage.jsx'
@@ -61,7 +62,7 @@ export default function MainPageRoute({
   }, [rawLogId, knownLog, navigate])
 
   function closeWorkLog() {
-    const target = resolveWorkLogCloseTarget(location.state)
+    const target = resolveWorkLogCloseTarget(location.state, logId)
     if (target.mode === 'back') navigate(-1)
     else navigate(target.to, { replace: true })
   }
@@ -99,6 +100,7 @@ export default function MainPageRoute({
   return (
     <CalendarPage
       ownerKey={ownerKey}
+      logId={logId}
       userName={userName}
       notifCount={notifCount}
       onOpenMenu={onOpenMenu}
@@ -111,7 +113,10 @@ export default function MainPageRoute({
       // 확인 안 함) 여기서 직접 가드한다(재감사 4차 FAIL 지적 3번 — 전역 이동 경로).
       onSelectDay={(sel) => {
         if (!confirmLeaveIfUnsafe()) return
-        navigate(`/app/day/${sel.dateKey}`, { state: { from: 'calendar' } })
+        const path = logId === 'main'
+          ? `/app/day/${sel.dateKey}`
+          : `/app/logs/${encodeURIComponent(logId)}/day/${sel.dateKey}`
+        navigate(path, { state: { from: 'calendar' } })
       }}
     />
   )

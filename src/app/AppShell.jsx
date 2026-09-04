@@ -10,13 +10,15 @@ import NotificationPanel from '../components/NotificationPanel.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
 import { todayWorkLogSelection } from '../lib/calendar.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
-import { useOwnerDrivers } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers } from '../store/ownerDataHooks.js'
+import { getShortCarNum } from '../domain/cars.js'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import AppShellRoutes from './AppShellRoutes.jsx'
 import { withFromLogState } from './fromLogNavigation.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 /** @typedef {{ id: string, page?: string, title?: string }} NotificationItem */
+/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 
 // 옛 appPage 식별자 → 실제 라우트 경로. SideMenu/MyPage/알림패널이 공유한다.
 /** @type {Record<string, string>} */
@@ -72,13 +74,26 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifTick, setNotifTick] = useState(0)
   const drivers = useOwnerDrivers(ownerKey)
+  const cars = useOwnerCars(ownerKey)
+  const isOwnerSession = !session?.linkedOwnerId
+  const subLogItems = useMemo(() => {
+    if (!isOwnerSession) return /** @type {Array<{ number: string, label: string }>} */ ([])
+    return (Array.isArray(cars) ? cars : [])
+      .filter((/** @type {CarLike} */ car) => car?.type === 'sub' && car.logEnabled && String(car.number || '').trim())
+      .map((/** @type {CarLike} */ car) => {
+        const number = String(car.number || '').trim()
+        return { number, label: getShortCarNum(number) }
+      })
+  }, [isOwnerSession, cars])
 
   const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick, drivers])
   const bumpNotifTick = () => setNotifTick((n) => n + 1)
 
   const activeNav = location.pathname === '/app'
+    || (location.pathname.startsWith('/app/logs/') && !location.pathname.includes('/day/'))
     ? 'home'
     : location.pathname.startsWith('/app/day/')
+      || (location.pathname.startsWith('/app/logs/') && location.pathname.includes('/day/'))
       ? 'work'
       : location.pathname === '/app/revenue'
         ? 'revenue'
@@ -133,6 +148,10 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         onSelect={(/** @type {string} */ page, /** @type {string} */ title) => goToPage(page, title, 'home')}
+        subLogItems={subLogItems}
+        onOpenSubLog={(/** @type {string} */ vehicleNumber) => {
+          navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}`)
+        }}
       />
       <NotificationPanel
         open={notifOpen}

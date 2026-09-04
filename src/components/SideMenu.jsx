@@ -86,11 +86,37 @@ function InvoiceIcon() {
   )
 }
 
-export default function SideMenu({ open, onClose, onSelect }) {
+function TruckIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="1" y="3" width="15" height="13"></rect>
+      <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+      <circle cx="5.5" cy="18.5" r="2.5"></circle>
+      <circle cx="18.5" cy="18.5" r="2.5"></circle>
+    </svg>
+  )
+}
+
+/**
+ * @typedef {{ number: string, label: string }} SubLogMenuItem
+ * @param {Object} props
+ * @param {boolean} props.open
+ * @param {() => void} props.onClose
+ * @param {(page: string, title?: string) => void} props.onSelect
+ * @param {Array<SubLogMenuItem>} [props.subLogItems]
+ * @param {(vehicleNumber: string) => void} [props.onOpenSubLog]
+ */
+export default function SideMenu({ open, onClose, onSelect, subLogItems = [], onOpenSubLog }) {
   if (!open) return null
 
   function pick(page, title) {
     onSelect(page, title)
+    onClose()
+  }
+
+  /** @param {string} vehicleNumber */
+  function openSubLog(vehicleNumber) {
+    onOpenSubLog?.(vehicleNumber)
     onClose()
   }
 
@@ -119,6 +145,18 @@ export default function SideMenu({ open, onClose, onSelect }) {
               <LinkIcon />
               기사 연동 관리
             </button>
+            {subLogItems.map((item) => (
+              <button
+                key={item.number}
+                type="button"
+                className="dropdown-item"
+                title={`${item.number} 운행일지`}
+                onClick={() => openSubLog(item.number)}
+              >
+                <TruckIcon />
+                {item.label} 일지
+              </button>
+            ))}
           </section>
           <section className="side-menu-section business-section">
             <h3 className="side-menu-section-title">경영</h3>

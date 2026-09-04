@@ -20,3 +20,27 @@
   background-color: var(--sunday-color);
   border-radius: 50%;
 }
+
+/* Step 9 슬라이스 B — 서브 차량 달력 모드 배너 */
+.sub-car-log-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 16px 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--card-bg, #fff) 88%, var(--accent-color, #2563eb) 12%);
+}
+.sub-car-log-banner-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.sub-car-log-banner-back {
+  border: none;
+  background: transparent;
+  color: var(--accent-color, #2563eb);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: underline;
+}

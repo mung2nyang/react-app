@@ -6,8 +6,9 @@
 // MainPageRoute의 WorkLogPage 입력도 같은 훅을 쓴다, 단일 진실 공급원) —
 // migration-plan.md 1.3이 금지한 "화면이 자기만의 스냅샷을 갖는" 패턴을 이 화면에서
 // 처음 깬다(migration-audit-plan.md "Step 5의 정확한 시작점").
+// Step 9 슬라이스 B: logId prop — 서브 차량 달력(workData·paymentOn·수수료 게이트).
 import { useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../domain/calendarViewDate.js'
 import { resolveFixedUnitPrice } from '../../domain/clients.js'
@@ -22,18 +23,19 @@ import { monthKeyOf } from '../revenue/revenueFormat.js'
 import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
+import CalendarSubLogBanner from './CalendarSubLogBanner.jsx'
 import '../../main-calendar.css'
-// calendar.css는 main-calendar.css "다음"에 와야 한다 — 그 안의 .date-cell을
-// position:relative로 보강하는 캐스케이드 오버라이드다(재감사 6번, calendar.css 주석 참고).
 import './calendar.css'
 
 /** @typedef {import('./CalendarMonthSummary.jsx').FareSummary} FareSummary */
 
 const YEAR_OPTIONS = getYearOptions()
+const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ ({})
 
 /**
  * @param {Object} props
  * @param {string} props.ownerKey
+ * @param {string} [props.logId]
  * @param {string} [props.userName]
  * @param {number} [props.notifCount]
  * @param {(() => void)} [props.onOpenMenu]
@@ -42,26 +44,29 @@ const YEAR_OPTIONS = getYearOptions()
  * @param {(message: string) => void} [props.showToast]
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
-export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, onSelectDay }) {
+export default function CalendarPage({
+  ownerKey, logId = 'main', userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, onSelectDay,
+}) {
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const viewDate = useMemo(() => viewDateFromSearchParams(searchParams), [searchParams])
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
+  const isMain = logId === 'main'
 
-  const workData = useOwnerWorkData(ownerKey)
+  const mainWorkData = useOwnerWorkData(ownerKey)
+  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
+  const workData = isMain ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)
   const settings = useOwnerSettings(ownerKey)
   const clients = useOwnerClients(ownerKey)
-  const unitPrice = resolveFixedUnitPrice({ clients })
+  const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
+  const activeFixedOn = isMain ? !!settings.fixedOn : !!settings.subFixedOn
+  const unitPrice = activeFixedOn ? resolveFixedUnitPrice({ clients }) : 0
 
-  // 매출 화면과 같은 수수료 정본: OwnerRevenueView처럼 관련 useOwner*를 구독해
-  // buildFinanceSettings 메모가 갱신되게 하고, 수수료 합은 매출과 동일하게
-  // getOwnerMonthlyFinanceDetail(...).income.commission.total 한곳에서만 읽는다
-  // (홈 전용 수수료 식을 새로 짜지 않는다 — day-record.js는 그대로).
   const cars = useOwnerCars(ownerKey)
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
   const expenses = useOwnerExpenses(ownerKey)
-  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const financeSettings = useMemo(() => {
     void cars
     void settings
@@ -70,10 +75,11 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
     void clients
     return buildFinanceSettings(ownerKey)
   }, [ownerKey, cars, settings, profile, drivers, clients])
-  const commissionTotal = useMemo(
-    () => getOwnerMonthlyFinanceDetail(monthKeyOf(year, month), 'owner', financeSettings, workDataByLogId, expenses).income.commission.total,
-    [year, month, financeSettings, workDataByLogId, expenses],
-  )
+  // 홈 운임 수수료 SoT(sot §4-7)는 메인 전용 — 서브 모드에서는 계산·표시하지 않는다.
+  const commissionTotal = useMemo(() => {
+    if (!isMain) return 0
+    return getOwnerMonthlyFinanceDetail(monthKeyOf(year, month), 'owner', financeSettings, workDataByLogId, expenses).income.commission.total
+  }, [isMain, year, month, financeSettings, workDataByLogId, expenses])
 
   const cells = useMemo(() => buildCalendarCells(viewDate), [viewDate])
   const fareSummary = /** @type {FareSummary} */ (useMemo(
@@ -99,18 +105,22 @@ export default function CalendarPage({ ownerKey, userName, notifCount, onOpenMen
         onOpenNotifs={onOpenNotifs}
       />
 
+      {!isMain && (
+        <CalendarSubLogBanner logId={logId} onBackToMain={() => navigate('/app')} />
+      )}
+
       <CalendarGrid
         cells={cells}
         month={month + 1}
         workData={workData}
         inputMode={settings.inputMode === 'fare' ? 'fare' : 'count'}
         unitPrice={unitPrice}
-        paymentOn={!!settings.paymentOn}
+        paymentOn={paymentOn}
         onSelectDay={onSelectDay}
       />
 
       <CalendarMonthSummary
-        paymentOn={!!settings.paymentOn}
+        paymentOn={paymentOn}
         unpaidTotal={unpaidTotal}
         fareSummary={fareSummary}
         commissionTotal={commissionTotal}

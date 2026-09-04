@@ -10,10 +10,15 @@
  * 뒤로가기와 같은 `navigate(-1)`을 쓴다. 새로고침/북마크/알림 딥링크처럼 직접
  * 진입했으면 -1은 앱 밖으로 나갈 수 있으니 대신 달력으로 교체 이동한다 — 뒤로가기를
  * 다시 눌러도 일지로 재진입하지 않는다(replace라 히스토리에 일지 엔트리가 없다).
+ * 서브 차량 일지(`logId !== 'main'`)는 `/app/logs/:번호` 달력으로 복귀한다.
  * @param {{ from?: string } | null | undefined} locationState
+ * @param {string} [logId]
  * @returns {WorkLogCloseTarget}
  */
-export function resolveWorkLogCloseTarget(locationState) {
+export function resolveWorkLogCloseTarget(locationState, logId = 'main') {
   if (locationState?.from === 'calendar') return { mode: 'back' }
+  if (logId && logId !== 'main') {
+    return { mode: 'replace', to: `/app/logs/${encodeURIComponent(logId)}` }
+  }
   return { mode: 'replace', to: '/app' }
 }

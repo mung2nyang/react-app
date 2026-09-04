@@ -21,7 +21,7 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
 const { default: CalendarPage } = await import('./CalendarPage.jsx')
-const { commitClients, commitSettings, commitWorkData } = await import('../../store/commitHelpers.js')
+const { commitCars, commitClients, commitLogWorkData, commitSettings, commitWorkData } = await import('../../store/commitHelpers.js')
 const { getState } = await import('../../store/app-store.js')
 const { normalizeSettings } = await import('../../domain/practiceSettings.js')
 const { getMonthlyFareRevenue, getOwnerMonthlyFinanceDetail } = await import('../../domain/finance.js')
@@ -249,6 +249,105 @@ test('년/월 커스텀 드롭다운은 listbox로 열리고 선택하면 쿼리
       options[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
     })
     assert.equal(container.querySelector('[role="listbox"]')?.hasAttribute('hidden'), true)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생략과 동일', async () => {
+  const ownerKey = 'test-calendar-main-default-logid'
+  const dateKey = '2026-08-10'
+  commitClients(ownerKey, [
+    {
+      id: 'client-main-def', companyName: '메인수수료', fixedRouteLinked: true, fixedUnitPrice: 10000,
+      commEnabled: true, commType: 'percent', commValue: 10,
+    },
+  ], { syncToCloud: false })
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-main-def', client: '메인수수료', fare: 100000 }] },
+  }, { syncToCloud: false })
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+    const withoutProp = container.textContent
+    assert.ok(withoutProp.includes('운임 수수료'))
+    assert.ok(withoutProp.includes('-10,000 원'))
+
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, logId: 'main', onSelectDay: () => {} }),
+      ))
+    })
+    assert.equal(container.textContent.includes('운임 수수료'), true)
+    assert.equal(container.textContent.includes('-10,000 원'), true)
+    assert.equal(container.querySelector('.sub-car-log-banner'), null)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수수료 숨김', async () => {
+  const ownerKey = 'test-calendar-sub-log'
+  const plate = '서울99가9999'
+  const dateKey = '2026-08-15'
+  commitCars(ownerKey, [
+    { id: 'main-1', type: 'main', number: '서울00가0000' },
+    { id: 'sub-1', type: 'sub', number: plate, logEnabled: true, shareRevenueWithOwner: true },
+  ], { syncToCloud: false })
+  commitClients(ownerKey, [
+    { id: 'client-sub', companyName: '서브거래처', fixedRouteLinked: true, fixedUnitPrice: 20000 },
+  ], { syncToCloud: false })
+  commitSettings(ownerKey, normalizeSettings({
+    paymentOn: true,
+    subPaymentOn: false,
+    fixedOn: true,
+    subFixedOn: true,
+  }), { syncToCloud: false })
+  commitWorkData(ownerKey, {
+    '2026-08-15': { isOff: false, fixedCount: 9, callDetails: [] },
+  }, { syncToCloud: false })
+  commitLogWorkData(ownerKey, plate, {
+    [dateKey]: {
+      isOff: false,
+      fixedCount: 2,
+      callDetails: [{ id: 'sub-call-1', client: '서브거래처', fare: 50000, paymentDueDate: '2026-07-01', payments: [] }],
+    },
+  })
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: [`/app/logs/${encodeURIComponent(plate)}?y=2026&m=7`] },
+        React.createElement(CalendarPage, { ownerKey, logId: plate, onSelectDay: () => {} }),
+      ))
+    })
+    assert.ok(container.querySelector('.sub-car-log-banner'), '서브 배너가 있어야 한다')
+    assert.ok(container.textContent.includes('9999 운행 일지'))
+    assert.equal(container.textContent.includes('운임 수수료'), false, '서브 모드 수수료 숨김')
+    assert.ok(container.textContent.includes('40,000 원'), '서브 fixedCount 2×20,000')
+    assert.equal(container.textContent.includes('180,000 원'), false, '메인 fixedCount 9는 안 보임')
+    assert.equal(
+      container.querySelector('.unpaid-summary-card'),
+      null,
+      'subPaymentOn=false 이면 미수 미니카드 숨김',
+    )
   } finally {
     await act(async () => { root.unmount() })
     container.remove()

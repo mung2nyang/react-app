@@ -58,6 +58,7 @@ export default function AppShellRoutes({
       <Route index element={mainPage()} />
       <Route path="day/:date" element={mainPage()} />
       <Route path="logs/:logId/day/:date" element={mainPage()} />
+      <Route path="logs/:logId" element={mainPage()} />
       <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate('/app')} />} />
       <Route path="clients" element={<ClientManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
       <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} onOpen={(/** @type {string} */ page, /** @type {string} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} />} />
