@@ -147,7 +147,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
       <SideMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        onSelect={(/** @type {string} */ page, /** @type {string} */ title) => goToPage(page, title, 'home')}
+        onSelect={(/** @type {string} */ page, /** @type {string|undefined} */ title) => goToPage(page, title, 'home')}
         subLogItems={subLogItems}
         onOpenSubLog={(/** @type {string} */ vehicleNumber) => {
           navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}`)
