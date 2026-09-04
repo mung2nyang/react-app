@@ -112,7 +112,7 @@ export async function fetchLinkedDriverLink(userId) {
   return data ? /** @type {DriverLinkRow} */ (data) : null
 }
 
-/** @returns {Promise<Array<{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null }>>} */
+/** @returns {Promise<Array<{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|null }>>} */
 export async function fetchAssignedVehicleSummary() {
   const { data, error } = await supabase.rpc('get_assigned_vehicle_summary')
   if (error) throw error

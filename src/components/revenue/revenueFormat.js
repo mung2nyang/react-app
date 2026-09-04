@@ -20,3 +20,12 @@ export function dateLabel(date) {
   if (!date) return ''
   return `${date.slice(5).replace('-', '/')} `
 }
+
+/**
+ * driverSelf 순이익 라벨: settlement.label 끝의 (30%)/(월급)을 붙인다.
+ * @param {{ label?: string }|null|undefined} settlement
+ */
+export function driverSelfNetProfitLabel(settlement) {
+  const m = settlement?.label && /\(([^)]+)\)\s*$/.exec(String(settlement.label))
+  return m ? `당월 순이익 (${m[1]})` : '당월 순이익'
+}

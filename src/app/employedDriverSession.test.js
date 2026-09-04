@@ -40,5 +40,36 @@ describe('carFromAssignedSummary', () => {
     assert.equal(car.type, 'sub')
     assert.equal(car.driverPayMode, 'revenue')
     assert.equal(car.driverSalaryAmount, 100)
+    assert.equal(car.commEnabled, false)
+    assert.equal(car.commType, 'percent')
+    assert.equal(car.commission, '')
+  })
+
+  test('maps comm_enabled/comm_type/comm_value from assigned vehicle RPC', () => {
+    const car = carFromAssignedSummary({
+      id: 'veh-2',
+      number: '서울12가3456',
+      type: 'sub',
+      driver_pay_mode: 'revenue',
+      comm_enabled: true,
+      comm_type: 'percent',
+      comm_value: '30',
+    })
+    assert.equal(car.commEnabled, true)
+    assert.equal(car.commType, 'percent')
+    assert.equal(car.commission, '30')
+  })
+
+  test('comm_enabled falsy → commEnabled false, missing type defaults to percent', () => {
+    const car = carFromAssignedSummary({
+      id: 'veh-3',
+      number: '99가9999',
+      type: 'sub',
+      comm_enabled: false,
+      comm_value: '',
+    })
+    assert.equal(car.commEnabled, false)
+    assert.equal(car.commType, 'percent')
+    assert.equal(car.commission, '')
   })
 })

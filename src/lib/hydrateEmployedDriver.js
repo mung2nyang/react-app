@@ -14,7 +14,7 @@ import { supabase } from '../supabaseClient.js'
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 
 /**
- * @param {{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null }} row
+ * @param {{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null }} row
  * @returns {LocalCar}
  */
 export function carFromAssignedSummary(row) {
@@ -27,9 +27,9 @@ export function carFromAssignedSummary(row) {
     settlementMode: row.settlement_mode || 'default',
     driverPayMode: row.driver_pay_mode || 'revenue',
     driverSalaryAmount: row.driver_salary_amount ?? '',
-    commEnabled: false,
-    commType: 'percent',
-    commission: '',
+    commEnabled: !!row.comm_enabled,
+    commType: row.comm_type || 'percent',
+    commission: row.comm_value ?? '',
     infoType: 'existing',
     driverName: '',
     driverPhone: '',

@@ -1,9 +1,9 @@
 // @ts-check
 // 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 오너 월별 손익 카드 3장
 // (순이익/수입/지출)과 그 안의 접이식 상세 행.
-// D-2: variant='driverSelf' — 소속기사 본인 화면(기사 정산 라인, 기사 급여 숨김).
+// D-2: variant='driverSelf' — 소속기사(급여 숨김·유가보조금 숨김·순이익에 정산율).
 import { useState } from 'react'
-import { dateLabel, won } from './revenueFormat.js'
+import { dateLabel, driverSelfNetProfitLabel, won } from './revenueFormat.js'
 
 /** @typedef {ReturnType<typeof import('../../domain/finance.js').getOwnerMonthlyFinanceDetail>} OwnerMonthlyDetail */
 /** @typedef {{ label: string, amount: number, date?: string }} DetailLine */
@@ -54,13 +54,13 @@ function RevenueDetailRow({ label, amount, items, showDate = false }) {
  */
 export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) {
   const isDriverSelf = variant === 'driverSelf'
-  const settlement = isDriverSelf ? detail.income.settlement : null
+  const netTitle = isDriverSelf ? driverSelfNetProfitLabel(detail.income.settlement) : '당월 순이익'
 
   return (
     <>
       <div className="summary-card revenue-net-card">
         <div className="summary-row" style={{ marginBottom: 2 }}>
-          <span className="summary-title" style={{ marginBottom: 0 }}>당월 순이익</span>
+          <span className="summary-title" style={{ marginBottom: 0 }}>{netTitle}</span>
           <span
             className="summary-value"
             style={{
@@ -87,24 +87,19 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
       <div className="summary-card revenue-net-card">
         <div className="summary-title">운송 수입</div>
         <RevenueDetailRow label="운송료" amount={detail.income.fare.total} items={detail.income.fare.items} />
-        {settlement && (
-          <RevenueDetailRow
-            label={settlement.label || '기사 정산'}
-            amount={settlement.total}
-            items={settlement.items}
-          />
-        )}
         <RevenueDetailRow
           label="운임 수수료"
           amount={-detail.income.commission.total}
           items={detail.income.commission.items.map((item) => ({ label: item.label, amount: -item.amount }))}
         />
-        <RevenueDetailRow
-          label="당월 유가보조금 환급"
-          amount={detail.income.fuelSubsidy.total}
-          items={detail.income.fuelSubsidy.items}
-          showDate
-        />
+        {!isDriverSelf && (
+          <RevenueDetailRow
+            label="당월 유가보조금 환급"
+            amount={detail.income.fuelSubsidy.total}
+            items={detail.income.fuelSubsidy.items}
+            showDate
+          />
+        )}
         <div className="summary-row total">
           <span>합계</span>
           <span className="summary-value">{(Number(detail.income.total) || 0).toLocaleString('ko-KR')} 원</span>
