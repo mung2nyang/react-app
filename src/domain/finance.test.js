@@ -250,6 +250,8 @@ describe('getOwnerMonthlyFinanceDetail — 비용은 canonical expenses에서만
 
 describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
   const salaryAmount = 2000000
+  /** 픽스처 김기사(매출제 15%, 산재 ON): 450000×15%−3000 */
+  const revenueShareAmount = 64500
   const salaryCarNumber = '부산33나1111'
 
   test("scope='owner'에서는 salary가 0으로 제외된다", () => {
@@ -257,44 +259,52 @@ describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
     assert.equal(detail.expense.salary.total, 0)
   })
 
-  test("scope='driver'/'all'에서는 월급제 차량 급여가 expense.salary.total·netProfit에 반영된다", () => {
+  test("scope='driver'/'all'에서는 월급제+매출제 정산이 expense.salary.total·netProfit에 반영된다", () => {
     for (const scope of ['driver', 'all']) {
       const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, scope, FIXTURE_SETTINGS, FIXTURE_WORK, [])
-      const withoutSalary = getOwnerMonthlyFinanceDetail(MONTH_KEY, scope, {
+      const withoutSalaryCar = getOwnerMonthlyFinanceDetail(MONTH_KEY, scope, {
         ...FIXTURE_SETTINGS,
         cars: FIXTURE_SETTINGS.cars.map((car) => (
-          car.number === salaryCarNumber ? { ...car, driverPayMode: 'revenue', driverSalaryAmount: '' } : car
+          car.number === salaryCarNumber
+            ? { ...car, driverPayMode: 'revenue', driverSalaryAmount: '', commEnabled: false, commission: '' }
+            : car
         )),
       }, FIXTURE_WORK, [])
-      assert.equal(detail.expense.salary.total, salaryAmount, scope)
-      assert.equal(detail.netProfit, withoutSalary.netProfit - salaryAmount, scope)
+      assert.equal(detail.expense.salary.total, salaryAmount + revenueShareAmount, scope)
+      assert.equal(detail.netProfit, withoutSalaryCar.netProfit - salaryAmount, scope)
     }
   })
 
-  test('매출제 차량은 급여 계산에서 제외된다', () => {
+  test('월급제→매출제 전환 시 고정급은 빠지고 % 정산만 남는다', () => {
     const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', {
       ...FIXTURE_SETTINGS,
       cars: FIXTURE_SETTINGS.cars.map((car) => (
-        car.number === salaryCarNumber ? { ...car, driverPayMode: 'revenue' } : car
+        car.number === salaryCarNumber
+          ? { ...car, driverPayMode: 'revenue', driverSalaryAmount: '', commEnabled: false, commission: '' }
+          : car
       )),
     }, FIXTURE_WORK, [])
-    assert.equal(detail.expense.salary.total, 0)
+    assert.equal(detail.expense.salary.total, revenueShareAmount)
+    assert.equal(detail.expense.salary.items.length, 1)
+    assert.equal(detail.expense.salary.items[0].label, '김기사')
   })
 
-  test('급여액이 0 이하면 제외된다', () => {
+  test('급여액이 0 이하면 월급 항목은 제외된다(매출제 정산은 유지)', () => {
     const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', {
       ...FIXTURE_SETTINGS,
       cars: FIXTURE_SETTINGS.cars.map((car) => (
         car.number === salaryCarNumber ? { ...car, driverSalaryAmount: '0' } : car
       )),
     }, FIXTURE_WORK, [])
-    assert.equal(detail.expense.salary.total, 0)
+    assert.equal(detail.expense.salary.total, revenueShareAmount)
+    assert.ok(detail.expense.salary.items.every((i) => i.label !== '박기사'))
   })
 
-  test('salary 항목 label은 car.driverName(박기사)을 쓴다', () => {
+  test('salary 항목에 월급제·매출제 기사 label이 각각 들어간다', () => {
     const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', FIXTURE_SETTINGS, FIXTURE_WORK, [])
-    assert.equal(detail.expense.salary.items.length, 1)
-    assert.equal(detail.expense.salary.items[0].label, '박기사')
+    assert.equal(detail.expense.salary.items.length, 2)
+    const labels = detail.expense.salary.items.map((i) => i.label).sort()
+    assert.deepEqual(labels, ['김기사', '박기사'])
   })
 })
 

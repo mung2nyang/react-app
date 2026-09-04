@@ -12,6 +12,7 @@ import {
   getCallDetailCommissionAmount, getCallDetailDurationMinutes, getDriverCarWorkData,
   getMonthlyDriverSalaryExpense, logData,
 } from './financeCore.js'
+import { getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.js'
 import { getReceivableItems } from './financeReceivables.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
@@ -145,9 +146,10 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
     })
   }
 
-  const { total: salaryTotal, items: salaryItems } = scope !== 'owner'
-    ? getMonthlyDriverSalaryExpense(monthKey, settings, subCarsInScope)
-    : { total: 0, items: [] }
+  const salaryPart = scope !== 'owner' ? getMonthlyDriverSalaryExpense(monthKey, settings, subCarsInScope) : null
+  const sharePart = scope !== 'owner' ? getMonthlyDriverRevenueShareExpense(monthKey, settings, subCarsInScope, workDataByLogId) : null
+  const salaryTotal = (salaryPart?.total || 0) + (sharePart?.total || 0)
+  const salaryItems = (salaryPart?.items || []).concat(sharePart?.items || []).sort((a, b) => a.date.localeCompare(b.date))
 
   /** @param {{date: string}} a @param {{date: string}} b */
   const sortByDate = (a, b) => a.date.localeCompare(b.date)
