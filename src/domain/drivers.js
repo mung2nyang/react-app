@@ -85,3 +85,20 @@ export function isDateWithinAssignment(dateKey, assignmentStart, assignmentEnd) 
   if (assignmentEnd && dateKey > assignmentEnd) return false
   return true
 }
+
+/**
+ * 할당 기간 기준 UI 상태(바닐라 `getAssignmentState`와 동일).
+ * @param {{ assignmentStart?: string, assignmentEnd?: string, startDate?: string, endDate?: string }|null|undefined} link
+ * @returns {{ key: 'scheduled'|'ended'|'active', label: string }}
+ */
+export function getAssignmentState(link) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const startRaw = link?.assignmentStart || link?.startDate || ''
+  const endRaw = link?.assignmentEnd || link?.endDate || ''
+  const start = startRaw ? new Date(`${startRaw}T00:00:00`) : null
+  const end = endRaw ? new Date(`${endRaw}T23:59:59`) : null
+  if (start && start > today) return { key: 'scheduled', label: '할당 예정' }
+  if (end && end < today) return { key: 'ended', label: '할당 종료' }
+  return { key: 'active', label: '할당 중' }
+}

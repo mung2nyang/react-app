@@ -19,9 +19,9 @@ import DriverFormModal from './DriverFormModal.jsx'
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }
 
 /**
- * @param {{ ownerKey?: string, session: AppSession|null, onBack: () => void, showToast?: (message: string) => void }} props
+ * @param {{ ownerKey?: string, session: AppSession|null, onBack: () => void, showToast?: (message: string) => void, navigate?: (to: import('react-router-dom').To | number, options?: import('react-router-dom').NavigateOptions) => void }} props
  */
-export default function DriverConnectionPage({ ownerKey = 'guest', session, onBack, showToast }) {
+export default function DriverConnectionPage({ ownerKey = 'guest', session, onBack, showToast, navigate }) {
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const [modalOpen, setModalOpen] = useState(false)
@@ -134,6 +134,15 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
             </div>
           </div>
           <div className="receivable-card-actions">
+            {driver.status === 'linked' && (
+              <button
+                type="button"
+                className="action-icon-btn"
+                onClick={() => navigate?.(`/app/drivers/${encodeURIComponent(driver.id)}`)}
+              >
+                기록 조회
+              </button>
+            )}
             <button type="button" className="action-icon-btn" onClick={() => openEdit(driver)}>수정</button>
             {driver.status !== 'linked' ? (
               <button type="button" className="action-icon-btn" onClick={() => changeStatus(driver.id, 'linked')}>연동 완료</button>

@@ -11,6 +11,7 @@ export const ReceivablesPage = lazy(() => import('../components/ReceivablesPage.
 export const ReportPage = lazy(() => import('../components/ReportPage.jsx'))
 export const TaxInvoicePage = lazy(() => import('../components/TaxInvoicePage.jsx'))
 export const DriverConnectionPage = lazy(() => import('../components/DriverConnectionPage.jsx'))
+export const LinkedDriverManagementPage = lazy(() => import('../components/drivers/LinkedDriverManagementPage.jsx'))
 export const InviteRedeemPage = lazy(() => import('../components/InviteRedeemPage.jsx'))
 export const ComingSoonPage = lazy(() => import('../components/ComingSoonPage.jsx'))
 export const RevenuePage = lazy(() => import('../components/RevenuePage.jsx'))

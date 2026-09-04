@@ -1,3 +1,5 @@
+// @ts-check
+// 이 메뉴 전용 SVG 아이콘 10개 포함 ~220줄 — 한 파일 유지(AGENTS §6 응집도 우선)
 const BANNER = '/images/banner_image.png'
 
 function CarIcon() {
@@ -99,16 +101,24 @@ function TruckIcon() {
 
 /**
  * @typedef {{ number: string, label: string }} SubLogMenuItem
+ * @typedef {{ linkId: string, driverName: string }} LinkedDriverMenuItem
  * @param {Object} props
  * @param {boolean} props.open
  * @param {() => void} props.onClose
  * @param {(page: string, title?: string) => void} props.onSelect
+ * @param {Array<LinkedDriverMenuItem>} [props.linkedDriverItems]
+ * @param {(linkId: string) => void} [props.onOpenLinkedDriver]
  * @param {Array<SubLogMenuItem>} [props.subLogItems]
  * @param {(vehicleNumber: string) => void} [props.onOpenSubLog]
  */
-export default function SideMenu({ open, onClose, onSelect, subLogItems = [], onOpenSubLog }) {
+export default function SideMenu({
+  open, onClose, onSelect,
+  linkedDriverItems = [], onOpenLinkedDriver,
+  subLogItems = [], onOpenSubLog,
+}) {
   if (!open) return null
 
+  /** @param {string} page @param {string} [title] */
   function pick(page, title) {
     onSelect(page, title)
     onClose()
@@ -117,6 +127,12 @@ export default function SideMenu({ open, onClose, onSelect, subLogItems = [], on
   /** @param {string} vehicleNumber */
   function openSubLog(vehicleNumber) {
     onOpenSubLog?.(vehicleNumber)
+    onClose()
+  }
+
+  /** @param {string} linkId */
+  function openLinkedDriver(linkId) {
+    onOpenLinkedDriver?.(linkId)
     onClose()
   }
 
@@ -145,6 +161,18 @@ export default function SideMenu({ open, onClose, onSelect, subLogItems = [], on
               <LinkIcon />
               기사 연동 관리
             </button>
+            {linkedDriverItems.map((item) => (
+              <button
+                key={item.linkId}
+                type="button"
+                className="dropdown-item"
+                title={`${item.driverName} 기사 관리`}
+                onClick={() => openLinkedDriver(item.linkId)}
+              >
+                <PeopleIcon />
+                {item.driverName} 기사 관리
+              </button>
+            ))}
             {subLogItems.map((item) => (
               <button
                 key={item.number}

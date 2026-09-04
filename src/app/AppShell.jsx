@@ -76,9 +76,18 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const cars = useOwnerCars(ownerKey)
   const isOwnerSession = !session?.linkedOwnerId
   const subLogItems = useMemo(
-    () => buildSubLogMenuItems(cars, isOwnerSession),
-    [cars, isOwnerSession],
+    () => buildSubLogMenuItems(cars, drivers, isOwnerSession),
+    [cars, drivers, isOwnerSession],
   )
+  const linkedDriverItems = useMemo(() => {
+    if (!isOwnerSession) return []
+    return drivers
+      .filter((driver) => driver.status === 'linked')
+      .map((driver) => ({
+        linkId: driver.id,
+        driverName: driver.name || '기사',
+      }))
+  }, [drivers, isOwnerSession])
 
   const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick, drivers])
   const bumpNotifTick = () => setNotifTick((n) => n + 1)
@@ -142,6 +151,10 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         onSelect={(/** @type {string} */ page, /** @type {string|undefined} */ title) => goToPage(page, title, 'home')}
+        linkedDriverItems={linkedDriverItems}
+        onOpenLinkedDriver={(/** @type {string} */ linkId) => {
+          navigate(`/app/drivers/${encodeURIComponent(linkId)}`)
+        }}
         subLogItems={subLogItems}
         onOpenSubLog={(/** @type {string} */ vehicleNumber) => {
           navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}`)

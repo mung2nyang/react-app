@@ -1,0 +1,158 @@
+/* LinkedDriverManagementPage — 바닐라 linked-driver 프로필·칩·계산서 카드 */
+.linked-driver-profile-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 17px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+.linked-driver-profile-card > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.linked-driver-profile-card > div:first-child > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.linked-driver-profile-card strong { color: var(--text-color); font-size: var(--fs-3); }
+.linked-driver-profile-card small { color: var(--sub-text-color); font-size: var(--fs-floor); }
+.linked-driver-profile-card > div:last-child {
+  flex-direction: column;
+  align-items: flex-end;
+}
+.linked-driver-profile-card > div:last-child > span {
+  color: var(--text-color);
+  font-size: var(--fs-floor);
+  font-weight: 800;
+}
+.linked-driver-profile-card em {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  font-style: normal;
+  font-weight: 850;
+}
+.linked-driver-profile-card em.active {
+  background: color-mix(in srgb, #40a36f 14%, var(--card-bg));
+  color: #268a57;
+}
+.linked-driver-profile-card em.scheduled { color: var(--primary-color); }
+.linked-driver-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--primary-color) 13%, var(--input-bg));
+  color: var(--primary-color);
+  font-size: var(--fs-3);
+  font-weight: 900;
+}
+.linked-driver-chip-row { display: flex; gap: 8px; margin: 12px 0 18px; }
+.linked-driver-chip {
+  flex: 1;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--sub-text-color);
+  border-radius: 10px;
+  padding: 11px 8px;
+  font-size: var(--fs-3);
+  font-weight: 700;
+  cursor: pointer;
+}
+#linkedDriverSettlementSummary .date-navigator {
+  display: flex;
+  width: min(280px, 90%);
+  margin: -6px auto 12px;
+}
+.linked-driver-empty {
+  padding: 34px 10px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.55;
+  text-align: center;
+}
+.linked-driver-readonly-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 10px 11px;
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.45;
+}
+.linked-driver-client-trip-list {
+  display: grid;
+  gap: 5px;
+  margin-top: 11px;
+  padding-top: 11px;
+  border-top: 1px dashed var(--border-color);
+}
+.linked-driver-client-trip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
+.linked-driver-client-trip-row b { color: var(--text-color); flex: none; }
+.linked-driver-client-head-row {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.linked-driver-invoice-card {
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--card-bg);
+}
+.linked-driver-invoice-money {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
+.linked-driver-invoice-money strong {
+  margin-left: auto;
+  color: var(--text-color);
+  font-size: var(--fs-2);
+}
+.linked-driver-invoice-money strong small {
+  display: block;
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  color: var(--sub-text-color);
+}
+.driver-section-heading {
+  margin: 0 0 10px;
+}
+.driver-section-heading h3 {
+  margin: 0;
+  font-size: var(--fs-3);
+  color: var(--text-color);
+}
+.driver-section-heading p {
+  margin: 4px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
