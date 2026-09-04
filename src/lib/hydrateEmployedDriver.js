@@ -1,17 +1,24 @@
 // @ts-check
 // employed_driver hydrate: use RPCs instead of profiles/vehicles row SELECT.
 // Skip clients / fuel / maint / misc / tax invoices (least privilege).
+//
+// 소속기사 일지 키: UI·일일운행은 workLogs.main 만 쓴다. mergeVehicleDayLogsFromServer
+// 는 sub 차량을 번호판 키로 넣으므로, 여기서 main 으로 재매핑한다.
+// TODO(multi-vehicle): 배정 차량 2대+ 이면 현재는 cars[0]만 main 에 넣고 나머지는
+// 버린다(나중 슬라이스에서 다중 배정 UI·집계와 함께 처리).
 import { normalizeSettings } from '../domain/practiceSettings.js'
 import {
   fetchAssignedVehicleSummary,
   fetchLinkedOwnerProfileSettings,
 } from './driverLinkRpc.js'
 import { mergeDriversFromRows } from './hydrateMerge.js'
-import { mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
+import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
 import { supabase } from '../supabaseClient.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 
 /**
  * @param {{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null }} row
@@ -35,6 +42,26 @@ export function carFromAssignedSummary(row) {
     driverPhone: '',
     driverLinkId: '',
   }
+}
+
+/**
+ * 배정차 서버 일지(번호판 키) → workLogs.main. 번호판 키는 남기지 않는다.
+ * cars 가 비면 { main: {} }. logIdForCar(undefined) 호출 없음.
+ * @param {Record<string, Record<string, DayRecordLike>>|null|undefined} workLogs
+ * @param {Array<CarLike|LocalCar>|null|undefined} cars
+ * @returns {{ main: Record<string, DayRecordLike> }}
+ */
+export function remapEmployedDriverWorkLogs(workLogs, cars) {
+  const list = Array.isArray(cars) ? cars : []
+  if (list.length === 0) return { main: {} }
+
+  const primary = list[0]
+  const plateKey = logIdForCar(/** @type {CarLike} */ (primary))
+  if (!plateKey || plateKey === 'main') {
+    return { main: (workLogs && workLogs.main) ? workLogs.main : {} }
+  }
+  const plateData = workLogs && workLogs[plateKey] ? workLogs[plateKey] : {}
+  return { main: plateData }
 }
 
 /**
@@ -86,7 +113,7 @@ export async function buildEmployedDriverSnapshot({
     ))
   }
 
-  const { workLogs } = await mergeVehicleDayLogsFromServer({
+  const { workLogs: rawWorkLogs } = await mergeVehicleDayLogsFromServer({
     cars: nextCars,
     mainTombstoneKeys: [],
     fetchDaily: (vehicleId) => supabase.from('daily_logs').select('*').eq('vehicle_id', vehicleId),
@@ -97,6 +124,7 @@ export async function buildEmployedDriverSnapshot({
       .order('sequence', { ascending: true }),
     throwIfAnyHydrateError,
   })
+  const workLogs = remapEmployedDriverWorkLogs(rawWorkLogs, nextCars)
 
   return {
     workData: workLogs.main || {},

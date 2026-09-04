@@ -4,89 +4,96 @@ import { describe, test } from 'node:test'
 import { getDriverSelfMonthlyDetail } from './driverSelfRevenue.js'
 import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
 
-/** 김기사 매출제 15% − 산재 3000 */
-const REVENUE_SHARE = 64500
+/** @typedef {import('./financeTypes.js').CarLike} CarLike */
+/** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
+
+const REVENUE_CAR = /** @type {CarLike} */ (FIXTURE_SETTINGS.cars.find((c) => c.number === '서울12가3456'))
+const SALARY_CAR = /** @type {CarLike} */ (FIXTURE_SETTINGS.cars.find((c) => c.number === '부산33나1111'))
+const MAIN_ONLY_WORK = { main: FIXTURE_WORK['서울12가3456'] }
+
+/** owner scope: fixed 250000 + call 200000, tripCount 2, 15% → 67500 − 산재 3000 */
+const FARE_TOTAL = 450000
+const TRIP_COUNT = 2
+const SHARE_GROSS = 67500
+const SHARE_NET = 64500
 const SALARY = 2000000
 
-describe('getDriverSelfMonthlyDetail', () => {
-  test('(a) netProfit === income.settlement.total (월급+매출제 합)', () => {
-    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
-    assert.equal(detail.income.settlement.total, SALARY + REVENUE_SHARE)
-    assert.equal(detail.netProfit, detail.income.settlement.total)
-    assert.equal(detail.income.total, detail.income.settlement.total)
+/**
+ * @param {Array<CarLike>} cars
+ * @returns {FinanceSettings}
+ */
+function settingsWithCars(cars) {
+  return {
+    ...FIXTURE_SETTINGS,
+    cars: [
+      /** @type {CarLike} */ ({ type: 'main', number: '서울00가0000' }),
+      ...cars,
+    ],
+  }
+}
+
+describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
+  test('(b) {main: 트립} 입력 직후와 동일 — 순이익 = 운송료 × % − 산재', () => {
+    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
+    assert.equal(detail.income.fare.total, FARE_TOTAL)
+    assert.equal(detail.tripCount, TRIP_COUNT)
+    assert.equal(detail.income.settlement.total, SHARE_NET)
+    assert.equal(detail.netProfit, SHARE_NET)
+    assert.equal(detail.income.total, SHARE_NET)
+    assert.equal(detail.income.settlement.label, '기사 정산(15%)')
   })
 
-  test('(b) income.fare.total은 본인 배정 차량 운송료 전체(정산 전)', () => {
-    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
-    // 서울12: 200000+250000, 부산33: 80000
-    assert.equal(detail.income.fare.total, 530000)
-    assert.ok(detail.income.fare.total > detail.income.settlement.total - SALARY)
+  test('번호판 키만 있고 main 비면 운송료·정산 0 (키 미통일 회귀 방지)', () => {
+    const detail = getDriverSelfMonthlyDetail(
+      MONTH_KEY,
+      settingsWithCars([REVENUE_CAR]),
+      { '서울12가3456': FIXTURE_WORK['서울12가3456'] },
+    )
+    assert.equal(detail.income.fare.total, 0)
+    assert.equal(detail.netProfit, 0)
   })
 
-  test('(c) expense.total === 0 (정비/주유/급여 라인 전부 0)', () => {
-    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
-    assert.equal(detail.expense.total, 0)
-    assert.equal(detail.expense.maint.total, 0)
-    assert.equal(detail.expense.fuel.total, 0)
-    assert.equal(detail.expense.misc.total, 0)
-    assert.equal(detail.expense.salary.total, 0)
-  })
-
-  test('(d) 차주 몫(−%)이 settlement/expense 어디에도 안 들어간다', () => {
-    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
-    // 매출제 차량 운송료(450000) − 기사 정산(64500) = 차주 몫 385500 — 이 값이 라인에 없어야 함
-    const ownerShareFromRevenueCar = 450000 - REVENUE_SHARE
-    assert.equal(ownerShareFromRevenueCar, 385500)
-    assert.ok(!('ownerShare' in detail.income))
-    assert.ok(!detail.income.settlement.items.some((i) => i.amount === ownerShareFromRevenueCar))
-    assert.ok(!detail.expense.salary.items.some((i) => i.amount === ownerShareFromRevenueCar))
-    assert.ok(!detail.income.fare.items.some((i) => i.amount === ownerShareFromRevenueCar))
-    // 합계는 정산액이지 (운송료 − 정산)이 아님
-    assert.equal(detail.income.total, detail.income.settlement.total)
-    assert.notEqual(detail.income.total, detail.income.fare.total - detail.income.settlement.total)
-  })
-
-  test('(e) insuranceOn이면 매출제 정산액에서 산재 차감', () => {
-    const withIns = getDriverSelfMonthlyDetail(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
-    const withoutIns = getDriverSelfMonthlyDetail(MONTH_KEY, {
-      ...FIXTURE_SETTINGS,
-      cars: FIXTURE_SETTINGS.cars.map((car) => (
-        car.number === '서울12가3456' ? { ...car, insuranceOn: false } : car
-      )),
-    }, FIXTURE_WORK)
-    const kimWith = withIns.income.settlement.items.find((i) => i.label === '김기사')
-    const kimWithout = withoutIns.income.settlement.items.find((i) => i.label === '김기사')
-    assert.ok(kimWith && kimWithout)
-    assert.equal(kimWith.amount, REVENUE_SHARE)
-    assert.equal(kimWithout.amount, 67500)
+  test('(c) insuranceOn이면 산재 차감 (totals link=null, fare 기준 commission)', () => {
+    const withIns = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
+    const withoutIns = getDriverSelfMonthlyDetail(
+      MONTH_KEY,
+      settingsWithCars([{ ...REVENUE_CAR, insuranceOn: false }]),
+      MAIN_ONLY_WORK,
+    )
+    assert.equal(withIns.netProfit, SHARE_NET)
+    assert.equal(withoutIns.netProfit, SHARE_GROSS)
     assert.equal(withIns.netProfit + 3000, withoutIns.netProfit)
   })
 
-  test('매출제만이면 라벨이 기사 정산(15%)', () => {
-    const settings = {
-      ...FIXTURE_SETTINGS,
-      cars: FIXTURE_SETTINGS.cars.filter((car) => car.number !== '부산33나1111'),
-    }
-    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settings, FIXTURE_WORK)
-    assert.equal(detail.income.settlement.label, '기사 정산(15%)')
-    assert.equal(detail.netProfit, REVENUE_SHARE)
-  })
-
-  test('월급제만이면 라벨이 기사 정산(월급)', () => {
-    const settings = {
-      ...FIXTURE_SETTINGS,
-      cars: FIXTURE_SETTINGS.cars.filter((car) => car.number === '부산33나1111' || car.type === 'main'),
-    }
-    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settings, FIXTURE_WORK)
-    assert.equal(detail.income.settlement.label, '기사 정산(월급)')
+  test('(d) 월급제 — 고정급, 라벨 기사 정산(월급)', () => {
+    const detail = getDriverSelfMonthlyDetail(
+      MONTH_KEY,
+      settingsWithCars([SALARY_CAR]),
+      { main: FIXTURE_WORK['부산33나1111'] },
+    )
     assert.equal(detail.netProfit, SALARY)
+    assert.equal(detail.income.settlement.total, SALARY)
+    assert.equal(detail.income.settlement.label, '기사 정산(월급)')
   })
 
-  test('빈 월/차량 없으면 전부 0', () => {
-    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, { cars: [] }, {})
-    assert.equal(detail.netProfit, 0)
-    assert.equal(detail.income.fare.total, 0)
-    assert.equal(detail.income.settlement.total, 0)
+  test('expense.total === 0', () => {
+    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
     assert.equal(detail.expense.total, 0)
+    assert.equal(detail.expense.salary.total, 0)
+  })
+
+  test('배정차 0대 → 정산 0 가드', () => {
+    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, { ...FIXTURE_SETTINGS, cars: [] }, MAIN_ONLY_WORK)
+    assert.equal(detail.netProfit, 0)
+    assert.equal(detail.income.settlement.total, 0)
+    assert.equal(detail.income.settlement.label, '기사 정산')
+  })
+
+  test('차주 몫이 settlement 라인에 안 들어감', () => {
+    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
+    const ownerShare = FARE_TOTAL - SHARE_NET
+    assert.ok(ownerShare > 0)
+    assert.ok(!detail.income.settlement.items.some((i) => i.amount === ownerShare))
+    assert.equal(detail.income.total, detail.income.settlement.total)
   })
 })
