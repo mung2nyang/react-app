@@ -98,7 +98,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
     const backupCars = /** @type {Array<unknown>} */ (backup.cars)
     const backupClients = /** @type {Array<unknown>} */ (backup.clients)
     const backupExpenses = /** @type {Array<unknown>} */ (backup.expenses)
-    const backupWorkLogs = /** @type {Record<string, any>} */ (backup.workLogs)
+    const backupWorkLogs = /** @type {Record<string, Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>>} */ (backup.workLogs)
 
     assert.equal(backupCars.length, 2)
     assert.equal(backupClients.length, 1)
