@@ -2,6 +2,7 @@
 // 날짜별 운행 기록(workData[dateKey]) 파생 계산 + 저장 형태 정규화.
 // migration-plan.md의 domain/day-record.ts 자리. DayRecordLike/CallDetailLike
 // 정본은 각각 dayRecordTypes.js/callDetail.js — 여기선 alias만 한다.
+// 206줄, §6 예외: 날짜별 운행 기록 파생값을 계산하는 서로 독립적인 순수 함수 14개 — 공유하는 자연스러운 분리선이 없어 쪼개면 기계적 절단이 됨.
 import { dedupeCallDetailsById, withCoercedCallDetailId } from './callDetailIds.js'
 import { getDetailPaymentSummary } from './finance.js'
 import { parseCurrencyValue } from './money.js'

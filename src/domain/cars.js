@@ -1,6 +1,7 @@
 // @ts-check
 // Step 4 도메인 폴더 이동: cars.js의 순수 계산부. localStorage I/O(loadCars/saveCars)는
 // lib/cars.js에 남아 이 파일을 재수출한다.
+// 218줄, §6 예외: 전부 순수 계산 함수(차량 CRUD + 정산/발행 신원 판정). 후자를 분리하면 14개+ 파일의 import 경로만 늘어나고 가독성 이득 없음.
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */

@@ -3,6 +3,7 @@
 // daily_logs(+transport_details)에 직접 1회 쓰고 성공 시에만 Store 반영(Fail-Fast).
 // vehicleSupabaseIdForLog로 main·기사 차량을 고르고, Store는 commitLogWorkData로 logId별 반영.
 // 게스트·미동기화(supabaseId 없음)는 { cloud: false } → 호출부가 로컬 경로를 탄다.
+// 208줄, §6 예외: 단건/복수건 커밋 두 함수가 내부 헬퍼 4개(writeDayKeyToServer 등)를 공유하는 하나의 응집 단위 — 분리하면 헬퍼와 사용처가 갈라짐.
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
 import { supabase } from '../supabaseClient.js'
