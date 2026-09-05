@@ -1,14 +1,35 @@
+// @ts-check
+import { useState } from 'react'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
 import { saveProfile } from '../lib/profile.js'
+import { requestAccountWithdrawal } from '../lib/accountWithdrawal.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
 import { useOwnerProfile } from '../store/ownerDataHooks.js'
+import ConfirmModal from './ConfirmModal.jsx'
 
+/** @typedef {null|'first'|'second'} WithdrawStep */
+
+const WITHDRAW_MSG_1 = '정말 탈퇴하시겠습니까? 모든 운행 기록, 거래처, 정산 데이터가 영구적으로 삭제되며 복구할 수 없습니다.'
+const WITHDRAW_MSG_2 = '이 작업은 취소할 수 없습니다. 한 번 더 확인해 주세요'
+
+/**
+ * @param {Object} props
+ * @param {string} [props.ownerKey]
+ * @param {import('../lib/outboxTypes.js').AppSession|null|undefined} [props.session]
+ * @param {() => void} [props.onBack]
+ * @param {() => void} [props.onGoAuth]
+ * @param {(message: string) => void} [props.showToast]
+ */
 export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast }) {
   const locked = useHydrationLock()
   const profile = useOwnerProfile(ownerKey)
   const sessionName = session?.name && session.name !== '비회원' ? session.name : ''
   const sessionPhone = session?.phone || ''
+  const guest = !!session?.guestMode
+  const [withdrawStep, setWithdrawStep] = useState(/** @type {WithdrawStep} */ (null))
+  const [withdrawBusy, setWithdrawBusy] = useState(false)
 
+  /** @param {string} field @param {string} value */
   function update(field, value) {
     void saveProfile(ownerKey, { ...profile, [field]: value }).catch((error) => {
       console.error('개인정보 저장 실패:', error)
@@ -16,7 +37,15 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
     })
   }
 
-  const guest = !!session?.guestMode
+  async function confirmWithdrawFinal() {
+    if (withdrawBusy) return
+    setWithdrawBusy(true)
+    setWithdrawStep(null)
+    const result = await requestAccountWithdrawal()
+    setWithdrawBusy(false)
+    showToast?.(result.toast)
+    if (result.ok) onGoAuth?.()
+  }
 
   return (
     <div className="page personal-info-page">
@@ -123,19 +152,46 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           {guest ? (
             <button type="button" className="personal-account-btn" onClick={onGoAuth}>로그인하러 가기</button>
           ) : (
-            <button
-              type="button"
-              className="personal-account-btn ghost"
-              onClick={() => {
-                showToast?.('로그아웃했습니다.')
-                onGoAuth?.()
-              }}
-            >
-              로그아웃
-            </button>
+            <>
+              <button
+                type="button"
+                className="personal-account-btn ghost"
+                onClick={() => {
+                  showToast?.('로그아웃했습니다.')
+                  onGoAuth?.()
+                }}
+              >
+                로그아웃
+              </button>
+              <button
+                type="button"
+                className="personal-account-btn ghost personal-withdraw-btn"
+                disabled={withdrawBusy}
+                onClick={() => setWithdrawStep('first')}
+              >
+                회원 탈퇴
+              </button>
+            </>
           )}
         </section>
       </fieldset>
+
+      {withdrawStep === 'first' && (
+        <ConfirmModal
+          title="회원 탈퇴"
+          message={WITHDRAW_MSG_1}
+          onCancel={() => setWithdrawStep(null)}
+          onConfirm={() => setWithdrawStep('second')}
+        />
+      )}
+      {withdrawStep === 'second' && (
+        <ConfirmModal
+          title="마지막 확인"
+          message={WITHDRAW_MSG_2}
+          onCancel={() => setWithdrawStep(null)}
+          onConfirm={() => { void confirmWithdrawFinal() }}
+        />
+      )}
     </div>
   )
 }
