@@ -14,6 +14,7 @@ import {
   LinkedDriverManagementPage,
   MaintFuelPage,
   MyPage,
+  OwnerScopedClientsView,
   PersonalInfoPage,
   ReceivablesPage,
   ReportPage,
@@ -63,7 +64,16 @@ export default function AppShellRoutes({
       <Route path="logs/:logId/day/:date" element={mainPage()} />
       <Route path="logs/:logId" element={mainPage()} />
       <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate('/app')} />} />
-      <Route path="clients" element={<ClientManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />
+      <Route
+        path="clients"
+        element={
+          session?.linkedOwnerId ? (
+            <OwnerScopedClientsView onBack={() => navigate('/app')} />
+          ) : (
+            <ClientManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />
+          )
+        }
+      />
       <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} onOpen={(/** @type {string} */ page, /** @type {string} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} />} />
       <Route path="me/profile" element={<PersonalInfoPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate('/app')} onGoAuth={onGoAuth} />} />
       <Route path="me/settings" element={<AppSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />} />

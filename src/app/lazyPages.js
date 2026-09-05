@@ -4,6 +4,7 @@ import { lazy } from 'react'
 
 export const CarManagementPage = lazy(() => import('../components/CarManagementPage.jsx'))
 export const ClientManagementPage = lazy(() => import('../components/ClientManagementPage.jsx'))
+export const OwnerScopedClientsView = lazy(() => import('../components/clients/OwnerScopedClientsView.jsx'))
 export const PersonalInfoPage = lazy(() => import('../components/PersonalInfoPage.jsx'))
 export const AppSettingsPage = lazy(() => import('../components/AppSettingsPage.jsx'))
 export const MaintFuelPage = lazy(() => import('../components/MaintFuelPage.jsx'))
