@@ -8,7 +8,6 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
   const [stepIndex, setStepIndex] = useState(0)
   const [wizard, setWizard] = useState({
     workStyle: null,
-    palletOn: false,
     paymentOn: null,
     timeOn: false,
     cargoTonnageOn: false,
@@ -20,7 +19,6 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
 
   const step = STEP_SEQUENCE[stepIndex]
   const isLast = stepIndex === STEP_SEQUENCE.length - 1
-  const showPallet = wizard.workStyle === 'fixed' || wizard.workStyle === 'both'
 
   let nextDisabled = false
   if (step === 1) nextDisabled = !wizard.workStyle
@@ -57,21 +55,9 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
             </div>
             <div className="onboarding-options-list">
               <button type="button" className={`onboarding-card-btn${wizard.workStyle === 'fixed' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, workStyle: 'fixed' })}>정해진 노선을 반복해서 다녀요</button>
-              <button type="button" className={`onboarding-card-btn${wizard.workStyle === 'call' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, workStyle: 'call', palletOn: false })}>그때그때 다른 화물을 배차받아요</button>
+              <button type="button" className={`onboarding-card-btn${wizard.workStyle === 'call' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, workStyle: 'call' })}>그때그때 다른 화물을 배차받아요</button>
               <button type="button" className={`onboarding-card-btn${wizard.workStyle === 'both' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, workStyle: 'both' })}>둘 다 섞어서 해요</button>
             </div>
-            {showPallet && (
-              <div className="onboarding-sub-toggle-card">
-                <div className="onboarding-sub-copy">
-                  <strong>파렛트 회수</strong>
-                  <span>파렛트도 회수해서 청구하시나요?</span>
-                </div>
-                <label className="switch">
-                  <input type="checkbox" checked={wizard.palletOn} onChange={(e) => setWizard({ ...wizard, palletOn: e.target.checked })} />
-                  <span className="slider"></span>
-                </label>
-              </div>
-            )}
           </div>
         )}
 
