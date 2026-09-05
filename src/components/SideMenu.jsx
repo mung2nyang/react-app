@@ -90,6 +90,15 @@ function TruckIcon() {
   )
 }
 
+function SupportIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M21 15a4 4 0 0 1-4 4h-1l-4 3v-3H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+      <path d="M8 9h8M8 13h5"></path>
+    </svg>
+  )
+}
+
 /**
  * @typedef {{ number: string, label: string }} SubLogMenuItem
  * @typedef {{ linkId: string, driverName: string }} LinkedDriverMenuItem
@@ -204,6 +213,10 @@ export default function SideMenu({
             <button type="button" className="dropdown-item" onClick={() => pick('settings')}>
               <GearIcon />
               앱 설정
+            </button>
+            <button type="button" className="dropdown-item" onClick={() => pick('support')}>
+              <SupportIcon />
+              고객센터
             </button>
           </section>
         </div>
