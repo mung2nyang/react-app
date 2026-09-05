@@ -95,9 +95,9 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
     assert.equal(backup.version, 1)
     assert.ok(backup.createdAt)
 
-    const backupCars = /** @type {Array<any>} */ (backup.cars)
-    const backupClients = /** @type {Array<any>} */ (backup.clients)
-    const backupExpenses = /** @type {Array<any>} */ (backup.expenses)
+    const backupCars = /** @type {Array<unknown>} */ (backup.cars)
+    const backupClients = /** @type {Array<unknown>} */ (backup.clients)
+    const backupExpenses = /** @type {Array<unknown>} */ (backup.expenses)
     const backupWorkLogs = /** @type {Record<string, any>} */ (backup.workLogs)
 
     assert.equal(backupCars.length, 2)
