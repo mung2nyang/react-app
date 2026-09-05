@@ -14,11 +14,12 @@ import { supabase } from '../supabaseClient.js'
 import { restoreSessionOnBoot, buildCloudAppSession, ownerKeyFromSession } from './boot.js'
 import { AccountFlowBodyClass, PendingWriteRetryBridge, SyncFlushBridge } from './providers.jsx'
 import { initializeOwnerFromPersist } from '../store/owner-state.js'
-import { useOwnerSettings } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerSettings } from '../store/ownerDataHooks.js'
 import { isAlreadyInAppOnBoot } from './bootHomeGuard.js'
 import AuthRoute from './AuthRoute.jsx'
 import AppShell from './AppShell.jsx'
 import RequireSession from './RequireSession.jsx'
+import { applyOnboardingWizard } from '../lib/onboardingFinish.js'
 import {
   clearGuestModePersisted,
   GUEST_APP_SESSION,
@@ -41,6 +42,7 @@ export default function App() {
 
   const ownerKey = ownerKeyFromSession(session)
   const practiceSettings = useOwnerSettings(ownerKey)
+  const cars = useOwnerCars(ownerKey)
   const inAccountFlow = location.pathname.startsWith('/auth') || location.pathname === '/onboarding'
 
   /** @param {string} message */
@@ -195,7 +197,15 @@ export default function App() {
               <div className="container account-flow-container">
                 <OnboardingPage
                   accountType={session?.accountType || 'owner_driver'}
-                  onFinish={() => goHome(session, '설정을 저장했어요.')}
+                  onFinish={async (/** @type {import('../lib/onboardingFinish.js').OnboardingWizard} */ wizard) => {
+                    const outcome = await applyOnboardingWizard({
+                      ownerKey,
+                      userId: session?.userId,
+                      cars,
+                      wizard,
+                    })
+                    goHome(session, outcome.toast || '설정을 저장했어요.')
+                  }}
                 />
               </div>
             </RequireSession>
