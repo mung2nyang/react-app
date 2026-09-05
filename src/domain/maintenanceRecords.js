@@ -1,20 +1,64 @@
+// @ts-check
+/** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonRecord} JsonRecord */
+/**
+ * 정비 변환 중간형 — ExpenseItem에 fare 등 레거시 필드를 덧붙인 형태.
+ * @typedef {ExpenseItem & { fare?: number|string, type?: string, liter?: number|string }} MaintExpenseShape
+ */
+/**
+ * @typedef {Object} MaintenanceRecordRow
+ * @property {string} [work_date]
+ * @property {number} [sequence]
+ * @property {unknown} [cost_amount]
+ * @property {unknown} [mileage_km]
+ * @property {unknown} [raw]
+ */
+/**
+ * @typedef {Object} MaintRawBlob
+ * @property {string} [id]
+ * @property {string} [date]
+ * @property {string} [name]
+ * @property {string} [category]
+ * @property {string} [fuelType]
+ * @property {string} [payment]
+ * @property {unknown} [cost]
+ * @property {unknown} [fare]
+ * @property {unknown} [subsidy]
+ * @property {unknown} [mileage]
+ * @property {unknown} [liters]
+ */
+
+/**
+ * @param {unknown} value
+ * @returns {number}
+ */
 export function parseEntityNumber(value) {
   const parsed = Number(String(value ?? '').replace(/[^0-9.-]/g, ''))
   return Number.isFinite(parsed) ? parsed : 0
 }
 
+/**
+ * @param {ExpenseItem|Record<string, unknown>|null|undefined} expense
+ * @returns {MaintExpenseShape}
+ */
 export function maintItemFromExpense(expense) {
-  return {
+  const src = /** @type {MaintExpenseShape|Record<string, unknown>|null|undefined} */ (expense)
+  return /** @type {MaintExpenseShape} */ ({
     ...(expense && typeof expense === 'object' ? expense : {}),
-    name: expense?.name || expense?.category || '정비',
-    fare: expense?.fare ?? expense?.cost,
-    mileage: expense?.mileage || 0,
-    category: expense?.category || '',
-  }
+    name: src?.name || src?.category || '정비',
+    fare: src?.fare ?? src?.cost,
+    mileage: src?.mileage || 0,
+    category: src?.category || '',
+  })
 }
 
+/**
+ * @param {MaintenanceRecordRow|null|undefined} row
+ * @param {number} [index]
+ * @returns {ExpenseItem}
+ */
 export function expenseFromMaintenanceRecord(row, index = 0) {
-  const raw = row?.raw && typeof row.raw === 'object' ? row.raw : {}
+  const raw = /** @type {MaintRawBlob} */ (row?.raw && typeof row.raw === 'object' ? row.raw : {})
   const date = row?.work_date || raw.date || ''
   const name = raw.name || raw.category || '정비'
   return {
@@ -32,7 +76,12 @@ export function expenseFromMaintenanceRecord(row, index = 0) {
   }
 }
 
+/**
+ * @param {Array<ExpenseItem|JsonRecord>} expenses
+ * @returns {Record<string, Array<ExpenseItem|JsonRecord>>}
+ */
 export function groupMaintExpensesByDate(expenses) {
+  /** @type {Record<string, Array<ExpenseItem|JsonRecord>>} */
   const grouped = {}
   ;(expenses || []).filter((item) => item?.kind === 'maint' && item.date).forEach((item) => {
     const date = String(item.date)
@@ -42,12 +91,24 @@ export function groupMaintExpensesByDate(expenses) {
   return grouped
 }
 
+/**
+ * @param {Array<ExpenseItem|JsonRecord>} expenses
+ * @param {Array<ExpenseItem|JsonRecord>} maintExpenses
+ * @returns {Array<ExpenseItem|JsonRecord>}
+ */
 export function replaceMaintExpenses(expenses, maintExpenses) {
   return [...(expenses || []).filter((item) => item.kind !== 'maint'), ...(maintExpenses || [])]
 }
 
+/**
+ * @param {ExpenseItem|Record<string, unknown>} item
+ * @param {number} index
+ * @param {{ dailyLogId: number|string, userId: string, vehicleId: number|string, workDate: string }} params
+ * @returns {Record<string, unknown>}
+ */
 export function buildMaintenanceRecordRow(item, index, { dailyLogId, userId, vehicleId, workDate }) {
-  const maintItem = item?.kind === 'maint' ? maintItemFromExpense(item) : { ...item, fare: item?.fare ?? item?.cost }
+  const src = /** @type {MaintExpenseShape|Record<string, unknown>} */ (item)
+  const maintItem = /** @type {MaintExpenseShape} */ (item?.kind === 'maint' ? maintItemFromExpense(item) : { ...item, fare: src?.fare ?? src?.cost })
   return {
     daily_log_id: dailyLogId,
     user_id: userId,

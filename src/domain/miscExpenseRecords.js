@@ -1,19 +1,62 @@
+// @ts-check
+/** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonRecord} JsonRecord */
+/**
+ * 기타 비용 변환 중간형 — ExpenseItem에 fare 등 레거시 필드를 덧붙인 형태.
+ * @typedef {ExpenseItem & { fare?: number|string, type?: string, liter?: number|string }} MiscExpenseShape
+ */
+/**
+ * @typedef {Object} MiscRecordRow
+ * @property {string} [work_date]
+ * @property {number} [sequence]
+ * @property {unknown} [cost_amount]
+ * @property {unknown} [raw]
+ */
+/**
+ * @typedef {Object} MiscRawBlob
+ * @property {string} [id]
+ * @property {string} [date]
+ * @property {string} [name]
+ * @property {string} [category]
+ * @property {string} [fuelType]
+ * @property {string} [payment]
+ * @property {unknown} [cost]
+ * @property {unknown} [fare]
+ * @property {unknown} [subsidy]
+ * @property {unknown} [mileage]
+ * @property {unknown} [liters]
+ */
+
+/**
+ * @param {unknown} value
+ * @returns {number}
+ */
 export function parseEntityNumber(value) {
   const parsed = Number(String(value ?? '').replace(/[^0-9.-]/g, ''))
   return Number.isFinite(parsed) ? parsed : 0
 }
 
+/**
+ * @param {ExpenseItem|Record<string, unknown>|null|undefined} expense
+ * @returns {MiscExpenseShape}
+ */
 export function miscItemFromExpense(expense) {
-  return {
+  const src = /** @type {MiscExpenseShape|Record<string, unknown>|null|undefined} */ (expense)
+  return /** @type {MiscExpenseShape} */ ({
     ...(expense && typeof expense === 'object' ? expense : {}),
-    name: expense?.name || expense?.category || '기타',
-    fare: expense?.fare ?? expense?.cost,
-    category: expense?.category || '',
-  }
+    name: src?.name || src?.category || '기타',
+    fare: src?.fare ?? src?.cost,
+    category: src?.category || '',
+  })
 }
 
+/**
+ * @param {MiscRecordRow|null|undefined} row
+ * @param {number} [index]
+ * @returns {ExpenseItem}
+ */
 export function expenseFromMiscRecord(row, index = 0) {
-  const raw = row?.raw && typeof row.raw === 'object' ? row.raw : {}
+  const raw = /** @type {MiscRawBlob} */ (row?.raw && typeof row.raw === 'object' ? row.raw : {})
   const date = row?.work_date || raw.date || ''
   const name = raw.name || raw.category || '기타'
   return {
@@ -31,7 +74,12 @@ export function expenseFromMiscRecord(row, index = 0) {
   }
 }
 
+/**
+ * @param {Array<ExpenseItem|JsonRecord>} expenses
+ * @returns {Record<string, Array<ExpenseItem|JsonRecord>>}
+ */
 export function groupMiscExpensesByDate(expenses) {
+  /** @type {Record<string, Array<ExpenseItem|JsonRecord>>} */
   const grouped = {}
   ;(expenses || []).filter((item) => item?.kind === 'misc' && item.date).forEach((item) => {
     const date = String(item.date)
@@ -41,12 +89,24 @@ export function groupMiscExpensesByDate(expenses) {
   return grouped
 }
 
+/**
+ * @param {Array<ExpenseItem|JsonRecord>} expenses
+ * @param {Array<ExpenseItem|JsonRecord>} miscExpenses
+ * @returns {Array<ExpenseItem|JsonRecord>}
+ */
 export function replaceMiscExpenses(expenses, miscExpenses) {
   return [...(expenses || []).filter((item) => item.kind !== 'misc'), ...(miscExpenses || [])]
 }
 
+/**
+ * @param {ExpenseItem|Record<string, unknown>} item
+ * @param {number} index
+ * @param {{ dailyLogId: number|string, userId: string, vehicleId: number|string, workDate: string }} params
+ * @returns {Record<string, unknown>}
+ */
 export function buildMiscExpenseRecordRow(item, index, { dailyLogId, userId, vehicleId, workDate }) {
-  const miscItem = item?.kind === 'misc' ? miscItemFromExpense(item) : { ...item, fare: item?.fare ?? item?.cost }
+  const src = /** @type {MiscExpenseShape|Record<string, unknown>} */ (item)
+  const miscItem = /** @type {MiscExpenseShape} */ (item?.kind === 'misc' ? miscItemFromExpense(item) : { ...item, fare: src?.fare ?? src?.cost })
   return {
     daily_log_id: dailyLogId,
     user_id: userId,
