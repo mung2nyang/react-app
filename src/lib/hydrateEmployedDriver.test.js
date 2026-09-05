@@ -55,6 +55,13 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
   test('정상 조회: 배정차량 1대, 비용 3종 각 1건씩 → snapshot.expenses 3건 확인', async () => {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
+    /** @type {Array<Record<string, unknown>>} */
+    const fuelFilters = []
+    /** @type {Array<Record<string, unknown>>} */
+    const maintFilters = []
+    /** @type {Array<Record<string, unknown>>} */
+    const miscFilters = []
+
     handlers.rpc = {
       get_linked_owner_profile_settings: () => ({
         data: { name: '차주대표', business_name: '차주상사', settings: {} },
@@ -81,22 +88,31 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
       select: () => ({ data: [], error: null }),
     }
     handlers.fuel_records = {
-      select: () => ({
-        data: [{ id: 'fuel-1', vehicle_id: 'veh-assigned-1', work_date: '2026-05-01', cost_amount: 50000, volume_liter: 30, sequence: 1 }],
-        error: null,
-      }),
+      select: (filters) => {
+        if (filters && typeof filters === 'object' && !Array.isArray(filters)) fuelFilters.push(filters)
+        return {
+          data: [{ id: 'fuel-1', vehicle_id: 'veh-assigned-1', work_date: '2026-05-01', cost_amount: 50000, volume_liter: 30, sequence: 1 }],
+          error: null,
+        }
+      },
     }
     handlers.maintenance_records = {
-      select: () => ({
-        data: [{ id: 'maint-1', vehicle_id: 'veh-assigned-1', work_date: '2026-05-02', cost_amount: 80000, sequence: 1, raw: { name: '엔진오일' } }],
-        error: null,
-      }),
+      select: (filters) => {
+        if (filters && typeof filters === 'object' && !Array.isArray(filters)) maintFilters.push(filters)
+        return {
+          data: [{ id: 'maint-1', vehicle_id: 'veh-assigned-1', work_date: '2026-05-02', cost_amount: 80000, sequence: 1, raw: { name: '엔진오일' } }],
+          error: null,
+        }
+      },
     }
     handlers.misc_expense_records = {
-      select: () => ({
-        data: [{ id: 'misc-1', vehicle_id: 'veh-assigned-1', work_date: '2026-05-03', cost_amount: 10000, sequence: 1, raw: { name: '주차비' } }],
-        error: null,
-      }),
+      select: (filters) => {
+        if (filters && typeof filters === 'object' && !Array.isArray(filters)) miscFilters.push(filters)
+        return {
+          data: [{ id: 'misc-1', vehicle_id: 'veh-assigned-1', work_date: '2026-05-03', cost_amount: 10000, sequence: 1, raw: { name: '주차비' } }],
+          error: null,
+        }
+      },
     }
 
     const snapshot = await buildEmployedDriverSnapshot({
@@ -121,6 +137,10 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
     assert.equal(countOf('fuel_records', 'select'), 1)
     assert.equal(countOf('maintenance_records', 'select'), 1)
     assert.equal(countOf('misc_expense_records', 'select'), 1)
+
+    assert.equal(fuelFilters[0]?.vehicle_id, 'veh-assigned-1')
+    assert.equal(maintFilters[0]?.vehicle_id, 'veh-assigned-1')
+    assert.equal(miscFilters[0]?.vehicle_id, 'veh-assigned-1')
   })
 
   test('배정 0대: 배정 차량이 없으면 비용 3종 조회를 하지 않고 expenses는 빈 배열이다', async () => {
