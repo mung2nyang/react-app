@@ -88,7 +88,7 @@ export default function AppShellRoutes({
       <Route path="drivers" element={<DriverConnectionPage ownerKey={ownerKey} session={session} showToast={showToast} navigate={navigate} onBack={() => { navigate('/app'); bumpNotifTick() }} />} />
       <Route path="me/invite" element={<InviteRedeemPage session={session} showToast={showToast} onBack={() => navigate('/app/me')} onLinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); navigate('/app') }} />} />
       <Route path="revenue" element={<RevenuePage ownerKey={ownerKey} session={session ?? undefined} onBack={() => navigate('/app')} />} />
-      <Route path="support" element={<CustomerCenterPage onBack={() => navigate('/app')} />} />
+      <Route path="support" element={<CustomerCenterPage session={session} showToast={showToast} onGoAuth={onGoAuth} onBack={() => navigate('/app')} />} />
       <Route path="soon" element={<ComingSoonRoute />} />
     </Routes>
   )

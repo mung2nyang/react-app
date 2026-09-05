@@ -1,6 +1,10 @@
+// @ts-check
 import { useState } from 'react'
+import { isCloudSession } from '../lib/cloudSession.js'
+import { requestSupportInquirySave } from '../lib/supportInquiryMutations.js'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
+/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 
 const FAQ_ITEMS = [
   {
@@ -21,13 +25,87 @@ const FAQ_ITEMS = [
   },
 ]
 
+const INQUIRY_TYPES = ['문의', '기능 건의', '오류 신고']
+
+/**
+ * @param {Object} props
+ * @param {string} props.userId
+ * @param {(message: string) => void} [props.showToast]
+ */
+function InquiryForm({ userId, showToast }) {
+  const [type, setType] = useState(INQUIRY_TYPES[0])
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  /** @param {import('react').FormEvent<HTMLFormElement>} event */
+  async function onSubmit(event) {
+    event.preventDefault()
+    if (busy) return
+    setBusy(true)
+    const result = await requestSupportInquirySave({
+      userId,
+      type,
+      title: title.trim(),
+      content: content.trim(),
+    })
+    setBusy(false)
+    showToast?.(result.toast)
+    if (!result.ok) return
+    setType(INQUIRY_TYPES[0])
+    setTitle('')
+    setContent('')
+  }
+
+  return (
+    <form className="inquiry-form" onSubmit={onSubmit}>
+      <label>
+        문의 유형
+        <select className="input-box" value={type} onChange={(e) => setType(e.target.value)} required>
+          {INQUIRY_TYPES.map((option) => (
+            <option key={option} value={option}>{option}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        제목
+        <input
+          className="input-box"
+          maxLength={50}
+          placeholder="제목을 입력해 주세요"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+      </label>
+      <label>
+        내용
+        <textarea
+          className="input-box"
+          rows={6}
+          maxLength={1000}
+          placeholder="문의 내용을 자세히 적어주세요"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          required
+        />
+      </label>
+      <button className="personal-account-btn" type="submit" disabled={busy}>문의 접수하기</button>
+    </form>
+  )
+}
+
 /**
  * @param {Object} props
  * @param {() => void} [props.onBack]
+ * @param {AppSession|null} [props.session]
+ * @param {(message: string) => void} [props.showToast]
+ * @param {() => void} [props.onGoAuth]
  */
-export default function CustomerCenterPage({ onBack }) {
+export default function CustomerCenterPage({ onBack, session = null, showToast, onGoAuth }) {
   const [tab, setTab] = useState(/** @type {SupportTab} */ ('faq'))
   const [openFaq, setOpenFaq] = useState(/** @type {number|null} */ (null))
+  const cloud = isCloudSession(session)
 
   /** @param {number} index */
   function toggleFaq(index) {
@@ -79,7 +157,14 @@ export default function CustomerCenterPage({ onBack }) {
             <h3>무엇을 도와드릴까요?</h3>
             <p>문의나 개선 의견을 남겨주시면 확인 후 답변드리겠습니다.</p>
           </div>
-          <div className="support-panel-empty">1:1 문의는 다음 업데이트에서 추가됩니다.</div>
+          {cloud && session?.userId ? (
+            <InquiryForm userId={session.userId} showToast={showToast} />
+          ) : (
+            <div className="support-panel-empty">
+              <p>로그인 후 이용해 주세요.</p>
+              <button type="button" className="personal-account-btn" onClick={onGoAuth}>로그인하러 가기</button>
+            </div>
+          )}
         </section>
       )}
 

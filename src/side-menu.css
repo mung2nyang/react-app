@@ -2027,4 +2027,8 @@ body.pdf-export-mode .summary-row.total {
 .faq-item i { color: var(--primary-color); font-size: var(--fs-7); font-style: normal; }
 .support-detail { display: none; grid-column: 1 / -1; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border-color); color: var(--sub-text-color); font-size: var(--fs-3); font-weight: 500; line-height: 1.6; }
 .faq-item.open .support-detail { display: block; }
-.support-panel-empty { padding: 32px 16px; border: 1px dashed var(--border-color); border-radius: 16px; color: var(--sub-text-color); font-size: var(--fs-3); text-align: center; }
+.support-panel-empty { padding: 32px 16px; border: 1px dashed var(--border-color); border-radius: 16px; color: var(--sub-text-color); font-size: var(--fs-3); text-align: center; display: grid; gap: 12px; justify-items: center; }
+.inquiry-form { display: grid; gap: 14px; padding: 20px; border: 1px solid var(--border-color); border-radius: 22px; background: var(--card-bg); }
+.inquiry-form label { display: grid; gap: 8px; font-size: var(--fs-3); font-weight: 750; text-align: left; }
+.inquiry-form .input-box { width: 100%; margin: 0; box-sizing: border-box; text-align: left; }
+.inquiry-form textarea { resize: vertical; line-height: 1.5; }

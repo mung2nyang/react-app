@@ -18,7 +18,30 @@ const { act } = React
 const { default: CustomerCenterPage } = await import('./CustomerCenterPage.jsx')
 const { default: SideMenu } = await import('./SideMenu.jsx')
 
-describe('CustomerCenterPage — 고객센터 진입·FAQ 탭', () => {
+/** @param {import('../lib/outboxTypes.js').AppSession|null} session */
+async function openInquiryTab(session) {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => {
+    root.render(React.createElement(CustomerCenterPage, {
+      onBack: () => {},
+      session,
+      showToast: () => {},
+      onGoAuth: () => {},
+    }))
+  })
+  const inquiryTab = /** @type {HTMLButtonElement|undefined} */ (
+    [...container.querySelectorAll('.support-tab')].find((el) => el.textContent?.includes('1:1'))
+  )
+  assert.ok(inquiryTab)
+  await act(async () => {
+    inquiryTab.click()
+  })
+  return { container, root }
+}
+
+describe('CustomerCenterPage — 고객센터 진입·FAQ·1:1 문의', () => {
   test('FAQ 탭이 기본으로 노출되고 자주 묻는 질문 카드가 보인다', async () => {
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -38,22 +61,26 @@ describe('CustomerCenterPage — 고객센터 진입·FAQ 탭', () => {
     }
   })
 
-  test('1:1 문의 탭은 placeholder만 보이고 문의 저장 UI는 없다', async () => {
-    const container = document.createElement('div')
-    document.body.appendChild(container)
-    const root = createRoot(container)
+  test('게스트 세션이면 1:1 문의 폼을 마운트하지 않고 로그인 안내만 보인다', async () => {
+    const { container, root } = await openInquiryTab({ guestMode: true, name: '비회원' })
     try {
-      await act(async () => {
-        root.render(React.createElement(CustomerCenterPage, { onBack: () => {} }))
-      })
-      const inquiryTab = /** @type {HTMLButtonElement|undefined} */ ([...container.querySelectorAll('.support-tab')].find((el) => el.textContent?.includes('1:1')))
-      assert.ok(inquiryTab)
-      await act(async () => {
-        inquiryTab.click()
-      })
-      assert.ok(container.textContent?.includes('다음 업데이트에서 추가'))
+      assert.ok(container.textContent?.includes('로그인 후 이용해 주세요'))
       assert.equal(container.querySelector('.inquiry-form'), null)
       assert.equal(container.querySelector('textarea'), null)
+      assert.ok([...container.querySelectorAll('button')].some((el) => el.textContent?.includes('로그인하러 가기')))
+    } finally {
+      await act(async () => { root.unmount() })
+      container.remove()
+    }
+  })
+
+  test('로그인 세션이면 1:1 문의 폼이 마운트된다', async () => {
+    const { container, root } = await openInquiryTab({ userId: 'u-cloud-1', guestMode: false, name: '테스트' })
+    try {
+      assert.ok(container.querySelector('.inquiry-form'), '로그인 세션엔 inquiry-form이 있어야 한다')
+      assert.ok(container.querySelector('textarea'))
+      assert.ok(container.querySelector('select'))
+      assert.equal(container.textContent?.includes('로그인 후 이용해 주세요'), false)
     } finally {
       await act(async () => { root.unmount() })
       container.remove()
