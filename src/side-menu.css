@@ -1062,6 +1062,78 @@
   text-align: left;
 }
 
+.report-pdf-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 12px;
+}
+
+/* PDF 출력 모드 — 네비게이션 숨김 + 표/요약 인쇄용 색·여백 */
+body.pdf-export-mode {
+  --bg-color: #ffffff !important;
+  --text-color: #000000 !important;
+  --sub-text-color: #333333 !important;
+  --card-bg: #f9f9f9 !important;
+  --border-color: #cccccc !important;
+  --input-bg: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+body.pdf-export-mode .report-page-wrap .settings-header,
+body.pdf-export-mode .report-page-wrap .maint-fuel-nav,
+body.pdf-export-mode .report-page-wrap .report-pdf-actions {
+  display: none !important;
+}
+
+body.pdf-export-mode .report-page-wrap {
+  margin-top: 0 !important;
+  padding: 10px !important;
+  padding-bottom: 10px !important;
+  min-height: 0 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+body.pdf-export-mode .report-title {
+  color: #000000 !important;
+}
+
+body.pdf-export-mode .info-table {
+  border-radius: 0 !important;
+}
+
+body.pdf-export-mode .info-table th {
+  background-color: #f2f2f2 !important;
+  color: #333333 !important;
+  border: 1px solid #cccccc !important;
+}
+
+body.pdf-export-mode .info-table td {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #cccccc !important;
+  white-space: normal !important;
+  word-break: break-all !important;
+}
+
+body.pdf-export-mode .report-page-wrap .summary-card {
+  background-color: #f9f9f9 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.pdf-export-mode .summary-row {
+  color: #000000 !important;
+}
+
+body.pdf-export-mode .summary-row.total {
+  color: #3182ce !important;
+  border-top: 1px dashed #cccccc !important;
+}
+
 .tax-invoice-amount-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

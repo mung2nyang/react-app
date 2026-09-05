@@ -15,6 +15,15 @@ export function dash(value) {
   return text || '-'
 }
 
+/**
+ * 월간 운송비 내역서 PDF 파일명(원본 downloadPDF 요약 분기와 동일, 월은 0-based monthIndex).
+ * @param {number} year
+ * @param {number} monthIndex 0=1월 … 11=12월
+ */
+export function buildReportFileName(year, monthIndex) {
+  return `${year}년_${monthIndex + 1}월_운송비내역서.pdf`
+}
+
 export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwnerExpenses(ownerKey), cars = readOwnerCars(ownerKey), practiceSettings = readOwnerSettings(ownerKey), workData = readOwnerWorkData(ownerKey), clients = readOwnerClients(ownerKey), profile = readOwnerProfile(ownerKey)) {
   const unitPrice = resolveFixedUnitPrice({ clients })
   const fare = monthWorkFareSummary(workData, year, monthIndex, unitPrice)

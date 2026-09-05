@@ -1,13 +1,21 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
-import { buildMonthReport, dash } from '../lib/report.js'
+import { buildMonthReport, buildReportFileName, dash } from '../lib/report.js'
 import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkData } from '../store/ownerDataHooks.js'
 
 const YEAR_OPTIONS = getYearOptions()
 
-export default function ReportPage({ ownerKey = 'guest', onBack }) {
+/**
+ * @param {Object} props
+ * @param {string} [props.ownerKey]
+ * @param {() => void} [props.onBack]
+ * @param {(message: string) => void} [props.showToast]
+ */
+export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
   const [viewDate, setViewDate] = useState(() => new Date())
+  const [savingPdf, setSavingPdf] = useState(false)
+  const exportRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const expenses = useOwnerExpenses(ownerKey)
@@ -22,6 +30,32 @@ export default function ReportPage({ ownerKey = 'guest', onBack }) {
   )
   const car = report.mainCar
   const profile = report.profile
+
+  async function handleDownloadPdf() {
+    const element = exportRef.current
+    if (!element || savingPdf) return
+    setSavingPdf(true)
+    document.body.classList.add('pdf-export-mode')
+    try {
+      const mod = await import('html2pdf.js')
+      const html2pdf = mod.default
+      const opt = {
+        margin: [12, 10, 12, 10],
+        filename: buildReportFileName(year, month),
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      }
+      await html2pdf().set(opt).from(element).save()
+      showToast?.('PDF를 저장했습니다.')
+    } catch (error) {
+      console.error('PDF 저장 실패:', error)
+      showToast?.('PDF 저장에 실패했습니다. 다시 시도해 주세요.')
+    } finally {
+      document.body.classList.remove('pdf-export-mode')
+      setSavingPdf(false)
+    }
+  }
 
   return (
     <div className="page report-page-wrap">
@@ -52,68 +86,75 @@ export default function ReportPage({ ownerKey = 'guest', onBack }) {
         </div>
       </div>
 
-      <div className="report-title">{report.title}</div>
-      <p className="car-type-hint">달력 횟수·단가·개인정보·차량·정비/주유 기록을 모은 미리보기입니다. PDF 저장은 나중에 붙입니다.</p>
+      <div className="report-pdf-actions">
+        <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={handleDownloadPdf}>
+          {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
+        </button>
+      </div>
 
-      <table className="info-table">
-        <tbody>
-          <tr>
-            <th>성명</th>
-            <td>{dash(profile.name)}</td>
-            <th>연락처</th>
-            <td>{dash(profile.phone)}</td>
-          </tr>
-          <tr>
-            <th>차량번호</th>
-            <td>{dash(car?.number)}</td>
-            <th>차량톤수</th>
-            <td>{dash(car?.tonnage)}</td>
-          </tr>
-          <tr>
-            <th>입금은행</th>
-            <td>{dash(profile.bankName)}</td>
-            <th>계좌번호</th>
-            <td>{dash(profile.accountNumber)}</td>
-          </tr>
-          <tr>
-            <th>예금주</th>
-            <td colSpan={3}>{dash(profile.accountHolder)}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="reportContentToExport" ref={exportRef}>
+        <div className="report-title">{report.title}</div>
 
-      <div className="summary-card">
-        <div className="summary-title">
-          <span>월간 운송료 정산</span>
-          <span>횟수 {report.trips}회 · 세부 입력 {report.callTrips || 0}건</span>
-        </div>
-        <div className="summary-row">
-          <span>1회 단가</span>
-          <span className="summary-value">{formatWon(report.unitPrice)}</span>
-        </div>
-        <div className="summary-row">
-          <span>기본 운송료</span>
-          <span className="summary-value">{formatWon(report.fare)}</span>
-        </div>
-        <div className="summary-row">
-          <span>부가세 (공급가액 기준 10%)</span>
-          <span className="summary-value">{formatWon(report.vat)}</span>
-        </div>
-        <div className="summary-row total">
-          <span>계</span>
-          <span className="summary-value">{formatWon(report.total)}</span>
-        </div>
-        <div className="summary-row">
-          <span>차량 정비비</span>
-          <span className="summary-value">{formatWon(report.maint)}</span>
-        </div>
-        <div className="summary-row">
-          <span>차량 주유비</span>
-          <span className="summary-value">{formatWon(report.fuel)}</span>
-        </div>
-        <div className="summary-row">
-          <span>통행료/기타</span>
-          <span className="summary-value">{formatWon(report.misc)}</span>
+        <table className="info-table">
+          <tbody>
+            <tr>
+              <th>성명</th>
+              <td>{dash(profile.name)}</td>
+              <th>연락처</th>
+              <td>{dash(profile.phone)}</td>
+            </tr>
+            <tr>
+              <th>차량번호</th>
+              <td>{dash(car?.number)}</td>
+              <th>차량톤수</th>
+              <td>{dash(car?.tonnage)}</td>
+            </tr>
+            <tr>
+              <th>입금은행</th>
+              <td>{dash(profile.bankName)}</td>
+              <th>계좌번호</th>
+              <td>{dash(profile.accountNumber)}</td>
+            </tr>
+            <tr>
+              <th>예금주</th>
+              <td colSpan={3}>{dash(profile.accountHolder)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="summary-card">
+          <div className="summary-title">
+            <span>월간 운송료 정산</span>
+            <span>횟수 {report.trips}회 · 세부 입력 {report.callTrips || 0}건</span>
+          </div>
+          <div className="summary-row">
+            <span>1회 단가</span>
+            <span className="summary-value">{formatWon(report.unitPrice)}</span>
+          </div>
+          <div className="summary-row">
+            <span>기본 운송료</span>
+            <span className="summary-value">{formatWon(report.fare)}</span>
+          </div>
+          <div className="summary-row">
+            <span>부가세 (공급가액 기준 10%)</span>
+            <span className="summary-value">{formatWon(report.vat)}</span>
+          </div>
+          <div className="summary-row total">
+            <span>계</span>
+            <span className="summary-value">{formatWon(report.total)}</span>
+          </div>
+          <div className="summary-row">
+            <span>차량 정비비</span>
+            <span className="summary-value">{formatWon(report.maint)}</span>
+          </div>
+          <div className="summary-row">
+            <span>차량 주유비</span>
+            <span className="summary-value">{formatWon(report.fuel)}</span>
+          </div>
+          <div className="summary-row">
+            <span>통행료/기타</span>
+            <span className="summary-value">{formatWon(report.misc)}</span>
+          </div>
         </div>
       </div>
     </div>
