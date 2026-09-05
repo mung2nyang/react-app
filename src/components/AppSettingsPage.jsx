@@ -1,12 +1,15 @@
+import { useRef } from 'react'
 import { useOwnerSettings } from '../store/ownerDataHooks.js'
 import { applyTheme, savePracticeSettings } from '../lib/practiceSettings.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
+import { applyGuestBackupData, buildGuestBackupData, markBackupDone } from '../lib/guestBackup.js'
 import SwitchRow from './SwitchRow.jsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
 
 export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast }) {
   const locked = useHydrationLock()
   const settings = useOwnerSettings(ownerKey)
+  const fileInputRef = useRef(null)
 
   async function patch(nextPatch) {
     try {
@@ -15,6 +18,56 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast 
     } catch (error) {
       console.error('설정 저장 실패:', error)
       showToast?.('저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
+    }
+  }
+
+  function handleExport() {
+    try {
+      const data = buildGuestBackupData()
+      markBackupDone()
+      const json = JSON.stringify(data, null, 2)
+      const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
+      if (typeof URL.createObjectURL === 'function') {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        const todayStr = new Date().toISOString().slice(0, 10)
+        a.href = url
+        a.download = `운송내역_백업_${todayStr}.json`
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        setTimeout(() => URL.revokeObjectURL(url), 1000)
+      }
+      showToast?.('백업 파일을 저장했습니다.')
+    } catch (error) {
+      console.error('백업 내보내기 실패:', error)
+      showToast?.('백업 파일 생성에 실패했습니다.')
+    }
+  }
+
+  async function handleImport(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const text = await file.text()
+      let parsed
+      try {
+        parsed = JSON.parse(text.replace(/^\uFEFF/, ''))
+      } catch {
+        showToast?.('파일 내용이 손상되었거나 JSON 파일이 아닙니다.')
+        return
+      }
+      const res = applyGuestBackupData(parsed)
+      if (!res.ok) {
+        showToast?.(res.error || '백업 데이터를 복원하지 못했습니다.')
+        return
+      }
+      showToast?.('백업 데이터를 복원했습니다.')
+    } catch (err) {
+      console.error('백업 불러오기 실패:', err)
+      showToast?.('백업 파일을 읽지 못했습니다.')
+    } finally {
+      e.target.value = ''
     }
   }
 
@@ -35,6 +88,20 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast 
       )}
 
       <fieldset disabled={locked} style={{ border: 0, margin: 0, padding: 0 }}>
+        {ownerKey === 'guest' && (
+          <section className="setting-section">
+            <h3>데이터 백업</h3>
+            <p className="car-type-hint" style={{ marginTop: 4, marginBottom: 12 }}>
+              기기에 저장된 운행 기록과 설정을 파일로 백업하거나 복원합니다.
+            </p>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button type="button" className="theme-toggle-btn" onClick={handleExport}>백업 파일 다운로드</button>
+              <button type="button" className="theme-toggle-btn" onClick={() => fileInputRef.current?.click()}>백업 파일 불러오기</button>
+              <input ref={fileInputRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={handleImport} />
+            </div>
+          </section>
+        )}
+
         <section className="setting-section settings-theme-card">
           <div className="setting-item">
             <label>테마 선택</label>
