@@ -1,22 +1,25 @@
+// @ts-check
 import { useState } from 'react'
-import { formatPhoneNumber } from '../lib/formatPhone.js'
 import {
   ensureProfileRow,
   getSupabaseAuthErrorMessage,
   signInWithPhone,
   signUpWithPhone,
 } from '../supabaseClient.js'
+import AuthIntroView from './auth/AuthIntroView.jsx'
+import AuthLoginView from './auth/AuthLoginView.jsx'
+import AuthSignupView from './auth/AuthSignupView.jsx'
 
-const BANNER = '/images/banner_image.png'
-
-function BackIcon() {
-  return (
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-  )
-}
-
+/**
+ * @param {Object} props
+ * @param {() => void} [props.onGuest]
+ * @param {(session: { name: string, phone: string, accountType: string, userId: string|null, inviteCode?: string }) => void} props.onLogin
+ * @param {(session: { name: string, phone: string, accountType: string, inviteCode: string, userId: string|null }) => void} props.onSignup
+ * @param {() => void} [props.onForgotPassword]
+ * @param {(message: string) => void} props.showToast
+ */
 export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword, showToast }) {
-  const [view, setView] = useState('intro')
+  const [view, setView] = useState(/** @type {'intro'|'login'|'signup'} */ ('intro'))
   const [busy, setBusy] = useState(false)
   const [login, setLogin] = useState({ name: '', phone: '', password: '' })
   const [signup, setSignup] = useState({
@@ -108,177 +111,36 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
 
   if (view === 'intro') {
     return (
-      <div className="account-flow-page">
-        <div className="auth-view auth-intro-view">
-          <div className="auth-brand-head">
-            <img src={BANNER} alt="" className="auth-logo-img" />
-            <span className="auth-logo-text">운행 일지</span>
-          </div>
-          <div className="auth-intro-bottom">
-            <p className="auth-question-text">계정이 있으신가요?</p>
-            <div className="auth-btn-stack">
-              <button type="button" className="auth-primary-btn" onClick={openLogin}>로그인</button>
-              <button type="button" className="auth-secondary-btn" onClick={openSignup}>회원가입</button>
-            </div>
-            <button type="button" className="auth-guest-btn" onClick={onGuest}>비회원으로 시작하기</button>
-          </div>
-        </div>
-      </div>
+      <AuthIntroView
+        onGuest={onGuest}
+        onLogin={openLogin}
+        onSignup={openSignup}
+      />
     )
   }
 
   if (view === 'login') {
     return (
-      <div className="account-flow-page">
-        <div className="auth-view">
-          <div className="auth-topbar">
-            <button type="button" className="auth-back-icon-btn" onClick={() => setView('intro')} aria-label="뒤로가기">
-              <BackIcon />
-            </button>
-            <div className="auth-brand-sm">
-              <img src={BANNER} alt="" className="auth-logo-sm" />
-              <span>운행 일지</span>
-            </div>
-          </div>
-          <div className="auth-heading-box">
-            <span className="auth-kicker">WELCOME</span>
-            <h1>정보를<br />입력해 주세요.</h1>
-          </div>
-          <div className="auth-form-fields">
-            <div className="auth-field">
-              <label htmlFor="loginUserName">이름</label>
-              <input
-                id="loginUserName"
-                className="auth-input-box"
-                placeholder="이름을 입력하세요"
-                autoComplete="name"
-                value={login.name}
-                onChange={(e) => setLogin({ ...login, name: e.target.value })}
-              />
-            </div>
-            <div className="auth-field">
-              <label htmlFor="loginUserPhone">휴대전화 번호</label>
-              <input
-                id="loginUserPhone"
-                type="tel"
-                className="auth-input-box"
-                placeholder="010-0000-0000"
-                autoComplete="tel"
-                value={login.phone}
-                onChange={(e) => setLogin({ ...login, phone: formatPhoneNumber(e.target.value) })}
-              />
-            </div>
-            <div className="auth-field">
-              <label htmlFor="loginPassword">비밀번호</label>
-              <input
-                id="loginPassword"
-                type="password"
-                className="auth-input-box"
-                placeholder="6자 이상 입력해 주세요"
-                autoComplete="current-password"
-                value={login.password}
-                onChange={(e) => setLogin({ ...login, password: e.target.value })}
-              />
-              <div className="auth-field-extra">
-                <button type="button" className="auth-link-text" onClick={onForgotPassword}>비밀번호 찾기</button>
-              </div>
-            </div>
-          </div>
-          <div className="auth-bottom-sticky">
-            <button
-              type="button"
-              className={`auth-primary-btn${busy ? ' save-action-loading' : ''}`}
-              disabled={!loginReady || busy}
-              onClick={handleLogin}
-            >
-              다음
-            </button>
-          </div>
-        </div>
-      </div>
+      <AuthLoginView
+        login={login}
+        setLogin={setLogin}
+        loginReady={loginReady}
+        busy={busy}
+        onBack={() => setView('intro')}
+        onForgotPassword={onForgotPassword}
+        onSubmit={handleLogin}
+      />
     )
   }
 
   return (
-    <div className="account-flow-page">
-      <div className="auth-view">
-        <div className="auth-topbar">
-          <button type="button" className="auth-back-icon-btn" onClick={() => setView('intro')} aria-label="뒤로가기">
-            <BackIcon />
-          </button>
-          <div className="auth-brand-sm">
-            <img src={BANNER} alt="" className="auth-logo-sm" />
-            <span>운행 일지</span>
-          </div>
-        </div>
-        <div className="auth-heading-box">
-          <span className="auth-kicker">WELCOME</span>
-          <h1>회원가입</h1>
-          <p className="auth-desc-text">
-            운행 기록은 클라우드에 안전하게 백업되어 다른 기기에서 로그인해도 그대로 이어집니다. 그래도 만약을 대비해 설정 메뉴의 로컬 백업 기능도 함께 이용해 주세요.
-          </p>
-        </div>
-
-        <div className="auth-form-fields">
-          <div className="auth-field">
-            <label htmlFor="signupName">이름</label>
-            <input
-              id="signupName"
-              className="auth-input-box"
-              placeholder="이름을 입력하세요"
-              autoComplete="name"
-              value={signup.name}
-              onChange={(e) => setSignup({ ...signup, name: e.target.value })}
-            />
-          </div>
-          <div className="auth-field">
-            <label htmlFor="signupPhone">휴대전화 번호</label>
-            <input
-              id="signupPhone"
-              type="tel"
-              className="auth-input-box"
-              placeholder="010-0000-0000"
-              autoComplete="tel"
-              value={signup.phone}
-              onChange={(e) => setSignup({ ...signup, phone: formatPhoneNumber(e.target.value) })}
-            />
-          </div>
-          <div className="auth-field">
-            <label htmlFor="signupPw">비밀번호</label>
-            <input
-              id="signupPw"
-              type="password"
-              className="auth-input-box"
-              placeholder="6자 이상 입력해 주세요"
-              autoComplete="new-password"
-              value={signup.password}
-              onChange={(e) => setSignup({ ...signup, password: e.target.value })}
-            />
-          </div>
-          <div className="auth-field">
-            <label htmlFor="signupPwConfirm">비밀번호 확인</label>
-            <input
-              id="signupPwConfirm"
-              type="password"
-              className="auth-input-box"
-              placeholder="비밀번호를 한 번 더 입력해 주세요"
-              autoComplete="new-password"
-              value={signup.passwordConfirm}
-              onChange={(e) => setSignup({ ...signup, passwordConfirm: e.target.value })}
-            />
-          </div>
-        </div>
-        <div className="auth-bottom-sticky">
-          <button
-            type="button"
-            className={`auth-primary-btn${busy ? ' save-action-loading' : ''}`}
-            disabled={!signupReady || busy}
-            onClick={handleSignup}
-          >
-            가입하고 시작하기
-          </button>
-        </div>
-      </div>
-    </div>
+    <AuthSignupView
+      signup={signup}
+      setSignup={setSignup}
+      signupReady={signupReady}
+      busy={busy}
+      onBack={() => setView('intro')}
+      onSubmit={handleSignup}
+    />
   )
 }
