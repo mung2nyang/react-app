@@ -11,14 +11,8 @@ import { useMemo, useSyncExternalStore } from 'react'
 import { getState, subscribe } from './app-store.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 
-/** @typedef {import('../domain/calendarBadges.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
-const EMPTY_WORK_DATA = /** @type {Record<string, DayRecordLike>} */ ({})
-/** 손익·미수·계산서용 — owner에 workLogs가 없을 때 고정 참조(useSyncExternalStore). */
-const EMPTY_WORK_DATA_BY_LOG_ID = /** @type {import('../domain/financeTypes.js').WorkDataByLogId} */ ({
-  main: EMPTY_WORK_DATA,
-})
 // 재감사 2차(FAIL 지적 2번) — useExpenseForm.js가 마운트 시 한 번만 loadExpenses로
 // 스냅샷을 뜨고 그 이후엔 다시 안 읽어서, 그 사이 다른 경로(hydrate, 다른 탭, 또는
 // 같은 화면의 다른 조작)로 store에 반영된 항목이 다음 save()/remove()에서 통째로
@@ -26,59 +20,6 @@ const EMPTY_WORK_DATA_BY_LOG_ID = /** @type {import('../domain/financeTypes.js')
 // 고친다 — 화면은 항상 store를 직접 구독하고, 쓰기 직전에는(useDayDraft.js의
 // readOwnerWorkData와 같은 자리) readOwnerExpenses로 한 번 더 최신값을 읽는다.
 const EMPTY_EXPENSES = /** @type {Array<ExpenseItem>} */ ([])
-
-/**
- * store에서 ownerKey의 workData(state.workLogs[ownerKey].main)를 읽는다 — 없으면
- * 항상 같은 EMPTY_WORK_DATA 참조를 돌려준다(고정 상수라 매번 새 객체가 아니다).
- * useOwnerWorkData의 getSnapshot과 MainPageRoute.jsx의 saveDay(최신값을 커밋
- * 직전에 다시 읽을 때)가 이 함수 하나를 공유한다.
- * @param {string} ownerKey
- * @returns {Record<string, DayRecordLike>}
- */
-export function readOwnerWorkData(ownerKey) {
-  return getState().workLogs[ownerKey]?.main || EMPTY_WORK_DATA
-}
-
-/**
- * @param {string} ownerKey
- * @param {string} [logId]
- * @returns {Record<string, DayRecordLike>}
- */
-export function readOwnerLogWorkData(ownerKey, logId = 'main') {
-  if (!logId || logId === 'main') return readOwnerWorkData(ownerKey)
-  return getState().workLogs[ownerKey]?.[logId] || EMPTY_WORK_DATA
-}
-
-/**
- * ownerKey의 workData를 store에서 직접 구독한다. app-store.js의
- * commitBatch/applyDomainToState는 관련 없는 커밋에서는 이 참조를 그대로 유지하므로
- * (불변 갱신 — 바뀐 도메인/ownerKey만 새 객체가 된다), useSyncExternalStore가
- * 요구하는 "변화 없으면 같은 참조" 조건을 그대로 만족한다.
- * @param {string} ownerKey
- * @returns {Record<string, DayRecordLike>}
- */
-export function useOwnerWorkData(ownerKey) {
-  return useSyncExternalStore(subscribe, () => readOwnerWorkData(ownerKey))
-}
-
-/**
- * 손익·계산서·미수용 logId→일지 맵(Step 9 슬라이스 C).
- * `workLogs[ownerKey]` 전체(main + 서브 차량번호)를 그대로 돌려준다 — 계산 엔진은
- * 이미 logId별 소스를 순회하므로, 여기만 main에 묶여 있으면 매출/미수에 기사가 안 잡힌다.
- * store 참조를 유지해 useSyncExternalStore 스냅샷이 안정적이다.
- * @param {string} ownerKey
- * @returns {import('../domain/financeTypes.js').WorkDataByLogId}
- */
-export function readOwnerWorkDataByLogId(ownerKey) {
-  const logs = getState().workLogs[ownerKey]
-  if (!logs || typeof logs !== 'object') return EMPTY_WORK_DATA_BY_LOG_ID
-  return logs
-}
-
-/** @param {string} ownerKey */
-export function useOwnerWorkDataByLogId(ownerKey) {
-  return useSyncExternalStore(subscribe, () => readOwnerWorkDataByLogId(ownerKey))
-}
 
 /**
  * store에서 ownerKey의 expenses(정비/주유/기타 비용 배열)를 읽는다 — 없으면 항상
@@ -153,22 +94,6 @@ export function useOwnerCars(ownerKey) {
   return useSyncExternalStore(subscribe, () => readOwnerCars(ownerKey))
 }
 
-const EMPTY_TOMBSTONES = /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones} */ ({})
-
-/**
- * 재감사 3차(FAIL 지적 1번) — "아직 서버에 못 알린 빈 날 삭제" 목록을 읽는다.
- * lib/workData.js(원자적 커밋)와 lib/syncDeletedWorkDates.js(실제 원격 삭제)가
- * readOwnerWorkData와 같은 이유로 이 함수 하나를 공유한다 — 둘 다 React 컴포넌트가
- * 아니라 구독이 필요 없어 useX 훅은 따로 두지 않는다(이 값을 렌더에 쓰는 화면이
- * 아직 없다).
- * @param {string} ownerKey
- * @returns {import('../domain/workDataTombstones.js').WorkDataTombstones}
- */
-export function readOwnerWorkDataTombstones(ownerKey) {
-  const raw = /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones|undefined} */ (getState().workDataDeletedDates[ownerKey])
-  return raw || EMPTY_TOMBSTONES
-}
-
 /**
  * 쓰기·리포트 조립용. normalizeSettings는 호출마다 새 객체이므로
  * useSyncExternalStore getSnapshot 안에서는 쓰지 말 것.
@@ -202,3 +127,12 @@ export {
   readOwnerDriverExpenses,
   useOwnerDriverExpenses,
 } from './ownerDriverExpensesHooks.js'
+
+export {
+  readOwnerWorkData,
+  readOwnerLogWorkData,
+  useOwnerWorkData,
+  readOwnerWorkDataByLogId,
+  useOwnerWorkDataByLogId,
+  readOwnerWorkDataTombstones,
+} from './ownerWorkDataHooks.js'
