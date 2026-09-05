@@ -153,6 +153,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
             key={String(car.id || car.number || `car-${index}`)}
             car={car}
             assignedView={viewerIsEmployedDriver}
+            readOnly={viewerIsEmployedDriver}
             onEdit={() => openEdit(car)}
             onDelete={() => setPendingDelete(car)}
           />

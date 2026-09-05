@@ -70,15 +70,6 @@ function DocIcon() {
   )
 }
 
-function LinkIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-    </svg>
-  )
-}
-
 function InvoiceIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -156,10 +147,6 @@ export default function SideMenu({
             <button type="button" className="dropdown-item" onClick={() => pick('expenses')}>
               <WrenchIcon />
               정비/주유/기타
-            </button>
-            <button type="button" className="dropdown-item" onClick={() => pick('drivers')}>
-              <LinkIcon />
-              기사 연동 관리
             </button>
             {linkedDriverItems.map((item) => (
               <button

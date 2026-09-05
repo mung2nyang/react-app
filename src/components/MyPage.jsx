@@ -89,7 +89,6 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) 
   const drivers = useOwnerDrivers(ownerKey)
   const employed = session?.accountType === 'employed_driver'
   const isOwner = !employed && drivers.length > 0
-  const roleReady = employed || isOwner
   const cloud = isCloudSession(session)
   const displayName = profile.name || (session?.name && session.name !== '비회원' ? session.name : '') || (employed ? '기사' : '대표자')
 
@@ -108,9 +107,6 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) 
         <span className="mypage-profile-copy">
           <strong>개인정보</strong>
           <span className="mypage-role-user-row">
-            {roleReady && (
-              <span className="mypage-role-pill">{employed ? '소속 기사' : '차주'}</span>
-            )}
             <span className="mypage-user-name">{displayName}</span>
           </span>
         </span>

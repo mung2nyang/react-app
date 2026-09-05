@@ -3,10 +3,11 @@
  * @param {Object} props
  * @param {import('../../domain/financeTypes.js').CarLike} props.car
  * @param {boolean} [props.assignedView]
- * @param {() => void} props.onEdit
- * @param {() => void} props.onDelete
+ * @param {boolean} [props.readOnly]
+ * @param {() => void} [props.onEdit]
+ * @param {() => void} [props.onDelete]
  */
-export default function CarListItem({ car, assignedView = false, onEdit, onDelete }) {
+export default function CarListItem({ car, assignedView = false, readOnly = false, onEdit, onDelete }) {
   return (
     <div className="management-list-card">
       <div className="management-card-copy">
@@ -21,10 +22,12 @@ export default function CarListItem({ car, assignedView = false, onEdit, onDelet
           <div className="car-sub-text">{car.driverName} · {car.driverPhone || '-'}</div>
         )}
       </div>
-      <div className="car-action-btns">
-        <button type="button" className="action-icon-btn" onClick={onEdit}>수정</button>
-        <button type="button" className="action-icon-btn del" onClick={onDelete}>삭제</button>
-      </div>
+      {!readOnly && (
+        <div className="car-action-btns">
+          <button type="button" className="action-icon-btn" onClick={onEdit}>수정</button>
+          <button type="button" className="action-icon-btn del" onClick={onDelete}>삭제</button>
+        </div>
+      )}
     </div>
   )
 }
