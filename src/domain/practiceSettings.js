@@ -95,6 +95,7 @@ export function normalizeSettings(raw = {}) {
     subFixedRoutePresets: normalizeFixedRoutePresets(raw.subFixedRoutePresets),
     subRunCountToggle: asBool(raw.subRunCountToggle, defaults.subRunCountToggle),
     subRunCountPresets: normalizeRunCountPresets(raw.subRunCountPresets),
+    driverInvoiceBasis: raw.driverInvoiceBasis === 'gross' ? 'gross' : 'net',
   }
 }
 

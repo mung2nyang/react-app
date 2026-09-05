@@ -62,6 +62,29 @@ describe('거래처 저장 — 세금계산서 필드', () => {
     const same = reorderClients(two, two[0].id, two[1].id)
     assert.equal(same[0].companyName, '나')
   })
+
+  test('scopedToVehicleNumber: draft에 차량번호가 있으면 반영되고 없으면 키 자체가 들어가지 않는다', () => {
+    const regular = upsertClient([], { companyName: '일반거래처' }).clients[0]
+    assert.equal('scopedToVehicleNumber' in regular, false, '일반 거래처는 scoped 키가 없어야 한다')
+
+    const scoped = upsertClient([], { companyName: '기사거래처', scopedToVehicleNumber: '11가1111' }).clients[0]
+    assert.equal(scoped.scopedToVehicleNumber, '11가1111')
+
+    const edited = upsertClient([scoped], { companyName: '기사거래처수정', scopedToVehicleNumber: '11가1111' }, scoped.id).clients[0]
+    assert.equal(edited.companyName, '기사거래처수정')
+    assert.equal(edited.scopedToVehicleNumber, '11가1111')
+  })
+
+  test('reorderClients: scoped 거래처는 제외하고 일반 거래처끼리만 재정렬되며 scoped는 뒤에 보존된다', () => {
+    const clients = [
+      { id: 'c1', companyName: '거래처1', isPinned: false },
+      { id: 'c2', companyName: '거래처2', isPinned: false },
+      { id: 's1', companyName: '기사거래처1', scopedToVehicleNumber: '11가1111' },
+      { id: 'c3', companyName: '거래처3', isPinned: false },
+    ]
+    const reordered = reorderClients(clients, 'c1', 'c3')
+    assert.deepEqual(reordered.map((c) => c.id), ['c2', 'c3', 'c1', 's1'])
+  })
 })
 
 // 재감사 2차(FAIL 지적) — 달력(day-record.js/calendarBadges.js)과 매출·계산서

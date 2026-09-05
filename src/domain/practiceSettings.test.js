@@ -87,3 +87,19 @@ describe('원탭 노선 기록', () => {
     assert.deepEqual(data['2026-08-26'].fixedRouteCounts, { route_1: 1 })
   })
 })
+
+describe('driverInvoiceBasis — 기사 매입 계산서 발행 기준 보존', () => {
+  test('driverInvoiceBasis: gross는 gross로 보존되고 그 외는 net으로 기본값 정규화된다', () => {
+    assert.equal(normalizeSettings({ driverInvoiceBasis: 'gross' }).driverInvoiceBasis, 'gross')
+    assert.equal(normalizeSettings({ driverInvoiceBasis: 'net' }).driverInvoiceBasis, 'net')
+    assert.equal(normalizeSettings({}).driverInvoiceBasis, 'net')
+    assert.equal(normalizeSettings({ driverInvoiceBasis: 'invalid' }).driverInvoiceBasis, 'net')
+  })
+
+  test('다른 설정 저장 시에도 driverInvoiceBasis가 탈락하지 않고 유지된다', () => {
+    const prev = normalizeSettings({ driverInvoiceBasis: 'gross', unitPrice: 50000 })
+    const updated = normalizeSettings({ ...prev, unitPrice: 60000 })
+    assert.equal(updated.driverInvoiceBasis, 'gross')
+    assert.equal(updated.unitPrice, 60000)
+  })
+})

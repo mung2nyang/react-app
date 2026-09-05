@@ -34,6 +34,7 @@ export default function ClientListPage({ ownerKey = 'guest', onBack, showToast }
   const [draft, setDraft] = useState(emptyDraft)
   const [pendingDelete, setPendingDelete] = useState(/** @type {import('../../domain/clientTypes.js').ClientLike|null} */ (null))
   const reorder = useClientReorder(ownerKey, clients, showToast)
+  const visibleClients = clients.filter((client) => !client.scopedToVehicleNumber)
 
   function openAdd() {
     setEditingId(null)
@@ -93,8 +94,8 @@ export default function ClientListPage({ ownerKey = 'guest', onBack, showToast }
         <div style={{ width: 40 }}></div>
       </div>
       <div className="client-list" id="clientListContainer">
-        {clients.length === 0 && <div className="empty-state">등록된 거래처가 없습니다.</div>}
-        {clients.map((client) => (
+        {visibleClients.length === 0 && <div className="empty-state">등록된 거래처가 없습니다.</div>}
+        {visibleClients.map((client) => (
           <ClientListItem
             key={client.id}
             client={client}

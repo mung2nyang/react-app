@@ -129,7 +129,7 @@ export default function CallDetailForm({ value, previousItem, dateKey, clients, 
         <div className="call-client-row">
           <input id="callClient" className="input-box" list="callClientOptions" placeholder="직접입력 또는 선택" value={draft.client} onChange={(e) => applyClient(e.target.value)} />
           <datalist id="callClientOptions">
-            {clients.map((client) => <option key={client.id} value={client.companyName} />)}
+            {clients.filter((client) => !client.scopedToVehicleNumber).map((client) => <option key={client.id} value={client.companyName} />)}
           </datalist>
         </div>
         {shortcuts.length > 0 && (

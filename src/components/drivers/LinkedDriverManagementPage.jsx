@@ -2,7 +2,7 @@
 // 기사 관리 화면(조회 전용, Step 9 슬라이스 A). 프로필·정산·계산서 섹션을 한 파일에
 // 둔다(AGENTS §6 응집도). ≤250줄.
 import { useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { getAssignmentState } from '../../domain/drivers.js'
 import {
   getLinkedDriverClientInvoiceGroups,
@@ -24,7 +24,6 @@ import '../../main-calendar.css'
 import './linked-driver.css'
 
 const YEAR_OPTIONS = getYearOptions()
-const COMING_SOON = '곧 제공됩니다'
 const DETAIL_SOON = '상세설정은 구상중으로 빠르게 업데이트예정입니다.'
 
 /**
@@ -34,6 +33,7 @@ const DETAIL_SOON = '상세설정은 구상중으로 빠르게 업데이트예�
  * @param {(message: string) => void} [props.showToast]
  */
 export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack, showToast }) {
+  const navigate = useNavigate()
   const { linkId: rawLinkId } = useParams()
   const linkId = decodeURIComponent(rawLinkId || '')
   const drivers = useOwnerDrivers(ownerKey)
@@ -119,8 +119,8 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
       </section>
 
       <div className="linked-driver-chip-row">
-        <button type="button" className="linked-driver-chip" onClick={() => showToast?.(COMING_SOON)}>거래처</button>
-        <button type="button" className="linked-driver-chip" onClick={() => showToast?.(COMING_SOON)}>정산·계산서 설정</button>
+        <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/drivers/${encodeURIComponent(linkId)}/clients`)}>거래처</button>
+        <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/drivers/${encodeURIComponent(linkId)}/billing`)}>정산·계산서 설정</button>
         <button type="button" className="linked-driver-chip" onClick={() => showToast?.(DETAIL_SOON)}>상세 설정</button>
       </div>
 

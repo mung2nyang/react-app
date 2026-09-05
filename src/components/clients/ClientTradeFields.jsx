@@ -5,8 +5,9 @@ import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
  * @param {Object} props
  * @param {import('../../domain/clientTypes.js').ClientDraft} props.draft
  * @param {import('react').Dispatch<import('react').SetStateAction<import('../../domain/clientTypes.js').ClientDraft>>} props.setDraft
+ * @param {boolean} [props.hideFixedRoute]
  */
-export default function ClientTradeFields({ draft, setDraft }) {
+export default function ClientTradeFields({ draft, setDraft, hideFixedRoute = false }) {
   /** @param {'percent'|'direct'} nextType */
   function setCommType(nextType) {
     setDraft({
@@ -18,33 +19,37 @@ export default function ClientTradeFields({ draft, setDraft }) {
 
   return (
     <>
-      <div className="setting-item">
-        <div className="car-option-copy">
-          <label htmlFor="clientFixedRouteToggle">고정노선 연동</label>
-          <p>계정에서 한 곳만 연결할 수 있습니다. 다른 거래처는 저장 시 자동으로 해제됩니다.</p>
-        </div>
-        <label className="switch">
-          <input
-            id="clientFixedRouteToggle"
-            type="checkbox"
-            checked={!!draft.fixedRouteLinked}
-            onChange={(e) => setDraft({ ...draft, fixedRouteLinked: e.target.checked })}
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
-      {draft.fixedRouteLinked && (
-        <div className="form-group">
-          <label htmlFor="clientFixedUnitPrice">고정노선 1회 단가</label>
-          <input
-            id="clientFixedUnitPrice"
-            className="input-box"
-            inputMode="numeric"
-            placeholder="0"
-            value={String(draft.fixedUnitPrice || '')}
-            onChange={(e) => setDraft({ ...draft, fixedUnitPrice: formatCurrencyInput(e.target.value) })}
-          />
-        </div>
+      {!hideFixedRoute && (
+        <>
+          <div className="setting-item">
+            <div className="car-option-copy">
+              <label htmlFor="clientFixedRouteToggle">고정노선 연동</label>
+              <p>계정에서 한 곳만 연결할 수 있습니다. 다른 거래처는 저장 시 자동으로 해제됩니다.</p>
+            </div>
+            <label className="switch">
+              <input
+                id="clientFixedRouteToggle"
+                type="checkbox"
+                checked={!!draft.fixedRouteLinked}
+                onChange={(e) => setDraft({ ...draft, fixedRouteLinked: e.target.checked })}
+              />
+              <span className="slider"></span>
+            </label>
+          </div>
+          {draft.fixedRouteLinked && (
+            <div className="form-group">
+              <label htmlFor="clientFixedUnitPrice">고정노선 1회 단가</label>
+              <input
+                id="clientFixedUnitPrice"
+                className="input-box"
+                inputMode="numeric"
+                placeholder="0"
+                value={String(draft.fixedUnitPrice || '')}
+                onChange={(e) => setDraft({ ...draft, fixedUnitPrice: formatCurrencyInput(e.target.value) })}
+              />
+            </div>
+          )}
+        </>
       )}
       <div className="setting-item">
         <div className="car-option-copy">

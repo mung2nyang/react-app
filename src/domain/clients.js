@@ -86,6 +86,7 @@ export function upsertClient(clients, draft, editingId = null) {
     fixedUnitPrice: fixedRouteLinked ? fixedUnitPrice : '',
     palletOn,
     palletPrice: palletOn ? palletPrice : '',
+    ...(draft.scopedToVehicleNumber ? { scopedToVehicleNumber: String(draft.scopedToVehicleNumber).trim() } : {}),
   }
   const list = [...(clients || [])]
 
@@ -137,14 +138,16 @@ export function sortClientsPinnedFirst(clients) {
  * @param {string} toId
  */
 export function reorderClients(clients, fromId, toId) {
-  const list = [...(clients || [])]
+  const visible = (clients || []).filter((client) => !client.scopedToVehicleNumber)
+  const scoped = (clients || []).filter((client) => !!client.scopedToVehicleNumber)
+  const list = [...visible]
   const from = list.findIndex((client) => client.id === fromId)
   const to = list.findIndex((client) => client.id === toId)
-  if (from < 0 || to < 0 || from === to) return list
-  if (!!list[from].isPinned !== !!list[to].isPinned) return list
+  if (from < 0 || to < 0 || from === to) return clients || []
+  if (!!list[from].isPinned !== !!list[to].isPinned) return clients || []
   const [moved] = list.splice(from, 1)
   list.splice(to, 0, moved)
-  return list
+  return [...list, ...scoped]
 }
 
 /** @param {Array<ClientLike>} clients */
