@@ -2032,3 +2032,16 @@ body.pdf-export-mode .summary-row.total {
 .inquiry-form label { display: grid; gap: 8px; font-size: var(--fs-3); font-weight: 750; text-align: left; }
 .inquiry-form .input-box { width: 100%; margin: 0; box-sizing: border-box; text-align: left; }
 .inquiry-form textarea { resize: vertical; line-height: 1.5; }
+.my-inquiries-list { display: grid; gap: 10px; }
+.my-inquiry-card { padding: 16px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--card-bg); text-align: left; }
+.my-inquiry-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.my-inquiry-type { padding: 3px 9px; border-radius: 999px; background: var(--input-bg); color: var(--sub-text-color); font-size: var(--fs-floor); font-weight: 750; }
+.my-inquiry-status { padding: 3px 9px; border-radius: 999px; font-size: var(--fs-floor); font-weight: 750; }
+.my-inquiry-status.pending { color: var(--sub-text-color); background: var(--input-bg); }
+.my-inquiry-status.answered { color: #fff; background: var(--primary-color); }
+.my-inquiry-title { display: block; margin-bottom: 6px; font-size: var(--fs-4); }
+.my-inquiry-content { margin: 0; color: var(--sub-text-color); font-size: var(--fs-3); line-height: 1.55; white-space: pre-wrap; }
+.my-inquiry-date { margin-top: 8px; color: var(--sub-text-color); font-size: var(--fs-floor); }
+.my-inquiry-answer { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); }
+.my-inquiry-answer-label { display: block; margin-bottom: 4px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: 800; }
+.my-inquiry-answer p { margin: 0; font-size: var(--fs-3); line-height: 1.55; white-space: pre-wrap; }
