@@ -57,6 +57,61 @@ describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
   })
 })
 
+describe('기사 할당 — 한 기사(전화번호)는 차량 1대에만 배정', () => {
+  const cars = [
+    { type: 'sub', number: '서울12가3456' },
+    { type: 'sub', number: '경기78나9012' },
+  ]
+
+  test('같은 전화번호가 이미 다른 차량에 활성 배정 중이면 새 차량 배정을 거절한다', () => {
+    const items = [
+      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'pending' },
+    ]
+    const result = upsertDriver(items, {
+      name: '김기사',
+      phone: '01011112222',
+      inviteCode: '222222',
+      vehicleNumber: '경기78나9012',
+      startDate: '2026-05-10',
+      endDate: '',
+    }, null, cars)
+    assert.equal(result.error, '이미 다른 차량에 배정된 기사입니다.')
+  })
+
+  test('기존 배정이 연결 해제된(disconnected) 상태면 새 차량 배정을 허용한다', () => {
+    const items = [
+      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'disconnected' },
+    ]
+    const result = upsertDriver(items, {
+      name: '김기사',
+      phone: '010-1111-2222',
+      inviteCode: '222222',
+      vehicleNumber: '경기78나9012',
+      startDate: '2026-05-10',
+      endDate: '',
+    }, null, cars)
+    assert.equal(result.error, undefined)
+    assert.equal(result.items.length, 2)
+  })
+
+  test('같은 기사가 같은 배정 건의 차량을 바꾸는 수정(editingId 있음)은 허용한다', () => {
+    const items = [
+      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'pending' },
+    ]
+    const result = upsertDriver(items, {
+      name: '김기사',
+      phone: '010-1111-2222',
+      inviteCode: '111111',
+      vehicleNumber: '경기78나9012',
+      startDate: '2026-05-01',
+      endDate: '',
+    }, 'd1', cars)
+    assert.equal(result.error, undefined)
+    assert.equal(result.items.length, 1)
+    assert.equal(result.items[0].vehicleNumber, '경기78나9012')
+  })
+})
+
 describe('클라우드 행 매핑 — 원본 supabase-sync와 같은 필드', () => {
   test('차량 행에 user_id, number, type, raw가 들어간다', () => {
     const row = buildVehicleRow('user-1', {

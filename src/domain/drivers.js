@@ -74,6 +74,16 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
       && String(item.vehicleNumber || '').trim() === vehicleNumber
     ))
     if (taken) return { error: '이미 다른 기사에게 할당된 차량입니다.', items }
+
+    // 한 기사는 차량 1대에만 배정(전화번호 숫자 기준). 연결 해제된 기사는 제외.
+    const cleanPhone = phone.replace(/\D/g, '')
+    const driverBusy = list.some((item) => (
+      item.id !== editingId
+      && String(item.status || '') !== 'disconnected'
+      && Boolean(String(item.vehicleNumber || '').trim())
+      && String(item.phone || '').replace(/\D/g, '') === cleanPhone
+    ))
+    if (driverBusy) return { error: '이미 다른 차량에 배정된 기사입니다.', items }
   }
 
   const next = { name, phone, inviteCode, vehicleNumber, startDate, endDate }
