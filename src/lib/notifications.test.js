@@ -1,9 +1,11 @@
 // @ts-check
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { beforeEach, describe, test } from 'node:test'
+import { afterEach, beforeEach, describe, mock, test } from 'node:test'
 import { collectNotifications, dismissNotification } from './notifications.js'
 import { markBackupDone } from './guestBackup.js'
+import { commitWorkData } from '../store/commitHelpers.js'
+import { todayKey } from './expenses.js'
 
 describe('notifications — 데이터 백업 권장 알림 및 게스트/로그인 분기', () => {
   beforeEach(() => {
@@ -68,5 +70,55 @@ describe('notifications — 데이터 백업 권장 알림 및 게스트/로그�
 
     const notifsAfter = collectNotifications('guest')
     assert.equal(notifsAfter.some((item) => item.id === backupNotif.id), false)
+  })
+})
+
+describe('notifications — 오늘 운행일지 알림 (시간 게이트·미입력 판정)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    mock.timers.reset()
+  })
+
+  test('18시 이전: 레코드가 없어도 오늘 일지 알림이 없다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 17, 59, 0).getTime() })
+    const notifs = collectNotifications('today-owner-before')
+    assert.equal(notifs.some((item) => item.id.startsWith('today:')), false)
+  })
+
+  test('18시 이후: 레코드 자체가 없으면 오늘 일지 알림이 있다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 18, 0, 0).getTime() })
+    const notifs = collectNotifications('today-owner-missing')
+    const todayNotif = notifs.find((item) => item.id.startsWith('today:'))
+    assert.ok(todayNotif, '18시 이후 미기록이면 알림이 있어야 한다')
+    assert.equal(todayNotif.id, `today:${todayKey()}`)
+    assert.equal(todayNotif.page, 'home')
+    assert.equal(todayNotif.title, '오늘 운행일지가 비어 있습니다')
+  })
+
+  test('18시 이후: 레코드가 빈 객체({})면 여전히 알림이 있다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 19, 30, 0).getTime() })
+    const ownerKey = 'today-owner-empty'
+    const dateKey = todayKey()
+    commitWorkData(ownerKey, { [dateKey]: {} }, { syncToCloud: false })
+    const notifs = collectNotifications(ownerKey)
+    assert.ok(notifs.some((item) => item.id === `today:${dateKey}`), '빈 객체는 미입력으로 본다')
+  })
+
+  test('18시 이후: isOff/callDetails/fixedCount 중 하나라도 있으면 알림이 없다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 20, 0, 0).getTime() })
+    const ownerKey = 'today-owner-filled'
+    const dateKey = todayKey()
+
+    commitWorkData(ownerKey, { [dateKey]: { isOff: true } }, { syncToCloud: false })
+    assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
+
+    commitWorkData(ownerKey, { [dateKey]: { callDetails: [{ fare: 50000 }] } }, { syncToCloud: false })
+    assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
+
+    commitWorkData(ownerKey, { [dateKey]: { fixedCount: 2 } }, { syncToCloud: false })
+    assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
   })
 })

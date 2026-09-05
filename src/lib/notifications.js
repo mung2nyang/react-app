@@ -65,16 +65,29 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
     })
   })
 
-  const dateKey = todayKey()
-  const todayId = `today:${dateKey}`
-  const workMap = /** @type {Record<string, unknown>} */ (loadWorkData(ownerKey))
-  if (!workMap[dateKey] && !dismissed.has(todayId)) {
-    items.push({
-      id: todayId,
-      page: 'home',
-      title: '오늘 운행일지가 비어 있습니다',
-      body: '달력에서 오늘 날짜를 눌러 횟수나 휴무를 남겨 주세요.',
-    })
+  const TODAY_LOG_REMINDER_HOUR = 18
+  if (new Date().getHours() >= TODAY_LOG_REMINDER_HOUR) {
+    const dateKey = todayKey()
+    const todayId = `today:${dateKey}`
+    const workMap = /** @type {Record<string, unknown>} */ (loadWorkData(ownerKey))
+    const todayRecord = workMap[dateKey]
+    /** @type {{ isOff?: unknown, callDetails?: unknown, fixedCount?: unknown }|null} */
+    const record = (todayRecord && typeof todayRecord === 'object' && !Array.isArray(todayRecord))
+      ? /** @type {{ isOff?: unknown, callDetails?: unknown, fixedCount?: unknown }} */ (todayRecord)
+      : null
+    const hasEntry = !!record && (
+      !!record.isOff
+      || (Array.isArray(record.callDetails) && record.callDetails.length > 0)
+      || (parseInt(String(record.fixedCount ?? ''), 10) || 0) > 0
+    )
+    if (!hasEntry && !dismissed.has(todayId)) {
+      items.push({
+        id: todayId,
+        page: 'home',
+        title: '오늘 운행일지가 비어 있습니다',
+        body: '달력에서 오늘 날짜를 눌러 횟수나 휴무를 남겨 주세요.',
+      })
+    }
   }
 
   // 게스트 세션 전용: 데이터 백업 권장 알림 (14일 이상 경과 또는 미백업)
