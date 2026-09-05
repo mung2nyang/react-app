@@ -68,7 +68,7 @@ export default function AppShellRoutes({
         path="clients"
         element={
           session?.linkedOwnerId ? (
-            <OwnerScopedClientsView onBack={() => navigate('/app')} />
+            <OwnerScopedClientsView ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />
           ) : (
             <ClientManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate('/app')} />
           )

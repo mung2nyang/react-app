@@ -97,9 +97,16 @@ export function buildVehicleRow(userId, car, index) {
   }
 }
 
-export function buildClientRow(userId, client, index) {
+/**
+ * 행 소유자 = ownerKey, 로그인한 사람의 auth id 아님.
+ * 소속기사 세션에서도 거래처는 연동된 차주(ownerKey)의 소유로 저장된다.
+ * @param {string} ownerId
+ * @param {import('../domain/clientTypes.js').ClientLike} client
+ * @param {number} index
+ */
+export function buildClientRow(ownerId, client, index) {
   return {
-    user_id: userId,
+    user_id: ownerId,
     legacy_client_id: client.id || null,
     company_name: client.companyName,
     manager_name: client.managerName || null,

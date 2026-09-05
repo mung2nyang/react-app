@@ -14,7 +14,8 @@ import {
   fetchAssignedVehicleSummary,
   fetchLinkedOwnerProfileSettings,
 } from './driverLinkRpc.js'
-import { mergeDriversFromRows, mergeExpenseKind } from './hydrateMerge.js'
+import { mergeClientsFromRows, mergeDriversFromRows, mergeExpenseKind } from './hydrateMerge.js'
+import { reconcileClients } from './outboxReconcile.js'
 import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
 import { supabase } from '../supabaseClient.js'
 
@@ -104,15 +105,17 @@ async function fetchExpensesForAssignedVehicle(vehicleId, throwIfAnyHydrateError
 export async function buildEmployedDriverSnapshot({
   userId, ownerKey, throwIfAnyHydrateError, driverPhone, localDrivers,
 }) {
-  const [ownerProfile, vehicleRows, linksRes, selfProfileRes] = await Promise.all([
+  const [ownerProfile, vehicleRows, linksRes, selfProfileRes, clientsRes] = await Promise.all([
     fetchLinkedOwnerProfileSettings(ownerKey),
     fetchAssignedVehicleSummary(),
     supabase.from('driver_links').select('*').eq('driver_id', userId).eq('status', 'linked'),
     supabase.from('profiles').select('phone').eq('id', userId).maybeSingle(),
+    supabase.from('clients').select('*').eq('user_id', ownerKey).order('display_order', { ascending: true }),
   ])
   throwIfAnyHydrateError({
     driver_links: linksRes.error,
     profiles_self: selfProfileRes.error,
+    clients: clientsRes.error,
   })
 
   /** @type {Record<string, unknown>} */
@@ -160,11 +163,15 @@ export async function buildEmployedDriverSnapshot({
     ? await fetchExpensesForAssignedVehicle(assignedVehicleId, throwIfAnyHydrateError)
     : []
 
+  /** @type {Array<import('../domain/clientTypes.js').ClientLike>} */
+  let nextClients = []
+  nextClients = reconcileClients(ownerKey, mergeClientsFromRows(nextClients, clientsRes.data || []))
+
   return {
     workData: workLogs.main || {},
     workLogs,
     cars: nextCars,
-    clients: [],
+    clients: nextClients,
     drivers: nextDrivers,
     profile: nextProfile,
     settings: nextSettings,

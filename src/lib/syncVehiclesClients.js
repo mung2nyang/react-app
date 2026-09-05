@@ -91,7 +91,7 @@ export async function upsertClientFromList(userId, ownerKey, clients, localId, c
   const client = clients.find((item) => item.id === localId)
   if (!client) return null
   const index = clients.findIndex((item) => item.id === localId)
-  const row = buildClientRow(userId, client, index < 0 ? 0 : index)
+  const row = buildClientRow(ownerKey, client, index < 0 ? 0 : index)
   if (client.supabaseId) {
     const { error } = await supabase.from('clients').update(row).eq('id', client.supabaseId)
     assertSessionStillCurrent(captured)
@@ -100,7 +100,7 @@ export async function upsertClientFromList(userId, ownerKey, clients, localId, c
   }
   const { data: existingRows, error: lookupError } = await supabase.from('clients')
     .select('id')
-    .eq('user_id', userId)
+    .eq('user_id', ownerKey)
     .eq('legacy_client_id', client.id)
   assertSessionStillCurrent(captured)
   if (lookupError) throw lookupError
