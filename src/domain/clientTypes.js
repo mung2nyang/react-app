@@ -12,6 +12,7 @@
  * @property {string} [paymentTerm]
  * @property {string} [paymentTermValue]
  * @property {boolean} [isPinned]
+ * @property {boolean} [taxInvoiceEnabled]
  * @property {string} [scopedToVehicleNumber]
  * @property {boolean} [commEnabled]
  * @property {string} [commType]
