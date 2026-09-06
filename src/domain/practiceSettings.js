@@ -3,6 +3,7 @@
 // (loadPracticeSettings/savePracticeSettings)와 DOM 부작용(applyTheme)은 lib/practiceSettings.js에
 // 남아 이 파일을 재수출한다 — applyTheme은 순수 함수가 아니라(document를 직접 바꿈)
 // domain으로 옮기지 않았다.
+// 203줄, §6 예외: scope별 프리셋 CRUD 함수들이 서로 얽혀 있어 쪼개면 기계적 절단이 됨.
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 
 export const RUN_COUNT_PRESET_MAX = 10
