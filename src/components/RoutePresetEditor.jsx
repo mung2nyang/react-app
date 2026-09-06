@@ -1,7 +1,17 @@
+// @ts-check
 // AppSettingsPage.jsx에서 분리 (200줄 제한, migration-audit-plan.md Step 2 부수 조치).
 import { useState } from 'react'
 import { addFixedRoutePreset, FIXED_ROUTE_PRESET_MAX, removeFixedRoutePreset } from '../lib/practiceSettings.js'
 
+/** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+
+/**
+ * @param {Object} props
+ * @param {'main'|'sub'} props.scope
+ * @param {FinanceSettings} props.settings
+ * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
+ * @param {(message: string) => void} [props.showToast]
+ */
 export default function RoutePresetEditor({ scope, settings, onPatch, showToast }) {
   const [loadLoc, setLoadLoc] = useState('')
   const [unloadLoc, setUnloadLoc] = useState('')

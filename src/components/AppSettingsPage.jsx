@@ -1,3 +1,4 @@
+// @ts-check
 import { useRef } from 'react'
 import { useOwnerSettings } from '../store/ownerDataHooks.js'
 import { applyTheme, savePracticeSettings } from '../lib/practiceSettings.js'
@@ -6,11 +7,22 @@ import { applyGuestBackupData, buildGuestBackupData, markBackupDone } from '../l
 import SwitchRow from './SwitchRow.jsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
 
+/** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+
+/**
+ * @param {Object} props
+ * @param {string} [props.ownerKey]
+ * @param {() => void} [props.onBack]
+ * @param {(message: string) => void} [props.showToast]
+ */
 export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast }) {
   const locked = useHydrationLock()
   const settings = useOwnerSettings(ownerKey)
-  const fileInputRef = useRef(null)
+  const fileInputRef = useRef(/** @type {HTMLInputElement|null} */ (null))
 
+  /**
+   * @param {Partial<FinanceSettings>} nextPatch
+   */
   async function patch(nextPatch) {
     try {
       const next = await savePracticeSettings(ownerKey, nextPatch)
@@ -45,6 +57,9 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast 
     }
   }
 
+  /**
+   * @param {import('react').ChangeEvent<HTMLInputElement>} e
+   */
   async function handleImport(e) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -142,7 +157,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast 
           <SwitchRow
             id="callDetailToggle"
             label="운행 일지 세부 입력"
-            checked={settings.callDetail}
+            checked={!!settings.callDetail}
             disabled={!settings.fixedOn}
             onChange={(checked) => patch({ callDetail: checked })}
           />
@@ -151,11 +166,11 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast 
           )}
           {settings.callDetail && (
             <div className="tree-line-group">
-              <SwitchRow id="paymentToggle" label="결제 및 수금 입력" checked={settings.paymentOn} onChange={(checked) => patch({ paymentOn: checked })} />
-              <SwitchRow id="timeToggle" label="운행 시간 입력" checked={settings.timeOn} onChange={(checked) => patch({ timeOn: checked })} />
-              <SwitchRow id="platformToggle" label="플랫폼 입력" checked={settings.platformOn} onChange={(checked) => patch({ platformOn: checked })} />
-              <SwitchRow id="distanceToggle" label="계기판 입력" checked={settings.distanceOn} onChange={(checked) => patch({ distanceOn: checked })} />
-              <SwitchRow id="cargoTonnageToggle" label="화물 톤수 입력" checked={settings.cargoTonnageOn} onChange={(checked) => patch({ cargoTonnageOn: checked })} />
+              <SwitchRow id="paymentToggle" label="결제 및 수금 입력" checked={!!settings.paymentOn} onChange={(checked) => patch({ paymentOn: checked })} />
+              <SwitchRow id="timeToggle" label="운행 시간 입력" checked={!!settings.timeOn} onChange={(checked) => patch({ timeOn: checked })} />
+              <SwitchRow id="platformToggle" label="플랫폼 입력" checked={!!settings.platformOn} onChange={(checked) => patch({ platformOn: checked })} />
+              <SwitchRow id="distanceToggle" label="계기판 입력" checked={!!settings.distanceOn} onChange={(checked) => patch({ distanceOn: checked })} />
+              <SwitchRow id="cargoTonnageToggle" label="화물 톤수 입력" checked={!!settings.cargoTonnageOn} onChange={(checked) => patch({ cargoTonnageOn: checked })} />
             </div>
           )}
         </section>

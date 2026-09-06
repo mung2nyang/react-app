@@ -1,6 +1,16 @@
+// @ts-check
 // AppSettingsPage.jsx에서 분리 (200줄 제한, migration-audit-plan.md Step 2 부수 조치).
 import { addRunCountPreset, removeRunCountPreset, replaceRunCountPreset, RUN_COUNT_PRESET_MAX } from '../lib/practiceSettings.js'
 
+/** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+
+/**
+ * @param {Object} props
+ * @param {'main'|'sub'} props.scope
+ * @param {FinanceSettings} props.settings
+ * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
+ * @param {(message: string) => void} [props.showToast]
+ */
 export default function RunCountChips({ scope, settings, onPatch, showToast }) {
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
   const presets = settings[key] || []
