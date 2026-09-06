@@ -69,9 +69,10 @@ export { mergeWorkDataFromRows } from './hydrateMergeWork.js'
  * local.id가 없으면 String(row.id)로 문자열화한다.
  * @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars
  * @param {Array<DriverLinkRow>|null|undefined} linkRows 조회 실패 시 배열이 아닐 수 있다
+ * @returns {Array<import('./outboxTypes.js').DriverRecord>} 조회 실패 시엔 이미 정규화된 로컬 목록을 그대로 통과시킨다
  */
 export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
-  if (!Array.isArray(linkRows)) return localDrivers
+  if (!Array.isArray(linkRows)) return /** @type {Array<import('./outboxTypes.js').DriverRecord>} */ (localDrivers)
   const byCode = new Map((localDrivers || []).map((item) => [item.inviteCode, item]))
   const merged = linkRows.filter((row) => row.status !== 'disconnected').map((row) => {
     const car = (mergedCars || []).find((item) => item.supabaseId === row.vehicle_id)
