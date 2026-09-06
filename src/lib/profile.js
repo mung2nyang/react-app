@@ -1,3 +1,4 @@
+// @ts-check
 // persist 배럴(loadProfile)과 saveProfile→commitProfile. 화면 읽기는
 // useOwnerProfile / readOwnerProfile.
 import { readJsonKey } from '../store/persist.js'
@@ -27,11 +28,16 @@ export const EMPTY_PROFILE = {
   accountHolder: '',
 }
 
+/** @param {string} [ownerKey] */
 export function loadProfile(ownerKey = 'guest') {
   const parsed = readJsonKey('profile', ownerKey, {})
   return { ...EMPTY_PROFILE, ...(parsed && typeof parsed === 'object' ? parsed : {}) }
 }
 
+/**
+ * @param {string} ownerKey
+ * @param {import('./hydrateMergeTypes.js').LocalProfile} [profile]
+ */
 export async function saveProfile(ownerKey, profile) {
   const next = { ...EMPTY_PROFILE, ...(profile || {}) }
   if (getCloudOwnerKey() !== ownerKey) return commitProfile(ownerKey, next)
