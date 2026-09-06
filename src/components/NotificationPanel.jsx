@@ -1,3 +1,14 @@
+// @ts-check
+/** @typedef {ReturnType<typeof import('../lib/notifications.js').collectNotifications>[number]} NotificationItem */
+
+/**
+ * @param {Object} props
+ * @param {boolean} props.open
+ * @param {Array<NotificationItem>} props.items
+ * @param {() => void} props.onClose
+ * @param {(item: NotificationItem) => void} props.onOpenItem
+ * @param {(id: string) => void} props.onDismiss
+ */
 export default function NotificationPanel({ open, items, onClose, onOpenItem, onDismiss }) {
   if (!open) return null
 

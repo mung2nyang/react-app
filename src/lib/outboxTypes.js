@@ -78,7 +78,7 @@
  * App.jsx가 들고 있는 화면 단위 로그인 세션(cloudSession.js의 저수준 epoch 세션과는
  * 다른 개념 — 이쪽은 UI가 보는 "누가 로그인했는지/게스트인지").
  * @typedef {object} AppSession
- * @property {string} [userId]
+ * @property {string|null} [userId]
  * @property {string} [name]
  * @property {string} [phone]
  * @property {string} [accountType]
