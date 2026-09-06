@@ -1,3 +1,4 @@
+// @ts-check
 // Step 0-4 감사 보완 4차: cloudSync.js 분리 조각 — syncAll이 부르는 일반 동기화 큐의
 // 정비/주유/기타 비용 upsert. 세 함수가 테이블/필드명만 다르고 구조가 동일하지만,
 // 이미 200줄 안에 들어오고("단순히 합치기 위한" 기계적 분할을 피하라는 지시도 있어)
@@ -9,14 +10,27 @@ import { buildMiscExpenseRecordRow, groupMiscExpensesByDate } from '../domain/mi
 import { upsertDailyLog } from './syncWorkData.js'
 import { getState } from '../store/app-store.js'
 
+/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+
+/**
+ * @param {string} ownerKey
+ * @param {Array<{ id?: string }>|null|undefined} expenses
+ * @param {Record<string, unknown>|null|undefined} workData
+ * @returns {{ expenses: Array<ExpenseItem>, workData: Record<string, unknown> }}
+ */
 function expenseSyncInputs(ownerKey, expenses, workData) {
   const logs = getState().workLogs[ownerKey] || {}
   return {
-    expenses: expenses || getState().expenses[ownerKey] || [],
+    expenses: /** @type {Array<ExpenseItem>} */ (expenses || getState().expenses[ownerKey] || []),
     workData: workData || logs.main || {},
   }
 }
 
+/**
+ * @param {string|number} vehicleSupabaseId
+ * @returns {Promise<Map<string, string>>}
+ */
 async function dailyLogIdsByDate(vehicleSupabaseId) {
   const { data: logs, error: logsError } = await supabase
     .from('daily_logs')
@@ -26,13 +40,21 @@ async function dailyLogIdsByDate(vehicleSupabaseId) {
   return new Map((logs || []).map((row) => [row.work_date, row.id]))
 }
 
+/**
+ * @param {string} userId
+ * @param {string} ownerKey
+ * @param {Array<CarLike>} cars
+ * @param {Array<{ id?: string }>} [expenses]
+ * @param {Record<string, unknown>} [workData]
+ */
 export async function syncFuelRecords(userId, ownerKey, cars, expenses, workData) {
   const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
   if (!mainCar?.supabaseId) return
+  const vehicleId = mainCar.supabaseId
   const input = expenseSyncInputs(ownerKey, expenses, workData)
   const fuelByDate = groupFuelExpensesByDate(input.expenses)
   const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(fuelByDate)])
-  const idByDate = await dailyLogIdsByDate(mainCar.supabaseId)
+  const idByDate = await dailyLogIdsByDate(vehicleId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
@@ -42,26 +64,34 @@ export async function syncFuelRecords(userId, ownerKey, cars, expenses, workData
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {
       if (!fuelItems.length) continue
-      dailyLogId = await upsertDailyLog(userId, mainCar.supabaseId, workDate, record)
+      dailyLogId = await upsertDailyLog(userId, vehicleId, workDate, record)
       idByDate.set(workDate, dailyLogId)
     }
     const { error: deleteError } = await supabase.from('fuel_records').delete().eq('daily_log_id', dailyLogId)
     if (deleteError) throw deleteError
     if (!fuelItems.length) continue
     const { error: insertError } = await supabase.from('fuel_records').insert(fuelItems.map((item, index) => buildFuelRecordRow(item, index, {
-      dailyLogId, userId, vehicleId: mainCar.supabaseId, workDate,
+      dailyLogId, userId, vehicleId, workDate,
     })))
     if (insertError) throw insertError
   }
 }
 
+/**
+ * @param {string} userId
+ * @param {string} ownerKey
+ * @param {Array<CarLike>} cars
+ * @param {Array<{ id?: string }>} [expenses]
+ * @param {Record<string, unknown>} [workData]
+ */
 export async function syncMaintenanceRecords(userId, ownerKey, cars, expenses, workData) {
   const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
   if (!mainCar?.supabaseId) return
+  const vehicleId = mainCar.supabaseId
   const input = expenseSyncInputs(ownerKey, expenses, workData)
   const maintByDate = groupMaintExpensesByDate(input.expenses)
   const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(maintByDate)])
-  const idByDate = await dailyLogIdsByDate(mainCar.supabaseId)
+  const idByDate = await dailyLogIdsByDate(vehicleId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
@@ -71,26 +101,34 @@ export async function syncMaintenanceRecords(userId, ownerKey, cars, expenses, w
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {
       if (!maintItems.length) continue
-      dailyLogId = await upsertDailyLog(userId, mainCar.supabaseId, workDate, record)
+      dailyLogId = await upsertDailyLog(userId, vehicleId, workDate, record)
       idByDate.set(workDate, dailyLogId)
     }
     const { error: deleteError } = await supabase.from('maintenance_records').delete().eq('daily_log_id', dailyLogId)
     if (deleteError) throw deleteError
     if (!maintItems.length) continue
     const { error: insertError } = await supabase.from('maintenance_records').insert(maintItems.map((item, index) => buildMaintenanceRecordRow(item, index, {
-      dailyLogId, userId, vehicleId: mainCar.supabaseId, workDate,
+      dailyLogId, userId, vehicleId, workDate,
     })))
     if (insertError) throw insertError
   }
 }
 
+/**
+ * @param {string} userId
+ * @param {string} ownerKey
+ * @param {Array<CarLike>} cars
+ * @param {Array<{ id?: string }>} [expenses]
+ * @param {Record<string, unknown>} [workData]
+ */
 export async function syncMiscExpenseRecords(userId, ownerKey, cars, expenses, workData) {
   const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
   if (!mainCar?.supabaseId) return
+  const vehicleId = mainCar.supabaseId
   const input = expenseSyncInputs(ownerKey, expenses, workData)
   const miscByDate = groupMiscExpensesByDate(input.expenses)
   const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(miscByDate)])
-  const idByDate = await dailyLogIdsByDate(mainCar.supabaseId)
+  const idByDate = await dailyLogIdsByDate(vehicleId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
@@ -100,14 +138,14 @@ export async function syncMiscExpenseRecords(userId, ownerKey, cars, expenses, w
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {
       if (!miscItems.length) continue
-      dailyLogId = await upsertDailyLog(userId, mainCar.supabaseId, workDate, record)
+      dailyLogId = await upsertDailyLog(userId, vehicleId, workDate, record)
       idByDate.set(workDate, dailyLogId)
     }
     const { error: deleteError } = await supabase.from('misc_expense_records').delete().eq('daily_log_id', dailyLogId)
     if (deleteError) throw deleteError
     if (!miscItems.length) continue
     const { error: insertError } = await supabase.from('misc_expense_records').insert(miscItems.map((item, index) => buildMiscExpenseRecordRow(item, index, {
-      dailyLogId, userId, vehicleId: mainCar.supabaseId, workDate,
+      dailyLogId, userId, vehicleId, workDate,
     })))
     if (insertError) throw insertError
   }
