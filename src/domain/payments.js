@@ -1,3 +1,4 @@
+// @ts-check
 // 콜상세 한 건의 부분입금 원장(payments[])을 다루는 순수 함수.
 // migration-plan.md의 domain/payments.ts에 대응하는 자리 — Step 4에서 domain/으로
 // 옮길 때까지는 workData.js에서 분리된 파일로 유지한다 (Step 1: 200줄 제한 준수).
@@ -6,15 +7,31 @@ import { getDetailPaymentSummary, syncDetailPaymentStatus } from './finance.js'
 import { parseCurrencyValue } from './money.js'
 import { getCallDetails } from './day-record.js'
 
+/** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
+/** @typedef {import('./dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {Record<string, DayRecordLike>} WorkDataMap */
+/**
+ * 쓰기 함수 공통 반환. 입력 map 타입 T를 그대로 보존해 호출부(예: DayLogPage의
+ * id 필수 CallDetailLike)와 도메인 DayRecordLike가 어긋나지 않게 한다.
+ * @template {WorkDataMap} T
+ * @typedef {{ data: T, error?: string }} PaymentMutationResult
+ */
+
+/**
+ * @param {string} prefix
+ * @returns {string}
+ */
 export function generateLocalId(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
 
 /**
- * @param {Record<string, import('./dayRecordTypes.js').DayRecordLike>} data
+ * @template {WorkDataMap} T
+ * @param {T} data
  * @param {string} dateKey
  * @param {string} detailId
- * @param {(detail: import('./callDetail.js').CallDetailLike) => string|null} mutator
+ * @param {(detail: CallDetailLike) => string|null} mutator
+ * @returns {PaymentMutationResult<T>}
  */
 function withCallDetail(data, dateKey, detailId, mutator) {
   const record = data?.[dateKey]
@@ -29,6 +46,10 @@ function withCallDetail(data, dateKey, detailId, mutator) {
   return { data: next }
 }
 
+/**
+ * @param {CallDetailLike} detail
+ * @returns {void}
+ */
 function ensurePaymentList(detail) {
   if (Array.isArray(detail.payments)) return
   detail.payments = []
@@ -40,6 +61,15 @@ function ensurePaymentList(detail) {
   }
 }
 
+/**
+ * @template {WorkDataMap} T
+ * @param {T} data
+ * @param {string} dateKey
+ * @param {string} detailId
+ * @param {unknown} amount
+ * @param {Date|string} [paidAt]
+ * @returns {PaymentMutationResult<T>}
+ */
 export function addPartialPayment(data, dateKey, detailId, amount, paidAt = new Date()) {
   return withCallDetail(data, dateKey, detailId, (detail) => {
     const value = parseCurrencyValue(amount)
@@ -58,6 +88,13 @@ export function addPartialPayment(data, dateKey, detailId, amount, paidAt = new 
   })
 }
 
+/**
+ * @template {WorkDataMap} T
+ * @param {T} data
+ * @param {string} dateKey
+ * @param {string} detailId
+ * @returns {PaymentMutationResult<T>}
+ */
 export function undoLastPayment(data, dateKey, detailId) {
   return withCallDetail(data, dateKey, detailId, (detail) => {
     if (!Array.isArray(detail.payments) || detail.payments.length === 0) {
@@ -69,13 +106,21 @@ export function undoLastPayment(data, dateKey, detailId) {
   })
 }
 
+/**
+ * @template {WorkDataMap} T
+ * @param {T} data
+ * @param {string} dateKey
+ * @param {string} detailId
+ * @param {Date|string} [paidAt]
+ * @returns {PaymentMutationResult<T>}
+ */
 export function markReceivableItemPaid(data, dateKey, detailId, paidAt = new Date()) {
   return withCallDetail(data, dateKey, detailId, (detail) => {
     const summary = getDetailPaymentSummary(detail)
     if (summary.status === 'paid') return '이미 처리된 내역입니다.'
     ensurePaymentList(detail)
     if (summary.remainingAmount > 0) {
-      detail.payments = [...detail.payments, {
+      detail.payments = [...(detail.payments || []), {
         id: generateLocalId('pay'),
         amount: summary.remainingAmount,
         paidAt: paidAt instanceof Date ? paidAt.toISOString() : paidAt,
@@ -87,6 +132,14 @@ export function markReceivableItemPaid(data, dateKey, detailId, paidAt = new Dat
   })
 }
 
+/**
+ * @template {WorkDataMap} T
+ * @param {T} data
+ * @param {string} dateKey
+ * @param {string} detailId
+ * @param {Date|string} [paidAt]
+ * @returns {PaymentMutationResult<T>}
+ */
 export function toggleCallPaymentStatus(data, dateKey, detailId, paidAt = new Date()) {
   const details = getCallDetails(data?.[dateKey])
   const detailIndex = findCallDetailIndex(details, detailId)
