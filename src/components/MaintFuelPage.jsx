@@ -1,29 +1,32 @@
+// @ts-check
 import { useMemo, useState } from 'react'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import {
-  emptyExpenseDraft,
-  expenseTitle,
-  filterMonth,
-  groupExpensesByDate,
-  KINDS,
-  monthTotal,
-  removeExpense,
-  saveExpenses,
-  upsertExpense,
+  emptyExpenseDraft, expenseTitle, filterMonth, groupExpensesByDate, KINDS,
+  monthTotal, removeExpense, saveExpenses, upsertExpense,
 } from '../lib/expenses.js'
 import { formatWon } from '../lib/money.js'
 import { readOwnerExpenses, useOwnerExpenses } from '../store/ownerDataHooks.js'
 
+/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
+
 const YEAR_OPTIONS = getYearOptions()
 
+/**
+ * @param {Object} props
+ * @param {string} [props.ownerKey]
+ * @param {() => void} [props.onBack]
+ * @param {(message: string) => void} [props.showToast]
+ */
 export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast }) {
   const items = useOwnerExpenses(ownerKey)
-  const [kind, setKind] = useState('maint')
+  const [kind, setKind] = useState(/** @type {ExpenseItem['kind']} */ ('maint'))
   const [viewDate, setViewDate] = useState(() => new Date())
   const [modalOpen, setModalOpen] = useState(false)
-  const [editingId, setEditingId] = useState(null)
-  const [draft, setDraft] = useState(() => emptyExpenseDraft('maint'))
+  const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
+  const [draft, setDraft] = useState(/** @type {ExpenseDraft} */ (emptyExpenseDraft('maint')))
 
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
@@ -32,6 +35,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
   const total = monthTotal(items, kind, year, month)
   const kindLabel = KINDS.find((item) => item.value === kind)?.label || '정비'
 
+  /** @param {Array<ExpenseItem>} next @returns {Promise<boolean>} */
   async function persist(next) {
     try {
       await saveExpenses(ownerKey, next)
@@ -49,6 +53,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
     setModalOpen(true)
   }
 
+  /** @param {ExpenseItem} item */
   function openEdit(item) {
     setEditingId(item.id)
     setDraft({
@@ -77,6 +82,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
     showToast?.(editingId ? '내역을 수정했습니다.' : '내역을 등록했습니다.')
   }
 
+  /** @param {string} id */
   async function remove(id) {
     if (!await persist(removeExpense(readOwnerExpenses(ownerKey), id))) return
     showToast?.('내역을 삭제했습니다.')
@@ -98,7 +104,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
             key={item.value}
             type="button"
             className={`toggle-btn${kind === item.value ? ' active-work' : ''}`}
-            onClick={() => setKind(item.value)}
+            onClick={() => setKind(/** @type {ExpenseItem['kind']} */ (item.value))}
           >
             {item.label}
           </button>
@@ -162,9 +168,9 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
                     <div>
                       {item.kind !== 'fuel' && <span>{item.payment || '카드'}</span>}
                       {item.kind !== 'fuel' && item.category && <span>{item.category}</span>}
-                      {item.kind === 'fuel' && item.mileage > 0 && <span>누적 {item.mileage.toLocaleString('ko-KR')}km</span>}
-                      {item.kind === 'fuel' && item.subsidy > 0 && <span>보조금 {formatWon(item.subsidy)}</span>}
-                      {item.kind !== 'fuel' && item.mileage > 0 && <span>누적 {item.mileage.toLocaleString('ko-KR')}km</span>}
+                      {item.kind === 'fuel' && (item.mileage || 0) > 0 && <span>누적 {(item.mileage || 0).toLocaleString('ko-KR')}km</span>}
+                      {item.kind === 'fuel' && (item.subsidy || 0) > 0 && <span>보조금 {formatWon(item.subsidy)}</span>}
+                      {item.kind !== 'fuel' && (item.mileage || 0) > 0 && <span>누적 {(item.mileage || 0).toLocaleString('ko-KR')}km</span>}
                     </div>
                     <strong>{formatWon(item.cost)}</strong>
                   </div>

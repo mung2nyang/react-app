@@ -1,3 +1,4 @@
+// @ts-check
 import {
   FUEL_TYPES,
   MAINT_CATEGORIES,
@@ -5,6 +6,20 @@ import {
 } from '../lib/expenses.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../lib/money.js'
 
+/** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
+
+/**
+ * @template {ExpenseDraft} T
+ * @param {Object} props
+ * @param {T} props.draft
+ * @param {string|null} [props.editingId]
+ * @param {boolean} [props.lockDate]
+ * @param {string} props.kindLabel
+ * @param {boolean} [props.inline]
+ * @param {(next: T) => void} props.onChange
+ * @param {() => void} props.onClose
+ * @param {() => void} props.onSave
+ */
 export default function ExpenseFormModal({
   draft,
   editingId,
