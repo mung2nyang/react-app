@@ -1,7 +1,8 @@
-// Step 4 도메인 폴더 이동: 순수 계산은 domain/expenses.js로 옮겼다. 이 파일은 localStorage
-// I/O(loadExpenses/saveExpenses)만 남기고, 기존 임포트 경로('../lib/expenses.js')를 유지하는
+// @ts-check
+// Step 4 도메인 폴더 이동: 순수 계산은 domain/expenses.js로 옮겼다. 이 파일은 localStorage/
+// Supabase 쓰기(saveExpenses)만 남기고, 기존 임포트 경로('../lib/expenses.js')를 유지하는
 // 배럴로 domain/expenses.js를 재수출한다.
-import { readJsonKey } from '../store/persist.js'
+// (loadExpenses는 화면이 useOwnerExpenses store 구독으로 바뀌며 호출부가 0이 돼 삭제했다.)
 import { commitExpenses } from '../store/commitHelpers.js'
 import { dedupeExpensesById } from '../domain/expenses.js'
 import { getState } from '../store/app-store.js'
@@ -14,11 +15,9 @@ import {
 } from './cloudSession.js'
 import { syncFuelRecords, syncMaintenanceRecords, syncMiscExpenseRecords } from './syncExpenseRecords.js'
 
-export function loadExpenses(ownerKey = 'guest') {
-  const parsed = readJsonKey('expenses', ownerKey, [])
-  return Array.isArray(parsed) ? dedupeExpensesById(parsed) : []
-}
+/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
+/** @param {string} ownerKey @param {Array<ExpenseItem>} items */
 export async function saveExpenses(ownerKey, items) {
   const next = dedupeExpensesById(items)
   if (getCloudOwnerKey() !== ownerKey) {
