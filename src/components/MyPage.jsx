@@ -1,5 +1,8 @@
+// @ts-check
 import { useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import { isCloudSession } from '../lib/cloudSession.js'
+
+/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 
 function PersonIcon() {
   return (
@@ -84,6 +87,13 @@ const SHORTCUTS = [
   },
 ]
 
+/**
+ * @param {Object} props
+ * @param {AppSession|null} [props.session]
+ * @param {string} [props.ownerKey]
+ * @param {(page: string, label?: string) => void} props.onOpen
+ * @param {() => void} props.onBack
+ */
 export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) {
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)

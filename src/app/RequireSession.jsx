@@ -1,3 +1,4 @@
+// @ts-check
 // Step 3 라우터 셸: `/onboarding`, `/app/*`는 세션이 있어야 들어갈 수 있다.
 // 라우터 도입 전에는 screen state가 항상 'auth'로 시작해 이 문제가 없었지만,
 // 라우팅은 URL만으로 매치하므로 세션 없이 새로고침/북마크로 `/app/...`에 바로
@@ -9,8 +10,16 @@ import { Navigate } from 'react-router-dom'
 import { resolveSessionGate } from './sessionGate.js'
 import { isGuestModePersisted } from './guestSessionPersist.js'
 
+/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+
+/**
+ * @param {Object} props
+ * @param {AppSession|null} [props.session]
+ * @param {boolean} props.booting
+ * @param {import('react').ReactNode} props.children
+ */
 export default function RequireSession({ session, booting, children }) {
-  const gate = resolveSessionGate({ booting, session, guestModePersisted: isGuestModePersisted() })
+  const gate = resolveSessionGate({ booting, session: session ?? null, guestModePersisted: isGuestModePersisted() })
   if (gate === 'loading') return <div className="page">불러오는 중...</div>
   if (gate === 'redirect') return <Navigate to="/auth" replace />
   return children

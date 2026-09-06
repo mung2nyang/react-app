@@ -1,3 +1,11 @@
+// @ts-check
+/**
+ * @param {Object} props
+ * @param {string} [props.title]
+ * @param {string} props.message
+ * @param {() => void} props.onCancel
+ * @param {() => void} props.onConfirm
+ */
 export default function ConfirmModal({ title = '경고', message, onCancel, onConfirm }) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
