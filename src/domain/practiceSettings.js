@@ -1,7 +1,10 @@
+// @ts-check
 // Step 4 도메인 폴더 이동: practiceSettings.js의 순수 계산부. localStorage I/O
 // (loadPracticeSettings/savePracticeSettings)와 DOM 부작용(applyTheme)은 lib/practiceSettings.js에
 // 남아 이 파일을 재수출한다 — applyTheme은 순수 함수가 아니라(document를 직접 바꿈)
 // domain으로 옮기지 않았다.
+/** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
+
 export const RUN_COUNT_PRESET_MAX = 10
 export const FIXED_ROUTE_PRESET_MAX = 10
 
@@ -27,26 +30,43 @@ const defaults = {
   subRunCountPresets: [1, 2, 3, 4, 5],
 }
 
+/**
+ * @param {unknown} value
+ * @param {boolean} fallback
+ * @returns {boolean}
+ */
 function asBool(value, fallback) {
   if (typeof value === 'boolean') return value
   return fallback
 }
 
+/**
+ * @returns {string}
+ */
 function routeId() {
   return `route_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
 
+/**
+ * @param {unknown} value
+ * @returns {Array<number>}
+ */
 export function normalizeRunCountPresets(value) {
   const source = Array.isArray(value) ? value : String(value || '').split(/[\s,]+/)
+  /** @type {Array<number>} */
   const values = []
   source.forEach((item) => {
-    const count = parseInt(item, 10)
+    const count = parseInt(String(item), 10)
     if (count > 0 && !values.includes(count) && values.length < RUN_COUNT_PRESET_MAX) values.push(count)
   })
   if (!values.length) return [1, 2, 3, 4, 5]
   return values
 }
 
+/**
+ * @param {Array<number>|null|undefined} current
+ * @returns {number}
+ */
 export function nextRunCountPreset(current) {
   const list = Array.isArray(current) ? current : []
   let next = (list[list.length - 1] || 0) + 1
@@ -54,9 +74,14 @@ export function nextRunCountPreset(current) {
   return next
 }
 
+/**
+ * @param {unknown} value
+ * @returns {Array<{ id: string, loadLoc: string, unloadLoc: string }>}
+ */
 export function normalizeFixedRoutePresets(value) {
   if (!Array.isArray(value)) return []
   const seen = new Set()
+  /** @type {Array<{ id: string, loadLoc: string, unloadLoc: string }>} */
   const presets = []
   value.forEach((route) => {
     const loadLoc = String(route?.loadLoc || '').trim()
@@ -69,14 +94,17 @@ export function normalizeFixedRoutePresets(value) {
   return presets
 }
 
-/** @returns {import('./financeTypes.js').FinanceSettings} */
+/**
+ * @param {FinanceSettings} [raw]
+ * @returns {FinanceSettings}
+ */
 export function normalizeSettings(raw = {}) {
   const inputMode = raw.inputMode === 'fare' ? 'fare' : 'count'
   const theme = raw.theme === 'dark' ? 'dark' : 'light'
   const fixedOn = asBool(raw.fixedOn, defaults.fixedOn)
   const callDetail = fixedOn ? asBool(raw.callDetail, defaults.callDetail) : true
   return {
-    unitPrice: Math.max(0, parseInt(raw.unitPrice, 10) || 0),
+    unitPrice: Math.max(0, parseInt(String(raw.unitPrice ?? ''), 10) || 0),
     theme,
     inputMode,
     callDetail,
@@ -99,6 +127,13 @@ export function normalizeSettings(raw = {}) {
   }
 }
 
+/**
+ * @param {FinanceSettings} settings
+ * @param {'main'|'sub'} scope
+ * @param {unknown} loadLoc
+ * @param {unknown} unloadLoc
+ * @returns {{ settings: FinanceSettings, error?: string }}
+ */
 export function addFixedRoutePreset(settings, scope, loadLoc, unloadLoc) {
   const key = scope === 'sub' ? 'subFixedRoutePresets' : 'fixedRoutePresets'
   const load = String(loadLoc || '').trim()
@@ -112,12 +147,23 @@ export function addFixedRoutePreset(settings, scope, loadLoc, unloadLoc) {
   return { settings: { ...settings, [key]: presets } }
 }
 
+/**
+ * @param {FinanceSettings} settings
+ * @param {'main'|'sub'} scope
+ * @param {string} routeIdToRemove
+ * @returns {FinanceSettings}
+ */
 export function removeFixedRoutePreset(settings, scope, routeIdToRemove) {
   const key = scope === 'sub' ? 'subFixedRoutePresets' : 'fixedRoutePresets'
   const presets = (Array.isArray(settings[key]) ? settings[key] : []).filter((route) => route.id !== routeIdToRemove)
   return { ...settings, [key]: presets }
 }
 
+/**
+ * @param {FinanceSettings} settings
+ * @param {'main'|'sub'} scope
+ * @returns {{ settings: FinanceSettings, error?: string }}
+ */
 export function addRunCountPreset(settings, scope) {
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
   const current = normalizeRunCountPresets(settings[key])
@@ -127,6 +173,12 @@ export function addRunCountPreset(settings, scope) {
   return { settings: { ...settings, [key]: [...current, nextRunCountPreset(current)] } }
 }
 
+/**
+ * @param {FinanceSettings} settings
+ * @param {'main'|'sub'} scope
+ * @param {number} index
+ * @returns {FinanceSettings}
+ */
 export function removeRunCountPreset(settings, scope, index) {
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
   const current = [...normalizeRunCountPresets(settings[key])]
@@ -135,8 +187,16 @@ export function removeRunCountPreset(settings, scope, index) {
   return { ...settings, [key]: normalizeRunCountPresets(current) }
 }
 
+/**
+ * @param {FinanceSettings} settings
+ * @param {'main'|'sub'} scope
+ * @param {number} index
+ * @param {unknown} value
+ * @returns {FinanceSettings}
+ */
 export function replaceRunCountPreset(settings, scope, index, value) {
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
+  /** @type {Array<unknown>} */
   const current = [...normalizeRunCountPresets(settings[key])]
   current[index] = value
   return { ...settings, [key]: normalizeRunCountPresets(current) }
