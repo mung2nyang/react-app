@@ -1,24 +1,46 @@
+// @ts-check
+
 // Step 0-4 감사 보완 2차: pendingWhileBlocked(boolean, 메모리 전용)를 owner별·슬라이스별
 // durable journal로 교체한다. localStorage에 저장하므로 새로고침해도 "이 owner의 이
 // 슬라이스는 아직 서버에 못 보낸 로컬 변경이 있다"는 사실이 안 지워진다. revision은
 // commit할 때마다 올라가는 카운터 — 지금은 "0보다 크면 dirty"로만 쓰지만, 나중에
 // 낙관적 동시성/충돌 감지에도 쓸 수 있게 값 자체를 남겨 둔다.
+
 const JOURNAL_PREFIX = 'reactPracticeDirtyJournal'
 
+/**
+ * @param {string} ownerKey
+ * @returns {string}
+ */
 function journalKey(ownerKey) {
   return `${JOURNAL_PREFIX}:${ownerKey}`
 }
 
+/**
+ * 각 domain revision을 `Number()||0`으로 정규화한다.
+ * @param {string} ownerKey
+ * @returns {Record<string, number>}
+ */
 function readJournal(ownerKey) {
   try {
     const raw = localStorage.getItem(journalKey(ownerKey))
     const parsed = raw ? JSON.parse(raw) : {}
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {}
+    /** @type {Record<string, number>} */
+    const journal = {}
+    for (const [domain, revision] of Object.entries(parsed)) {
+      journal[domain] = Number(revision) || 0
+    }
+    return journal
   } catch {
     return {}
   }
 }
 
+/**
+ * @param {string} ownerKey
+ * @param {Record<string, number>} journal
+ */
 function writeJournal(ownerKey, journal) {
   localStorage.setItem(journalKey(ownerKey), JSON.stringify(journal))
 }
