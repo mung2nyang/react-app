@@ -72,7 +72,7 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
         userId: data?.user?.id || null,
       })
     } catch (error) {
-      showToast(getSupabaseAuthErrorMessage(error))
+      showToast(getSupabaseAuthErrorMessage(error instanceof Error ? error : null))
     } finally {
       setBusy(false)
     }
@@ -103,7 +103,7 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
         userId: data?.user?.id || null,
       })
     } catch (error) {
-      showToast(getSupabaseAuthErrorMessage(error))
+      showToast(getSupabaseAuthErrorMessage(error instanceof Error ? error : null))
     } finally {
       setBusy(false)
     }

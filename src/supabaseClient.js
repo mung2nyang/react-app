@@ -1,3 +1,4 @@
+// @ts-check
 import { createClient } from '@supabase/supabase-js'
 
 // 원래 앱 supabase-config.js와 같은 공개 주소/키입니다.
@@ -7,11 +8,17 @@ const SUPABASE_ANON_KEY = 'sb_publishable_JJZxpsvje-LUGmphA70z9Q_Y7WfrM0G'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+/**
+ * @param {string} phone
+ */
 export function phoneToFakeEmail(phone) {
   const digits = String(phone || '').replace(/\D/g, '')
   return `${digits}@runlog-user.com`
 }
 
+/**
+ * @param {{ message?: string } | null | undefined} error
+ */
 export function getSupabaseAuthErrorMessage(error) {
   const msg = error?.message || ''
   if (/already registered|already exists|user already/i.test(msg)) {
@@ -29,6 +36,10 @@ export function getSupabaseAuthErrorMessage(error) {
   return msg || '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'
 }
 
+/**
+ * @param {string} phone
+ * @param {string} password
+ */
 export async function signInWithPhone(phone, password) {
   return supabase.auth.signInWithPassword({
     email: phoneToFakeEmail(phone),
@@ -36,6 +47,10 @@ export async function signInWithPhone(phone, password) {
   })
 }
 
+/**
+ * @param {string} phone
+ * @param {string} password
+ */
 export async function signUpWithPhone(phone, password) {
   return supabase.auth.signUp({
     email: phoneToFakeEmail(phone),
@@ -43,6 +58,12 @@ export async function signUpWithPhone(phone, password) {
   })
 }
 
+/**
+ * @param {string} userId
+ * @param {string} accountType
+ * @param {string} name
+ * @param {string} phone
+ */
 export async function ensureProfileRow(userId, accountType, name, phone) {
   const { error } = await supabase.from('profiles').upsert({
     id: userId,
