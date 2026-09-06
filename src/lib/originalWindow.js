@@ -1,3 +1,4 @@
+// @ts-check
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -23,6 +24,11 @@ export function loadOriginalWindow() {
   return dom.window
 }
 
+/**
+ * @param {{ localStorage: { setItem(key: string, value: string): void } }} win
+ * @param {import('../domain/financeTypes.js').FinanceSettings} settings
+ * @param {import('../domain/financeTypes.js').WorkDataByLogId} workDataByLogId
+ */
 export function applyOriginalFixture(win, settings, workDataByLogId) {
   win.localStorage.setItem('userSettings', JSON.stringify(settings))
   win.localStorage.setItem('workData', JSON.stringify(workDataByLogId.main || {}))
