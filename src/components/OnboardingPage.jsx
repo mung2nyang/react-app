@@ -1,12 +1,20 @@
+// @ts-check
 import { useState } from 'react'
+
+/** @typedef {import('../lib/onboardingFinish.js').OnboardingWizard} OnboardingWizard */
 
 const BANNER = '/images/banner_image.png'
 const STEP_SEQUENCE = [1, 2, 3, 4]
 
-// accountType prop은 App.jsx가 아직 넘기지만 9-A에서 분기 제거 — 시퀀스는 항상 STEP_SEQUENCE.
+/**
+ * accountType prop은 App.jsx가 아직 넘기지만 9-A에서 분기 제거 — 시퀀스는 항상 STEP_SEQUENCE.
+ * @param {Object} props
+ * @param {string} [props.accountType]
+ * @param {(wizard: OnboardingWizard) => void|Promise<void>} props.onFinish
+ */
 export default function OnboardingPage({ accountType: _accountType, onFinish }) {
   const [stepIndex, setStepIndex] = useState(0)
-  const [wizard, setWizard] = useState({
+  const [wizard, setWizard] = useState(/** @type {OnboardingWizard} */ ({
     workStyle: null,
     paymentOn: null,
     timeOn: false,
@@ -15,7 +23,7 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
     distanceOn: false,
     carNumber: '',
     carTonnage: '',
-  })
+  }))
 
   const step = STEP_SEQUENCE[stepIndex]
   const isLast = stepIndex === STEP_SEQUENCE.length - 1
@@ -23,7 +31,7 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
   let nextDisabled = false
   if (step === 1) nextDisabled = !wizard.workStyle
   else if (step === 2) nextDisabled = wizard.paymentOn === null
-  else if (step === 4) nextDisabled = wizard.carNumber.trim().length < 2
+  else if (step === 4) nextDisabled = (wizard.carNumber || '').trim().length < 2
 
   function goNext() {
     if (isLast) onFinish(wizard)

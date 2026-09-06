@@ -1,8 +1,24 @@
+// @ts-check
 // Step 0-4 감사 보완 4차: DriverConnectionPage.jsx(214줄, 200줄 제한 위반)에서 초대
 // 폼 모달만 분리했다. 로직은 한 글자도 안 바꿨다.
 import { generateInviteCode } from '../lib/drivers.js'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
 
+/** @typedef {import('../domain/drivers.js').DriverDraft} DriverDraft */
+/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
+
+/**
+ * @template {DriverDraft} T
+ * @param {Object} props
+ * @param {T} props.draft
+ * @param {(next: T) => void} props.setDraft
+ * @param {string|null} [props.editingId]
+ * @param {Array<DriverRecord>} props.drivers
+ * @param {Array<CarLike>} props.assignableCars
+ * @param {() => void} props.onCancel
+ * @param {() => void} props.onSave
+ */
 export default function DriverFormModal({ draft, setDraft, editingId, drivers, assignableCars, onCancel, onSave }) {
   return (
     <div className="modal-overlay" onClick={onCancel}>
