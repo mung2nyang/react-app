@@ -1,3 +1,4 @@
+// @ts-check
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { getTaxInvoiceRecordId } from './finance.js'
@@ -11,8 +12,12 @@ import {
   matchTaxInvoiceClientId,
 } from './taxInvoices.js'
 
+/** @typedef {import('./financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('./financeTypes.js').CarLike} CarLike */
+
 const ORIGINAL_COLUMNS = ['user_id', 'vehicle_id', 'client_id', 'flow', 'month_key', 'supply_amount', 'tax_amount', 'total_amount', 'status', 'raw']
 
+/** @type {Array<CarLike>} */
 const CARS = [
   { type: 'main', number: '서울00가0000', supabaseId: 'veh-main' },
   { type: 'sub', number: '서울12가3456', supabaseId: 'veh-sub' },
@@ -39,9 +44,11 @@ describe('tax_invoices — 원본 finance-sync 컬럼·upsert 매핑', () => {
     }
     const row = buildTaxInvoiceRow(item, { userId: 'user-1', vehicleId: 'veh-main', clientId: 'cli-1' })
     assert.deepEqual(Object.keys(row), ORIGINAL_COLUMNS)
-    assert.equal(row.daily_log_id, undefined)
-    assert.equal(row.work_date, undefined)
-    assert.equal(row.sequence, undefined)
+    // 원본 finance-sync 행엔 이 3개 컬럼이 없다 — 부재를 명시적으로 검증(빌더 반환 타입엔 없어 loose 접근)
+    const extraColumns = /** @type {Record<string, unknown>} */ (row)
+    assert.equal(extraColumns.daily_log_id, undefined)
+    assert.equal(extraColumns.work_date, undefined)
+    assert.equal(extraColumns.sequence, undefined)
     assert.equal(row.supply_amount, 630000)
     assert.equal(row.tax_amount, 63000)
     assert.equal(row.total_amount, 693000)
@@ -69,6 +76,7 @@ describe('tax_invoices — 원본 finance-sync 컬럼·upsert 매핑', () => {
   })
 
   test('insert 성공 id를 붙이면 다음 저장은 update 경로로 간다', () => {
+    /** @type {Array<InvoiceLike>} */
     const records = [{ id: 'sales|2026-05|한진', status: 'draft' }]
     const next = applyInsertedTaxInvoiceId(records, 'sales|2026-05|한진', 'inv-1')
     assert.equal(next[0].supabaseId, 'inv-1')
