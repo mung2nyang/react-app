@@ -1,3 +1,4 @@
+// @ts-check
 // Step 0-4 감사 보완 3차: commitBatch가 실제로 쓸 localStorage { key, value } 목록을
 // 계산하는 순수 함수. app-store.js에서 분리한 이유는 (1) 200줄 제한, (2) 도메인 값과
 // dirty journal 값을 "하나의 쓰기 목록"으로 합치는 이 계산 자체를 store 오케스트레이션
@@ -50,6 +51,7 @@ export function allEntriesCloudMemoryOnly(entries, cloudOwnerKey) {
  * @returns {Array<import('./atomicPersist.js').KeyedWrite>}
  */
 export function buildBatchWrites(entries, { persist, syncToCloud, cloudOwnerKey = null }) {
+  /** @type {Array<import('./atomicPersist.js').KeyedWrite>} */
   const writes = []
   if (persist) {
     entries.forEach(({ domain, ownerKey, value }) => {
