@@ -1,3 +1,8 @@
+// @ts-check
+
+/**
+ * @param {string} raw
+ */
 export function formatPhoneNumber(raw) {
   const value = String(raw || '').replace(/[^0-9]/g, '')
   if (value.length < 4) return value

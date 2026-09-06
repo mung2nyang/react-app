@@ -1,3 +1,5 @@
+// @ts-check
+
 const TABS = [
   {
     id: 'home',
@@ -50,6 +52,11 @@ const TABS = [
   },
 ]
 
+/**
+ * @param {Object} props
+ * @param {string} props.active
+ * @param {(tab: string) => void} props.onSelect
+ */
 export default function BottomNav({ active, onSelect }) {
   return (
     <nav className="bottom-nav-bar" aria-label="하단 메뉴">

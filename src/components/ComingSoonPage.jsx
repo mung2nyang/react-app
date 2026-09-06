@@ -1,3 +1,10 @@
+// @ts-check
+
+/**
+ * @param {Object} props
+ * @param {string} props.title
+ * @param {() => void} props.onBack
+ */
 export default function ComingSoonPage({ title, onBack }) {
   return (
     <div className="page coming-soon-page">
