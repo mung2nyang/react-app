@@ -1,3 +1,4 @@
+// @ts-check
 import { monthTotal } from './expenses.js'
 import { monthWorkFareSummary } from './workData.js'
 import { resolveFixedUnitPrice } from '../domain/clients.js'
@@ -10,6 +11,7 @@ import {
   readOwnerWorkData,
 } from '../store/ownerDataHooks.js'
 
+/** @param {unknown} value */
 export function dash(value) {
   const text = String(value || '').trim()
   return text || '-'
@@ -24,6 +26,11 @@ export function buildReportFileName(year, monthIndex) {
   return `${year}년_${monthIndex + 1}월_운송비내역서.pdf`
 }
 
+/**
+ * @param {string} ownerKey
+ * @param {number} year
+ * @param {number} monthIndex
+ */
 export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwnerExpenses(ownerKey), cars = readOwnerCars(ownerKey), practiceSettings = readOwnerSettings(ownerKey), workData = readOwnerWorkData(ownerKey), clients = readOwnerClients(ownerKey), profile = readOwnerProfile(ownerKey)) {
   const unitPrice = resolveFixedUnitPrice({ clients })
   const fare = monthWorkFareSummary(workData, year, monthIndex, unitPrice)

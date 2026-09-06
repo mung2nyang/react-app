@@ -1,3 +1,4 @@
+// @ts-check
 // Step 4 도메인 폴더 이동: 순수 계산은 domain/invoices.js로 옮겼다. 이 파일은 localStorage
 // I/O(loadInvoices/saveInvoices)만 남기고, 기존 임포트 경로('../lib/invoices.js')를 유지하는
 // 배럴로 domain/invoices.js를 재수출한다.
@@ -13,11 +14,16 @@ import {
 } from './cloudSession.js'
 import { syncTaxInvoices } from './syncTaxInvoicesTable.js'
 
+/** @param {string} [ownerKey] */
 export function loadInvoices(ownerKey = 'guest') {
-  const parsed = readJsonKey('invoices', ownerKey, [])
+  const parsed = readJsonKey('invoices', ownerKey, /** @type {unknown[]} */ ([]))
   return Array.isArray(parsed) ? parsed : []
 }
 
+/**
+ * @param {string} ownerKey
+ * @param {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike[]} items
+ */
 export async function saveInvoices(ownerKey, items) {
   if (getCloudOwnerKey() !== ownerKey) {
     commitInvoices(ownerKey, items)
