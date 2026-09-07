@@ -5,6 +5,7 @@
 // 예전처럼 별도 expenses 스토어에서 즉시 저장으로 관리한다(day record에 넣지 않는다
 // — 왜인지는 migration-audit-plan.md Step 6 기록의 "비용 계약" 항목 참고).
 import { useState } from 'react'
+import { expensesForVehicleDay } from '../../domain/calendarBadges.js'
 import { applyFixedRouteRun, getFixedRouteCounts } from '../../domain/day-record.js'
 import { getFixedRouteClient } from '../../domain/clients.js'
 import { removeCallDetail, upsertCallDetail } from '../../domain/call-details.js'
@@ -50,7 +51,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   const expenseForm = useExpenseForm(ownerKey, dateKey, showToast, logId)
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
 
-  const dayExpenses = expenseForm.expenses.filter((item) => item.date === dateKey)
+  const dayExpenses = expensesForVehicleDay(expenseForm.expenses, dateKey, logId !== 'main' ? logId : undefined)
   const routePresets = settings.fixedRouteOn ? (settings.fixedRoutePresets || []) : []
   const quickCounts = settings.runCountToggle ? (settings.runCountPresets || []) : []
   // settings.clients는 항상 비어 있다(normalizeSettings가 안 만든다) — 실제 거래처

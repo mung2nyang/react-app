@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { upsertCallDetail } from './call-details.js'
-import { dayExpenseBadgeLabel, dayFareTotal, dayHasUnpaid, dayWorkBadgeLabel, formatFareShort } from './calendarBadges.js'
+import { dayExpenseBadgeLabel, dayFareTotal, dayHasUnpaid, dayWorkBadgeLabel, expensesForVehicleDay, formatFareShort } from './calendarBadges.js'
 import { addPartialPayment } from './payments.js'
 import { saveDayRecord } from './day-record.js'
 
@@ -148,5 +148,41 @@ describe('dayExpenseBadgeLabel — 달력 셀 지출 칩', () => {
     assert.equal(dayExpenseBadgeLabel(expenses, dateKey, '12가3456'), '1만')
     assert.equal(dayExpenseBadgeLabel(expenses, dateKey, '98나7654'), '2만')
     assert.equal(dayExpenseBadgeLabel(expenses, dateKey), null)
+  })
+})
+
+describe('expensesForVehicleDay — 일지 지출 목록 차량 필터', () => {
+  test('태그 없는 항목만 메인(인자 없음)에 걸러짐', () => {
+    const expenses = [
+      { id: 'm1', kind: 'maint', date: dateKey, cost: 30000 },
+      { id: 's1', kind: 'fuel', date: dateKey, cost: 50000, vehicleNumber: '12가3456' },
+    ]
+    assert.deepEqual(expensesForVehicleDay(expenses, dateKey).map((i) => i.id), ['m1'])
+  })
+
+  test('특정 차량 태그 항목만 그 서브에 걸러짐', () => {
+    const expenses = [
+      { id: 'm1', kind: 'maint', date: dateKey, cost: 30000 },
+      { id: 's1', kind: 'fuel', date: dateKey, cost: 50000, vehicleNumber: '12가3456' },
+      { id: 's2', kind: 'misc', date: dateKey, cost: 10000, vehicleNumber: '98나7654' },
+    ]
+    assert.deepEqual(expensesForVehicleDay(expenses, dateKey, '12가3456').map((i) => i.id), ['s1'])
+  })
+
+  test('같은 날짜 메인·서브가 동시에 있어도 서로 안 섞인다', () => {
+    const expenses = [
+      { id: 'main', kind: 'maint', date: dateKey, cost: 1000 },
+      { id: 'sub', kind: 'fuel', date: dateKey, cost: 2000, vehicleNumber: '12가3456' },
+    ]
+    assert.deepEqual(expensesForVehicleDay(expenses, dateKey).map((i) => i.id), ['main'])
+    assert.deepEqual(expensesForVehicleDay(expenses, dateKey, '12가3456').map((i) => i.id), ['sub'])
+  })
+
+  test('다른 날짜 항목은 제외', () => {
+    const expenses = [
+      { id: 'today', kind: 'fuel', date: dateKey, cost: 3000 },
+      { id: 'other', kind: 'fuel', date: '2026-05-11', cost: 90000 },
+    ]
+    assert.deepEqual(expensesForVehicleDay(expenses, dateKey).map((i) => i.id), ['today'])
   })
 })

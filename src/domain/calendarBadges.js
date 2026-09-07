@@ -100,3 +100,18 @@ export function dayExpenseBadgeLabel(expenses, dateKey, vehicleNumber) {
     .reduce((sum, item) => sum + (Number(item.cost) || 0), 0)
   return total > 0 ? formatFareShort(total) : null
 }
+
+/**
+ * 일지 화면용 — 해당 날짜·차량 태그에 맞는 지출만 반환. 인자 의미는
+ * `dayExpenseBadgeLabel`과 동일(없으면 메인=태그 없음, 있으면 그 차량만).
+ * @param {Array<ExpenseItem>|null|undefined} expenses
+ * @param {string} dateKey
+ * @param {string} [vehicleNumber]
+ * @returns {Array<ExpenseItem>}
+ */
+export function expensesForVehicleDay(expenses, dateKey, vehicleNumber) {
+  const target = String(vehicleNumber || '').trim() || undefined
+  return filterByDate(expenses || [], dateKey).filter(
+    (item) => (String(item.vehicleNumber || '').trim() || undefined) === target,
+  )
+}
