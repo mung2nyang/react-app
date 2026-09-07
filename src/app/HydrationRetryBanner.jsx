@@ -1,3 +1,4 @@
+// @ts-check
 // Step 0-4 감사 보완 2차(5번): hydrate가 실패(status:'failed')하면 배너로 알리고
 // retryHydrate()를 직접 부를 수 있게 한다. 이전에는 실패해도 UI에 신호가 전혀 없어서
 // 사용자가 "동기화가 막혀 있다"는 사실 자체를 몰랐다 — 로컬 편집은 계속되지만 서버로는
@@ -30,6 +31,10 @@ const buttonStyle = {
   cursor: 'pointer',
 }
 
+/**
+ * @param {Object} props
+ * @param {(message: string) => void} [props.showToast]
+ */
 export default function HydrationRetryBanner({ showToast }) {
   const [status, setStatus] = useState(() => getState().hydration.status)
   const [retrying, setRetrying] = useState(false)

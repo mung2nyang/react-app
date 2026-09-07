@@ -1,5 +1,10 @@
+// @ts-check
 // App.jsx에서 분리한 비밀번호 찾기 안내 모달. 계정/인증 흐름 전용이라
 // migration-plan.md의 auth/ 화면 이관 시 AuthLayout 쪽으로 옮겨갈 자리다.
+/**
+ * @param {Object} props
+ * @param {() => void} props.onClose
+ */
 export default function ForgotPasswordModal({ onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>

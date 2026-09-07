@@ -1,3 +1,4 @@
+// @ts-check
 import { useMemo, useRef, useState } from 'react'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
@@ -39,6 +40,7 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
     try {
       const mod = await import('html2pdf.js')
       const html2pdf = mod.default
+      /** @type {Parameters<InstanceType<(typeof html2pdf)['Worker']>['set']>[0]} */
       const opt = {
         margin: [12, 10, 12, 10],
         filename: buildReportFileName(year, month),
