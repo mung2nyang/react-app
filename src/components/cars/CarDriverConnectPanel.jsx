@@ -7,13 +7,12 @@ import { generateInviteCode } from '../../lib/drivers.js'
  * @param {Object} props
  * @param {'link'|'log'} props.tab
  * @param {(tab: 'link'|'log') => void} props.onTab
- * @param {boolean} props.logEnabled  false for brand-new car (!editingId)
  * @param {string} props.inviteCode
  * @param {(code: string) => void} props.onInviteCode
  * @param {Array<DriverRecord>} props.drivers
  */
 export default function CarDriverConnectPanel({
-  tab, onTab, logEnabled, inviteCode, onInviteCode, drivers,
+  tab, onTab, inviteCode, onInviteCode, drivers,
 }) {
   return (
     <div className="car-driver-connect">
@@ -32,8 +31,7 @@ export default function CarDriverConnectPanel({
           role="tab"
           aria-selected={tab === 'log'}
           className={`toggle-btn${tab === 'log' ? ' active-work' : ''}`}
-          disabled={!logEnabled}
-          onClick={() => { if (logEnabled) onTab('log') }}
+          onClick={() => onTab('log')}
         >
           운행 일지
         </button>

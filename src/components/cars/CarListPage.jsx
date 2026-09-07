@@ -28,13 +28,14 @@ import { useOwnerCars, useOwnerDrivers } from '../../store/ownerDataHooks.js'
  * @property {string} inviteCode
  * @property {string} inviteStartDate
  * @property {string|null} inviteDriverId
+ * @property {'link'|'log'} connectMode
  */
 
 /** @type {CarFormDraft} */
 const emptyDraft = {
   number: '', tonnage: '', type: 'main', driverName: '', driverPhone: '',
   driverPayMode: 'revenue', driverSalaryAmount: '', commEnabled: false, commType: 'percent', commission: '',
-  inviteCode: '', inviteStartDate: '', inviteDriverId: null,
+  inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'link',
 }
 const DELETE_CAR_CONFIRM = '해당 차량을 삭제하시겠습니까? 이 차량으로 기록된 운행 내역도 함께 삭제되며 복구할 수 없습니다.'
 
@@ -92,6 +93,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       inviteCode: linked?.inviteCode || (car.type === 'sub' && cloud ? generateInviteCode(drivers) : ''),
       inviteStartDate: linked?.startDate || todayIsoDate(),
       inviteDriverId: linked?.id || null,
+      connectMode: 'link',
     })
     setModalOpen(true)
   }
@@ -103,6 +105,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       if (result.toast) showToast?.(result.toast)
       return
     }
+    const skipInvite = !editingId && inviteSnapshot.connectMode === 'log'
     const inviteToast = await saveInviteAfterVehicle({
       cloud,
       ownerKey,
@@ -111,6 +114,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       cars,
       saved: result.saved,
       inviteDraft: inviteSnapshot,
+      skipInvite,
     })
     if (inviteToast && inviteToast !== result.toast) showToast?.(inviteToast)
     else if (result.toast) showToast?.(result.toast)

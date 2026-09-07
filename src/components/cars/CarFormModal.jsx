@@ -1,5 +1,4 @@
 // @ts-check
-import { useState } from 'react'
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
 import { formatPercentInput } from '../../lib/money.js'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
@@ -19,6 +18,7 @@ import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
  * @property {string} inviteCode
  * @property {string} inviteStartDate
  * @property {string|null} inviteDriverId
+ * @property {'link'|'log'} connectMode
  */
 
 /**
@@ -37,7 +37,6 @@ export default function CarFormModal({
 }) {
   const isSub = draft.type === 'sub'
   const isSalary = draft.driverPayMode === 'salary'
-  const [connectTab, setConnectTab] = useState(/** @type {'link'|'log'} */ ('link'))
   const showConnect = isSub && cloud
 
   function setRevenueMode() {
@@ -128,9 +127,8 @@ export default function CarFormModal({
         )}
         {showConnect ? (
           <CarDriverConnectPanel
-            tab={connectTab}
-            onTab={setConnectTab}
-            logEnabled={!!editingId}
+            tab={draft.connectMode || 'link'}
+            onTab={(mode) => setDraft({ ...draft, connectMode: mode })}
             inviteCode={draft.inviteCode || ''}
             onInviteCode={(code) => setDraft({ ...draft, inviteCode: code })}
             drivers={drivers}

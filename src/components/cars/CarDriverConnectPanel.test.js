@@ -23,7 +23,6 @@ test('운행 일지 탭은 안내 문구만 렌더한다', async () => {
       root.render(React.createElement(CarDriverConnectPanel, {
         tab: 'log',
         onTab: () => {},
-        logEnabled: true,
         inviteCode: '',
         onInviteCode: () => {},
         drivers: [],
@@ -37,6 +36,33 @@ test('운행 일지 탭은 안내 문구만 렌더한다', async () => {
     )
     assert.equal(container.querySelectorAll('.car-daylog-preview').length, 0)
     assert.equal(container.querySelectorAll('.car-open-vehicle-log').length, 0)
+  } finally {
+    root.unmount()
+    container.remove()
+  }
+})
+
+test('신규 등록(logEnabled 없던 시절의 disabled 게이트 삭제됨) — 운행 일지 탭은 항상 클릭 가능', async () => {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  let currentTab = 'link'
+  try {
+    await act(async () => {
+      root.render(React.createElement(CarDriverConnectPanel, {
+        tab: currentTab,
+        onTab: (next) => { currentTab = next },
+        inviteCode: '',
+        onInviteCode: () => {},
+        drivers: [],
+      }))
+    })
+    const tabs = [...container.querySelectorAll('.car-driver-connect-tabs button')]
+    const logTab = tabs.find((b) => b.textContent === '운행 일지')
+    assert.ok(logTab)
+    assert.equal(logTab.disabled, false)
+    await act(async () => { logTab.click() })
+    assert.equal(currentTab, 'log')
   } finally {
     root.unmount()
     container.remove()

@@ -34,12 +34,14 @@ export function todayIsoDate() {
  * @param {Array<CarLike>} args.cars
  * @param {CarLike|null|undefined} args.saved
  * @param {CarInviteDraft} args.inviteDraft
+ * @param {boolean} [args.skipInvite] true면 초대 생성 자체를 건너뛴다(신규 등록 시
+ *   "운행 일지"=기사 연동 없음을 선택한 경우 — CarFormModal.jsx의 connectMode).
  * @returns {Promise<string|null>} toast or error message; null if skipped
  */
 export async function saveInviteAfterVehicle({
-  cloud, ownerKey, userId, drivers, cars, saved, inviteDraft,
+  cloud, ownerKey, userId, drivers, cars, saved, inviteDraft, skipInvite = false,
 }) {
-  if (!cloud || inviteDraft.type !== 'sub') return null
+  if (!cloud || inviteDraft.type !== 'sub' || skipInvite) return null
   const code = String(inviteDraft.inviteCode || '').replace(/\D/g, '')
   if (!/^\d{6}$/.test(code)) return null
   const vehicleNumber = saved?.number || inviteDraft.number
