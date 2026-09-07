@@ -1,10 +1,12 @@
 // @ts-check
+// 세금계산서 화면 조립 + 엑셀 저장 핸들러. 205줄 — 응집도 우선 §6 ~250 허용.
 import { useMemo, useState } from 'react'
 import { getTaxInvoiceFlowMeta, getTaxInvoiceSourceGroups } from '../lib/finance.js'
-import { lastDayOfMonth, listMonthInvoices, saveInvoices } from '../lib/invoices.js'
+import { lastDayOfMonth, listMonthInvoices, saveInvoices, invoiceCanIssue } from '../lib/invoices.js'
 import { formatWon } from '../lib/money.js'
 import { buildFinanceSettings } from '../lib/ownerFinance.js'
 import { changeTaxInvoiceStatus, saveTaxInvoiceDraft } from '../lib/taxInvoiceActions.js'
+import { exportTaxInvoiceExcel } from '../lib/taxInvoiceExcel.js'
 import {
   readOwnerInvoices,
   useOwnerCars,
@@ -110,6 +112,22 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }
     })
   }
 
+  /** @param {InvoiceLike} item */
+  async function exportExcel(item) {
+    const check = invoiceCanIssue(item, settings)
+    if (!check.ok) {
+      if (check.error) showToast?.(check.error)
+      return
+    }
+    try {
+      await exportTaxInvoiceExcel(item, settings, profile, monthKey)
+      showToast?.('세금계산서 엑셀 파일을 저장했습니다.')
+    } catch (error) {
+      console.error('세금계산서 엑셀 저장 실패:', error)
+      showToast?.('엑셀 저장에 실패했습니다.')
+    }
+  }
+
   const emptyDraft = flow === 'sales'
     ? '계산서 발행 대상 거래처의 운행내역이 없습니다.'
     : flow === 'purchase'
@@ -170,6 +188,7 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast }
         emptyDraft={emptyDraft}
         flowMeta={flowMeta}
         onOpenDraft={openDraft}
+        onExportExcel={exportExcel}
         onChangeStatus={changeStatus}
       />
 
