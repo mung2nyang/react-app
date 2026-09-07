@@ -2,12 +2,13 @@
 // Step 5(달력 홈 재작성): MainPage.jsx의 요일 헤더 + 날짜 셀 map을 옮긴다. 셀 하나하나의
 // 뱃지/휴무/미수 계산을 domain 함수(calendarBadges.js)로 여기서 미리 해서 CalendarCell에는
 // 이미 계산된 값만 넘긴다 — "domain에서 DayRecord → workBadge/isOff/hasUnpaid" 요구사항.
-import { dayHasUnpaid, dayWorkBadgeLabel } from '../../domain/calendarBadges.js'
+import { dayExpenseBadgeLabel, dayHasUnpaid, dayWorkBadgeLabel } from '../../domain/calendarBadges.js'
 import { isOffDay } from '../../domain/day-record.js'
 import CalendarCell from './CalendarCell.jsx'
 
 /** @typedef {import('./CalendarCell.jsx').CalendarCellData} CalendarCellData */
 /** @typedef {import('../../domain/calendarBadges.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -19,9 +20,10 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
  * @param {'count'|'fare'} props.inputMode
  * @param {number|string} props.unitPrice
  * @param {boolean} props.paymentOn
+ * @param {Array<ExpenseItem>} [props.expenses] 메인 캘린더일 때만 전달 — 지출 칩용
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
-export default function CalendarGrid({ cells, month, workData, inputMode, unitPrice, paymentOn, onSelectDay }) {
+export default function CalendarGrid({ cells, month, workData, inputMode, unitPrice, paymentOn, expenses, onSelectDay }) {
   return (
     <div className="calendar-grid">
       {WEEKDAYS.map((label, index) => (
@@ -40,6 +42,7 @@ export default function CalendarGrid({ cells, month, workData, inputMode, unitPr
             cell={cell}
             isOff={isOffDay(record)}
             badgeLabel={dayWorkBadgeLabel(record, { inputMode, unitPrice })}
+            expenseBadgeLabel={cell.empty ? null : dayExpenseBadgeLabel(expenses, cell.key)}
             hasUnpaid={dayHasUnpaid(record, paymentOn)}
             onSelect={() => onSelectDay({ dateKey: cell.key, month, day: /** @type {number} */ (cell.day) })}
           />

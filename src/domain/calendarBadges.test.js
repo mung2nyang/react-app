@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { upsertCallDetail } from './call-details.js'
-import { dayFareTotal, dayHasUnpaid, dayWorkBadgeLabel, formatFareShort } from './calendarBadges.js'
+import { dayExpenseBadgeLabel, dayFareTotal, dayHasUnpaid, dayWorkBadgeLabel, formatFareShort } from './calendarBadges.js'
 import { addPartialPayment } from './payments.js'
 import { saveDayRecord } from './day-record.js'
 
@@ -86,5 +86,41 @@ describe('dayHasUnpaid — 달력 셀 미수 점', () => {
   test('콜상세가 없으면 false', () => {
     assert.equal(dayHasUnpaid({}, true), false)
     assert.equal(dayHasUnpaid(undefined, true), false)
+  })
+})
+
+describe('dayExpenseBadgeLabel — 달력 셀 지출 칩', () => {
+  test('해당 날짜 지출이 없으면 null', () => {
+    assert.equal(dayExpenseBadgeLabel([], dateKey), null)
+    assert.equal(dayExpenseBadgeLabel(undefined, dateKey), null)
+    assert.equal(
+      dayExpenseBadgeLabel([{ id: 'e1', kind: 'fuel', date: '2026-05-11', cost: 50000 }], dateKey),
+      null,
+    )
+  })
+
+  test('maint+fuel+misc 섞여 있어도 .cost 합산해 짧은 금액으로 표시', () => {
+    const expenses = [
+      { id: 'm1', kind: 'maint', date: dateKey, cost: 30000 },
+      { id: 'f1', kind: 'fuel', date: dateKey, cost: 50000 },
+      { id: 'x1', kind: 'misc', date: dateKey, cost: 20000 },
+    ]
+    assert.equal(dayExpenseBadgeLabel(expenses, dateKey), '10만')
+  })
+
+  test('다른 날짜 항목은 합산에서 제외', () => {
+    const expenses = [
+      { id: 'f1', kind: 'fuel', date: dateKey, cost: 3000 },
+      { id: 'f2', kind: 'fuel', date: '2026-05-11', cost: 90000 },
+    ]
+    assert.equal(dayExpenseBadgeLabel(expenses, dateKey), '3,000원')
+  })
+
+  test('0원 항목만 있으면 null', () => {
+    const expenses = [
+      { id: 'm1', kind: 'maint', date: dateKey, cost: 0 },
+      { id: 'f1', kind: 'fuel', date: dateKey, cost: 0 },
+    ]
+    assert.equal(dayExpenseBadgeLabel(expenses, dateKey), null)
   })
 })

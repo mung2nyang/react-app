@@ -10,8 +10,11 @@
 // untyped지만, TS는 allowJs로 그 파일들도 구조적으로 타입을 추론하므로 이 파일
 // 자신의 로직(아래 4개 함수)은 정확하게 검사된다.
 import { callFareTotal, dayTripCount, getCallDetails, getFixedCount, isOffDay } from './day-record.js'
+import { filterByDate } from './expenses.js'
 import { getDetailPaymentSummary } from './finance.js'
 import { parseCurrencyValue } from './money.js'
+
+/** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
 
 // Step 6(일지 재작성): CallDetailLike는 이제 domain/callDetail.js 한 곳에서만
 // 정의한다 — 여기서 다시 선언했더니 day-log/dayLogTypes.js가 쓰는(필드가 훨씬 많은)
@@ -79,4 +82,20 @@ export function dayHasUnpaid(record, paymentOn) {
   return getCallDetails(record).some(
     (/** @type {CallDetailLike} */ detail) => getDetailPaymentSummary(detail).status !== 'paid',
   )
+}
+
+/**
+ * 달력 셀 지출 칩(`.maint-badge`) 문구. owner 전체 expenses에서 해당 날짜 `.cost` 합이
+ * 0보다 크면 `formatFareShort`, 아니면 null. 바닐라의 maintItems/fuelItems/miscItems
+ * 합산 표시를 react-app ExpenseItem 모델로 옮긴 것(메인 캘린더 전용 소비).
+ * @param {Array<ExpenseItem>|null|undefined} expenses
+ * @param {string} dateKey
+ * @returns {string|null}
+ */
+export function dayExpenseBadgeLabel(expenses, dateKey) {
+  const total = filterByDate(expenses || [], dateKey).reduce(
+    (sum, item) => sum + (Number(item.cost) || 0),
+    0,
+  )
+  return total > 0 ? formatFareShort(total) : null
 }

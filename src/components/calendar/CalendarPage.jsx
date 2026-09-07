@@ -115,6 +115,7 @@ export default function CalendarPage({
         inputMode={settings.inputMode === 'fare' ? 'fare' : 'count'}
         unitPrice={unitPrice}
         paymentOn={paymentOn}
+        expenses={isMain ? expenses : undefined}
         onSelectDay={onSelectDay}
       />
 

@@ -9,6 +9,8 @@
   --work-badge-text: #c05621;
   --off-badge-bg: #fed7d7;
   --off-badge-text: #9b2c2c;
+  --maint-badge-bg: #e53e3e;
+  --maint-badge-text: #ffffff;
 }
 
 body:not(.account-flow-active) {
@@ -166,7 +168,8 @@ body:not(.account-flow-active) {
 .date-cell:hover:not(.empty):not(:disabled) { background-color: var(--hover-bg); }
 
 .work-badge,
-.off-badge {
+.off-badge,
+.maint-badge {
   padding: 4px 6px;
   border-radius: 8px;
   margin-top: 4px;
@@ -184,6 +187,11 @@ body:not(.account-flow-active) {
 .off-badge {
   background-color: var(--off-badge-bg);
   color: var(--off-badge-text);
+}
+
+.maint-badge {
+  background-color: var(--maint-badge-bg);
+  color: var(--maint-badge-text);
 }
 
 .summary-card {

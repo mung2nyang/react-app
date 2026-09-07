@@ -65,3 +65,45 @@ test('재감사 5번 — hasUnpaid=false면 .unpaid-dot이 렌더되지 않는�
     container.remove()
   }
 })
+
+test('expenseBadgeLabel이 있으면 .maint-badge가 렌더된다', async () => {
+  const { container, root } = mountTarget()
+  try {
+    await act(async () => {
+      root.render(React.createElement(CalendarCell, {
+        cell: CELL,
+        badgeLabel: null,
+        expenseBadgeLabel: '3만',
+        isOff: false,
+        hasUnpaid: false,
+        onSelect: () => {},
+      }))
+    })
+    const badge = container.querySelector('.maint-badge')
+    assert.ok(badge, 'expenseBadgeLabel이 있는데 .maint-badge가 DOM에 없다')
+    assert.equal(badge.textContent, '3만')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('expenseBadgeLabel이 없으면 .maint-badge가 렌더되지 않는다', async () => {
+  const { container, root } = mountTarget()
+  try {
+    await act(async () => {
+      root.render(React.createElement(CalendarCell, {
+        cell: CELL,
+        badgeLabel: null,
+        expenseBadgeLabel: null,
+        isOff: false,
+        hasUnpaid: false,
+        onSelect: () => {},
+      }))
+    })
+    assert.equal(container.querySelector('.maint-badge'), null, 'expenseBadgeLabel이 없는데 .maint-badge가 렌더됐다')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})

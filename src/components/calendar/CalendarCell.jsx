@@ -19,11 +19,12 @@
  * @param {Object} props
  * @param {CalendarCellData} props.cell
  * @param {string|null} props.badgeLabel
+ * @param {string|null} [props.expenseBadgeLabel]
  * @param {boolean} props.isOff
  * @param {boolean} props.hasUnpaid
  * @param {(cell: CalendarCellData) => void} props.onSelect
  */
-export default function CalendarCell({ cell, badgeLabel, isOff, hasUnpaid, onSelect }) {
+export default function CalendarCell({ cell, badgeLabel, expenseBadgeLabel, isOff, hasUnpaid, onSelect }) {
   return (
     <button
       type="button"
@@ -43,6 +44,7 @@ export default function CalendarCell({ cell, badgeLabel, isOff, hasUnpaid, onSel
       {!cell.empty && <span className="cell-date-text">{cell.day}</span>}
       {isOff && <span className="off-badge">휴무</span>}
       {!isOff && badgeLabel && <span className="work-badge">{badgeLabel}</span>}
+      {expenseBadgeLabel && <span className="maint-badge">{expenseBadgeLabel}</span>}
       {/* 바닐라 script.js의 .unpaid-dot(당일 미수 콜상세 표시) — 이 react 포트에는 아직
           없던 뱃지라 Step 5에서 새로 옮긴다. button 안에는 인터랙티브하지 않은 순수
           장식 표시라 div보다 span이 맞고(재감사 2차), 별도로 읽어 줄 텍스트가 없으니
