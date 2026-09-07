@@ -1,5 +1,5 @@
 // @ts-check
-// §6: PDF/이미지 두 내보내기 핸들러가 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도, 225줄)
+// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도, 240줄)
 import { useMemo, useRef, useState } from 'react'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
@@ -15,6 +15,7 @@ import {
 } from '../lib/report.js'
 import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkData } from '../store/ownerDataHooks.js'
 import ReportDetailContent, { ReportClientPickerModal, ReportSummaryContent } from './ReportDetailView.jsx'
+import ReportShareModal from './ReportShareModal.jsx'
 
 const YEAR_OPTIONS = getYearOptions()
 
@@ -28,6 +29,7 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
   const [viewDate, setViewDate] = useState(() => new Date())
   const [savingPdf, setSavingPdf] = useState(false)
   const [savingImage, setSavingImage] = useState(false)
+  const [shareOpen, setShareOpen] = useState(false)
   const [viewMode, setViewMode] = useState(/** @type {'summary'|'detail'} */ ('summary'))
   const [clientFilter, setClientFilter] = useState('ALL')
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -190,6 +192,7 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
         <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={handleDownloadImage}>
           {savingImage ? '이미지 저장 중…' : '이미지 저장'}
         </button>
+        <button type="button" className="theme-toggle-btn" onClick={() => setShareOpen(true)}>공유</button>
       </div>
 
       <div id="reportContentToExport" ref={exportRef}>
@@ -220,6 +223,18 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
         onConfirm={confirmDetailPicker}
         onClose={() => setPickerOpen(false)}
       />
+      {shareOpen && (
+        <ReportShareModal
+          exportRef={exportRef}
+          viewMode={viewMode}
+          clientFilter={clientFilter}
+          clients={clients}
+          year={year}
+          month={month}
+          onClose={() => setShareOpen(false)}
+          showToast={showToast}
+        />
+      )}
     </div>
   )
 }

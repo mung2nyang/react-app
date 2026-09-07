@@ -65,3 +65,12 @@ export function fillMessageTemplatePattern(pattern, values) {
     .replaceAll('{운행구간}', values.route)
     .replaceAll('{운송료}', values.fare)
 }
+
+/**
+ * @param {string} pattern
+ * @param {string} [company]
+ * @returns {string}
+ */
+export function fillReportShareMessagePattern(pattern, company = '거래처') {
+  return String(pattern).replaceAll('{거래처}', company || '거래처')
+}

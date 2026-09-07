@@ -27,6 +27,7 @@ function installMemoryLocalStorage() {
 installMemoryLocalStorage()
 
 const {
+  fillReportShareMessagePattern,
   getDefaultMessageTemplatePatterns,
   getDefaultReportShareMessagePattern,
   getMessageTemplatePatterns,
@@ -80,5 +81,20 @@ describe('messageTemplates — 문자 문구 localStorage 읽기/쓰기', () => 
     resetMessageTemplateSettings()
     assert.deepEqual(getMessageTemplatePatterns(), getDefaultMessageTemplatePatterns())
     assert.equal(getReportShareMessagePattern(), getDefaultReportShareMessagePattern())
+  })
+
+  test('fillReportShareMessagePattern: {거래처} 치환·빈값 폴백', () => {
+    assert.equal(
+      fillReportShareMessagePattern('안녕하세요, {거래처} 담당자님.', '한진'),
+      '안녕하세요, 한진 담당자님.',
+    )
+    assert.equal(
+      fillReportShareMessagePattern('내역서입니다. {거래처}', ''),
+      '내역서입니다. 거래처',
+    )
+    assert.equal(
+      fillReportShareMessagePattern('기본 {거래처}'),
+      '기본 거래처',
+    )
   })
 })

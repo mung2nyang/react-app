@@ -1069,6 +1069,23 @@
   margin: 0 0 12px;
 }
 
+.report-share-content { width: min(calc(100% - 32px), 390px); padding: 22px; border-radius: 22px; }
+.report-share-head strong { display: block; font-size: var(--fs-6); }
+.report-share-head p { margin: 5px 0 16px; color: var(--sub-text-color); font-size: var(--fs-2); }
+.report-share-options { display: grid; gap: 8px; }
+.report-share-channel { padding: 12px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--input-bg); }
+.report-share-channel-title { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 11px; }
+.report-share-channel-title > span:last-child { min-width: 0; }
+.report-share-channel-title strong, .report-share-channel-title small { display: block; }
+.report-share-channel-title strong { font-size: var(--fs-3); }
+.report-share-channel-title small { margin-top: 3px; color: var(--sub-text-color); font-size: var(--fs-floor); }
+.report-share-format-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 11px; }
+.report-share-format-buttons button { min-height: 42px; padding: 9px 6px; border: 1px solid color-mix(in srgb, var(--primary-color) 28%, var(--border-color)); border-radius: 11px; background: var(--card-bg); color: var(--primary-color); text-align: center; cursor: pointer; touch-action: manipulation; }
+.report-share-format-buttons button strong { font-size: var(--fs-2); }
+.report-share-file-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: color-mix(in srgb, var(--primary-color) 14%, var(--card-bg)); color: var(--primary-color); font-size: var(--fs-floor); font-weight: 900; }
+.report-share-file-icon.kakao { background: #fee500; color: #191919; font-size: var(--fs-2); }
+.report-share-file-icon.sms { background: color-mix(in srgb, #40a36f 16%, var(--card-bg)); color: #268a57; font-size: var(--fs-floor); }
+
 .report-table {
   width: 100%;
   margin-bottom: 16px;

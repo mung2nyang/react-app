@@ -8,6 +8,8 @@ import {
   buildReportFileName,
   buildReportImageFileName,
   detailReportClientOptions,
+  getDetailReportClientContact,
+  getReportShareCompanyName,
 } from './report.js'
 
 describe('buildReportFileName', () => {
@@ -139,5 +141,34 @@ describe('buildDetailReport', () => {
   test('isOff 레코드는 완전히 제외된다', () => {
     const report = buildDetailReport(workData, 2026, 4, 'ALL', { clients })
     assert.equal(report.items.some((item) => item.fare === 50000 && item.client === '한진'), false)
+  })
+})
+
+describe('getReportShareCompanyName', () => {
+  test('세부+특정 거래처면 그 이름, 그 외는 거래처', () => {
+    assert.equal(getReportShareCompanyName('detail', '한진'), '한진')
+    assert.equal(getReportShareCompanyName('detail', 'ALL'), '거래처')
+    assert.equal(getReportShareCompanyName('summary', '한진'), '거래처')
+  })
+})
+
+describe('getDetailReportClientContact', () => {
+  const clients = [
+    { id: 'c1', companyName: '한진', phone: '010-1111-2222' },
+    { id: 'c2', companyName: '동부' },
+  ]
+
+  test('세부+특정 거래처+연락처 있으면 이름·전화 반환', () => {
+    assert.deepEqual(getDetailReportClientContact('detail', '한진', clients), {
+      name: '한진',
+      phone: '010-1111-2222',
+    })
+  })
+
+  test('요약·전체·연락처 없음·미등록이면 null', () => {
+    assert.equal(getDetailReportClientContact('summary', '한진', clients), null)
+    assert.equal(getDetailReportClientContact('detail', 'ALL', clients), null)
+    assert.equal(getDetailReportClientContact('detail', '동부', clients), null)
+    assert.equal(getDetailReportClientContact('detail', '없는곳', clients), null)
   })
 })

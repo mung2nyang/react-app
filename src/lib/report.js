@@ -1,5 +1,5 @@
 // @ts-check
-// §6: 리포트 파일명 생성 함수(PDF·PNG)를 한곳에 모아 이름 규칙을 한 번에 대조하기 위해 분리하지 않음(217줄)
+// §6: 리포트 파일명·공유용 순수 헬퍼를 한곳에 모아 이름/연락처 규칙을 한 번에 대조하기 위해 분리하지 않음(238줄)
 import { monthTotal } from './expenses.js'
 import { monthWorkFareSummary } from './workData.js'
 import { resolveFixedUnitPrice } from '../domain/clients.js'
@@ -215,4 +215,25 @@ export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwne
     fuel,
     misc,
   }
+}
+
+/**
+ * @param {'summary'|'detail'} viewMode
+ * @param {string} clientFilter
+ * @returns {string}
+ */
+export function getReportShareCompanyName(viewMode, clientFilter) {
+  return viewMode === 'detail' && clientFilter !== 'ALL' ? clientFilter : '거래처'
+}
+
+/**
+ * @param {'summary'|'detail'} viewMode
+ * @param {string} clientFilter
+ * @param {Array<ClientLike>|null|undefined} clients
+ * @returns {{ name: string, phone: string } | null}
+ */
+export function getDetailReportClientContact(viewMode, clientFilter, clients) {
+  if (viewMode !== 'detail' || clientFilter === 'ALL') return null
+  const client = (clients || []).find((item) => item.companyName === clientFilter)
+  return client?.phone ? { name: client.companyName, phone: client.phone } : null
 }
