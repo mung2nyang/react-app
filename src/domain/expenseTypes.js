@@ -15,6 +15,7 @@
  * @property {number} [subsidy]
  * @property {number} [mileage]
  * @property {number|string} [liters]
+ * @property {string} [vehicleNumber] 차주 본인 서브 로그 태그(없으면 메인). DriverExpenseItem 동명 필드와 무관
  */
 
 /**
@@ -30,11 +31,12 @@
  * @property {string|number} [subsidy]
  * @property {string|number} [mileage]
  * @property {string|number} [liters]
+ * @property {string} [vehicleNumber]
  */
 
 /**
- * 차주 화면 읽기전용 — 서브(기사) 차량 비용. ExpenseItem에 vehicleNumber만 덧붙인 형태.
- * expenses 배열·ExpenseItem 정본에는 넣지 않는다(Q3).
+ * 차주 화면 읽기전용 — 소속기사 서브차량 비용(driverExpenses 슬라이스).
+ * ExpenseItem.vehicleNumber(차주 본인 서브 로그 태그)와는 다른 개념.
  * @typedef {ExpenseItem & { vehicleNumber: string }} DriverExpenseItem
  */
 

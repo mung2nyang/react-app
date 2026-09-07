@@ -20,8 +20,9 @@ import { readOwnerExpenses, useOwnerExpenses } from '../../store/ownerDataHooks.
  * @param {string} ownerKey
  * @param {string} dateKey
  * @param {(message: string) => void} [showToast]
+ * @param {string} [logId]
  */
-export function useExpenseForm(ownerKey, dateKey, showToast) {
+export function useExpenseForm(ownerKey, dateKey, showToast, logId = 'main') {
   // store/app-store.js가 아직 // @ts-check 대상이 아니라 expenses 슬라이스를 느슨한
   // object[]로 선언해 뒀다 — 실제 런타임 모양(lib/expenses.js가 다루는 ExpenseItem[])으로
   // 여기서 좁힌다(day-record.js의 readOwnerWorkData 결과를 ownerDataHooks.js 자신이
@@ -44,7 +45,7 @@ export function useExpenseForm(ownerKey, dateKey, showToast) {
   function openAdd(kind) {
     setKindPick(false)
     setEditingId(null)
-    setDraft(emptyExpenseDraft(kind, dateKey))
+    setDraft(emptyExpenseDraft(kind, dateKey, logId !== 'main' ? logId : undefined))
     setModalOpen(true)
   }
 
@@ -58,6 +59,7 @@ export function useExpenseForm(ownerKey, dateKey, showToast) {
       fuelType: item.fuelType || '주유', payment: item.payment || '카드',
       cost: item.cost || 0, subsidy: item.subsidy || 0, mileage: item.mileage || 0,
       liters: String(item.liters || ''),
+      vehicleNumber: item.vehicleNumber,
     })
     setModalOpen(true)
   }

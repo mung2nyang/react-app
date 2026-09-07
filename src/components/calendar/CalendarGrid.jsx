@@ -20,10 +20,11 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
  * @param {'count'|'fare'} props.inputMode
  * @param {number|string} props.unitPrice
  * @param {boolean} props.paymentOn
- * @param {Array<ExpenseItem>} [props.expenses] 메인 캘린더일 때만 전달 — 지출 칩용
+ * @param {Array<ExpenseItem>} [props.expenses] 지출 칩용(메인/서브 공통)
+ * @param {string} [props.expenseVehicle] 서브면 logId(차량번호), 메인이면 생략
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
-export default function CalendarGrid({ cells, month, workData, inputMode, unitPrice, paymentOn, expenses, onSelectDay }) {
+export default function CalendarGrid({ cells, month, workData, inputMode, unitPrice, paymentOn, expenses, expenseVehicle, onSelectDay }) {
   return (
     <div className="calendar-grid">
       {WEEKDAYS.map((label, index) => (
@@ -42,7 +43,7 @@ export default function CalendarGrid({ cells, month, workData, inputMode, unitPr
             cell={cell}
             isOff={isOffDay(record)}
             badgeLabel={dayWorkBadgeLabel(record, { inputMode, unitPrice })}
-            expenseBadgeLabel={cell.empty ? null : dayExpenseBadgeLabel(expenses, cell.key)}
+            expenseBadgeLabel={cell.empty ? null : dayExpenseBadgeLabel(expenses, cell.key, expenseVehicle)}
             hasUnpaid={dayHasUnpaid(record, paymentOn)}
             onSelect={() => onSelectDay({ dateKey: cell.key, month, day: /** @type {number} */ (cell.day) })}
           />

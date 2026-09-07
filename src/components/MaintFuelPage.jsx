@@ -67,6 +67,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
       subsidy: item.subsidy || 0,
       mileage: item.mileage || 0,
       liters: item.liters || '',
+      vehicleNumber: item.vehicleNumber,
     })
     setModalOpen(true)
   }

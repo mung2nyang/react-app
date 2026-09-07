@@ -56,9 +56,11 @@ export function monthTotal(items, kind, year, monthIndex) {
 /**
  * @param {string} kind
  * @param {string} [date]
+ * @param {string} [vehicleNumber] 서브 로그면 차량번호, 메인이면 생략
  */
-export function emptyExpenseDraft(kind, date = todayKey()) {
-  return {
+export function emptyExpenseDraft(kind, date = todayKey(), vehicleNumber) {
+  /** @type {ExpenseDraft} */
+  const draft = {
     kind,
     date,
     name: '',
@@ -70,6 +72,9 @@ export function emptyExpenseDraft(kind, date = todayKey()) {
     mileage: 0,
     liters: '',
   }
+  const vn = String(vehicleNumber || '').trim()
+  if (vn) draft.vehicleNumber = vn
+  return draft
 }
 
 // Step 6(일지 재작성): DayLogPage.jsx(// @ts-check)가 이 함수를 정확한 타입으로 부를
@@ -92,6 +97,7 @@ export function upsertExpense(items, draft, editingId = null) {
   const subsidy = Math.max(0, parseInt(String(draft.subsidy), 10) || 0)
   const mileage = Math.max(0, parseInt(String(draft.mileage), 10) || 0)
   const liters = Math.max(0, Number.parseFloat(String(draft.liters)) || 0)
+  const vehicleNumber = String(draft.vehicleNumber || '').trim() || undefined
 
   if (!date) return { error: '날짜를 선택해 주세요.', items }
   if (kind === 'fuel') {
@@ -111,6 +117,7 @@ export function upsertExpense(items, draft, editingId = null) {
     subsidy: kind === 'fuel' ? subsidy : 0,
     mileage,
     liters: kind === 'fuel' ? liters : 0,
+    vehicleNumber,
   }
   const list = [...(items || [])]
 

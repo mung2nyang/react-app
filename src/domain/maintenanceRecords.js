@@ -26,6 +26,7 @@
  * @property {unknown} [subsidy]
  * @property {unknown} [mileage]
  * @property {unknown} [liters]
+ * @property {string} [vehicleNumber]
  */
 
 /**
@@ -73,6 +74,7 @@ export function expenseFromMaintenanceRecord(row, index = 0) {
     subsidy: raw.subsidy != null ? parseEntityNumber(raw.subsidy) : 0,
     mileage: raw.mileage != null ? parseEntityNumber(raw.mileage) : parseEntityNumber(row?.mileage_km),
     liters: raw.liters != null ? parseEntityNumber(raw.liters) : 0,
+    vehicleNumber: typeof raw.vehicleNumber === 'string' && raw.vehicleNumber ? raw.vehicleNumber : undefined,
   }
 }
 

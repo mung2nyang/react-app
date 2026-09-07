@@ -47,7 +47,7 @@ import './day-log.css'
  */
 export default function DayLogPage({ month, day, dateKey, ownerKey, clients, settings, showToast, onWorkChanged, onClose, onOpenMenu, logId = 'main' }) {
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, showToast, logId)
-  const expenseForm = useExpenseForm(ownerKey, dateKey, showToast)
+  const expenseForm = useExpenseForm(ownerKey, dateKey, showToast, logId)
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
 
   const dayExpenses = expenseForm.expenses.filter((item) => item.date === dateKey)

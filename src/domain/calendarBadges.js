@@ -85,17 +85,18 @@ export function dayHasUnpaid(record, paymentOn) {
 }
 
 /**
- * 달력 셀 지출 칩(`.maint-badge`) 문구. owner 전체 expenses에서 해당 날짜 `.cost` 합이
- * 0보다 크면 `formatFareShort`, 아니면 null. 바닐라의 maintItems/fuelItems/miscItems
- * 합산 표시를 react-app ExpenseItem 모델로 옮긴 것(메인 캘린더 전용 소비).
+ * 달력 셀 지출 칩(`.maint-badge`) 문구. 해당 날짜·차량 태그에 맞는 `.cost` 합이
+ * 0보다 크면 `formatFareShort`, 아니면 null. `vehicleNumber` 없으면 태그 없는
+ * 항목(메인)만, 있으면 그 차량 태그만 합산.
  * @param {Array<ExpenseItem>|null|undefined} expenses
  * @param {string} dateKey
+ * @param {string} [vehicleNumber]
  * @returns {string|null}
  */
-export function dayExpenseBadgeLabel(expenses, dateKey) {
-  const total = filterByDate(expenses || [], dateKey).reduce(
-    (sum, item) => sum + (Number(item.cost) || 0),
-    0,
-  )
+export function dayExpenseBadgeLabel(expenses, dateKey, vehicleNumber) {
+  const target = String(vehicleNumber || '').trim() || undefined
+  const total = filterByDate(expenses || [], dateKey)
+    .filter((item) => (String(item.vehicleNumber || '').trim() || undefined) === target)
+    .reduce((sum, item) => sum + (Number(item.cost) || 0), 0)
   return total > 0 ? formatFareShort(total) : null
 }

@@ -25,6 +25,7 @@
  * @property {unknown} [subsidy]
  * @property {unknown} [mileage]
  * @property {unknown} [liters]
+ * @property {string} [vehicleNumber]
  */
 
 /**
@@ -71,6 +72,7 @@ export function expenseFromMiscRecord(row, index = 0) {
     subsidy: raw.subsidy != null ? parseEntityNumber(raw.subsidy) : 0,
     mileage: raw.mileage != null ? parseEntityNumber(raw.mileage) : 0,
     liters: raw.liters != null ? parseEntityNumber(raw.liters) : 0,
+    vehicleNumber: typeof raw.vehicleNumber === 'string' && raw.vehicleNumber ? raw.vehicleNumber : undefined,
   }
 }
 

@@ -86,6 +86,16 @@ describe('misc_expense_records — 원본 supabase-sync 컬럼 매핑', () => {
     assert.equal(back.cost, 4000)
   })
 
+  test('raw.vehicleNumber가 있으면 expense 항목에 복원된다', () => {
+    const back = expenseFromMiscRecord({
+      work_date: '2026-05-11',
+      sequence: 0,
+      cost_amount: 1000,
+      raw: { id: 'exp-vn', kind: 'misc', date: '2026-05-11', name: '통행료', cost: 1000, vehicleNumber: '12가3456' },
+    }, 0)
+    assert.equal(back.vehicleNumber, '12가3456')
+  })
+
   test('날짜별 묶음과 기타만 교체가 주유/정비를 건드리지 않는다', () => {
     const expenses = [
       { id: 'm1', kind: 'maint', date: '2026-05-10', cost: 1 },

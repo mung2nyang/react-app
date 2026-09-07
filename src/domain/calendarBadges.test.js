@@ -123,4 +123,30 @@ describe('dayExpenseBadgeLabel — 달력 셀 지출 칩', () => {
     ]
     assert.equal(dayExpenseBadgeLabel(expenses, dateKey), null)
   })
+
+  test('태그 없는 항목만 메인(인자 없음)에 합산', () => {
+    const expenses = [
+      { id: 'm1', kind: 'maint', date: dateKey, cost: 30000 },
+      { id: 's1', kind: 'fuel', date: dateKey, cost: 50000, vehicleNumber: '12가3456' },
+    ]
+    assert.equal(dayExpenseBadgeLabel(expenses, dateKey), '3만')
+  })
+
+  test('특정 차량 태그 항목만 그 서브에 합산', () => {
+    const expenses = [
+      { id: 'm1', kind: 'maint', date: dateKey, cost: 30000 },
+      { id: 's1', kind: 'fuel', date: dateKey, cost: 50000, vehicleNumber: '12가3456' },
+    ]
+    assert.equal(dayExpenseBadgeLabel(expenses, dateKey, '12가3456'), '5만')
+  })
+
+  test('다른 차량 태그는 서로 안 섞인다', () => {
+    const expenses = [
+      { id: 'a', kind: 'fuel', date: dateKey, cost: 10000, vehicleNumber: '12가3456' },
+      { id: 'b', kind: 'fuel', date: dateKey, cost: 20000, vehicleNumber: '98나7654' },
+    ]
+    assert.equal(dayExpenseBadgeLabel(expenses, dateKey, '12가3456'), '1만')
+    assert.equal(dayExpenseBadgeLabel(expenses, dateKey, '98나7654'), '2만')
+    assert.equal(dayExpenseBadgeLabel(expenses, dateKey), null)
+  })
 })

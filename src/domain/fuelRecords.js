@@ -29,6 +29,7 @@
  * @property {unknown} [mileage]
  * @property {unknown} [liters]
  * @property {unknown} [liter]
+ * @property {string} [vehicleNumber]
  */
 
 /**
@@ -77,6 +78,7 @@ export function expenseFromFuelRecord(row, index = 0) {
     subsidy: raw.subsidy != null ? parseEntityNumber(raw.subsidy) : parseEntityNumber(row?.subsidy_amount),
     mileage: raw.mileage != null ? parseEntityNumber(raw.mileage) : parseEntityNumber(row?.mileage_km),
     liters: raw.liters != null ? parseEntityNumber(raw.liters) : parseEntityNumber(raw.liter ?? row?.volume_liter),
+    vehicleNumber: typeof raw.vehicleNumber === 'string' && raw.vehicleNumber ? raw.vehicleNumber : undefined,
   }
 }
 
