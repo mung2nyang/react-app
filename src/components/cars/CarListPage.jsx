@@ -8,7 +8,6 @@ import { hasMainCar } from '../../lib/cars.js'
 import { requestVehicleSave } from '../../lib/vehicleMutations.js'
 import { requestVehicleDeletion } from '../../lib/directMutationActions.js'
 import { getCloudUserId, isCloudSession } from '../../lib/cloudSession.js'
-import { todayWorkLogSelection } from '../../lib/calendar.js'
 import { generateInviteCode } from '../../lib/drivers.js'
 import { saveInviteAfterVehicle, todayIsoDate } from '../../lib/carInviteFromDraft.js'
 import { useOwnerCars, useOwnerDrivers } from '../../store/ownerDataHooks.js'
@@ -38,12 +37,6 @@ const emptyDraft = {
   inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'link',
 }
 const DELETE_CAR_CONFIRM = '해당 차량을 삭제하시겠습니까? 이 차량으로 기록된 운행 내역도 함께 삭제되며 복구할 수 없습니다.'
-
-function todayLogPath(/** @type {{ type?: string, number?: string }} */ car) {
-  const dateKey = todayWorkLogSelection().dateKey
-  if (car.type === 'sub' && car.number) return `/app/logs/${encodeURIComponent(car.number)}/day/${dateKey}`
-  return `/app/day/${dateKey}`
-}
 
 /**
  * @param {Object} props
@@ -129,7 +122,6 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
         return
       }
     }
-    if (!editingId && result.saved) navigate(todayLogPath(result.saved))
   }
 
   async function confirmRemove() {

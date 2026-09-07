@@ -109,7 +109,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
       navigate(`/app/soon?${query.toString()}`)
       return
     }
-    navigate(pagePath(page))
+    navigate(backFallback ? `${pagePath(page)}?back=${backFallback}` : pagePath(page))
   }
 
   /** @param {string} tab */

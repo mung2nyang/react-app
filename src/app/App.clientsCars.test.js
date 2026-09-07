@@ -56,9 +56,8 @@ const { BrowserRouter, MemoryRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
 const { commitCars, commitClients, commitLogWorkData } = await import('../store/commitHelpers.js')
 const { getState, setHydration, subscribe } = await import('../store/app-store.js')
-const { readJsonKey, storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
+const { readJsonKey, storageKeyFor } = await import('../store/persist.js')
 const { flushCloudSync } = await import('../lib/syncQueue.js')
-const { todayWorkLogSelection } = await import('../domain/calendar.js')
 const { parseAppLogPath, withFromLogState } = await import('./fromLogNavigation.js')
 const { pendingOwnerForLog } = await import('../lib/pendingLogOwner.js')
 const { registerPendingDayWrite, getPendingDayWrite } = await import('../lib/pendingWorkDataWrites.js')
@@ -256,7 +255,7 @@ test('같은 핀 그룹 드래그 순서는 persist와 hydrate 뒤에 유지된�
   assert.deepEqual(getState().clients[ownerKey].map((item) => item.id), ['p2', 'p1'], '로그인 initialize는 LS에서 clients를 덮지 않아 Store 순서가 남는다')
 })
 
-test('차량 추가 직후 오늘 일지로 들어가 저장되고 새로고침 뒤에도 남는다', async () => {
+test('차량 추가 후 차량 관리 목록에 그대로 머문다', async () => {
   const ownerKey = 'user-boot-nav'
   commitCars(ownerKey, [{ id: 'main-1', type: 'main', number: '99하9999', supabaseId: 501 }], { syncToCloud: false })
   mirrorServerFromStore(ownerKey)
@@ -272,20 +271,18 @@ test('차량 추가 직후 오늘 일지로 들어가 저장되고 새로고침 
   })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => (getState().cars[ownerKey] || []).some((car) => car.number === '12가3456'))
-  const dateKey = todayWorkLogSelection().dateKey
-  await waitUntil(() => window.location.pathname === `/app/logs/${encodeURIComponent('12가3456')}/day/${dateKey}`)
-  await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
-  await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '3') })
-  await waitUntil(() => getState().workLogs[ownerKey]?.['12가3456']?.[dateKey]?.fixedCount === 3, { timeoutMs: 3000 })
-  assert.equal(getState().workLogs[ownerKey]?.['12가3456']?.[dateKey]?.fixedCount, 3)
+  assert.equal(window.location.pathname, '/app/cars')
+  assert.ok((getState().cars[ownerKey] || []).some((car) => car.number === '12가3456'))
   await unmountTracked(root)
   const nextRoot = createTrackedRoot(container)
   await act(async () => {
     nextRoot.render(React.createElement(BrowserRouter, null, React.createElement(App)))
   })
   await waitUntil(() => getState().hydration.status === 'ready' || getState().hydration.status === 'idle')
-  assert.equal(getState().workLogs[ownerKey]['12가3456'][dateKey].fixedCount, 3, 'root 재마운트(새로고침) 뒤에도 서브 일지가 남아야 한다')
-  assert.equal(localStorage.getItem(storageKeyForLog(ownerKey, '99하9999')), null)
+  assert.ok(
+    (getState().cars[ownerKey] || []).some((car) => car.number === '12가3456'),
+    'root 재마운트(새로고침) 뒤에도 추가한 차량이 남아야 한다',
+  )
   await unmountTracked(nextRoot)
 })
 
