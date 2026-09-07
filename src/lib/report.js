@@ -1,4 +1,5 @@
 // @ts-check
+// §6: 리포트 파일명 생성 함수(PDF·PNG)를 한곳에 모아 이름 규칙을 한 번에 대조하기 위해 분리하지 않음(217줄)
 import { monthTotal } from './expenses.js'
 import { monthWorkFareSummary } from './workData.js'
 import { resolveFixedUnitPrice } from '../domain/clients.js'
@@ -42,6 +43,25 @@ export function buildReportFileName(year, monthIndex) {
 export function buildDetailReportFileName(year, monthIndex, clientFilter) {
   const suffix = clientFilter === 'ALL' ? '전체' : clientFilter
   return `${year}년_${monthIndex + 1}월_운송비내역서(세부)_${suffix}.pdf`
+}
+
+/**
+ * 월간 운송비 내역서 PNG 파일명(이미지 저장용, PDF 파일명 규칙 재사용).
+ * @param {number} year
+ * @param {number} monthIndex
+ */
+export function buildReportImageFileName(year, monthIndex) {
+  return buildReportFileName(year, monthIndex).replace(/\.pdf$/, '.png')
+}
+
+/**
+ * 세부 내역서 PNG 파일명.
+ * @param {number} year
+ * @param {number} monthIndex
+ * @param {string} clientFilter
+ */
+export function buildDetailReportImageFileName(year, monthIndex, clientFilter) {
+  return buildDetailReportFileName(year, monthIndex, clientFilter).replace(/\.pdf$/, '.png')
 }
 
 /**

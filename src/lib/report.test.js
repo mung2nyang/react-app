@@ -4,7 +4,9 @@ import { describe, test } from 'node:test'
 import {
   buildDetailReport,
   buildDetailReportFileName,
+  buildDetailReportImageFileName,
   buildReportFileName,
+  buildReportImageFileName,
   detailReportClientOptions,
 } from './report.js'
 
@@ -24,6 +26,20 @@ describe('buildDetailReportFileName', () => {
   test('ALL이면 전체, 아니면 거래처명이 파일명에 들어간다', () => {
     assert.equal(buildDetailReportFileName(2026, 8, 'ALL'), '2026년_9월_운송비내역서(세부)_전체.pdf')
     assert.equal(buildDetailReportFileName(2026, 0, '한진'), '2026년_1월_운송비내역서(세부)_한진.pdf')
+  })
+})
+
+describe('buildReportImageFileName', () => {
+  test('PDF 파일명 규칙을 재사용해 확장자만 png로 바꾼다', () => {
+    assert.equal(buildReportImageFileName(2026, 8), '2026년_9월_운송비내역서.png')
+    assert.equal(buildReportImageFileName(2025, 11), '2025년_12월_운송비내역서.png')
+  })
+})
+
+describe('buildDetailReportImageFileName', () => {
+  test('ALL이면 전체, 아니면 거래처명이 파일명에 들어간다(png)', () => {
+    assert.equal(buildDetailReportImageFileName(2026, 8, 'ALL'), '2026년_9월_운송비내역서(세부)_전체.png')
+    assert.equal(buildDetailReportImageFileName(2026, 0, '한진'), '2026년_1월_운송비내역서(세부)_한진.png')
   })
 })
 

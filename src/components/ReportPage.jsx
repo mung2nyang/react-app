@@ -1,12 +1,15 @@
 // @ts-check
+// §6: PDF/이미지 두 내보내기 핸들러가 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도, 225줄)
 import { useMemo, useRef, useState } from 'react'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
 import {
   buildDetailReport,
   buildDetailReportFileName,
+  buildDetailReportImageFileName,
   buildMonthReport,
   buildReportFileName,
+  buildReportImageFileName,
   dash,
   detailReportClientOptions,
 } from '../lib/report.js'
@@ -24,6 +27,7 @@ const YEAR_OPTIONS = getYearOptions()
 export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
   const [viewDate, setViewDate] = useState(() => new Date())
   const [savingPdf, setSavingPdf] = useState(false)
+  const [savingImage, setSavingImage] = useState(false)
   const [viewMode, setViewMode] = useState(/** @type {'summary'|'detail'} */ ('summary'))
   const [clientFilter, setClientFilter] = useState('ALL')
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -78,6 +82,52 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
     } finally {
       document.body.classList.remove('pdf-export-mode')
       setSavingPdf(false)
+    }
+  }
+
+  async function handleDownloadImage() {
+    const element = exportRef.current
+    if (!element || savingImage) return
+    setSavingImage(true)
+    document.body.classList.add('pdf-export-mode')
+    let imageUrl = ''
+    try {
+      const mod = await import('html2pdf.js')
+      const html2pdf = mod.default
+      const worker = html2pdf().set({
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+          backgroundColor: '#ffffff',
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight,
+        },
+      }).from(element).toCanvas()
+      const canvas = /** @type {HTMLCanvasElement} */ (await worker.get('canvas'))
+      const blob = await new Promise((resolve, reject) => {
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('PNG 이미지 생성 실패'))), 'image/png')
+      })
+      const fileName = viewMode === 'detail'
+        ? buildDetailReportImageFileName(year, month, clientFilter)
+        : buildReportImageFileName(year, month)
+      imageUrl = URL.createObjectURL(/** @type {Blob} */ (blob))
+      const link = document.createElement('a')
+      link.download = fileName
+      link.href = imageUrl
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showToast?.('이미지를 저장했습니다.')
+    } catch (error) {
+      console.error('운송비 내역서 이미지 저장 실패:', error)
+      showToast?.('이미지 저장에 실패했습니다.')
+    } finally {
+      if (imageUrl) setTimeout(() => URL.revokeObjectURL(imageUrl), 1000)
+      document.body.classList.remove('pdf-export-mode')
+      setSavingImage(false)
     }
   }
 
@@ -136,6 +186,9 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
         )}
         <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={handleDownloadPdf}>
           {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
+        </button>
+        <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={handleDownloadImage}>
+          {savingImage ? '이미지 저장 중…' : '이미지 저장'}
         </button>
       </div>
 
