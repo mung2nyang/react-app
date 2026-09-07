@@ -2,8 +2,16 @@
 import { useMemo, useRef, useState } from 'react'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
-import { buildMonthReport, buildReportFileName, dash } from '../lib/report.js'
+import {
+  buildDetailReport,
+  buildDetailReportFileName,
+  buildMonthReport,
+  buildReportFileName,
+  dash,
+  detailReportClientOptions,
+} from '../lib/report.js'
 import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkData } from '../store/ownerDataHooks.js'
+import ReportDetailContent, { ReportClientPickerModal, ReportSummaryContent } from './ReportDetailView.jsx'
 
 const YEAR_OPTIONS = getYearOptions()
 
@@ -16,6 +24,10 @@ const YEAR_OPTIONS = getYearOptions()
 export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
   const [viewDate, setViewDate] = useState(() => new Date())
   const [savingPdf, setSavingPdf] = useState(false)
+  const [viewMode, setViewMode] = useState(/** @type {'summary'|'detail'} */ ('summary'))
+  const [clientFilter, setClientFilter] = useState('ALL')
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [pickerValue, setPickerValue] = useState('ALL')
   const exportRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
@@ -29,8 +41,16 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
     () => buildMonthReport(ownerKey, year, month, expenses, cars, practiceSettings, workData, clients, storedProfile),
     [ownerKey, year, month, expenses, cars, practiceSettings, workData, clients, storedProfile],
   )
-  const car = report.mainCar
-  const profile = report.profile
+  const clientOptions = useMemo(
+    () => detailReportClientOptions(workData, year, month, clients),
+    [workData, year, month, clients],
+  )
+  const detailReport = useMemo(
+    () => buildDetailReport(workData, year, month, clientFilter, { clients }),
+    [workData, year, month, clientFilter, clients],
+  )
+  const clientText = clientFilter === 'ALL' ? '전체' : clientFilter
+  const detailTitle = `${year}년 ${month + 1}월 운송비 내역서 (${clientText})`
 
   async function handleDownloadPdf() {
     const element = exportRef.current
@@ -43,7 +63,9 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
       /** @type {Parameters<InstanceType<(typeof html2pdf)['Worker']>['set']>[0]} */
       const opt = {
         margin: [12, 10, 12, 10],
-        filename: buildReportFileName(year, month),
+        filename: viewMode === 'detail'
+          ? buildDetailReportFileName(year, month, clientFilter)
+          : buildReportFileName(year, month),
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -59,10 +81,30 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
     }
   }
 
+  function handleHeaderBack() {
+    if (viewMode === 'detail') {
+      setViewMode('summary')
+      return
+    }
+    onBack?.()
+  }
+
+  function openDetailPicker() {
+    setPickerValue(clientFilter)
+    setPickerOpen(true)
+  }
+
+  function confirmDetailPicker() {
+    setClientFilter(pickerValue)
+    setViewMode('detail')
+    setPickerOpen(false)
+    showToast?.('세부 내역서가 조회되었습니다.')
+  }
+
   return (
     <div className="page report-page-wrap">
       <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
+        <button type="button" className="icon-btn" title="뒤로가기" onClick={handleHeaderBack}>
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="settings-title">운송비 내역서</div>
@@ -89,76 +131,42 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
       </div>
 
       <div className="report-pdf-actions">
+        {viewMode === 'summary' && (
+          <button type="button" className="theme-toggle-btn" onClick={openDetailPicker}>세부 내역서</button>
+        )}
         <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={handleDownloadPdf}>
           {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
         </button>
       </div>
 
       <div id="reportContentToExport" ref={exportRef}>
-        <div className="report-title">{report.title}</div>
-
-        <table className="info-table">
-          <tbody>
-            <tr>
-              <th>성명</th>
-              <td>{dash(profile.name)}</td>
-              <th>연락처</th>
-              <td>{dash(profile.phone)}</td>
-            </tr>
-            <tr>
-              <th>차량번호</th>
-              <td>{dash(car?.number)}</td>
-              <th>차량톤수</th>
-              <td>{dash(car?.tonnage)}</td>
-            </tr>
-            <tr>
-              <th>입금은행</th>
-              <td>{dash(profile.bankName)}</td>
-              <th>계좌번호</th>
-              <td>{dash(profile.accountNumber)}</td>
-            </tr>
-            <tr>
-              <th>예금주</th>
-              <td colSpan={3}>{dash(profile.accountHolder)}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div className="summary-card">
-          <div className="summary-title">
-            <span>월간 운송료 정산</span>
-            <span>횟수 {report.trips}회 · 세부 입력 {report.callTrips || 0}건</span>
-          </div>
-          <div className="summary-row">
-            <span>1회 단가</span>
-            <span className="summary-value">{formatWon(report.unitPrice)}</span>
-          </div>
-          <div className="summary-row">
-            <span>기본 운송료</span>
-            <span className="summary-value">{formatWon(report.fare)}</span>
-          </div>
-          <div className="summary-row">
-            <span>부가세 (공급가액 기준 10%)</span>
-            <span className="summary-value">{formatWon(report.vat)}</span>
-          </div>
-          <div className="summary-row total">
-            <span>계</span>
-            <span className="summary-value">{formatWon(report.total)}</span>
-          </div>
-          <div className="summary-row">
-            <span>차량 정비비</span>
-            <span className="summary-value">{formatWon(report.maint)}</span>
-          </div>
-          <div className="summary-row">
-            <span>차량 주유비</span>
-            <span className="summary-value">{formatWon(report.fuel)}</span>
-          </div>
-          <div className="summary-row">
-            <span>통행료/기타</span>
-            <span className="summary-value">{formatWon(report.misc)}</span>
-          </div>
-        </div>
+        {viewMode === 'detail' ? (
+          <ReportDetailContent
+            report={detailReport}
+            clientFilter={clientFilter}
+            showClientColumn={clientFilter === 'ALL'}
+            title={detailTitle}
+          />
+        ) : (
+          <ReportSummaryContent
+            title={report.title}
+            profile={report.profile}
+            car={report.mainCar}
+            report={report}
+            dash={dash}
+            formatWon={formatWon}
+          />
+        )}
       </div>
+
+      <ReportClientPickerModal
+        open={pickerOpen}
+        options={clientOptions}
+        value={pickerValue}
+        onChange={setPickerValue}
+        onConfirm={confirmDetailPicker}
+        onClose={() => setPickerOpen(false)}
+      />
     </div>
   )
 }
