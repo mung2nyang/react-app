@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { saveInviteAfterVehicle } from './carInviteFromDraft.js'
+import { saveInviteAfterVehicle, todayIsoDate } from './carInviteFromDraft.js'
 
 /** @type {import('./carInviteFromDraft.js').CarInviteDraft} */
 const baseDraft = {
@@ -12,6 +12,23 @@ const baseDraft = {
   inviteStartDate: '2026-09-07',
   inviteDriverId: null,
 }
+
+test('todayIsoDate returns YYYY-MM-DD', () => {
+  assert.match(todayIsoDate(), /^\d{4}-\d{2}-\d{2}$/)
+})
+
+test('inviteCode가 6자리 숫자가 아니면(누락/무효) skipInvite 없이도 스킵된다', async () => {
+  const result = await saveInviteAfterVehicle({
+    cloud: true,
+    ownerKey: 'owner-1',
+    userId: 'user-1',
+    drivers: [],
+    cars: [],
+    saved: { id: 'car-1', number: '12가3456' },
+    inviteDraft: { ...baseDraft, inviteCode: '' },
+  })
+  assert.equal(result, null)
+})
 
 test('skipInvite:true면 신규 등록(운행 일지 모드)에서 초대를 아예 안 만든다', async () => {
   const result = await saveInviteAfterVehicle({
