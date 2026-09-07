@@ -53,3 +53,15 @@ export function resetMessageTemplateSettings() {
   localStorage.removeItem(CUSTOM_BODIES_KEY)
   localStorage.removeItem(REPORT_SHARE_KEY)
 }
+
+/**
+ * @param {string} pattern
+ * @param {{ company: string, route: string, fare: string }} values
+ * @returns {string}
+ */
+export function fillMessageTemplatePattern(pattern, values) {
+  return String(pattern)
+    .replaceAll('{거래처}', values.company)
+    .replaceAll('{운행구간}', values.route)
+    .replaceAll('{운송료}', values.fare)
+}

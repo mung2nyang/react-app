@@ -1,17 +1,17 @@
 // @ts-check
 import { parseCurrencyValue } from '../../domain/money.js'
+import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../lib/messageTemplates.js'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 
+const TEMPLATE_TITLES = ['미수금 안내', '입금 요청', '운행 완료']
+
 /**
- * @param {CallDetailLike} item 콜상세
  * @param {string} phone
+ * @param {string} body
  */
-function buildUnpaidSmsUrl(item, phone) {
-  const fare = parseCurrencyValue(item.fare).toLocaleString('ko-KR')
-  const route = `${item.loadLoc || '상차지'} → ${item.unloadLoc || '하차지'}`
-  const body = `안녕하세요, ${item.client || '거래처'} 담당자님. ${route} 운송료 ${fare}원이 미수 상태입니다. 확인 부탁드립니다.`
+export function buildTemplateSmsUrl(phone, body) {
   const separator = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?'
   return `sms:${phone}${separator}body=${encodeURIComponent(body)}`
 }
@@ -23,13 +23,22 @@ function buildUnpaidSmsUrl(item, phone) {
  * @param {() => void} props.onClose
  */
 export default function MessageTemplateSheet({ item, client, onClose }) {
-  function send() {
+  const fare = parseCurrencyValue(item.fare).toLocaleString('ko-KR')
+  const route = `${item.loadLoc || '상차지'} → ${item.unloadLoc || '하차지'}`
+  const company = item.client || '거래처'
+  const templates = getMessageTemplatePatterns().map((pattern, index) => ({
+    title: TEMPLATE_TITLES[index],
+    body: fillMessageTemplatePattern(pattern, { company, route, fare }),
+  }))
+
+  /** @param {string} body */
+  function send(body) {
     const phone = client?.phone || ''
     if (!phone) {
       window.alert('거래처에 등록된 연락처가 없습니다.')
       return
     }
-    window.location.href = buildUnpaidSmsUrl(item, phone)
+    window.location.href = buildTemplateSmsUrl(phone, body)
     onClose()
   }
 
@@ -39,16 +48,18 @@ export default function MessageTemplateSheet({ item, client, onClose }) {
         <div className="message-template-head">
           <div>
             <strong>문자 보내기</strong>
-            <span>{item.client || '거래처'}{client?.phone ? ` · ${client.phone}` : ''}</span>
+            <span>{company}{client?.phone ? ` · ${client.phone}` : ''}</span>
           </div>
           <button type="button" onClick={onClose} aria-label="닫기">×</button>
         </div>
         <p className="message-template-help">보낼 양식을 선택하면 문자 앱에서 내용을 확인하고 수정할 수 있습니다.</p>
         <div className="message-template-list">
-          <button type="button" onClick={send}>
-            <strong>미수금 안내</strong>
-            <span>선택한 거래처로 미수 안내 문자를 보냅니다.</span>
-          </button>
+          {templates.map((template) => (
+            <button type="button" key={template.title} onClick={() => send(template.body)}>
+              <strong>{template.title}</strong>
+              <span>{template.body}</span>
+            </button>
+          ))}
         </div>
       </section>
     </div>
