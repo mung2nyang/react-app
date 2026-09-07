@@ -2113,3 +2113,15 @@ body.pdf-export-mode .summary-row.total {
 .my-inquiry-answer { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); }
 .my-inquiry-answer-label { display: block; margin-bottom: 4px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: 800; }
 .my-inquiry-answer p { margin: 0; font-size: var(--fs-3); line-height: 1.55; white-space: pre-wrap; }
+.message-settings-section { margin-bottom: 10px; padding: 14px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--card-bg); box-shadow: var(--shadow-sm); }
+.message-settings-heading { margin-bottom: 10px; }
+.message-settings-heading h3, .message-settings-heading p, .message-settings-variables { margin: 0; }
+.message-settings-heading h3 { color: var(--text-color); font-size: var(--fs-3); font-weight: 850; }
+.message-settings-heading p { margin-top: 4px; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.45; }
+.message-settings-textarea { display: block; width: 100%; min-height: 104px; padding: 11px 12px; resize: vertical; border: 1px solid var(--border-color); border-radius: 12px; outline: none; box-sizing: border-box; background: var(--input-bg); color: var(--text-color); font: inherit; font-size: var(--fs-2); font-weight: 500; line-height: 1.55; }
+.message-settings-variables { margin-top: 8px; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; }
+.message-settings-variables b { color: var(--primary-color); }
+.message-settings-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.message-settings-actions button { min-height: 44px; margin: 0; border-radius: 12px; font: inherit; font-size: var(--fs-floor); font-weight: 850; cursor: pointer; }
+.message-settings-reset { border: 1px solid var(--border-color); background: var(--input-bg); color: var(--sub-text-color); }
+.message-settings-save { border: 1px solid var(--primary-color); background: var(--primary-color); color: #ffffff; }

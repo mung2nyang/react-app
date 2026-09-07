@@ -169,7 +169,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) 
             <span>초대코드로 차주 연동</span>
           </button>
         )}
-        <button type="button" className="mypage-notice-link" onClick={() => onOpen('soon', '문자 문구 설정')}>
+        <button type="button" className="mypage-notice-link" onClick={() => onOpen('message-settings')}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
             <path d="M8 9h8M8 13h5"></path>

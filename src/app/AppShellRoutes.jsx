@@ -22,6 +22,7 @@ import {
   TaxInvoicePage,
   CustomerCenterPage,
   NoticePage,
+  MessageSettingsPage,
 } from './lazyPages.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
@@ -94,6 +95,7 @@ export default function AppShellRoutes({
       <Route path="revenue" element={<RevenuePage ownerKey={ownerKey} session={session ?? undefined} onBack={() => navigate('/app')} />} />
       <Route path="support" element={<CustomerCenterPage session={session} showToast={showToast} onGoAuth={onGoAuth} onBack={() => navigate('/app')} />} />
       <Route path="notice" element={<NoticePage onBack={() => navigate(backTarget)} />} />
+      <Route path="message-settings" element={<MessageSettingsPage onBack={() => navigate(backTarget)} showToast={showToast} />} />
       <Route path="soon" element={<ComingSoonRoute />} />
     </Routes>
   )
