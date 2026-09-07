@@ -20,3 +20,4 @@ export const ComingSoonPage = lazy(() => import('../components/ComingSoonPage.js
 export const RevenuePage = lazy(() => import('../components/RevenuePage.jsx'))
 export const MyPage = lazy(() => import('../components/MyPage.jsx'))
 export const CustomerCenterPage = lazy(() => import('../components/CustomerCenterPage.jsx'))
+export const NoticePage = lazy(() => import('../components/NoticePage.jsx'))

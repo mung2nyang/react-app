@@ -176,7 +176,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) 
           </svg>
           <span>문자 문구 설정</span>
         </button>
-        <button type="button" className="mypage-notice-link mypage-notice-entry" onClick={() => onOpen('soon', '공지사항')}>
+        <button type="button" className="mypage-notice-link mypage-notice-entry" onClick={() => onOpen('notice')}>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="m3 11 18-5v12L3 14v-3z"></path>
             <path d="M8 9v6M7 15.2 8.8 21H13l-1.7-5"></path>
