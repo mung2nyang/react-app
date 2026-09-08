@@ -1,0 +1,39 @@
+/* 문자 양식 선택창 전용 — main-calendar.css에서 옮김. MessageTemplateSheet.jsx가 직접 import. */
+
+.message-template-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.message-template-sheet {
+  width: min(100%, 420px);
+  padding: 16px;
+  border-radius: 22px 22px 16px 16px;
+  background: var(--card-bg);
+  text-align: left;
+}
+
+.message-template-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.message-template-head strong,
+.message-template-head span { display: block; }
+.message-template-head strong { font-size: var(--fs-6); }
+.message-template-head span { margin-top: 3px; color: var(--sub-text-color); font-size: var(--fs-2); }
+.message-template-head button { border: 0; background: transparent; color: var(--sub-text-color); font-size: 1.7rem; line-height: 1; cursor: pointer; }
+.message-template-help { margin: 12px 0; color: var(--sub-text-color); font-size: var(--fs-2); line-height: 1.45; }
+.message-template-list { display: grid; gap: 8px; }
+.message-template-list button { padding: 12px; border: 1px solid var(--border-color); border-radius: 13px; background: var(--input-bg); color: var(--text-color); text-align: left; cursor: pointer; }
+.message-template-list button strong,
+.message-template-list button span { display: block; }
+.message-template-list button strong { margin-bottom: 4px; color: var(--primary-color); font-size: var(--fs-3); }
+.message-template-list button span { color: var(--sub-text-color); font-size: var(--fs-2); line-height: 1.4; }
