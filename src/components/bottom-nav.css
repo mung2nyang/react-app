@@ -1,0 +1,52 @@
+/* 하단 네비게이션 전용 — main-calendar.css에서 옮김. BottomNav.jsx가 직접 import. */
+
+.bottom-nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 7px 0;
+  padding-bottom: calc(7px + env(safe-area-inset-bottom));
+  background-color: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  z-index: 900;
+}
+
+.nav-item {
+  width: 60px;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: none;
+  background: none;
+  color: var(--sub-text-color);
+  font: inherit;
+  cursor: pointer;
+}
+
+.nav-item svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-item span {
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.nav-item.active {
+  color: var(--primary-color);
+}

@@ -1,4 +1,5 @@
 // @ts-check
+import './bottom-nav.css'
 
 const TABS = [
   {
