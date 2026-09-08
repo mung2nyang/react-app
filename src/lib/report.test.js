@@ -2,17 +2,15 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import {
-  buildDetailReport,
   buildDetailReportFileName,
   buildDetailReportImageFileName,
-  buildMonthReport,
-  buildReportDayRows,
   buildReportFileName,
   buildReportImageFileName,
-  detailReportClientOptions,
   getDetailReportClientContact,
   getReportShareCompanyName,
 } from './report.js'
+import { buildDetailReport, detailReportClientOptions } from './reportDetail.js'
+import { buildMonthReport, buildReportDayRows } from './reportSummary.js'
 
 describe('buildReportFileName', () => {
   test('연·월 조합을 원본 패턴으로 만든다', () => {

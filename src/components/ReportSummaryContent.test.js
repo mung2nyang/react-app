@@ -15,7 +15,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
-const { ReportSummaryContent } = await import('./ReportDetailView.jsx')
+const { ReportSummaryContent } = await import('./ReportSummaryContent.jsx')
 
 const baseReport = {
   monthIndex: 8,

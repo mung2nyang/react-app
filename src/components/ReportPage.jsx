@@ -4,17 +4,17 @@ import { useMemo, useRef, useState } from 'react'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
 import {
-  buildDetailReport,
   buildDetailReportFileName,
   buildDetailReportImageFileName,
-  buildMonthReport,
   buildReportFileName,
   buildReportImageFileName,
   dash,
-  detailReportClientOptions,
 } from '../lib/report.js'
+import { buildDetailReport, detailReportClientOptions } from '../lib/reportDetail.js'
+import { buildMonthReport } from '../lib/reportSummary.js'
 import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkData } from '../store/ownerDataHooks.js'
-import ReportDetailContent, { ReportClientPickerModal, ReportSummaryContent } from './ReportDetailView.jsx'
+import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
+import { ReportSummaryContent } from './ReportSummaryContent.jsx'
 import ReportShareModal from './ReportShareModal.jsx'
 
 const YEAR_OPTIONS = getYearOptions()
