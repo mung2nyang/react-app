@@ -26,32 +26,6 @@ body:not(.account-flow-active) {
   text-align: center;
 }
 
-.main-page .header {
-  margin-top: 40px;
-  margin-bottom: 10px;
-}
-
-.banner-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.banner-logo {
-  height: 52px;
-  object-fit: contain;
-}
-
-.banner-text {
-  font-family: 'Jua', sans-serif;
-  font-size: 2.2rem;
-  font-weight: 400;
-  letter-spacing: -0.5px;
-  color: var(--text-color);
-}
-
 .date-navigator {
   display: inline-flex;
   align-items: center;
@@ -117,84 +91,6 @@ body:not(.account-flow-active) {
   background-color: var(--hover-bg);
 }
 
-.calendar-grid {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  row-gap: 8px;
-  column-gap: 6px;
-  align-items: center;
-  justify-items: center;
-  margin: 0 auto 10px;
-  background-color: var(--card-bg);
-  padding: 16px 10px;
-  border-radius: 24px;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-}
-
-.day-header {
-  width: 100%;
-  text-align: center;
-  font-size: var(--fs-3);
-  font-weight: 700;
-  color: var(--sub-text-color);
-  padding-bottom: 8px;
-}
-
-.date-cell {
-  width: 100%;
-  min-height: 76px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 6px 2px;
-  font-size: var(--fs-4);
-  font-weight: 600;
-  border-radius: 16px;
-  border: none;
-  background: transparent;
-  color: inherit;
-  font-family: inherit;
-  cursor: pointer;
-}
-
-.date-cell.empty,
-.date-cell:disabled {
-  cursor: default;
-  pointer-events: none;
-}
-
-.date-cell:hover:not(.empty):not(:disabled) { background-color: var(--hover-bg); }
-
-.work-badge,
-.off-badge,
-.maint-badge {
-  padding: 4px 6px;
-  border-radius: 8px;
-  margin-top: 4px;
-  font-size: var(--fs-floor);
-  font-weight: 700;
-  line-height: 1.25;
-  white-space: nowrap;
-}
-
-.work-badge {
-  background-color: var(--work-badge-bg);
-  color: var(--work-badge-text);
-}
-
-.off-badge {
-  background-color: var(--off-badge-bg);
-  color: var(--off-badge-text);
-}
-
-.maint-badge {
-  background-color: var(--maint-badge-bg);
-  color: var(--maint-badge-text);
-}
-
 .summary-card {
   background-color: var(--card-bg);
   border-radius: 24px;
@@ -224,34 +120,6 @@ body:not(.account-flow-active) {
   color: var(--text-color);
 }
 
-/* 원본 style.css #mainPage .summary-client-commission-* — .main-page 스코프 포팅 */
-.main-page .summary-client-commission-row {
-  margin-top: -2px;
-}
-
-.main-page .summary-client-commission-label {
-  position: relative;
-  min-width: 0;
-  margin-left: 10px;
-  padding-left: 15px;
-  color: var(--sub-text-color);
-  font-size: var(--fs-4);
-  line-height: 1.35;
-}
-
-.main-page .summary-client-commission-label::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: -3px;
-  width: 11px;
-  height: 16px;
-  box-sizing: border-box;
-  border-left: 1.5px solid color-mix(in srgb, var(--sub-text-color) 72%, transparent);
-  border-bottom: 1.5px solid color-mix(in srgb, var(--sub-text-color) 72%, transparent);
-  border-bottom-left-radius: 11px;
-}
-
 .summary-row.total {
   margin-top: 14px;
   padding-top: 12px;
@@ -264,23 +132,6 @@ body:not(.account-flow-active) {
 .summary-value {
   font-weight: 700;
   white-space: nowrap;
-}
-
-/* 원본 style.css:364-378 .inline-icon — 전역(스코프 없음) */
-.inline-icon {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-  vertical-align: middle;
-}
-
-.inline-icon.sm {
-  width: 16px;
-  height: 16px;
 }
 
 .summary-hint {
@@ -1098,31 +949,6 @@ body:not(.account-flow-active) {
   border: 1px solid var(--primary-color);
 }
 
-.unpaid-summary-card {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 0 auto 16px;
-  padding: 10px 16px;
-  background-color: var(--off-badge-bg);
-  color: var(--off-badge-text);
-  border: 1px solid var(--sunday-color);
-  border-radius: 12px;
-  font-size: var(--fs-4);
-  font-weight: 700;
-}
-
-.unpaid-summary-card svg {
-  width: 18px;
-  height: 18px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .call-two-column-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1201,33 +1027,6 @@ body:not(.account-flow-active) {
 
 .work-log-call-modal .input-box {
   text-align: left;
-}
-.date-cell.sunday, .day-header.sunday { color: var(--sunday-color); }
-.date-cell.saturday, .day-header.saturday { color: var(--saturday-color); }
-
-.date-cell.today {
-  background-color: var(--today-bg);
-  color: var(--today-text) !important;
-  font-weight: 800;
-}
-
-.cell-date-text { line-height: 1.4; }
-
-.main-practice-note {
-  margin: 12px 0 0;
-  color: var(--sub-text-color);
-  font-size: var(--fs-2);
-}
-
-.main-practice-back {
-  margin-top: 10px;
-  border: none;
-  background: none;
-  color: var(--sub-text-color);
-  text-decoration: underline;
-  font: inherit;
-  font-size: var(--fs-2);
-  cursor: pointer;
 }
 
 .bottom-nav-bar {
