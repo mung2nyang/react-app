@@ -1,5 +1,5 @@
 // @ts-check
-// 리포트 요약·세부·거래처 선택 모달을 한 파일에 응집(ReportPage는 조립만). 219줄 — §6 ~250 허용.
+// 리포트 요약·세부·거래처 선택 모달을 한 파일에 응집(ReportPage는 조립만). §6 ~250 허용(응집).
 import { formatWon } from '../lib/money.js'
 
 /**
@@ -27,11 +27,24 @@ import { formatWon } from '../lib/money.js'
  * @param {string} props.title
  * @param {{ name?: string, phone?: string, bankName?: string, accountNumber?: string, accountHolder?: string }} props.profile
  * @param {{ number?: string, tonnage?: string }|null} props.car
- * @param {{ trips: number, callTrips?: number, unitPrice: number, fare: number, vat: number, total: number, maint: number, fuel: number, misc: number }} props.report
+ * @param {{
+ *   distanceKm: number,
+ *   fixedBaseFare: number,
+ *   defaultBaseFare: number,
+ *   fareByClient: Record<string, number>,
+ *   commissionByClient: Record<string, number>,
+ *   commissionLabelByClient: Record<string, string>,
+ *   vat: number,
+ *   total: number,
+ * }} props.report
  * @param {(value: unknown) => string} props.dash
  * @param {(value: number|string) => string} props.formatWon
  */
 export function ReportSummaryContent({ title, profile, car, report, dash, formatWon }) {
+  const clientNames = Object.keys(report.fareByClient || {})
+  const baseFare = (Number(report.fixedBaseFare) || 0) + (Number(report.defaultBaseFare) || 0)
+  const showBaseFare = baseFare > 0 || clientNames.length === 0
+
   return (
     <>
       <div className="report-title">{title}</div>
@@ -62,18 +75,41 @@ export function ReportSummaryContent({ title, profile, car, report, dash, format
         </tbody>
       </table>
       <div className="summary-card">
-        <div className="summary-title">
-          <span>월간 운송료 정산</span>
-          <span>횟수 {report.trips}회 · 세부 입력 {report.callTrips || 0}건</span>
+        <div
+          className="summary-row"
+          style={{
+            color: 'var(--primary-color)',
+            fontWeight: 700,
+            borderBottom: '1px dashed var(--border-color)',
+            paddingBottom: 10,
+            marginBottom: 10,
+          }}
+        >
+          <span>월간 총 운행거리</span>
+          <span className="summary-value">{report.distanceKm} km</span>
         </div>
-        <div className="summary-row">
-          <span>1회 단가</span>
-          <span className="summary-value">{formatWon(report.unitPrice)}</span>
-        </div>
-        <div className="summary-row">
-          <span>기본 운송료</span>
-          <span className="summary-value">{formatWon(report.fare)}</span>
-        </div>
+        {showBaseFare && (
+          <div className="summary-row">
+            <span>기본 운송료</span>
+            <span className="summary-value">{formatWon(baseFare)}</span>
+          </div>
+        )}
+        {clientNames.map((client) => (
+          <div key={client}>
+            <div className="summary-row">
+              <span>{client} 기본 운송료</span>
+              <span className="summary-value">{formatWon(report.fareByClient[client])}</span>
+            </div>
+            {(report.commissionByClient[client] || 0) > 0 && (
+              <div className="summary-row summary-client-commission-row">
+                <span className="summary-client-commission-label">
+                  {client} 수수료 ({report.commissionLabelByClient[client]})
+                </span>
+                <span className="summary-value">- {formatWon(report.commissionByClient[client])}</span>
+              </div>
+            )}
+          </div>
+        ))}
         <div className="summary-row">
           <span>부가세 (공급가액 기준 10%)</span>
           <span className="summary-value">{formatWon(report.vat)}</span>
@@ -81,18 +117,6 @@ export function ReportSummaryContent({ title, profile, car, report, dash, format
         <div className="summary-row total">
           <span>계</span>
           <span className="summary-value">{formatWon(report.total)}</span>
-        </div>
-        <div className="summary-row">
-          <span>차량 정비비</span>
-          <span className="summary-value">{formatWon(report.maint)}</span>
-        </div>
-        <div className="summary-row">
-          <span>차량 주유비</span>
-          <span className="summary-value">{formatWon(report.fuel)}</span>
-        </div>
-        <div className="summary-row">
-          <span>통행료/기타</span>
-          <span className="summary-value">{formatWon(report.misc)}</span>
         </div>
       </div>
     </>

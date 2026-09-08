@@ -1,10 +1,9 @@
 // @ts-check
 // §6: 리포트 파일명·공유용 순수 헬퍼를 한곳에 모아 이름/연락처 규칙을 한 번에 대조하기 위해 분리하지 않음(238줄)
-import { monthTotal } from './expenses.js'
-import { monthWorkFareSummary } from './workData.js'
-import { resolveFixedUnitPrice } from '../domain/clients.js'
+import { getFixedRouteClient, resolveFixedUnitPrice } from '../domain/clients.js'
 import { getCallDetails, isOffDay } from '../domain/day-record.js'
 import { getCallDetailCommissionAmount } from '../domain/financeCore.js'
+import { monthSettlementSummary } from '../domain/monthSettlement.js'
 import { parseCurrencyValue } from '../domain/money.js'
 import {
   readOwnerCars,
@@ -192,11 +191,15 @@ export function buildDetailReport(workData, year, monthIndex, clientFilter, sett
  * @param {number} monthIndex
  */
 export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwnerExpenses(ownerKey), cars = readOwnerCars(ownerKey), practiceSettings = readOwnerSettings(ownerKey), workData = readOwnerWorkData(ownerKey), clients = readOwnerClients(ownerKey), profile = readOwnerProfile(ownerKey)) {
+  void expenses
   const unitPrice = resolveFixedUnitPrice({ clients })
-  const fare = monthWorkFareSummary(workData, year, monthIndex, unitPrice)
-  const maint = monthTotal(expenses, 'maint', year, monthIndex)
-  const fuel = monthTotal(expenses, 'fuel', year, monthIndex)
-  const misc = monthTotal(expenses, 'misc', year, monthIndex)
+  const fixedRouteClient = getFixedRouteClient({ clients })
+  const settled = monthSettlementSummary(workData, year, monthIndex, {
+    unitPrice,
+    fixedRouteClient,
+    activeFixedOn: !!practiceSettings.fixedOn,
+    clients,
+  })
   const mainCar = (cars || []).find((car) => car.type === 'main') || cars[0] || null
 
   return {
@@ -205,15 +208,14 @@ export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwne
     title: `${year}년 ${monthIndex + 1}월 운송비 내역서`,
     profile,
     mainCar,
-    trips: fare.trips,
-    callTrips: fare.callTrips,
-    unitPrice,
-    fare: fare.fare,
-    vat: fare.vat,
-    total: fare.total,
-    maint,
-    fuel,
-    misc,
+    distanceKm: settled.distanceKm,
+    fixedBaseFare: settled.fixedBaseFare,
+    defaultBaseFare: settled.defaultBaseFare,
+    fareByClient: settled.fareByClient,
+    commissionByClient: settled.commissionByClient,
+    commissionLabelByClient: settled.commissionLabelByClient,
+    vat: settled.vat,
+    total: settled.total,
   }
 }
 

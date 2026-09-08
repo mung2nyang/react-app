@@ -15,12 +15,15 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: ReportPage } = await import('./ReportPage.jsx')
 const { default: TaxInvoicePage } = await import('./TaxInvoicePage.jsx')
-const { commitInvoices, commitWorkData } = await import('../store/commitHelpers.js')
+const { commitClients, commitInvoices, commitWorkData } = await import('../store/commitHelpers.js')
 
-test('일지를 커밋하면 운송비 내역서가 리마운트 없이 횟수를 갱신한다', async () => {
+test('일지를 커밋하면 운송비 내역서가 리마운트 없이 합계를 갱신한다', async () => {
   const ownerKey = 'sot-workdata-report'
   const now = new Date()
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-15`
+  commitClients(ownerKey, [
+    { id: 'c-sot', companyName: '소트거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
+  ], { syncToCloud: false })
   commitWorkData(ownerKey, {}, { syncToCloud: false })
 
   const container = document.createElement('div')
@@ -30,7 +33,8 @@ test('일지를 커밋하면 운송비 내역서가 리마운트 없이 횟수�
     await act(async () => {
       root.render(React.createElement(ReportPage, { ownerKey, onBack: () => {} }))
     })
-    assert.ok(container.textContent.includes('횟수 0회'))
+    assert.ok(container.textContent.includes('월간 총 운행거리'), '요약 화면에 거리 행이 있어야 한다')
+    assert.equal(container.textContent.includes('소트거래처 기본 운송료'), false)
 
     await act(async () => {
       commitWorkData(ownerKey, {
@@ -38,8 +42,12 @@ test('일지를 커밋하면 운송비 내역서가 리마운트 없이 횟수�
       }, { syncToCloud: false })
     })
     assert.ok(
-      container.textContent.includes('횟수 4회'),
-      'loadWorkData 스냅샷이면 리마운트 없이 횟수가 안 바뀐다',
+      container.textContent.includes('소트거래처 기본 운송료'),
+      'loadWorkData 스냅샷이면 리마운트 없이 거래처 매출이 안 바뀐다',
+    )
+    assert.ok(
+      container.textContent.includes('40,000 원'),
+      '4회×10,000원이 리마운트 없이 반영돼야 한다',
     )
   } finally {
     await act(async () => { root.unmount() })

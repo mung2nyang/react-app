@@ -5,6 +5,7 @@ import {
   buildDetailReport,
   buildDetailReportFileName,
   buildDetailReportImageFileName,
+  buildMonthReport,
   buildReportFileName,
   buildReportImageFileName,
   detailReportClientOptions,
@@ -170,5 +171,90 @@ describe('getDetailReportClientContact', () => {
     assert.equal(getDetailReportClientContact('detail', 'ALL', clients), null)
     assert.equal(getDetailReportClientContact('detail', '동부', clients), null)
     assert.equal(getDetailReportClientContact('detail', '없는곳', clients), null)
+  })
+})
+
+describe('buildMonthReport', () => {
+  /** @type {any} */
+  const profile = { name: '차주' }
+  /** @type {Array<import('../domain/financeTypes.js').CarLike>} */
+  const cars = [{ id: 'm1', type: 'main', number: '12가3456' }]
+  const settings = { fixedOn: true }
+
+  test('거래처별 매출·수수료를 분리하고 합계는 손계산과 같다', () => {
+    const clients = [
+      {
+        id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: 100000,
+        commEnabled: true, commType: 'percent', commValue: 10,
+      },
+    ]
+    const workData = {
+      '2026-09-01': {
+        fixedCount: 1,
+        callDetails: [{ client: '한진', fare: 40000 }],
+      },
+    }
+    const report = buildMonthReport(
+      'test-month-report-client', 2026, 8, [], cars, settings, workData, clients, profile,
+    )
+    // fare=140000, commission=14000, vat=14000, total=140000
+    assert.equal(report.fareByClient['한진'], 140000)
+    assert.equal(report.commissionByClient['한진'], 14000)
+    assert.equal(report.commissionLabelByClient['한진'], '10%')
+    assert.equal(report.fixedBaseFare, 0)
+    assert.equal(report.defaultBaseFare, 0)
+    assert.equal(report.vat, 14000)
+    assert.equal(report.total, 140000)
+    assert.equal('trips' in report, false)
+    assert.equal('maint' in report, false)
+    assert.equal('unitPrice' in report, false)
+  })
+
+  test('미지정 콜+고정노선(거래처명 없음)은 하나의 기본 운송료로 합쳐진다', () => {
+    const clients = [
+      { id: 'c1', companyName: '', fixedRouteLinked: true, fixedUnitPrice: 10000 },
+    ]
+    const workData = {
+      '2026-09-02': {
+        fixedCount: 2,
+        callDetails: [{ fare: 30000 }, { client: '미등록', fare: 20000 }],
+      },
+    }
+    const report = buildMonthReport(
+      'test-month-report-base', 2026, 8, [], cars, settings, workData, clients, profile,
+    )
+    assert.equal(report.fixedBaseFare, 20000)
+    assert.equal(report.defaultBaseFare, 50000)
+    assert.deepEqual(report.fareByClient, {})
+    const combined = report.fixedBaseFare + report.defaultBaseFare
+    assert.equal(combined, 70000)
+    assert.equal(report.vat, 7000)
+    assert.equal(report.total, 77000)
+  })
+
+  test('고정노선 미연동 금액은 fixedBaseFare에 들어가 기본 운송료 합에 포함된다', () => {
+    const clients = [{ id: 'c1', companyName: '동부' }] // fixedRouteLinked 없음
+    const workData = {
+      '2026-09-03': {
+        fixedCount: 0,
+        callDetails: [{ fare: 10000 }],
+        dailyDistance: 12,
+      },
+    }
+    // 단가도 0이므로 fixedBaseFare=0, defaultBaseFare=10000
+    const report = buildMonthReport(
+      'test-month-report-distance', 2026, 8, [], cars, settings, workData, clients, profile,
+    )
+    assert.equal(report.distanceKm, 12)
+    assert.equal(report.defaultBaseFare, 10000)
+  })
+
+  test('distanceKm이 0이어도 필드가 반환된다', () => {
+    const report = buildMonthReport(
+      'test-month-report-zero-distance', 2026, 8, [], cars, settings, {}, [], profile,
+    )
+    assert.equal(report.distanceKm, 0)
+    assert.equal(report.vat, 0)
+    assert.equal(report.total, 0)
   })
 })
