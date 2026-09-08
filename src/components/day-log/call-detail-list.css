@@ -1,0 +1,49 @@
+/* 콜 목록 컨테이너·일일 합계 — main-calendar.css에서 옮김. CallDetailList.jsx가 직접 import. */
+
+.work-log-page .call-detail-daily-summary {
+  margin-top: 9px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary-color) 4%, var(--input-bg));
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+}
+
+.work-log-page .call-detail-daily-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 2px 0;
+}
+
+.work-log-page .call-detail-daily-summary .commission-row {
+  color: var(--sunday-color);
+}
+
+.work-log-page .call-detail-daily-summary .summary-grand-total,
+.work-log-page .call-detail-daily-summary .summary-grand-total strong {
+  padding-top: 4px;
+  color: var(--primary-color);
+  font-size: var(--fs-4);
+  font-weight: 850;
+}
+
+.call-detail-section {
+  margin-top: 22px;
+  padding-bottom: 12px;
+}
+
+.call-detail-daily-summary {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--input-bg);
+}
+
+.call-detail-daily-summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}

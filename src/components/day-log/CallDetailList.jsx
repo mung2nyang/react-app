@@ -3,6 +3,7 @@ import { callFareTotal, callVatTotal } from '../../domain/day-record.js'
 import { getDetailPaymentSummary } from '../../lib/finance.js'
 import { commissionInfo } from './callDetailFormHelpers.js'
 import CallDetailCard from './CallDetailCard.jsx'
+import './call-detail-list.css'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
