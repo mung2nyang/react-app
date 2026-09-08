@@ -26,7 +26,8 @@ const { getState } = await import('../../store/app-store.js')
 const { normalizeSettings } = await import('../../domain/practiceSettings.js')
 const { getMonthlyFareRevenue, getOwnerMonthlyFinanceDetail } = await import('../../domain/finance.js')
 const { buildFinanceSettings } = await import('../../lib/ownerFinance.js')
-const { monthWorkFareSummary } = await import('../../domain/day-record.js')
+const { monthSettlementSummary } = await import('../../domain/monthSettlement.js')
+const { getFixedRouteClient, resolveFixedUnitPrice } = await import('../../domain/clients.js')
 
 test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 단가 입력은 없다', async () => {
   const ownerKey = 'test-calendar-unitprice-owner'
@@ -106,25 +107,28 @@ test('고정노선 거래처가 없으면 정산 카드에 1회 단가가 없고
   }
 })
 
-test('홈 월간 정산 카드의 운임 수수료 = 매출 income.commission.total, 합계는 그만큼 차감', async () => {
+test('홈 월간 정산 카드는 그 화면 자신의 거래처 수수료를 보여주고 합계에 반영한다', async () => {
   const ownerKey = 'test-calendar-commission-owner'
   const dateKey = '2026-08-10'
-  const monthKey = '2026-08'
-
-  commitClients(ownerKey, [
+  const clients = [
     {
       id: 'client-comm', companyName: '수수료거래처', fixedRouteLinked: true, fixedUnitPrice: 10000,
       commEnabled: true, commType: 'percent', commValue: 10,
     },
-  ], { syncToCloud: false })
+  ]
+
+  commitClients(ownerKey, clients, { syncToCloud: false })
   commitWorkData(ownerKey, {
     [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-comm', client: '수수료거래처', fare: 100000 }] },
   }, { syncToCloud: false })
 
-  const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
-  const revenueDetail = getOwnerMonthlyFinanceDetail(monthKey, 'owner', buildFinanceSettings(ownerKey), workDataByLogId, [])
-  const commissionTotal = revenueDetail.income.commission.total
-  assert.equal(commissionTotal, 10000, '거래처 10% × 운임 100,000 = 10,000')
+  const workData = getState().workLogs[ownerKey]?.main || {}
+  const expected = monthSettlementSummary(workData, 2026, 7, {
+    unitPrice: resolveFixedUnitPrice({ clients }),
+    fixedRouteClient: getFixedRouteClient({ clients }),
+    clients,
+  })
+  assert.equal(expected.commissionTotal, 10000, '거래처 10% × 운임 100,000 = 10,000')
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -138,19 +142,17 @@ test('홈 월간 정산 카드의 운임 수수료 = 매출 income.commission.to
       ))
     })
 
-    assert.ok(container.textContent.includes('운임 수수료'), '정산 카드에 운임 수수료 행이 있어야 한다')
+    assert.ok(container.textContent.includes('수수료거래처 수수료 (10%)'), '거래처별 수수료 행이 있어야 한다')
     assert.ok(
-      container.textContent.includes(`-${commissionTotal.toLocaleString('ko-KR')} 원`),
-      `운임 수수료 금액이 매출과 같은 -${commissionTotal.toLocaleString('ko-KR')} 원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
+      container.textContent.includes('- 10,000 원'),
+      `수수료 금액이 - 10,000 원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
     )
 
-    const fareSummary = monthWorkFareSummary(workDataByLogId.main, 2026, 7, 10000)
-    const settledTotal = fareSummary.total - commissionTotal
     const totalRow = container.querySelector('.summary-row.total .summary-value')
     assert.equal(
       totalRow?.textContent,
-      `${settledTotal.toLocaleString('ko-KR')} 원`,
-      `합계는 운임+부가세(${fareSummary.total.toLocaleString('ko-KR')})에서 수수료를 뺀 ${settledTotal.toLocaleString('ko-KR')} 원이어야 한다`,
+      `${expected.total.toLocaleString('ko-KR')} 원`,
+      `합계는 monthSettlementSummary.total(${expected.total.toLocaleString('ko-KR')})과 같아야 한다`,
     )
   } finally {
     await act(async () => { root.unmount() })
@@ -183,20 +185,25 @@ test('driverExpenses가 있어도 owner scope income.commission.total은 불변(
   assert.equal(withDriver.expense.maint.total, 0, 'owner scope는 driverExpenses를 비용에 넣지 않는다')
 })
 
-test('수수료가 없으면 정산 카드에 운임 수수료 행이 없고 합계는 monthWorkFareSummary.total과 같다', async () => {
+test('수수료가 없으면 거래처 수수료 행이 없고 합계는 monthSettlementSummary.total과 같다', async () => {
   const ownerKey = 'test-calendar-commission-zero'
   const dateKey = '2026-08-12'
-
-  commitClients(ownerKey, [
+  const clients = [
     { id: 'client-nocomm', companyName: '무수수료거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
-  ], { syncToCloud: false })
+  ]
+
+  commitClients(ownerKey, clients, { syncToCloud: false })
   commitWorkData(ownerKey, {
     [dateKey]: { isOff: false, fixedCount: 2, callDetails: [] },
   }, { syncToCloud: false })
 
-  const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
-  const revenueDetail = getOwnerMonthlyFinanceDetail('2026-08', 'owner', buildFinanceSettings(ownerKey), workDataByLogId, [])
-  assert.equal(revenueDetail.income.commission.total, 0)
+  const workData = getState().workLogs[ownerKey]?.main || {}
+  const expected = monthSettlementSummary(workData, 2026, 7, {
+    unitPrice: resolveFixedUnitPrice({ clients }),
+    fixedRouteClient: getFixedRouteClient({ clients }),
+    clients,
+  })
+  assert.equal(expected.commissionTotal, 0)
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -210,13 +217,13 @@ test('수수료가 없으면 정산 카드에 운임 수수료 행이 없고 합
       ))
     })
 
-    assert.equal(container.textContent.includes('운임 수수료'), false, '수수료 0이면 행을 숨긴다')
-    const fareSummary = monthWorkFareSummary(workDataByLogId.main, 2026, 7, 10000)
+    assert.equal(container.querySelector('.summary-client-commission-row'), null, '수수료 0이면 행을 숨긴다')
+    assert.equal(container.textContent.includes('수수료 ('), false)
     const totalRow = container.querySelector('.summary-row.total .summary-value')
     assert.equal(
       totalRow?.textContent,
-      `${fareSummary.total.toLocaleString('ko-KR')} 원`,
-      '합계는 기존 monthWorkFareSummary.total과 같아야 한다',
+      `${expected.total.toLocaleString('ko-KR')} 원`,
+      '합계는 monthSettlementSummary.total과 같아야 한다',
     )
   } finally {
     await act(async () => { root.unmount() })
@@ -280,8 +287,8 @@ test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생
       ))
     })
     const withoutProp = container.textContent
-    assert.ok(withoutProp.includes('운임 수수료'))
-    assert.ok(withoutProp.includes('-10,000 원'))
+    assert.ok(withoutProp.includes('메인수수료 수수료 (10%)'))
+    assert.ok(withoutProp.includes('- 10,000 원'))
 
     await act(async () => {
       root.render(React.createElement(
@@ -290,8 +297,8 @@ test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생
         React.createElement(CalendarPage, { ownerKey, logId: 'main', onSelectDay: () => {} }),
       ))
     })
-    assert.equal(container.textContent.includes('운임 수수료'), true)
-    assert.equal(container.textContent.includes('-10,000 원'), true)
+    assert.equal(container.textContent.includes('메인수수료 수수료 (10%)'), true)
+    assert.equal(container.textContent.includes('- 10,000 원'), true)
     assert.equal(container.querySelector('.sub-car-log-banner'), null)
   } finally {
     await act(async () => { root.unmount() })
@@ -340,8 +347,10 @@ test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수
     })
     assert.ok(container.querySelector('.sub-car-log-banner'), '서브 배너가 있어야 한다')
     assert.ok(container.textContent.includes('9999 운행 일지'))
-    assert.equal(container.textContent.includes('운임 수수료'), false, '서브 모드 수수료 숨김')
-    assert.ok(container.textContent.includes('40,000 원'), '서브 fixedCount 2×20,000')
+    assert.equal(container.querySelector('.summary-client-commission-row'), null, '이 픽스처엔 수수료 없음')
+    // 고정 2×20,000 + 콜 50,000 = 거래처 버킷 90,000 (구조 통일 후 한 행으로 합산)
+    assert.ok(container.textContent.includes('서브거래처 기본 운송료'))
+    assert.ok(container.textContent.includes('90,000 원'), '서브 고정+콜 합산')
     assert.equal(container.textContent.includes('180,000 원'), false, '메인 fixedCount 9는 안 보임')
     assert.equal(
       container.querySelector('.unpaid-summary-card'),
@@ -382,9 +391,13 @@ test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님
         React.createElement(CalendarPage, { ownerKey, logId: 'main', onSelectDay: () => {} }),
       ))
     })
-    const fareSummary = monthWorkFareSummary(workDataByLogId.main, 2026, 7, 25000)
-    assert.equal(fareSummary.fixedFare, expectedFixed)
-    assert.ok(fareSummary.fixedFare > 0)
+    const clients = getState().clients[ownerKey] || []
+    const settled = monthSettlementSummary(workDataByLogId.main, 2026, 7, {
+      unitPrice: 25000,
+      fixedRouteClient: getFixedRouteClient({ clients }),
+      clients,
+    })
+    assert.equal(settled.fareByClient['고정노선'], expectedFixed)
     assert.ok(
       container.textContent.includes('75,000 원'),
       `달력 고정운임이 매출과 같은 75,000원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,

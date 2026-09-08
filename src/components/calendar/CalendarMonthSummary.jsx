@@ -1,31 +1,21 @@
 // @ts-check
 // Step 5(달력 홈 재작성): MainPage.jsx의 미수금 미니 카드 + 월간 운송료 정산 카드를 옮긴다.
-// 1회 단가 입력은 없다 — 고정노선 운임은 거래처 fixedUnitPrice로만 계산한다.
+// 이관 계획 ③-2: monthSettlementSummary 반환값으로 거래처별·파렛트·서브수수료·지출 행 렌더.
 import { formatWon } from '../../domain/money.js'
 
 /**
- * domain/day-record.js의 monthWorkFareSummary 반환 모양(그 파일은 아직
- * // @ts-check가 없어 공식 타입을 내보내지 않는다 — 여기서 소비하는 형태만 정의).
- * @typedef {Object} FareSummary
- * @property {number} trips
- * @property {number} callTrips
- * @property {number} fixedFare
- * @property {number} callFare
- * @property {number} fare
- * @property {number} vat
- * @property {number} total
+ * @typedef {ReturnType<typeof import('../../domain/monthSettlement.js').monthSettlementSummary>} MonthSettlementSummary
  */
 
 /**
  * @param {Object} props
  * @param {boolean} props.paymentOn
  * @param {number} props.unpaidTotal
- * @param {FareSummary} props.fareSummary
- * @param {number} [props.commissionTotal] 거래처 운임 수수료 합(매출 화면과 같은
- *   getOwnerMonthlyFinanceDetail(...).income.commission.total). 표시 전용.
+ * @param {MonthSettlementSummary} props.summary
+ * @param {boolean} [props.distanceOn]
  */
-export default function CalendarMonthSummary({ paymentOn, unpaidTotal, fareSummary, commissionTotal = 0 }) {
-  const commission = Math.max(0, Number(commissionTotal) || 0)
+export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, distanceOn = false }) {
+  const clientNames = Object.keys(summary.fareByClient || {})
   return (
     <>
       {paymentOn && unpaidTotal > 0 && (
@@ -42,38 +32,85 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, fareSumma
       <div className="summary-card">
         <div className="summary-title">
           <span>월간 운송료 정산</span>
-          <span>횟수 {fareSummary.trips}회 · 세부 입력 {fareSummary.callTrips}건</span>
+          <span>횟수 {summary.trips}회 · 세부 입력 {summary.callTrips}건</span>
         </div>
-        <div className="summary-row">
-          <span>기본 운송료 (횟수×단가)</span>
-          <span className="summary-value">{formatWon(fareSummary.fixedFare)}</span>
-        </div>
-        <div className="summary-row">
-          <span>세부 입력 운임</span>
-          <span className="summary-value">{formatWon(fareSummary.callFare)}</span>
-        </div>
-        <div className="summary-row">
-          <span>공급가액</span>
-          <span className="summary-value">{formatWon(fareSummary.fare)}</span>
-        </div>
-        <div className="summary-row">
-          <span>부가세 (공급가액 기준 10%)</span>
-          <span className="summary-value">{formatWon(fareSummary.vat)}</span>
-        </div>
-        {commission > 0 && (
+
+        {distanceOn && summary.distanceKm > 0 && (
           <div className="summary-row">
-            <span>운임 수수료</span>
-            <span className="summary-value">-{formatWon(commission)}</span>
+            <span>실 운행거리</span>
+            <span className="summary-value">{summary.distanceKm} km</span>
           </div>
         )}
+
+        {summary.fixedBaseFare > 0 && (
+          <div className="summary-row">
+            <span>고정 기본 운송료</span>
+            <span className="summary-value">{formatWon(summary.fixedBaseFare)}</span>
+          </div>
+        )}
+        {summary.defaultBaseFare > 0 && (
+          <div className="summary-row">
+            <span>미지정 거래처 운송료</span>
+            <span className="summary-value">{formatWon(summary.defaultBaseFare)}</span>
+          </div>
+        )}
+        {clientNames.map((client) => (
+          <div key={client}>
+            <div className="summary-row">
+              <span>{client} 기본 운송료</span>
+              <span className="summary-value">{formatWon(summary.fareByClient[client])}</span>
+            </div>
+            {(summary.commissionByClient[client] || 0) > 0 && (
+              <div className="summary-row summary-client-commission-row">
+                <span className="summary-client-commission-label">
+                  {client} 수수료 ({summary.commissionLabelByClient[client]})
+                </span>
+                <span className="summary-value">- {formatWon(summary.commissionByClient[client])}</span>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {summary.palletFare > 0 && (
+          <div className="summary-row">
+            <span>파렛트 회수 청구액</span>
+            <span className="summary-value">{formatWon(summary.palletFare)}</span>
+          </div>
+        )}
+        {summary.subCarComm > 0 && (
+          <div className="summary-row">
+            <span>{summary.subCarCommLabel}</span>
+            <span className="summary-value">- {formatWon(summary.subCarComm)}</span>
+          </div>
+        )}
+
+        <div className="summary-row">
+          <span>부가세 (공급가액 기준 10%)</span>
+          <span className="summary-value">{formatWon(summary.vat)}</span>
+        </div>
         <div className="summary-row total">
           <span>합계</span>
-          <span className="summary-value">{formatWon(fareSummary.total - commission)}</span>
+          <span className="summary-value">{formatWon(summary.total)}</span>
         </div>
-        <p className="summary-hint">
-          횟수×단가에 세부 입력 운임을 더합니다. 면제 건은 부가세 0원입니다.
-          {commission > 0 && ' 운임 수수료는 거래처(콜 저장 시점) 기준입니다.'}
-        </p>
+
+        {summary.maint > 0 && (
+          <div className="summary-row">
+            <span>차량 정비비</span>
+            <span className="summary-value">{formatWon(summary.maint)}</span>
+          </div>
+        )}
+        {summary.fuel > 0 && (
+          <div className="summary-row">
+            <span>차량 주유비</span>
+            <span className="summary-value">{formatWon(summary.fuel)}</span>
+          </div>
+        )}
+        {summary.misc > 0 && (
+          <div className="summary-row">
+            <span>통행료/기타</span>
+            <span className="summary-value">{formatWon(summary.misc)}</span>
+          </div>
+        )}
       </div>
     </>
   )

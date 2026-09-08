@@ -7,27 +7,24 @@
 // migration-plan.md 1.3이 금지한 "화면이 자기만의 스냅샷을 갖는" 패턴을 이 화면에서
 // 처음 깬다(migration-audit-plan.md "Step 5의 정확한 시작점").
 // Step 9 슬라이스 B: logId prop — 서브 차량 달력(workData·paymentOn·수수료 게이트).
+// 이관 계획 ③-2: 월간 정산 카드를 monthSettlementSummary로 연결.
 import { useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../domain/calendarViewDate.js'
-import { resolveFixedUnitPrice } from '../../domain/clients.js'
-import { monthCallUnpaidTotal, monthWorkFareSummary } from '../../domain/day-record.js'
-import { getOwnerMonthlyFinanceDetail } from '../../lib/finance.js'
-import { buildFinanceSettings } from '../../lib/ownerFinance.js'
+import { getFixedRouteClient, resolveFixedUnitPrice } from '../../domain/clients.js'
+import { monthCallUnpaidTotal } from '../../domain/day-record.js'
+import { monthSettlementSummary } from '../../domain/monthSettlement.js'
 import {
-  useOwnerCars, useOwnerClients, useOwnerDrivers, useOwnerExpenses,
-  useOwnerProfile, useOwnerSettings, useOwnerWorkData, useOwnerWorkDataByLogId,
+  useOwnerCars, useOwnerClients, useOwnerExpenses,
+  useOwnerSettings, useOwnerWorkData, useOwnerWorkDataByLogId,
 } from '../../store/ownerDataHooks.js'
-import { monthKeyOf } from '../revenue/revenueFormat.js'
 import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
 import CalendarSubLogBanner from './CalendarSubLogBanner.jsx'
 import '../../main-calendar.css'
 import './calendar.css'
-
-/** @typedef {import('./CalendarMonthSummary.jsx').FareSummary} FareSummary */
 
 const YEAR_OPTIONS = getYearOptions()
 const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ ({})
@@ -45,7 +42,7 @@ const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
 export default function CalendarPage({
-  ownerKey, logId = 'main', userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, onSelectDay,
+  ownerKey, logId = 'main', userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, showToast: _showToast, onSelectDay,
 }) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -61,30 +58,22 @@ export default function CalendarPage({
   const clients = useOwnerClients(ownerKey)
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
   const unitPrice = resolveFixedUnitPrice({ clients })
-
   const cars = useOwnerCars(ownerKey)
-  const profile = useOwnerProfile(ownerKey)
-  const drivers = useOwnerDrivers(ownerKey)
   const expenses = useOwnerExpenses(ownerKey)
-  const financeSettings = useMemo(() => {
-    void cars
-    void settings
-    void profile
-    void drivers
-    void clients
-    return buildFinanceSettings(ownerKey)
-  }, [ownerKey, cars, settings, profile, drivers, clients])
-  // 홈 운임 수수료 SoT(sot §4-7)는 메인 전용 — 서브 모드에서는 계산·표시하지 않는다.
-  const commissionTotal = useMemo(() => {
-    if (!isMain) return 0
-    return getOwnerMonthlyFinanceDetail(monthKeyOf(year, month), 'owner', financeSettings, workDataByLogId, expenses).income.commission.total
-  }, [isMain, year, month, financeSettings, workDataByLogId, expenses])
 
+  const fixedRouteClient = getFixedRouteClient({ clients })
+  const activeFixedOn = isMain ? !!settings.fixedOn : !!settings.subFixedOn
+  const car = isMain ? null : (cars || []).find((c) => c.number === logId) || null
+  // 서브차량 실거리: react-app에 subDistanceOn 설정이 없어 이번 슬라이스는 메인만.
+  const distanceOn = isMain && !!settings.distanceOn
+
+  const summary = useMemo(
+    () => monthSettlementSummary(workData, year, month, {
+      logId, unitPrice, fixedRouteClient, activeFixedOn, clients, car, expenses,
+    }),
+    [workData, year, month, logId, unitPrice, fixedRouteClient, activeFixedOn, clients, car, expenses],
+  )
   const cells = useMemo(() => buildCalendarCells(viewDate), [viewDate])
-  const fareSummary = /** @type {FareSummary} */ (useMemo(
-    () => monthWorkFareSummary(workData, year, month, unitPrice),
-    [workData, year, month, unitPrice],
-  ))
   const unpaidTotal = useMemo(() => monthCallUnpaidTotal(workData, year, month), [workData, year, month])
 
   /** @param {number} nextYear @param {number} nextMonth */
@@ -123,8 +112,8 @@ export default function CalendarPage({
       <CalendarMonthSummary
         paymentOn={paymentOn}
         unpaidTotal={unpaidTotal}
-        fareSummary={fareSummary}
-        commissionTotal={commissionTotal}
+        summary={summary}
+        distanceOn={distanceOn}
       />
 
       {userName && <p className="main-practice-note">{userName}님 · 달력에 횟수 기록</p>}
