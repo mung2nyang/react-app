@@ -1160,6 +1160,18 @@
   border-bottom-left-radius: 11px;
 }
 
+/* ?? style.css:2880-2889 ? PDF/??? ???? ? ??? 2? */
+.report-split-container {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.report-split-column {
+  flex: 1;
+  width: 50%;
+}
+
 /* PDF 출력 모드 — 네비게이션 숨김 + 표/요약 인쇄용 색·여백 */
 body.pdf-export-mode {
   --bg-color: #ffffff !important;

@@ -211,6 +211,7 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
             report={report}
             dash={dash}
             formatWon={formatWon}
+            isExporting={savingPdf || savingImage}
           />
         )}
       </div>

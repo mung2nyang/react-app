@@ -6,6 +6,7 @@ import {
   buildDetailReportFileName,
   buildDetailReportImageFileName,
   buildMonthReport,
+  buildReportDayRows,
   buildReportFileName,
   buildReportImageFileName,
   detailReportClientOptions,
@@ -256,5 +257,77 @@ describe('buildMonthReport', () => {
     assert.equal(report.distanceKm, 0)
     assert.equal(report.vat, 0)
     assert.equal(report.total, 0)
+  })
+})
+
+describe('buildReportDayRows', () => {
+  test('레코드 없는 날은 제외하고 isOff는 휴무 행으로 남긴다', () => {
+    const rows = buildReportDayRows({
+      '2026-09-01': { isOff: true },
+      '2026-09-03': { fixedCount: 2 },
+      // 2일은 레코드 없음 → 제외
+    }, 2026, 8, { unitPrice: 10000, showPallet: false })
+    assert.equal(rows.length, 2)
+    assert.deepEqual(rows[0], { day: 1, isOff: true, workVal: 0, palletCount: 0, amount: 0 })
+    assert.equal(rows[1].day, 3)
+    assert.equal(rows[1].workVal, 2)
+    assert.equal(rows[1].amount, 20000)
+  })
+
+  test('작업 0건·파렛트 0인 날은 표에서 빠진다', () => {
+    const rows = buildReportDayRows({
+      '2026-09-05': { fixedCount: 0, callDetails: [], palletCount: 0 },
+    }, 2026, 8, { unitPrice: 10000, showPallet: true })
+    assert.equal(rows.length, 0)
+  })
+
+  test('공차는 횟수 0, 혼짐은 pending/-1/undefined일 때만 1회', () => {
+    const rows = buildReportDayRows({
+      '2026-09-10': {
+        callDetails: [
+          { fare: 1000, distanceType: '공차' },
+          { fare: 2000, distanceType: '혼짐', linkedLoadIndex: 'pending' },
+          { fare: 3000, distanceType: '혼짐', linkedLoadIndex: '0' },
+          { fare: 4000 },
+        ],
+      },
+    }, 2026, 8, { unitPrice: 0, showPallet: false })
+    assert.equal(rows.length, 1)
+    assert.equal(rows[0].workVal, 2) // pending 혼짐 + 일반
+    assert.equal(rows[0].amount, 1000 + 2000 + 3000 + 4000)
+  })
+
+  test('showPallet on/off — 파렛트 횟수·금액 반영', () => {
+    const client = { id: 'c1', companyName: '고정', fixedRouteLinked: true, palletOn: true, palletPrice: 5000 }
+    const workData = {
+      '2026-09-12': { fixedCount: 1, palletCount: 3, callDetails: [] },
+    }
+    const off = buildReportDayRows(workData, 2026, 8, {
+      unitPrice: 10000, fixedRouteClient: client, showPallet: false,
+    })
+    assert.equal(off[0].palletCount, 0)
+    assert.equal(off[0].amount, 10000)
+
+    const on = buildReportDayRows(workData, 2026, 8, {
+      unitPrice: 10000, fixedRouteClient: client, showPallet: true,
+    })
+    assert.equal(on[0].palletCount, 3)
+    assert.equal(on[0].amount, 10000 + 15000)
+  })
+
+  test('buildMonthReport가 days·showPallet을 채운다', () => {
+    const clients = [
+      { id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: 10000, palletOn: true, palletPrice: 2000 },
+    ]
+    const workData = { '2026-09-01': { fixedCount: 2, palletCount: 1 } }
+    const report = buildMonthReport(
+      'test-days-field', 2026, 8, [], [{ id: 'm1', type: 'main', number: '1' }],
+      { fixedOn: true }, workData, clients, /** @type {any} */ ({ name: 'a' }),
+    )
+    assert.equal(report.showPallet, true)
+    assert.equal(report.days.length, 1)
+    assert.equal(report.days[0].workVal, 2)
+    assert.equal(report.days[0].palletCount, 1)
+    assert.equal(report.days[0].amount, 22000)
   })
 })
