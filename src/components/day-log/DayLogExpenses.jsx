@@ -4,6 +4,7 @@ import ExpenseFormModal from '../ExpenseFormModal.jsx'
 import ExpenseGroups from './ExpenseGroups.jsx'
 import ExpenseSelectPanel from './ExpenseSelectPanel.jsx'
 import InlineSheet from './InlineSheet.jsx'
+import './day-log-expenses.css'
 
 /** @type {Record<string, string>} */
 const KIND_ADD_CLASS = { maint: 'maint-add-direct-btn', fuel: 'fuel-add-direct-btn', misc: 'misc-add-direct-btn' }
