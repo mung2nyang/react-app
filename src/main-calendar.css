@@ -192,91 +192,6 @@ body:not(.account-flow-active) {
   stroke-linejoin: round;
 }
 
-.work-log-page {
-  text-align: left;
-}
-
-.work-log-page .btn-group-toggle {
-  margin-bottom: 10px;
-}
-
-.work-log-page .toggle-btn {
-  min-height: 44px;
-  border-radius: 14px;
-  font-size: var(--fs-3);
-  background: var(--input-bg);
-  box-shadow: var(--shadow-sm);
-}
-
-.work-log-page .modal-section {
-  margin-top: 10px;
-  padding: 13px 14px 14px;
-  border: 1px solid var(--border-color);
-  border-radius: 18px;
-  background-color: var(--card-bg);
-  box-shadow: var(--shadow-sm);
-}
-
-.work-log-page .modal-section-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 9px;
-  color: var(--primary-color);
-  font-size: var(--fs-4);
-  font-weight: 800;
-}
-
-.work-log-page .modal-section-title::before {
-  content: "";
-  display: inline-block;
-  width: 3px;
-  height: 13px;
-  background: currentColor;
-  border-radius: 4px;
-}
-
-.work-log-page .modal-section-title .compact-add-btn {
-  display: none;
-}
-
-.work-log-page .call-detail-add-row {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 10px;
-}
-
-.work-log-page .call-detail-add-btn,
-.work-log-page .maint-fuel-add-btn {
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  background: var(--input-bg);
-  color: var(--text-color);
-  box-shadow: var(--shadow-sm);
-  font: inherit;
-  font-size: var(--fs-2);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.work-log-page .maint-fuel-add-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 7px;
-  padding-top: 10px;
-}
-
-.work-log-page .maint-fuel-add-btn {
-  width: 100%;
-  min-width: 0;
-}
-
-.work-log-page .maint-add-direct-btn { color: var(--sunday-color); }
-.work-log-page .fuel-add-direct-btn { color: var(--primary-color); }
-.work-log-page .misc-add-direct-btn { color: #d97706; }
-
 .work-log-page .call-detail-modal-title {
   margin: 0;
   padding: 0 2px 11px;
@@ -606,11 +521,6 @@ body:not(.account-flow-active) {
   font-weight: 850;
 }
 
-.btn-group-toggle {
-  display: flex;
-  margin-bottom: 16px;
-}
-
 .toggle-btn {
   flex: 1;
   min-height: 44px;
@@ -622,17 +532,6 @@ body:not(.account-flow-active) {
   font-weight: 700;
   font-size: var(--fs-4);
   cursor: pointer;
-}
-
-.toggle-btn.active-off {
-  background-color: var(--off-badge-bg);
-  color: var(--off-badge-text);
-  border-color: var(--off-badge-bg);
-}
-
-.modal-work-details.is-off {
-  opacity: 0.3;
-  pointer-events: none;
 }
 
 .modal-section-title {
