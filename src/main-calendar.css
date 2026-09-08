@@ -1274,6 +1274,7 @@ body:not(.account-flow-active) {
 .nav-item span {
   font-size: var(--fs-floor);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .nav-item.active {
