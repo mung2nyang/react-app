@@ -32,7 +32,7 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
       <div className="summary-card">
         <div className="summary-title">
           <span>월간 운송료 정산</span>
-          <span>횟수 {summary.trips}회 · 세부 입력 {summary.callTrips}건</span>
+          <span>총 {summary.trips + summary.callTrips}회 운행</span>
         </div>
 
         {distanceOn && summary.distanceKm > 0 && (

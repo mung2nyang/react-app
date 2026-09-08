@@ -42,7 +42,7 @@ const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
 export default function CalendarPage({
-  ownerKey, logId = 'main', userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth, showToast: _showToast, onSelectDay,
+  ownerKey, logId = 'main', userName: _userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth: _onBackToAuth, showToast: _showToast, onSelectDay,
 }) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -115,13 +115,6 @@ export default function CalendarPage({
         summary={summary}
         distanceOn={distanceOn}
       />
-
-      {userName && <p className="main-practice-note">{userName}님 · 달력에 횟수 기록</p>}
-      {onBackToAuth && (
-        <button type="button" className="main-practice-back" onClick={onBackToAuth}>
-          처음으로 돌아가기
-        </button>
-      )}
     </div>
   )
 }
