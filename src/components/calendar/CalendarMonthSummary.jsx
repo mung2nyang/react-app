@@ -96,7 +96,7 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
         {summary.maint > 0 && (
           <div
             className="summary-row"
-            style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed var(--border-color)' }}
+            style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed var(--border-color)', color: 'var(--sunday-color)' }}
           >
             <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               <svg className="inline-icon sm" viewBox="0 0 24 24">

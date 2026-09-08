@@ -1,4 +1,4 @@
-:root {
+:root:not([data-theme="dark"]) {
   --saturday-color: #3182ce;
   --sunday-color: #e53e3e;
   --today-bg: #edf2f7;
@@ -27,6 +27,7 @@ body:not(.account-flow-active) {
 }
 
 .main-page .header {
+  margin-top: 40px;
   margin-bottom: 10px;
 }
 
