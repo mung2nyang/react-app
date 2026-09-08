@@ -133,3 +133,53 @@ test('distanceOn이 꺼져 있으면 거리 행을 숨긴다', async () => {
     await cleanup()
   }
 })
+
+test('지출 3행 아이콘·색상·구분선과 서브수수료→파렛트 순서', async () => {
+  const { container, cleanup } = await renderSummary(emptySummary({
+    palletFare: 1000,
+    subCarComm: 2000,
+    subCarCommLabel: '3456 차량 10%',
+    vat: 0,
+    total: 0,
+    maint: 3000,
+    fuel: 4000,
+    misc: 5000,
+  }))
+  try {
+    const rows = [...container.querySelectorAll('.summary-card > .summary-row')]
+    const labelOf = (row) => (row.textContent || '').replace(/\s+/g, ' ').trim()
+    const subIdx = rows.findIndex((r) => labelOf(r).includes('3456 차량 10%'))
+    const palletIdx = rows.findIndex((r) => labelOf(r).includes('파렛트 회수 청구액'))
+    const maintIdx = rows.findIndex((r) => labelOf(r).includes('차량 정비비'))
+    const fuelIdx = rows.findIndex((r) => labelOf(r).includes('차량 주유비'))
+    const miscIdx = rows.findIndex((r) => labelOf(r).includes('통행료/기타'))
+    assert.ok(subIdx >= 0 && palletIdx >= 0)
+    assert.ok(subIdx < palletIdx, '서브차량 수수료 행이 파렛트 행보다 위여야 한다')
+    assert.ok(maintIdx < fuelIdx && fuelIdx < miscIdx)
+
+    const maintRow = rows[maintIdx]
+    assert.equal(maintRow.style.marginTop, '8px')
+    assert.equal(maintRow.style.paddingTop, '8px')
+    assert.equal(maintRow.style.borderTop, '1px dashed var(--border-color)')
+    assert.ok(maintRow.querySelector('svg.inline-icon.sm path'))
+
+    const fuelRow = rows[fuelIdx]
+    assert.equal(fuelRow.style.color, 'var(--primary-color)')
+    assert.equal(fuelRow.querySelectorAll('svg.inline-icon.sm line').length, 2)
+    assert.ok(fuelRow.querySelectorAll('svg.inline-icon.sm path').length >= 2)
+
+    const miscRow = rows[miscIdx]
+    assert.equal(miscRow.style.color, 'var(--sunday-color)')
+    assert.ok(miscRow.querySelector('svg.inline-icon.sm path'))
+
+    for (const row of [maintRow, fuelRow, miscRow]) {
+      const label = row.querySelector('span')
+      assert.ok(label)
+      assert.equal(label.style.display, 'flex')
+      assert.equal(label.style.alignItems, 'center')
+      assert.equal(label.style.gap, '4px')
+    }
+  } finally {
+    await cleanup()
+  }
+})
