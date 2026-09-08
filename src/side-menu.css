@@ -1,4 +1,4 @@
-:root {
+:root:not([data-theme="dark"]) {
   --fs-7: 1.18rem;
   --hover-bg: #edf2f7;
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
