@@ -25,6 +25,7 @@ import CallDetailForm from './CallDetailForm.jsx'
 import DayLogExpenses from './DayLogExpenses.jsx'
 import MessageTemplateSheet from './MessageTemplateSheet.jsx'
 import InlineSheet from './InlineSheet.jsx'
+import './fixed-route.css'
 import './day-log.css'
 
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */

@@ -642,20 +642,6 @@ body:not(.account-flow-active) {
   color: var(--text-color);
 }
 
-.fixed-route-group > label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: var(--fs-2);
-  font-weight: 750;
-}
-
-.fixed-route-input-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-}
-
 .input-box {
   width: 100%;
   min-height: 44px;
@@ -668,86 +654,6 @@ body:not(.account-flow-active) {
   text-align: center;
   outline: none;
   font-family: inherit;
-}
-
-.fixed-route-unit {
-  min-width: 46px;
-  color: var(--text-color);
-  font-size: var(--fs-3);
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.fixed-count-quick-buttons {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 5px;
-  margin-top: 8px;
-}
-
-.quick-count-btn {
-  min-width: 0;
-  min-height: 44px;
-  padding: 8px 2px;
-  border: 1px solid var(--border-color);
-  border-radius: 11px;
-  background: var(--input-bg);
-  color: var(--text-color);
-  font: inherit;
-  font-size: var(--fs-2);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.quick-count-btn.active {
-  border-color: var(--primary-color);
-  background: var(--primary-color);
-  color: #ffffff;
-  box-shadow: none;
-}
-
-.fixed-route-quick-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.fixed-route-chip {
-  display: inline-flex;
-  align-items: stretch;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--input-bg);
-}
-
-.fixed-route-chip button {
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  min-height: 40px;
-  font: inherit;
-}
-
-.fixed-route-chip-select {
-  padding: 6px 12px;
-  color: var(--text-color);
-  font-size: var(--fs-2);
-  font-weight: 700;
-}
-
-.fixed-route-chip-select .fixed-route-chip-count {
-  color: var(--primary-color);
-  font-weight: 800;
-  margin-left: 4px;
-}
-
-.fixed-route-chip-minus {
-  padding: 6px 10px 6px 4px;
-  color: var(--sub-text-color);
-  font-size: var(--fs-3);
-  border-left: 1px solid var(--border-color);
 }
 
 .call-detail-section {
