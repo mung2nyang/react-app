@@ -168,7 +168,13 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
           거래처
         </button>
         <button type="button" className="linked-driver-chip" onClick={() => showToast?.(SOON)}>운송내역서</button>
-        <button type="button" className="linked-driver-chip" onClick={() => showToast?.(SOON)}>정비/주유/기타</button>
+        <button
+          type="button"
+          className="linked-driver-chip"
+          onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/expenses`)}
+        >
+          정비/주유/기타
+        </button>
       </div>
 
       <section className="tax-invoice-summary" id="linkedDriverSettlementSummary">

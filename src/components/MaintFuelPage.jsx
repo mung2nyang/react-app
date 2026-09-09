@@ -1,6 +1,9 @@
 // @ts-check
+// 메인·서브 스코프를 한 화면에서 처리 — AGENTS §6 ≤250.
 import { useMemo, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
+import { getExpensesForLog } from '../domain/expenseScope.js'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import {
   emptyExpenseDraft, expenseTitle, filterMonth, groupExpensesByDate, KINDS,
@@ -17,10 +20,13 @@ const YEAR_OPTIONS = getYearOptions()
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
+ * @param {string} [props.logId]
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  */
-export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast }) {
+export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, onBack, showToast }) {
+  const { logId: rawLogId } = useParams()
+  const logId = logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)
   const items = useOwnerExpenses(ownerKey)
   const [kind, setKind] = useState(/** @type {ExpenseItem['kind']} */ ('maint'))
   const [viewDate, setViewDate] = useState(() => new Date())
@@ -30,10 +36,12 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
 
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
-  const list = useMemo(() => filterMonth(items, kind, year, month), [items, kind, year, month])
+  const scopedItems = useMemo(() => getExpensesForLog(items, logId), [items, logId])
+  const list = useMemo(() => filterMonth(scopedItems, kind, year, month), [scopedItems, kind, year, month])
   const groups = useMemo(() => groupExpensesByDate(list), [list])
-  const total = monthTotal(items, kind, year, month)
+  const total = monthTotal(scopedItems, kind, year, month)
   const kindLabel = KINDS.find((item) => item.value === kind)?.label || '정비'
+  const title = !logId || logId === 'main' ? '정비/주유/기타' : `${logId} 정비/주유/기타`
 
   /** @param {Array<ExpenseItem>} next @returns {Promise<boolean>} */
   async function persist(next) {
@@ -49,7 +57,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
 
   function openAdd() {
     setEditingId(null)
-    setDraft(emptyExpenseDraft(kind))
+    setDraft(emptyExpenseDraft(kind, undefined, logId && logId !== 'main' ? logId : undefined))
     setModalOpen(true)
   }
 
@@ -95,7 +103,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', onBack, showToast })
         <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
-        <div className="settings-title">정비/주유/기타</div>
+        <div className="settings-title">{title}</div>
         <div style={{ width: 40 }}></div>
       </div>
 
