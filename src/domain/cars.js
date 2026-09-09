@@ -106,9 +106,11 @@ export function upsertCar(cars, draft, editingId) {
   const type = draft.type === 'sub' ? 'sub' : 'main'
   const extra = driverFieldsFromDraft(draft, type)
   if (type === 'sub') {
+    // 이름·전화번호는 여기서 필수 아님(미연동·운행 일지 전용 등록 허용).
+    // 실제 기사 연동(초대) 시 필수 검증은 domain/drivers.js의 upsertDriver가 한다.
     const phoneDigits = extra.driverPhone.replace(/\D/g, '')
-    if (!extra.driverName || phoneDigits.length < 10) {
-      return { error: '기사명과 연락처를 확인해 주세요.', cars }
+    if (extra.driverPhone && phoneDigits.length < 10) {
+      return { error: '연락처 형식을 확인해 주세요.', cars }
     }
     if (extra.driverPayMode === 'salary' && !(Number(extra.driverSalaryAmount) > 0)) {
       return { error: '월급제는 급여 금액을 입력해 주세요.', cars }

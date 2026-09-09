@@ -33,14 +33,38 @@ describe('차량 저장 — 기사명·정산·수수료', () => {
     assert.equal(second.error, '메인 차량이 이미 등록되어 있습니다.')
   })
 
-  test('기사차량은 기사명과 연락처가 없으면 거절한다', () => {
+  test('기사차량은 기사명과 연락처가 비어도 저장된다', () => {
+    const result = upsertCar([], {
+      number: '서울12가3456',
+      type: 'sub',
+      driverName: '',
+      driverPhone: '',
+    })
+    assert.equal(result.error, undefined)
+    assert.equal(result.cars[0].number, '서울12가3456')
+    assert.equal(result.cars[0].driverName, '')
+    assert.equal(result.cars[0].driverPhone, '')
+  })
+
+  test('전화번호를 입력했는데 형식이 틀리면 거절한다', () => {
     const result = upsertCar([], {
       number: '서울12가3456',
       type: 'sub',
       driverName: '',
       driverPhone: '010',
     })
-    assert.equal(result.error, '기사명과 연락처를 확인해 주세요.')
+    assert.equal(result.error, '연락처 형식을 확인해 주세요.')
+  })
+
+  test('이름·전화번호 둘 다 비우면 통과한다', () => {
+    const result = upsertCar([], {
+      number: '22나2222',
+      tonnage: '5',
+      type: 'sub',
+    })
+    assert.equal(result.error, undefined)
+    assert.equal(result.cars.length, 1)
+    assert.equal(result.cars[0].type, 'sub')
   })
 
   test('기사차량 월급제 정산 방식을 저장한다', () => {
