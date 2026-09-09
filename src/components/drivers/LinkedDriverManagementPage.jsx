@@ -1,6 +1,7 @@
 // @ts-check
 // 기사 관리 화면(조회 전용). 연동(linkId)·미연동 서브(logId) 두 모드.
 // 모드 판별은 domain/driverManagementContext.js — AGENTS §6 응집도 ≤250.
+// 헤더 중복 제거가 마지막 여유분이며, 다음 200/250 초과 시 예외 없이 분리설계로 간다.
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { resolveDriverManagementContext } from '../../domain/driverManagementContext.js'
@@ -25,6 +26,15 @@ import './linked-driver.css'
 
 const YEAR_OPTIONS = getYearOptions()
 const SOON = '준비 중입니다.'
+/** @param {(() => void)|undefined} onBack @param {string} t */
+function pageHeader(onBack, t) {
+  return (
+    <div className="settings-header">
+      <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+      <div className="settings-title">{t}</div><div style={{ width: 40 }}></div>
+    </div>
+  )
+}
 
 /**
  * @param {Object} props
@@ -101,13 +111,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
   if (ctx.notFound) {
     return (
       <div className="page">
-        <div className="settings-header">
-          <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-          <div className="settings-title">{unlinked ? title : '기사 관리'}</div>
-          <div style={{ width: 40 }}></div>
-        </div>
+        {pageHeader(onBack, unlinked ? title : '기사 관리')}
         <div className="empty-state">
           {unlinked ? '차량 정보를 찾을 수 없습니다.' : '연동 중인 기사 정보를 찾을 수 없습니다.'}
         </div>
@@ -122,14 +126,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
 
   return (
     <div className="page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">{title}</div>
-        <div style={{ width: 40 }}></div>
-      </div>
-
+      {pageHeader(onBack, title)}
       <section className="linked-driver-profile-card">
         <div>
           <span className="linked-driver-avatar">{initial}</span>
@@ -168,13 +165,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
           거래처
         </button>
         <button type="button" className="linked-driver-chip" onClick={() => showToast?.(SOON)}>운송내역서</button>
-        <button
-          type="button"
-          className="linked-driver-chip"
-          onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/expenses`)}
-        >
-          정비/주유/기타
-        </button>
+        <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/expenses`)}>정비/주유/기타</button>
       </div>
 
       <section className="tax-invoice-summary" id="linkedDriverSettlementSummary">
