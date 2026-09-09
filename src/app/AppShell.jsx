@@ -157,7 +157,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
         }}
         subLogItems={subLogItems}
         onOpenSubLog={(/** @type {string} */ vehicleNumber) => {
-          navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}`)
+          navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}/manage`)
         }}
       />
       <NotificationPanel

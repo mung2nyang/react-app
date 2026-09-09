@@ -174,11 +174,11 @@ export default function SideMenu({
                 key={item.number}
                 type="button"
                 className="dropdown-item"
-                title={`${item.number} 운행일지`}
+                title={`${item.number} 관리`}
                 onClick={() => openSubLog(item.number)}
               >
                 <TruckIcon />
-                {item.label} 일지
+                {item.label} 관리
               </button>
             ))}
           </section>

@@ -1,8 +1,9 @@
 // @ts-check
-// 기사 관리 화면(조회 전용, Step 9 슬라이스 A). 프로필·정산·계산서 섹션을 한 파일에
-// 둔다(AGENTS §6 응집도). ≤250줄.
+// 기사 관리 화면(조회 전용). 연동(linkId)·미연동 서브(logId) 두 모드.
+// 모드 판별은 domain/driverManagementContext.js — AGENTS §6 응집도 ≤250.
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { resolveDriverManagementContext } from '../../domain/driverManagementContext.js'
 import { getAssignmentState } from '../../domain/drivers.js'
 import {
   getLinkedDriverClientInvoiceGroups,
@@ -23,7 +24,7 @@ import { toLinkedDriverLink } from './linkedDriverLink.js'
 import './linked-driver.css'
 
 const YEAR_OPTIONS = getYearOptions()
-const DETAIL_SOON = '상세설정은 구상중으로 빠르게 업데이트예정입니다.'
+const SOON = '준비 중입니다.'
 
 /**
  * @param {Object} props
@@ -33,8 +34,9 @@ const DETAIL_SOON = '상세설정은 구상중으로 빠르게 업데이트예�
  */
 export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack, showToast }) {
   const navigate = useNavigate()
-  const { linkId: rawLinkId } = useParams()
+  const { linkId: rawLinkId, logId: rawLogId } = useParams()
   const linkId = decodeURIComponent(rawLinkId || '')
+  const logId = decodeURIComponent(rawLogId || '')
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const clients = useOwnerClients(ownerKey)
@@ -43,9 +45,14 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
   const workByLogId = useOwnerWorkDataByLogId(ownerKey)
   const [viewDate, setViewDate] = useState(() => new Date())
 
-  const driver = drivers.find((item) => item.id === linkId) || null
-  const link = driver ? toLinkedDriverLink(driver) : null
-  const car = (cars || []).find((item) => item.number === link?.vehicleNumber) || null
+  const ctx = useMemo(
+    () => resolveDriverManagementContext({ linkId, logId }, drivers, cars),
+    [linkId, logId, drivers, cars],
+  )
+  const link = ctx.driver ? toLinkedDriverLink(ctx.driver) : null
+  const plate = ctx.plate
+  const unlinked = ctx.mode === 'unlinked'
+
   const settings = useMemo(() => {
     void clients
     void cars
@@ -58,40 +65,60 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
-  const plate = String(link?.vehicleNumber || '').trim()
   const dayData = (plate && workByLogId?.[plate]) || {}
 
   /** @type {import('../../domain/financeTypes.js').CarLike} */
-  const carOrEmpty = car || { number: '' }
+  const carOrEmpty = ctx.car || { number: '' }
 
   const detail = useMemo(() => {
-    if (!link) return null
-    return getLinkedDriverSettlementDetail(dayData, monthKey, link, carOrEmpty)
-  }, [dayData, monthKey, link, carOrEmpty])
+    if (ctx.notFound) return null
+    if (ctx.mode === 'linked') {
+      if (!link) return null
+      return getLinkedDriverSettlementDetail(dayData, monthKey, link, carOrEmpty)
+    }
+    if (ctx.mode === 'unlinked' && ctx.car) {
+      // 미연동은 할당기간 없음 — assignmentStart 빈 값은 isDateWithinAssignment가 전부 포함(link=null과 동일).
+      const openLink = /** @type {import('../../domain/financeTypes.js').DriverLinkLike} */ ({
+        id: '',
+        vehicleNumber: plate,
+        assignmentStart: '',
+        assignmentEnd: '',
+      })
+      return getLinkedDriverSettlementDetail(dayData, monthKey, openLink, carOrEmpty)
+    }
+    return null
+  }, [ctx.notFound, ctx.mode, ctx.car, dayData, monthKey, link, carOrEmpty, plate])
 
   const invoice = useMemo(() => {
     if (!detail) return { groups: [], unassignedCount: 0 }
     return getLinkedDriverClientInvoiceGroups(detail.trips, carOrEmpty, settings)
   }, [detail, carOrEmpty, settings])
 
-  if (!driver || driver.status !== 'linked' || !link) {
+  const title = unlinked
+    ? (plate ? `${plate} 관리` : '관리')
+    : ((link?.driverName || '기사') + ' 기사 관리')
+
+  if (ctx.notFound) {
     return (
       <div className="page">
         <div className="settings-header">
           <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
             <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
           </button>
-          <div className="settings-title">기사 관리</div>
+          <div className="settings-title">{unlinked ? title : '기사 관리'}</div>
           <div style={{ width: 40 }}></div>
         </div>
-        <div className="empty-state">연동 중인 기사 정보를 찾을 수 없습니다.</div>
+        <div className="empty-state">
+          {unlinked ? '차량 정보를 찾을 수 없습니다.' : '연동 중인 기사 정보를 찾을 수 없습니다.'}
+        </div>
       </div>
     )
   }
 
-  const assignment = getAssignmentState(link)
-  const driverName = link.driverName || '기사'
-  const initial = String(driverName).slice(0, 1)
+  const assignment = link ? getAssignmentState(link) : null
+  const driverName = link?.driverName || '기사'
+  const nameLine = unlinked ? plate : `${driverName} · ${plate || '차량 미지정'}`
+  const initial = String(unlinked ? plate : driverName).slice(0, 1)
 
   return (
     <div className="page">
@@ -99,7 +126,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
         <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
-        <div className="settings-title">{driverName} 기사 관리</div>
+        <div className="settings-title">{title}</div>
         <div style={{ width: 40 }}></div>
       </div>
 
@@ -107,20 +134,41 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
         <div>
           <span className="linked-driver-avatar">{initial}</span>
           <span>
-            <strong>{driverName}</strong>
-            <small>{link.phone || '연락처 없음'}</small>
+            <strong>{nameLine}</strong>
+            {!unlinked && <small>{link?.phone || '연락처 없음'}</small>}
           </span>
         </div>
         <div>
-          <span>{link.vehicleNumber || '차량 미지정'}</span>
-          <em className={assignment.key}>{assignment.label}</em>
+          {unlinked ? (
+            <button
+              type="button"
+              className="linked-driver-chip"
+              onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}`)}
+            >
+              운행일지
+            </button>
+          ) : (
+            <>
+              <span>{plate || '차량 미지정'}</span>
+              {assignment && <em className={assignment.key}>{assignment.label}</em>}
+            </>
+          )}
         </div>
       </section>
 
       <div className="linked-driver-chip-row">
-        <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/drivers/${encodeURIComponent(linkId)}/clients`)}>거래처</button>
-        <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/drivers/${encodeURIComponent(linkId)}/billing`)}>정산·계산서 설정</button>
-        <button type="button" className="linked-driver-chip" onClick={() => showToast?.(DETAIL_SOON)}>상세 설정</button>
+        <button
+          type="button"
+          className="linked-driver-chip"
+          onClick={() => {
+            if (unlinked) showToast?.(SOON)
+            else navigate(`/app/drivers/${encodeURIComponent(linkId)}/clients`)
+          }}
+        >
+          거래처
+        </button>
+        <button type="button" className="linked-driver-chip" onClick={() => showToast?.(SOON)}>운송내역서</button>
+        <button type="button" className="linked-driver-chip" onClick={() => showToast?.(SOON)}>정비/주유/기타</button>
       </div>
 
       <section className="tax-invoice-summary" id="linkedDriverSettlementSummary">
