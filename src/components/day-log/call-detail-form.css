@@ -1,0 +1,207 @@
+/* 콜상세 입력 폼 — main-calendar.css에서 옮김. CallDetailForm.jsx가 직접 import.
+   한 폼 컴포넌트의 상호의존 규칙이라 §6 응집도 우선(~250줄). */
+
+.work-log-page .call-detail-modal-title {
+  margin: 0;
+  padding: 0 2px 11px;
+  border-bottom: 0;
+  color: var(--primary-color);
+  font-size: var(--fs-4);
+  font-weight: 800;
+  text-align: left;
+}
+
+.work-log-page .call-detail-copy-prev-btn {
+  display: block;
+  width: 100%;
+  margin-bottom: 9px;
+  padding: 10px;
+  border: 1px dashed var(--primary-color);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--primary-color);
+  font: inherit;
+  font-size: var(--fs-3);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.work-log-page .call-detail-panel {
+  margin: 0;
+  padding: 12px 2px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+.work-log-page .call-detail-panel:last-of-type {
+  border-bottom: 0;
+}
+
+.work-log-page .call-route-panel,
+.work-log-page .call-two-column-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.work-log-page .call-route-panel .form-group,
+.work-log-page .call-two-column-panel .form-group {
+  min-width: 0;
+  margin: 0;
+}
+
+.work-log-page .load-label { color: var(--primary-color); font-weight: 800; }
+.work-log-page .unload-label { color: var(--sunday-color); font-weight: 800; }
+
+.work-log-page .call-inline-field {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.work-log-page .call-inline-field > label {
+  color: var(--text-color);
+  font-size: var(--fs-2);
+  font-weight: 750;
+}
+
+.work-log-page .call-inline-field > span {
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  text-align: center;
+}
+
+.work-log-page .call-money-panel #callFare {
+  color: var(--primary-color);
+  font-weight: 800;
+  text-align: right;
+}
+
+.work-log-page .platform-main-row {
+  grid-template-columns: 68px minmax(0, 1fr);
+}
+
+.work-log-page .call-platform-quick-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.work-log-page .call-platform-quick-list .dark-pill-btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 6px 4px;
+  border-radius: 10px;
+  font-size: var(--fs-floor);
+}
+
+.work-log-page .call-client-panel > label,
+.work-log-page .call-remarks-panel > label {
+  display: block;
+  margin: 0 0 7px 1px;
+  color: var(--text-color);
+  font-size: var(--fs-2);
+  font-weight: 800;
+}
+
+.work-log-page .call-receipt-group {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 5px;
+}
+
+.work-log-page .call-receipt-group .dark-pill-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  padding: 7px 2px;
+  border-radius: 10px;
+  font-size: var(--fs-floor);
+}
+
+.work-log-page .call-vat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  margin: 8px 1px;
+}
+
+.work-log-page .payment-due-date-box {
+  margin: 9px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px dashed var(--border-color);
+}
+
+.work-log-page .payment-term-guide,
+.work-log-page .billing-settings-note {
+  margin: 6px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.4;
+}
+
+.work-log-page .billing-settings-note.vat-preview {
+  text-align: right;
+}
+
+.work-log-page .call-detail-form-actions {
+  gap: 8px;
+  margin-top: 10px;
+  padding: 0 0 8px;
+}
+
+.work-log-page .call-detail-form-actions .modal-btn {
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: var(--fs-2);
+}
+
+.call-two-column-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.call-inline-field {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 14px;
+}
+
+.call-inline-field label {
+  font-size: var(--fs-2);
+  font-weight: 700;
+}
+
+.input-with-suffix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.input-with-suffix .input-box {
+  flex: 1;
+}
+
+.input-box.input-error {
+  border-color: var(--sunday-color);
+}
+
+.call-vat-row {
+  margin: 4px 0 14px;
+}
+
+.work-log-call-modal .input-box {
+  text-align: left;
+}

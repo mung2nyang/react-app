@@ -4,6 +4,7 @@ import { dueDateForClient, getPaymentTermLabel, pinnedClients } from '../../lib/
 import { formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
 import { computeDistanceKm } from '../../lib/workData.js'
 import { draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
+import './call-detail-form.css'
 
 const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전국화물콜', '카카오T트럭커']
 const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
