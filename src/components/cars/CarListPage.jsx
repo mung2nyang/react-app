@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import ConfirmModal from '../ConfirmModal.jsx'
 import CarFormModal from './CarFormModal.jsx'
 import CarListItem from './CarListItem.jsx'
-import { hasMainCar } from '../../lib/cars.js'
+import { hasMainCar, validateDriverLinkFields } from '../../lib/cars.js'
 import { requestVehicleSave } from '../../lib/vehicleMutations.js'
 import { requestVehicleDeletion } from '../../lib/directMutationActions.js'
 import { getCloudUserId, isCloudSession } from '../../lib/cloudSession.js'
@@ -86,12 +86,16 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       inviteCode: linked?.inviteCode || (car.type === 'sub' && cloud ? generateInviteCode(drivers) : ''),
       inviteStartDate: linked?.startDate || todayIsoDate(),
       inviteDriverId: linked?.id || null,
-      connectMode: 'link',
+      connectMode: linked ? 'link' : 'log',
     })
     setModalOpen(true)
   }
 
   async function save() {
+    if (cloud && draft.type === 'sub' && draft.connectMode === 'link') {
+      const err = validateDriverLinkFields(draft.driverName, draft.driverPhone)
+      if (err) { showToast?.(err); return }
+    }
     const inviteSnapshot = { ...draft }
     const result = await requestVehicleSave({ ownerKey, userId: getCloudUserId(), cars, draft, editingId })
     if (result.failed) {

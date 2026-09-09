@@ -146,6 +146,22 @@ export function upsertCar(cars, draft, editingId) {
   return { cars: list }
 }
 
+/**
+ * "기사 연동" 저장 전 확인 — 운행 일지(미연동)는 이 함수를 쓰지 않는다.
+ * 신규 등록 시 진짜 관문은 CarListPage.jsx save()의 사전 검사 — 여기 함수는
+ * 그게 호출하는 순수 검증 로직일 뿐.
+ * @param {string} name
+ * @param {string} phone
+ * @returns {string|null} 에러 메시지, 문제 없으면 null
+ */
+export function validateDriverLinkFields(name, phone) {
+  const phoneDigits = String(phone || '').replace(/\D/g, '')
+  if (!String(name || '').trim() || phoneDigits.length < 10) {
+    return '기사명과 연락처를 확인해 주세요.'
+  }
+  return null
+}
+
 /** @param {Array<CarLike>|null|undefined} cars @param {string} id */
 export function removeCar(cars, id) {
   return (cars || []).filter((car) => car.id !== id)

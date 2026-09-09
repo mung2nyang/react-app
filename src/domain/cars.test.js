@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { dedupeCarsById, upsertCar } from './cars.js'
+import { dedupeCarsById, upsertCar, validateDriverLinkFields } from './cars.js'
 
 describe('차량 저장 — 기사명·정산·수수료', () => {
   test('차량번호 중복은 거절한다', () => {
@@ -113,6 +113,33 @@ describe('차량 저장 — 기사명·정산·수수료', () => {
       driverSalaryAmount: '',
     })
     assert.equal(result.error, '월급제는 급여 금액을 입력해 주세요.')
+  })
+})
+
+describe('validateDriverLinkFields — 기사 연동 사전 검사', () => {
+  test('이름·전화 정상이면 null', () => {
+    assert.equal(validateDriverLinkFields('김기사', '010-1234-5678'), null)
+  })
+
+  test('이름만 없으면 거절한다', () => {
+    assert.equal(
+      validateDriverLinkFields('', '010-1234-5678'),
+      '기사명과 연락처를 확인해 주세요.',
+    )
+  })
+
+  test('전화만 짧으면 거절한다', () => {
+    assert.equal(
+      validateDriverLinkFields('김기사', '010'),
+      '기사명과 연락처를 확인해 주세요.',
+    )
+  })
+
+  test('둘 다 없으면 거절한다', () => {
+    assert.equal(
+      validateDriverLinkFields('', ''),
+      '기사명과 연락처를 확인해 주세요.',
+    )
   })
 })
 
