@@ -150,9 +150,28 @@ export function reorderClients(clients, fromId, toId) {
   return [...list, ...scoped]
 }
 
-/** @param {Array<ClientLike>} clients */
+/**
+ * 즐겨찾기 거래처. 호출 전 `getClientsForLog` 등으로 이미 scope를 좁혀서 넘길 것.
+ * @param {Array<ClientLike>} clients
+ */
 export function pinnedClients(clients) {
-  return (clients || []).filter((client) => client.isPinned && client.companyName && !client.scopedToVehicleNumber)
+  return (clients || []).filter((client) => client.isPinned && client.companyName)
+}
+
+/**
+ * 일지(logId) 스코프에 맞는 거래처만 반환.
+ * logId가 없거나 `'main'`이면 일반(미스코프) 거래처만, 아니면 해당 차량 전용만.
+ * @param {Array<ClientLike>} clients
+ * @param {string} [logId]
+ * @returns {Array<ClientLike>}
+ */
+export function getClientsForLog(clients, logId) {
+  const list = clients || []
+  const key = String(logId || '').trim()
+  if (!key || key === 'main') {
+    return list.filter((client) => !client.scopedToVehicleNumber)
+  }
+  return list.filter((client) => client.scopedToVehicleNumber === key)
 }
 
 /**

@@ -1,6 +1,6 @@
 // @ts-check
 import { useState } from 'react'
-import { dueDateForClient, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
+import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
 import { computeDistanceKm } from '../../lib/workData.js'
 import { draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
@@ -21,13 +21,15 @@ const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
  * @param {string} props.dateKey
  * @param {Array<ClientLike>} props.clients
  * @param {Settings} props.settings
+ * @param {string} [props.logId] 일지 차량 키(`main` 또는 서브 번호). 거래처 자동완성 스코프.
  * @param {(item: CallDetailDraft) => void} props.onSave
  * @param {() => void} props.onClose
  */
-export default function CallDetailForm({ value, previousItem, dateKey, clients, settings, onSave, onClose }) {
+export default function CallDetailForm({ value, previousItem, dateKey, clients, settings, logId, onSave, onClose }) {
   const [draft, setDraft] = useState(() => (value ? draftFromDetail(value, dateKey, clients) : { ...emptyDraft, paymentDueDate: dueDateForClient(dateKey, null) }))
 
-  const shortcuts = /** @type {Array<ClientLike>} */ (pinnedClients(clients))
+  const scopedClients = /** @type {Array<ClientLike>} */ (getClientsForLog(clients, logId))
+  const shortcuts = /** @type {Array<ClientLike>} */ (pinnedClients(scopedClients))
   const distancePreview = computeDistanceKm(draft.startOdometer, draft.endOdometer)
   const odometerError = Boolean(draft.startOdometer && draft.endOdometer && !distancePreview)
   const fareNumber = parseCurrencyValue(draft.fare)
@@ -130,7 +132,7 @@ export default function CallDetailForm({ value, previousItem, dateKey, clients, 
         <div className="call-client-row">
           <input id="callClient" className="input-box" list="callClientOptions" placeholder="직접입력 또는 선택" value={draft.client} onChange={(e) => applyClient(e.target.value)} />
           <datalist id="callClientOptions">
-            {clients.filter((client) => !client.scopedToVehicleNumber).map((client) => <option key={client.id} value={client.companyName} />)}
+            {scopedClients.map((client) => <option key={client.id} value={client.companyName} />)}
           </datalist>
         </div>
         {shortcuts.length > 0 && (

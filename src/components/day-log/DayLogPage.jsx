@@ -151,6 +151,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
               dateKey={dateKey}
               clients={clients}
               settings={settings}
+              logId={logId}
               onSave={handleSaveCall}
               onClose={() => dispatch({ type: 'closeCallForm' })}
             />
