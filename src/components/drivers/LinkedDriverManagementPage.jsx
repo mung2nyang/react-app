@@ -161,7 +161,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
           type="button"
           className="linked-driver-chip"
           onClick={() => {
-            if (unlinked) showToast?.(SOON)
+            if (unlinked) navigate(`/app/logs/${encodeURIComponent(plate)}/clients`)
             else navigate(`/app/drivers/${encodeURIComponent(linkId)}/clients`)
           }}
         >

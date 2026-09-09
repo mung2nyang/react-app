@@ -1,9 +1,11 @@
 // @ts-check
-import { useState } from 'react'
+// 연동/미연동 서브 거래처 화면. 두 모드 한 화면 응집 — AGENTS §6 ≤250.
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ConfirmModal from '../ConfirmModal.jsx'
 import ClientFormModal from '../clients/ClientFormModal.jsx'
 import { getEffectiveDriverSettlementMode } from '../../domain/cars.js'
+import { resolveDriverManagementContext } from '../../domain/driverManagementContext.js'
 import { requestClientSave } from '../../lib/clientMutations.js'
 import { requestClientDeletion } from '../../lib/directMutationActions.js'
 import { getCloudUserId } from '../../lib/cloudSession.js'
@@ -37,25 +39,28 @@ const emptyDraft = {
  */
 export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, showToast }) {
   const navigate = useNavigate()
-  const { linkId: rawLinkId } = useParams()
+  const { linkId: rawLinkId, logId: rawLogId } = useParams()
   const linkId = decodeURIComponent(rawLinkId || '')
+  const logId = decodeURIComponent(rawLogId || '')
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const clients = useOwnerClients(ownerKey)
   const practiceSettings = useOwnerSettings(ownerKey)
 
-  const driver = drivers.find((item) => item.id === linkId) || null
-  const link = driver ? toLinkedDriverLink(driver) : null
-  const car = (cars || []).find((item) => item.number === link?.vehicleNumber) || null
-  const mode = getEffectiveDriverSettlementMode(car, practiceSettings)
+  const ctx = useMemo(
+    () => resolveDriverManagementContext({ linkId, logId }, drivers, cars),
+    [linkId, logId, drivers, cars],
+  )
+  const link = ctx.driver ? toLinkedDriverLink(ctx.driver) : null
+  const unlinked = ctx.mode === 'unlinked'
+  const scopeKey = (unlinked ? ctx.plate : (ctx.car?.number || '')) || ''
+  const settlementMode = getEffectiveDriverSettlementMode(ctx.car, practiceSettings)
+  const isDriverDirect = ctx.mode === 'linked' && settlementMode === 'driver_direct'
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
   const [pendingDelete, setPendingDelete] = useState(/** @type {ClientLike|null} */ (null))
-
-  const isDriverDirect = mode === 'driver_direct'
-  const scopeKey = car?.number || ''
 
   function handleBack() {
     if (onBack) onBack()
@@ -114,22 +119,27 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
     setPendingDelete(null)
   }
 
-  if (!driver || driver.status !== 'linked' || !link) {
+  const title = unlinked
+    ? (ctx.plate ? `${ctx.plate} 거래처` : '거래처')
+    : `${link?.driverName || '기사'} 기사 거래처`
+
+  if (ctx.notFound) {
     return (
       <div className="page client-management-page">
         <div className="settings-header">
           <button type="button" className="icon-btn" title="뒤로가기" onClick={handleBack}>
             <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
           </button>
-          <div className="settings-title">기사 거래처</div>
+          <div className="settings-title">{unlinked ? title : '기사 거래처'}</div>
           <div style={{ width: 40 }}></div>
         </div>
-        <div className="linked-driver-empty">연동된 기사 정보를 찾을 수 없습니다.</div>
+        <div className="linked-driver-empty">
+          {unlinked ? '차량 정보를 찾을 수 없습니다.' : '연동된 기사 정보를 찾을 수 없습니다.'}
+        </div>
       </div>
     )
   }
 
-  const title = `${link.driverName || '기사'} 기사 거래처`
   const scopedClients = clients.filter((c) => scopeKey && c.scopedToVehicleNumber === scopeKey)
 
   return (
@@ -143,7 +153,7 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
       </div>
 
       {isDriverDirect ? (
-        <LinkedDriverDirectClientsList supabaseLinkId={driver.supabaseId} />
+        <LinkedDriverDirectClientsList supabaseLinkId={ctx.driver?.supabaseId} />
       ) : (
         <>
           <div className="client-list" id="linkedDriverClientsListContainer">

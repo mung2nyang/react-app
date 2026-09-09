@@ -68,6 +68,7 @@ export default function AppShellRoutes({
       <Route index element={mainPage()} />
       <Route path="day/:date" element={mainPage()} />
       <Route path="logs/:logId/manage" element={<LinkedDriverManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} />} />
+      <Route path="logs/:logId/clients" element={<LinkedDriverClientsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} />} />
       <Route path="logs/:logId/day/:date" element={mainPage()} />
       <Route path="logs/:logId" element={mainPage()} />
       <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(backTarget)} />} />
