@@ -101,7 +101,7 @@ function SupportIcon() {
 }
 
 /**
- * @typedef {{ number: string, label: string }} SubLogMenuItem
+ * @typedef {{ number: string, label: string, driverName: string }} SubLogMenuItem
  * @typedef {{ linkId: string, driverName: string }} LinkedDriverMenuItem
  * @param {Object} props
  * @param {boolean} props.open
@@ -175,11 +175,11 @@ export default function SideMenu({
                 key={item.number}
                 type="button"
                 className="dropdown-item"
-                title={`${item.number} 관리`}
+                title={`${item.driverName || item.label} 기사 관리`}
                 onClick={() => openSubLog(item.number)}
               >
                 <TruckIcon />
-                {item.label} 관리
+                {item.driverName || item.label} 기사 관리
               </button>
             ))}
           </section>

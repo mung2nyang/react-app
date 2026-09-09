@@ -3,7 +3,7 @@
 import { getShortCarNum } from '../domain/cars.js'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {{ number: string, label: string }} SubLogMenuItem */
+/** @typedef {{ number: string, label: string, driverName: string }} SubLogMenuItem */
 
 /**
  * @param {Array<CarLike>|null|undefined} cars
@@ -29,6 +29,10 @@ export function buildSubLogMenuItems(cars, drivers, isOwnerSession) {
     })
     .map((car) => {
       const number = String(car.number || '').trim()
-      return { number, label: getShortCarNum(number) }
+      return {
+        number,
+        label: getShortCarNum(number),
+        driverName: String(car.driverName || '').trim(),
+      }
     })
 }

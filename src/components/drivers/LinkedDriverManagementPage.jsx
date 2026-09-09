@@ -5,6 +5,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { resolveDriverManagementContext } from '../../domain/driverManagementContext.js'
+import { getShortCarNum } from '../../domain/cars.js'
 import { getAssignmentState } from '../../domain/drivers.js'
 import {
   getLinkedDriverClientInvoiceGroups,
@@ -105,7 +106,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
   }, [detail, carOrEmpty, settings])
 
   const title = unlinked
-    ? (plate ? `${plate} 관리` : '관리')
+    ? `${ctx.car?.driverName || getShortCarNum(plate) || '차량'} 기사 관리`
     : ((link?.driverName || '기사') + ' 기사 관리')
 
   if (ctx.notFound) {
