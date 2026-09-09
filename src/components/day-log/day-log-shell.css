@@ -101,3 +101,22 @@
   opacity: 0.3;
   pointer-events: none;
 }
+
+.work-log-page .call-detail-actions .action-icon-btn,
+.work-log-page .maint-fuel-actions .action-icon-btn {
+  width: 36px;
+  height: 36px;
+  padding: 8px;
+  color: var(--sub-text-color);
+}
+
+.work-log-page .call-detail-actions .action-icon-btn svg,
+.work-log-page .maint-fuel-actions .action-icon-btn svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

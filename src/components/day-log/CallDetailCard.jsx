@@ -2,6 +2,7 @@
 import { parseCurrencyValue } from '../../domain/money.js'
 import { commissionInfo, durationSuffix, formatCallTime } from './callDetailFormHelpers.js'
 import { EditIcon, DeleteIcon, PhoneIcon, MessageIcon } from './icons.jsx'
+import './call-detail-card.css'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
