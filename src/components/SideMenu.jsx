@@ -1,6 +1,7 @@
 // @ts-check
 // 이 메뉴 전용 SVG 아이콘 10개 포함 ~220줄 — 한 파일 유지(AGENTS §6 응집도 우선)
-const BANNER = '/images/banner_image.png'
+const BANNER_LIGHT = '/images/banner_image_Light.png'
+const BANNER_DARK = '/images/banner_image_dark.png'
 
 function CarIcon() {
   return (
@@ -142,8 +143,8 @@ export default function SideMenu({
       <aside className="side-menu open" aria-label="메뉴">
         <div className="side-menu-header">
           <div className="menu-banner-wrap">
-            <img src={BANNER} alt="" className="menu-banner-light" />
-            <span className="menu-banner-text">운행 일지</span>
+            <img src={BANNER_LIGHT} alt="운행 일지" className="menu-banner-light" />
+            <img src={BANNER_DARK} alt="운행 일지" className="menu-banner-dark" />
           </div>
         </div>
         <div className="side-menu-sections">
