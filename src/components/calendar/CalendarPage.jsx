@@ -23,7 +23,6 @@ import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
 import CalendarSubLogBanner from './CalendarSubLogBanner.jsx'
-import '../../main-calendar.css'
 import './calendar.css'
 
 const YEAR_OPTIONS = getYearOptions()

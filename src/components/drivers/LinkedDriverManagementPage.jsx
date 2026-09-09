@@ -20,7 +20,6 @@ import {
   useOwnerWorkDataByLogId,
 } from '../../store/ownerDataHooks.js'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
-import '../../main-calendar.css'
 import './linked-driver.css'
 
 const YEAR_OPTIONS = getYearOptions()

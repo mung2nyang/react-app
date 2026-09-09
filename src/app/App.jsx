@@ -20,6 +20,8 @@ import {
 import { useAppSession } from './useAppSession.js'
 import '../account-flow.css'
 import '../side-menu.css'
+import '../app-shell-base.css'
+import '../shared-controls.css'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 

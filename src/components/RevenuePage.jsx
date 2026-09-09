@@ -10,7 +10,6 @@
 import { PageShell } from './revenue/RevenueNav.jsx'
 import OwnerRevenueView from './revenue/OwnerRevenueView.jsx'
 import DriverRevenueView from './revenue/DriverRevenueView.jsx'
-import '../main-calendar.css'
 
 /**
  * @param {Object} props

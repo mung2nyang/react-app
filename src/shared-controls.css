@@ -1,0 +1,187 @@
+/* 월 이동기·요약 카드·설정 헤더·아이콘 버튼·토글·입력 기본형 — main-calendar.css에서 옮김. App.jsx가 app-shell-base.css 다음에 import. */
+
+.date-navigator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--card-bg);
+  padding: 6px 12px;
+  border-radius: 30px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.date-select-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 0;
+  white-space: nowrap;
+}
+
+.date-select {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-color);
+  background-color: transparent;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  text-align: center;
+}
+
+.date-select:hover { background-color: var(--hover-bg); }
+.date-select:focus { outline: none; }
+
+.arrow-btn {
+  background: none;
+  border: none;
+  color: var(--sub-text-color);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.arrow-btn:hover {
+  color: var(--text-color);
+  background-color: var(--hover-bg);
+}
+
+.summary-card {
+  background-color: var(--card-bg);
+  border-radius: 24px;
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  text-align: left;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+}
+
+.summary-title {
+  font-size: var(--fs-4);
+  font-weight: 700;
+  color: var(--sub-text-color);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: var(--fs-4);
+  color: var(--text-color);
+}
+
+.summary-row.total {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color);
+  font-size: var(--fs-7);
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.summary-value {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.summary-hint {
+  margin: 12px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.settings-title {
+  font-size: var(--fs-7);
+  font-weight: 700;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.icon-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+
+
+.toggle-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 8px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-weight: 700;
+  font-size: var(--fs-4);
+  cursor: pointer;
+}
+
+.modal-section-title {
+  margin-bottom: 12px;
+  font-size: var(--fs-4);
+  font-weight: 800;
+  color: var(--text-color);
+}
+
+.input-box {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: var(--fs-3);
+  text-align: center;
+  outline: none;
+  font-family: inherit;
+}

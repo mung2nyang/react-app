@@ -1,0 +1,29 @@
+/* 라이트 앱 변수·비계정 body·480px 앱 컨테이너 — main-calendar.css에서 옮김. App.jsx가 account-flow/side-menu 다음에 import. */
+
+:root:not([data-theme="dark"]) {
+  --saturday-color: #3182ce;
+  --sunday-color: #e53e3e;
+  --today-bg: #edf2f7;
+  --today-text: #2b6cb0;
+  --hover-bg: #edf2f7;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --work-badge-bg: #feebc8;
+  --work-badge-text: #c05621;
+  --off-badge-bg: #fed7d7;
+  --off-badge-text: #9b2c2c;
+  --maint-badge-bg: #e53e3e;
+  --maint-badge-text: #ffffff;
+}
+
+body:not(.account-flow-active) {
+  background: var(--bg-color);
+  color: var(--text-color);
+}
+
+.container.main-app-container {
+  width: 100%;
+  max-width: 480px;
+  padding: 20px 16px 108px;
+  margin: 0 auto;
+  text-align: center;
+}

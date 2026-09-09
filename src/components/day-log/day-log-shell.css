@@ -120,3 +120,20 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
+.modal-title-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.autosave-status {
+  font-size: var(--fs-2);
+  font-weight: 600;
+  color: var(--sub-text-color);
+  height: 20px;
+  line-height: 20px;
+}
+
+.autosave-status.visible { opacity: 1; }
