@@ -1,5 +1,5 @@
 // @ts-check
-// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도, 240줄)
+// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도, 250줄)
 import { useMemo, useRef, useState } from 'react'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
@@ -24,8 +24,9 @@ const YEAR_OPTIONS = getYearOptions()
  * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
+export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
   const [viewDate, setViewDate] = useState(() => new Date())
   const [savingPdf, setSavingPdf] = useState(false)
   const [savingImage, setSavingImage] = useState(false)
@@ -160,7 +161,15 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast }) {
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="settings-title">운송비 내역서</div>
-        <div style={{ width: 40 }}></div>
+        {onOpenMenu ? (
+          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
+            <svg viewBox="0 0 24 24">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        ) : <div style={{ width: 40 }}></div>}
       </div>
 
       <div className="maint-fuel-nav">

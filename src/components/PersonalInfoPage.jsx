@@ -19,8 +19,9 @@ const WITHDRAW_MSG_2 = '이 작업은 취소할 수 없습니다. 한 번 더 �
  * @param {() => void} [props.onBack]
  * @param {() => void} [props.onGoAuth]
  * @param {(message: string) => void} [props.showToast]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast }) {
+export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast, onOpenMenu }) {
   const locked = useHydrationLock()
   const profile = useOwnerProfile(ownerKey)
   const sessionName = session?.name && session.name !== '비회원' ? session.name : ''
@@ -54,7 +55,15 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="settings-title">개인정보</div>
-        <div style={{ width: 40 }}></div>
+        {onOpenMenu ? (
+          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
+            <svg viewBox="0 0 24 24">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        ) : <div style={{ width: 40 }}></div>}
       </div>
 
       <div className="personal-intro">
