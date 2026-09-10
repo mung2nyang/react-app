@@ -16,6 +16,7 @@ import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOw
 import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'
 import ReportShareModal from './ReportShareModal.jsx'
+import PageHeader from './PageHeader.jsx'
 
 const YEAR_OPTIONS = getYearOptions()
 
@@ -156,21 +157,7 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOp
 
   return (
     <div className="page report-page-wrap">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={handleHeaderBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">운송비 내역서</div>
-        {onOpenMenu ? (
-          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
-            <svg viewBox="0 0 24 24">
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-        ) : <div style={{ width: 40 }}></div>}
-      </div>
+      <PageHeader title="운송비 내역서" onBack={handleHeaderBack} onOpenMenu={onOpenMenu} />
 
       <div className="maint-fuel-nav">
         <div className="date-navigator">

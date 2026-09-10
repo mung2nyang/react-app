@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
+import PageHeader from './PageHeader.jsx'
 import { getExpensesForLog } from '../domain/expenseScope.js'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import {
@@ -100,21 +101,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
 
   return (
     <div className="page maint-fuel-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">{title}</div>
-        {onOpenMenu ? (
-          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
-            <svg viewBox="0 0 24 24">
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-        ) : <div style={{ width: 40 }}></div>}
-      </div>
+      <PageHeader title={title} onBack={onBack} onOpenMenu={onOpenMenu} />
 
       <div className="settings-segmented-control maint-fuel-tabs">
         {KINDS.map((item) => (
