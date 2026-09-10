@@ -17,6 +17,7 @@ import {
 } from '../../store/ownerDataHooks.js'
 import LinkedDriverDirectClientsList from './LinkedDriverDirectClientsList.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
+import PageHeader from '../PageHeader.jsx'
 import './linked-driver.css'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
@@ -36,8 +37,9 @@ const emptyDraft = {
  * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, showToast }) {
+export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
   const navigate = useNavigate()
   const { linkId: rawLinkId, logId: rawLogId } = useParams()
   const linkId = decodeURIComponent(rawLinkId || '')
@@ -126,13 +128,7 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
   if (ctx.notFound) {
     return (
       <div className="page client-management-page">
-        <div className="settings-header">
-          <button type="button" className="icon-btn" title="뒤로가기" onClick={handleBack}>
-            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-          <div className="settings-title">{unlinked ? title : '기사 거래처'}</div>
-          <div style={{ width: 40 }}></div>
-        </div>
+        <PageHeader title={unlinked ? title : '기사 거래처'} onBack={handleBack} onOpenMenu={onOpenMenu} />
         <div className="linked-driver-empty">
           {unlinked ? '차량 정보를 찾을 수 없습니다.' : '연동된 기사 정보를 찾을 수 없습니다.'}
         </div>
@@ -144,13 +140,7 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
 
   return (
     <div className="page client-management-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={handleBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">{title}</div>
-        <div style={{ width: 40 }}></div>
-      </div>
+      <PageHeader title={title} onBack={handleBack} onOpenMenu={onOpenMenu} />
 
       {isDriverDirect ? (
         <LinkedDriverDirectClientsList supabaseLinkId={ctx.driver?.supabaseId} />

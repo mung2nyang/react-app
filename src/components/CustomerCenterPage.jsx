@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { isCloudSession } from '../lib/cloudSession.js'
 import { fetchMyInquiries, requestSupportInquirySave } from '../lib/supportInquiryMutations.js'
+import PageHeader from './PageHeader.jsx'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
@@ -159,8 +160,9 @@ function MyInquiriesList({ userId, showToast }) {
  * @param {AppSession|null} [props.session]
  * @param {(message: string) => void} [props.showToast]
  * @param {() => void} [props.onGoAuth]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function CustomerCenterPage({ onBack, session = null, showToast, onGoAuth }) {
+export default function CustomerCenterPage({ onBack, session = null, showToast, onGoAuth, onOpenMenu }) {
   const [tab, setTab] = useState(/** @type {SupportTab} */ ('faq'))
   const [openFaq, setOpenFaq] = useState(/** @type {number|null} */ (null))
   const cloud = isCloudSession(session)
@@ -173,13 +175,7 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
 
   return (
     <div className="page customer-center-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">고객센터</div>
-        <div style={{ width: 40 }}></div>
-      </div>
+      <PageHeader title="고객센터" onBack={onBack} onOpenMenu={onOpenMenu} />
 
       <div className="support-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={tab === 'faq'} className={`support-tab${tab === 'faq' ? ' active' : ''}`} onClick={() => setTab('faq')}>FAQ</button>

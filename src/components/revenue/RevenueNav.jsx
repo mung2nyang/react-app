@@ -1,30 +1,9 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 화면 껍데기(PageShell)와
-// 연/월 이동 네비게이션(DateNav) — OwnerRevenueView/DriverRevenueView 둘 다 쓴다.
+// 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 연/월 이동 네비게이션(DateNav).
+// OwnerRevenueView/DriverRevenueView 둘 다 쓴다. PageShell은 PageHeader로 흡수됨.
 import { getYearOptions, setYearMonth } from '../../lib/calendar.js'
 
 const YEAR_OPTIONS = getYearOptions()
-
-/**
- * @param {Object} props
- * @param {string} props.title
- * @param {() => void} props.onBack
- * @param {import('react').ReactNode} props.children
- */
-export function PageShell({ title, onBack, children }) {
-  return (
-    <div className="page revenue-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">{title}</div>
-        <div style={{ width: 40 }}></div>
-      </div>
-      {children}
-    </div>
-  )
-}
 
 /**
  * @param {Object} props
