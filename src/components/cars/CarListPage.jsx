@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ConfirmModal from '../ConfirmModal.jsx'
+import PageHeader from '../PageHeader.jsx'
 import CarFormModal from './CarFormModal.jsx'
 import CarListItem from './CarListItem.jsx'
 import { hasMainCar, validateDriverLinkFields } from '../../lib/cars.js'
@@ -140,21 +141,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
 
   return (
     <div className="page car-management-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">차량 관리</div>
-        {onOpenMenu ? (
-          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
-            <svg viewBox="0 0 24 24">
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-        ) : <div style={{ width: 40 }}></div>}
-      </div>
+      <PageHeader title="차량 관리" onBack={onBack} onOpenMenu={onOpenMenu} />
       <div className="car-list">
         {cars.length === 0 && <div className="empty-state">등록된 차량이 없습니다.</div>}
         {cars.map((car, index) => (

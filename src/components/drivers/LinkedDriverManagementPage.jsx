@@ -24,31 +24,10 @@ import {
 import ClientInvoiceGroups from './ClientInvoiceGroups.jsx'
 import SettlementSummaryCard from './SettlementSummaryCard.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
+import PageHeader from '../PageHeader.jsx'
 import './linked-driver.css'
 
 const SOON = '준비 중입니다.'
-/**
- * @param {(() => void)|undefined} onBack
- * @param {string} t
- * @param {(() => void)|undefined} [onOpenMenu]
- */
-function pageHeader(onBack, t, onOpenMenu) {
-  return (
-    <div className="settings-header">
-      <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-      <div className="settings-title">{t}</div>
-      {onOpenMenu ? (
-        <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
-          <svg viewBox="0 0 24 24">
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        </button>
-      ) : <div style={{ width: 40 }}></div>}
-    </div>
-  )
-}
 
 /**
  * @param {Object} props
@@ -126,7 +105,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
   if (ctx.notFound) {
     return (
       <div className="page">
-        {pageHeader(onBack, unlinked ? title : '기사 관리', onOpenMenu)}
+        <PageHeader title={unlinked ? title : '기사 관리'} onBack={onBack} onOpenMenu={onOpenMenu} />
         <div className="empty-state">
           {unlinked ? '차량 정보를 찾을 수 없습니다.' : '연동 중인 기사 정보를 찾을 수 없습니다.'}
         </div>
@@ -141,7 +120,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
 
   return (
     <div className="page">
-      {pageHeader(onBack, title, onOpenMenu)}
+      <PageHeader title={title} onBack={onBack} onOpenMenu={onOpenMenu} />
       <section className="linked-driver-profile-card">
         <div>
           <span className="linked-driver-avatar">{initial}</span>
