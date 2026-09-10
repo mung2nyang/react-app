@@ -22,8 +22,9 @@ const NOTICES = [
 /**
  * @param {Object} props
  * @param {() => void} [props.onBack]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function NoticePage({ onBack }) {
+export default function NoticePage({ onBack, onOpenMenu }) {
   const [openIndex, setOpenIndex] = useState(/** @type {number|null} */ (null))
 
   /** @param {number} index */
@@ -38,7 +39,15 @@ export default function NoticePage({ onBack }) {
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="settings-title">공지사항</div>
-        <div style={{ width: 40 }}></div>
+        {onOpenMenu ? (
+          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
+            <svg viewBox="0 0 24 24">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        ) : <div style={{ width: 40 }}></div>}
       </div>
 
       <section className="support-panel" aria-label="공지사항">
