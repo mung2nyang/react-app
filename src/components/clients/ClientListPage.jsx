@@ -26,8 +26,9 @@ const emptyDraft = {
  * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ClientListPage({ ownerKey = 'guest', onBack, showToast }) {
+export default function ClientListPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
   const clients = useOwnerClients(ownerKey)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
@@ -91,7 +92,15 @@ export default function ClientListPage({ ownerKey = 'guest', onBack, showToast }
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="settings-title">거래처</div>
-        <div style={{ width: 40 }}></div>
+        {onOpenMenu ? (
+          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
+            <svg viewBox="0 0 24 24">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        ) : <div style={{ width: 40 }}></div>}
       </div>
       <div className="client-list" id="clientListContainer">
         {visibleClients.length === 0 && <div className="empty-state">등록된 거래처가 없습니다.</div>}

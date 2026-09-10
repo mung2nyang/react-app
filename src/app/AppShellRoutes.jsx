@@ -72,18 +72,18 @@ export default function AppShellRoutes({
       <Route path="logs/:logId/expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} />} />
       <Route path="logs/:logId/day/:date" element={mainPage()} />
       <Route path="logs/:logId" element={mainPage()} />
-      <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(backTarget)} />} />
+      <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route
         path="clients"
         element={
           session?.linkedOwnerId ? (
-            <OwnerScopedClientsView ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} />
+            <OwnerScopedClientsView ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />
           ) : (
-            <ClientManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} />
+            <ClientManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />
           )
         }
       />
-      <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} onOpen={(/** @type {string} */ page, /** @type {string | undefined} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} />} />
+      <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} onOpen={(/** @type {string} */ page, /** @type {string | undefined} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} onOpenMenu={onOpenMenu} />} />
       <Route path="me/profile" element={<PersonalInfoPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(backTarget)} onGoAuth={onGoAuth} />} />
       <Route path="me/settings" element={<AppSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} />} />
       <Route path="expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} />} />

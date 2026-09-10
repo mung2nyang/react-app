@@ -93,8 +93,9 @@ const SHORTCUTS = [
  * @param {string} [props.ownerKey]
  * @param {(page: string, label?: string) => void} props.onOpen
  * @param {() => void} props.onBack
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) {
+export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, onOpenMenu }) {
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
   const employed = session?.accountType === 'employed_driver'
@@ -109,7 +110,15 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack }) 
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="settings-title">마이페이지</div>
-        <span className="mypage-header-spacer" aria-hidden="true"></span>
+        {onOpenMenu ? (
+          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
+            <svg viewBox="0 0 24 24">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        ) : <span className="mypage-header-spacer" aria-hidden="true"></span>}
       </div>
 
       <button type="button" className="mypage-profile-card" onClick={() => onOpen('profile')}>
