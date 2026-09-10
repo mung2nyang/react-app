@@ -1,0 +1,37 @@
+/* 모달 폼 공통 — car-modal/client-modal shell + form-group/label/input-box. shared-controls.css에서 분리. App.jsx가 shared-controls.css 다음에 import. */
+
+.car-modal,
+.client-modal {
+  width: min(92vw, 360px);
+  max-height: min(82vh, 640px);
+  overflow-y: auto;
+  text-align: left;
+}
+
+.car-modal .form-group,
+.client-modal .form-group,
+.personal-info-page .form-group,
+.app-settings-page .form-group,
+.report-picker-modal .form-group {
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.car-modal .form-group label,
+.client-modal .form-group label,
+.personal-info-page .form-group label,
+.app-settings-page .form-group label,
+.report-picker-modal .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: var(--fs-2);
+  font-weight: 750;
+}
+
+.car-modal .input-box,
+.client-modal .input-box,
+.personal-info-page .input-box,
+.app-settings-page .input-box,
+.report-picker-modal .input-box {
+  text-align: left;
+}

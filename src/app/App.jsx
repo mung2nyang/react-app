@@ -22,6 +22,7 @@ import '../account-flow.css'
 import '../side-menu.css'
 import '../app-shell-base.css'
 import '../shared-controls.css'
+import '../modal-form.css'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 

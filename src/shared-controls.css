@@ -1,5 +1,4 @@
 /* 월 이동기·요약 카드·설정 헤더·아이콘 버튼·토글·입력 기본형 — main-calendar.css에서 옮김. App.jsx가 app-shell-base.css 다음에 import. */
-/* 여러 화면 공유로 200줄 초과 — 다음에 늘면 분할. */
 
 .date-navigator {
   display: inline-flex;
@@ -185,40 +184,4 @@
   text-align: center;
   outline: none;
   font-family: inherit;
-}
-
-.car-modal,
-.client-modal {
-  width: min(92vw, 360px);
-  max-height: min(82vh, 640px);
-  overflow-y: auto;
-  text-align: left;
-}
-
-.car-modal .form-group,
-.client-modal .form-group,
-.personal-info-page .form-group,
-.app-settings-page .form-group,
-.report-picker-modal .form-group {
-  margin-bottom: 14px;
-  text-align: left;
-}
-
-.car-modal .form-group label,
-.client-modal .form-group label,
-.personal-info-page .form-group label,
-.app-settings-page .form-group label,
-.report-picker-modal .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: var(--fs-2);
-  font-weight: 750;
-}
-
-.car-modal .input-box,
-.client-modal .input-box,
-.personal-info-page .input-box,
-.app-settings-page .input-box,
-.report-picker-modal .input-box {
-  text-align: left;
 }
