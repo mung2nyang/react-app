@@ -35,7 +35,7 @@ export function ReportClientPickerModal({ open, options, value, onChange, onConf
   if (!open) return null
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content report-picker-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">세부 내역서 조회</div>
         <div className="form-group">
           <label htmlFor="detailReportClientSelect">거래처</label>

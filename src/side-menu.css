@@ -262,22 +262,6 @@
   cursor: pointer;
 }
 
-.car-modal .form-group {
-  margin-bottom: 14px;
-  text-align: left;
-}
-
-.car-modal .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: var(--fs-2);
-  font-weight: 750;
-}
-
-.car-modal .input-box {
-  text-align: left;
-}
-
 .car-modal {
   width: min(92vw, 360px);
   max-height: min(82vh, 640px);
@@ -500,22 +484,6 @@
   text-align: left;
 }
 
-.client-modal .form-group {
-  margin-bottom: 14px;
-  text-align: left;
-}
-
-.client-modal .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: var(--fs-2);
-  font-weight: 750;
-}
-
-.client-modal .input-box {
-  text-align: left;
-}
-
 .personal-intro {
   position: relative;
   overflow: hidden;
@@ -592,25 +560,6 @@
   margin: 0;
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
-}
-
-.personal-info-page .form-group,
-.app-settings-page .form-group {
-  margin-bottom: 14px;
-  text-align: left;
-}
-
-.personal-info-page .form-group label,
-.app-settings-page .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: var(--fs-2);
-  font-weight: 750;
-}
-
-.personal-info-page .input-box,
-.app-settings-page .input-box {
-  text-align: left;
 }
 
 .personal-inline-fields {
