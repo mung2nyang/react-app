@@ -1,6 +1,7 @@
 // @ts-check
 import { useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import { isCloudSession } from '../lib/cloudSession.js'
+import PageHeader from './PageHeader.jsx'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 
@@ -105,21 +106,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, on
 
   return (
     <div className="page my-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">마이페이지</div>
-        {onOpenMenu ? (
-          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
-            <svg viewBox="0 0 24 24">
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-          </button>
-        ) : <span className="mypage-header-spacer" aria-hidden="true"></span>}
-      </div>
+      <PageHeader title="마이페이지" onBack={onBack} onOpenMenu={onOpenMenu} />
 
       <button type="button" className="mypage-profile-card" onClick={() => onOpen('profile')}>
         <span className="mypage-profile-icon" aria-hidden="true"><PersonIcon /></span>
