@@ -104,6 +104,7 @@
 }
 
 .work-log-page .call-client-panel > label,
+.work-log-page .call-receipt-panel > label,
 .work-log-page .call-remarks-panel > label {
   display: block;
   margin: 0 0 7px 1px;
@@ -185,13 +186,56 @@
 }
 
 .input-with-suffix {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
 }
 
-.input-with-suffix .input-box {
-  flex: 1;
+.work-log-page .call-detail-panel .input-box {
+  padding: 8px 10px;
+  border-radius: 11px;
+  font-size: var(--fs-2);
+}
+
+.work-log-page .call-detail-panel .input-with-suffix .input-box {
+  padding-right: 34px;
+}
+
+.input-with-suffix .suffix {
+  position: absolute;
+  right: 10px;
+  max-width: 26px;
+  overflow: hidden;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.call-client-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dark-pill-btn {
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dark-pill-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
 }
 
 .input-box.input-error {

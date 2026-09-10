@@ -808,31 +808,6 @@
   margin: 8px 0 4px;
 }
 
-.call-client-shortcuts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.dark-pill-btn {
-  min-height: 36px;
-  padding: 7px 11px;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--input-bg);
-  color: var(--text-color);
-  font: inherit;
-  font-size: var(--fs-2);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.dark-pill-btn.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #fff;
-}
 
 .client-modal-header {
   display: flex;

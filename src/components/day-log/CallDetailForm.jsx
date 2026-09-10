@@ -51,7 +51,7 @@ export default function CallDetailForm({ value, previousItem, dateKey, clients, 
 
   return (
     <div className="modal-content call-detail-modal-content">
-      <div className="modal-title call-detail-modal-title">{value ? '운행 일지 세부 입력 수정' : '운행 일지 세부 입력'}</div>
+      <div className="modal-title call-detail-modal-title">{`${Number(dateKey.slice(8, 10))}일 일지 세부 입력${value ? ' 수정' : ''}`}</div>
       {!value && previousItem && (
         <button type="button" className="call-detail-copy-prev-btn" onClick={() => setDraft(draftFromDetail(previousItem, dateKey, clients))}>
           ↺ 직전 항목과 동일하게 채우기
@@ -144,7 +144,7 @@ export default function CallDetailForm({ value, previousItem, dateKey, clients, 
         )}
       </div>
       {settings.paymentOn && (
-        <div className="call-detail-panel">
+        <div className="call-detail-panel call-receipt-panel">
           <label>계산서</label>
           <div className="call-receipt-group">
             {RECEIPT_PRESETS.map((name) => (

@@ -185,3 +185,17 @@
   outline: none;
   font-family: inherit;
 }
+
+:where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), textarea, select):focus {
+  border-color: var(--primary-color);
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+.form-group label {
+  font-size: var(--fs-3);
+  font-weight: 600;
+  color: var(--sub-text-color);
+  padding-left: 4px;
+}
