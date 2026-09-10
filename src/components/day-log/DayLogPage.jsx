@@ -146,22 +146,23 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
             onTogglePayment={handleTogglePayment}
             onMessage={(id) => setMessageCallId(id)}
             onAdd={() => openCallForm(null)}
-          />
-        )}
-        {settings.callDetail && (
-          <InlineSheet open={callFormOpen} className="call-detail-inline-host">
-            <CallDetailForm
-              key={editingCallId ?? 'new'}
-              value={editingCallItem}
-              previousItem={editingCallId ? null : previousCallItem}
-              dateKey={dateKey}
-              clients={clients}
-              settings={settings}
-              logId={logId}
-              onSave={handleSaveCall}
-              onClose={() => dispatch({ type: 'closeCallForm' })}
-            />
-          </InlineSheet>
+          >
+            {settings.callDetail && (
+              <InlineSheet open={callFormOpen} className="call-detail-inline-host">
+                <CallDetailForm
+                  key={editingCallId ?? 'new'}
+                  value={editingCallItem}
+                  previousItem={editingCallId ? null : previousCallItem}
+                  dateKey={dateKey}
+                  clients={clients}
+                  settings={settings}
+                  logId={logId}
+                  onSave={handleSaveCall}
+                  onClose={() => dispatch({ type: 'closeCallForm' })}
+                />
+              </InlineSheet>
+            )}
+          </CallDetailList>
         )}
 
         <DayLogExpenses

@@ -21,8 +21,9 @@ import './call-detail-list.css'
  * @param {(id: string) => void} props.onMessage
  * @param {boolean} [props.canAdd] false면 "+추가" 진입 버튼만 숨긴다(기존 카드는 유지).
  * @param {() => void} props.onAdd
+ * @param {import('react').ReactNode} [props.children]
  */
-export default function CallDetailList({ details, settings, clients, canAdd = true, onEdit, onDelete, onTogglePayment, onMessage, onAdd }) {
+export default function CallDetailList({ details, settings, clients, canAdd = true, onEdit, onDelete, onTogglePayment, onMessage, onAdd, children }) {
   const callFare = callFareTotal({ isOff: false, callDetails: details })
   const callVat = callVatTotal({ isOff: false, callDetails: details })
   const totalDistance = details.reduce((sum, item) => sum + (parseFloat(item.distanceKm || '') || 0), 0)
@@ -68,6 +69,7 @@ export default function CallDetailList({ details, settings, clients, canAdd = tr
           <button type="button" className="call-detail-add-btn" onClick={onAdd}>+ 운행 일지 추가</button>
         </div>
       )}
+      {children}
     </div>
   )
 }
