@@ -440,7 +440,6 @@
   color: var(--text-color);
   font-size: var(--fs-2);
 }
-}
 
 .client-list {
   display: flex;
