@@ -21,14 +21,6 @@
 
 .work-log-page {
   box-sizing: border-box;
-  /* main-app-container의 세로 패딩(20px+108px=128px)이 이 페이지를 감싸고
-     있어, 100dvh 그대로 쓰면 실제 렌더링 높이가 "뷰포트+128px"가 되어 바깥
-     (body)에도 스크롤이 하나 더 생긴다. 뷰포트와 맞추려면 그 128px을 빼야
-     한다 — main-app-container 패딩 값이 바뀌면(app-shell-base.css:26) 이
-     숫자도 같이 맞춰야 함. */
-  height: calc(100dvh - 128px);
-  overflow-y: auto;
-  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
   scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
 }
 
