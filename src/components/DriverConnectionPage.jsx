@@ -15,6 +15,7 @@ import {
 import { countByStatus, generateInviteCode, saveDrivers, upsertDriver } from '../lib/drivers.js'
 import { useOwnerCars, useOwnerDrivers } from '../store/ownerDataHooks.js'
 import DriverFormModal from './DriverFormModal.jsx'
+import PageHeader from './PageHeader.jsx'
 
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }
 
@@ -98,13 +99,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
 
   return (
     <div className="page driver-connection-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">기사 연동 관리</div>
-        <div style={{ width: 40 }}></div>
-      </div>
+      <PageHeader title="기사 연동 관리" onBack={onBack} />
 
       <section className="personal-intro">
         <span className="personal-intro-kicker">DRIVER CONNECTION</span>

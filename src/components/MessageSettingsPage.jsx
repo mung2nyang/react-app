@@ -8,6 +8,7 @@ import {
   resetMessageTemplateSettings,
   saveMessageTemplateSettings,
 } from '../lib/messageTemplates.js'
+import PageHeader from './PageHeader.jsx'
 
 /**
  * @param {Object} props
@@ -59,13 +60,7 @@ export default function MessageSettingsPage({ onBack, showToast }) {
 
   return (
     <div className="page message-settings-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">문자 문구 설정</div>
-        <div style={{ width: 40 }}></div>
-      </div>
+      <PageHeader title="문자 문구 설정" onBack={onBack} />
 
       <section className="message-settings-section">
         <div className="message-settings-heading">

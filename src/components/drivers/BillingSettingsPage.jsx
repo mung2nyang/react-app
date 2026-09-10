@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
 import { useOwnerSettings } from '../../store/ownerDataHooks.js'
+import PageHeader from '../PageHeader.jsx'
 import './linked-driver.css'
 
 /**
@@ -40,13 +41,7 @@ export default function BillingSettingsPage({ ownerKey = 'guest', onBack, showTo
 
   return (
     <div className="page billing-settings-page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={handleBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">정산·계산서 설정</div>
-        <div style={{ width: 40 }}></div>
-      </div>
+      <PageHeader title="정산·계산서 설정" onBack={handleBack} />
       <section className="billing-settings-hero">
         <span>BILLING FLOW</span>
         <strong>기사 매입 계산서 발행 기준을 선택하세요.</strong>

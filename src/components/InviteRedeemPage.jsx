@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { redeemDriverInviteCode } from '../lib/driverLinkRpc.js'
 import { buildCloudAppSession, ownerKeyFromSession } from '../app/boot.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
+import PageHeader from './PageHeader.jsx'
 
 /**
  * @param {{ session: AppSession|null, showToast?: (message: string) => void, onBack: () => void, onLinked: (session: AppSession) => void }} props
@@ -40,13 +41,7 @@ export default function InviteRedeemPage({ session, showToast, onBack, onLinked 
 
   return (
     <div className="page">
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">차주 연동</div>
-        <span className="mypage-header-spacer" aria-hidden="true"></span>
-      </div>
+      <PageHeader title="차주 연동" onBack={onBack} />
 
       <section className="personal-intro">
         <span className="personal-intro-kicker">DRIVER INVITE</span>
