@@ -1278,6 +1278,7 @@ body.pdf-export-mode .summary-row.total {
 }
 
 .top-notification-btn {
+  position: relative;
   z-index: 100;
   overflow: visible;
 }
@@ -2107,7 +2108,7 @@ body.pdf-export-mode .summary-row.total {
   cursor: pointer;
 }
 
-/* ∞Ì∞¥ºæ≈Õ */
+/* Í≥†Í∞ùÏÑºÌÑ∞ */
 .customer-center-page { padding-bottom: 110px; text-align: left; }
 .support-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0 14px; padding: 5px; border-radius: 14px; background: var(--input-bg); }
 .support-tab { min-height: 44px; padding: 7px 4px; border: 0; border-radius: 10px; background: transparent; color: var(--sub-text-color); font: inherit; font-size: var(--fs-floor); font-weight: 750; cursor: pointer; }
