@@ -10,12 +10,13 @@ import ReceivablesDetailPage from './receivables/ReceivablesDetailPage.jsx'
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  * @param {() => void} [props.onWorkChanged]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast, onWorkChanged }) {
+export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast, onWorkChanged, onOpenMenu }) {
   const shared = { ownerKey, showToast, onWorkChanged }
   return (
     <Routes>
-      <Route index element={<ReceivablesListPage {...shared} onBack={onBack} />} />
+      <Route index element={<ReceivablesListPage {...shared} onBack={onBack} onOpenMenu={onOpenMenu} />} />
       <Route path=":client/:month" element={<ReceivablesDetailPage {...shared} />} />
     </Routes>
   )

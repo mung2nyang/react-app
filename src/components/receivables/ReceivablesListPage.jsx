@@ -17,8 +17,9 @@ import ReceivableItemCard from './ReceivableItemCard.jsx'
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  * @param {() => void} [props.onWorkChanged]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ReceivablesListPage({ ownerKey = 'guest', onBack, showToast, onWorkChanged }) {
+export default function ReceivablesListPage({ ownerKey = 'guest', onBack, showToast, onWorkChanged, onOpenMenu }) {
   const navigate = useNavigate()
   const [tab, setTab] = useState('monthly')
   const [historyKey, setHistoryKey] = useState('')
@@ -36,7 +37,15 @@ export default function ReceivablesListPage({ ownerKey = 'guest', onBack, showTo
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="settings-title">미수금/정산 관리</div>
-        <div style={{ width: 40 }}></div>
+        {onOpenMenu ? (
+          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
+            <svg viewBox="0 0 24 24">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        ) : <div style={{ width: 40 }}></div>}
       </div>
 
       <div className="settings-segmented-control maint-fuel-tabs">

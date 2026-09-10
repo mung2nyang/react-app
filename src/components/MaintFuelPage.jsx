@@ -23,8 +23,9 @@ const YEAR_OPTIONS = getYearOptions()
  * @param {string} [props.logId]
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
+ * @param {(() => void)} [props.onOpenMenu]
  */
-export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, onBack, showToast }) {
+export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, onBack, showToast, onOpenMenu }) {
   const { logId: rawLogId } = useParams()
   const logId = logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)
   const items = useOwnerExpenses(ownerKey)
@@ -104,7 +105,15 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="settings-title">{title}</div>
-        <div style={{ width: 40 }}></div>
+        {onOpenMenu ? (
+          <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
+            <svg viewBox="0 0 24 24">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        ) : <div style={{ width: 40 }}></div>}
       </div>
 
       <div className="settings-segmented-control maint-fuel-tabs">
