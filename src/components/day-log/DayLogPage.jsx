@@ -15,7 +15,7 @@ import { confirmLeaveIfUnsafe } from '../../lib/durableWriteGuard.js'
 import { useDayDraft } from './useDayDraft.js'
 import { useExpenseForm } from './useExpenseForm.js'
 import { bindInlinePanelActions } from './inlinePanelActions.js'
-import DayLogHeader from './DayLogHeader.jsx'
+import AutoSaveStatus from './AutoSaveStatus.jsx'
 import OffToggle from './OffToggle.jsx'
 import FixedCountSection from './FixedCountSection.jsx'
 import FixedRouteChips from './FixedRouteChips.jsx'
@@ -25,6 +25,7 @@ import CallDetailForm from './CallDetailForm.jsx'
 import DayLogExpenses from './DayLogExpenses.jsx'
 import MessageTemplateSheet from './MessageTemplateSheet.jsx'
 import InlineSheet from './InlineSheet.jsx'
+import PageHeader from '../PageHeader.jsx'
 import './day-log-shell.css'
 import './fixed-route.css'
 import './day-log.css'
@@ -114,7 +115,12 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
 
   return (
     <div className="page work-log-page">
-      <DayLogHeader month={month} day={day} autoSaveStatus={autoSaveStatus} onClose={handleClose} onOpenMenu={onOpenMenu} />
+      <PageHeader
+        title={`${month}월 ${day}일 운행 일지`}
+        titleExtra={<AutoSaveStatus status={autoSaveStatus} />}
+        onBack={handleClose}
+        onOpenMenu={onOpenMenu}
+      />
       <OffToggle isOff={draft.isOff} onChange={(off) => patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })} />
       <div className={`modal-work-details${draft.isOff ? ' is-off' : ''}`}>
         {settings.fixedOn && (

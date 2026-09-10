@@ -8,6 +8,7 @@ import { useReceivablesData } from './useReceivablesData.js'
 import { useReceivablesActions } from './useReceivablesActions.js'
 import { useConfirm } from './useConfirm.jsx'
 import ReceivableItemCard from './ReceivableItemCard.jsx'
+import PageHeader from '../PageHeader.jsx'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 
@@ -47,13 +48,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
   return (
     <div className="page receivables-page">
       {confirmDialog}
-      <div className="settings-header">
-        <button type="button" className="icon-btn" title="뒤로가기" onClick={() => navigate('/app/receivables')}>
-          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <div className="settings-title">미수금 상세</div>
-        <div style={{ width: 40 }}></div>
-      </div>
+      <PageHeader title="미수금 상세" onBack={() => navigate('/app/receivables')} />
 
       <section className="receivable-detail-summary">
         <div className="receivable-detail-eyebrow">{formatWorkMonth(monthKey)}</div>
