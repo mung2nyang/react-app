@@ -4,16 +4,6 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.top-btn-group {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  z-index: 100;
-}
-
 .side-menu-overlay {
   position: fixed;
   inset: 0;
@@ -1288,9 +1278,6 @@ body.pdf-export-mode .summary-row.total {
 }
 
 .top-notification-btn {
-  position: fixed;
-  top: 15px;
-  left: 15px;
   z-index: 100;
   overflow: visible;
 }

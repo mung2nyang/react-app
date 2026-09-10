@@ -24,17 +24,18 @@ export default function CalendarHeader({
 }) {
   return (
     <>
-      {onOpenNotifs && (
-        <button type="button" className="icon-btn top-notification-btn" title="알림" onClick={onOpenNotifs}>
-          <svg viewBox="0 0 24 24">
-            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-          {notifCount > 0 && <span className="notification-count-badge">{notifCount > 99 ? '99+' : notifCount}</span>}
-        </button>
-      )}
-      {onOpenMenu && (
-        <div className="top-btn-group">
+      <div className="settings-header">
+        {onOpenNotifs ? (
+          <button type="button" className="icon-btn top-notification-btn" title="알림" onClick={onOpenNotifs}>
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            {notifCount > 0 && <span className="notification-count-badge">{notifCount > 99 ? '99+' : notifCount}</span>}
+          </button>
+        ) : <div style={{ width: 40 }}></div>}
+        <div></div>
+        {onOpenMenu ? (
           <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
             <svg viewBox="0 0 24 24">
               <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -42,8 +43,8 @@ export default function CalendarHeader({
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
-        </div>
-      )}
+        ) : <div style={{ width: 40 }}></div>}
+      </div>
       <div className="header">
         <div className="banner-container">
           <img src={BANNER} alt="운행 일지 로고" className="banner-logo" />
