@@ -120,7 +120,7 @@ export default function CallDetailForm({ value, previousItem, dateKey, clients, 
             <label htmlFor="callPlatform">플랫폼</label>
             <input id="callPlatform" className="input-box" placeholder="직접입력 또는 선택" value={draft.platform} onChange={(e) => setDraft({ ...draft, platform: e.target.value })} />
           </div>
-          <div className="dark-pill-group call-platform-quick-list">
+          <div className="call-platform-quick-list">
             {PLATFORM_PRESETS.map((name) => (
               <button key={name} type="button" className={`dark-pill-btn${draft.platform === name ? ' active' : ''}`} onClick={() => setDraft({ ...draft, platform: draft.platform === name ? '' : name })}>{name}</button>
             ))}
@@ -136,7 +136,7 @@ export default function CallDetailForm({ value, previousItem, dateKey, clients, 
           </datalist>
         </div>
         {shortcuts.length > 0 && (
-          <div className="dark-pill-group call-client-shortcuts">
+          <div className="call-client-shortcuts">
             {shortcuts.map((client) => (
               <button key={client.id} type="button" className={`dark-pill-btn${draft.client === client.companyName ? ' active' : ''}`} onClick={() => applyClient(draft.client === client.companyName ? '' : client.companyName)}>{client.companyName}</button>
             ))}
@@ -146,7 +146,7 @@ export default function CallDetailForm({ value, previousItem, dateKey, clients, 
       {settings.paymentOn && (
         <div className="call-detail-panel">
           <label>계산서</label>
-          <div className="dark-pill-group call-receipt-group">
+          <div className="call-receipt-group">
             {RECEIPT_PRESETS.map((name) => (
               <button key={name} type="button" className={`dark-pill-btn${draft.receipt === name ? ' active' : ''}`} onClick={() => setDraft({ ...draft, receipt: draft.receipt === name ? '' : name })}>{name}</button>
             ))}
