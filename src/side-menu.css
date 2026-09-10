@@ -262,13 +262,6 @@
   cursor: pointer;
 }
 
-.car-modal {
-  width: min(92vw, 360px);
-  max-height: min(82vh, 640px);
-  overflow-y: auto;
-  text-align: left;
-}
-
 .car-settlement-mode-guide {
   margin: 7px 0 0;
   color: var(--sub-text-color);
@@ -475,13 +468,6 @@
 
 .management-list-card .car-sub-text span + span {
   margin-left: 8px;
-}
-
-.client-modal {
-  width: min(92vw, 360px);
-  max-height: min(82vh, 640px);
-  overflow-y: auto;
-  text-align: left;
 }
 
 .personal-intro {

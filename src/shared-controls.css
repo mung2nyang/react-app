@@ -187,6 +187,14 @@
   font-family: inherit;
 }
 
+.car-modal,
+.client-modal {
+  width: min(92vw, 360px);
+  max-height: min(82vh, 640px);
+  overflow-y: auto;
+  text-align: left;
+}
+
 .car-modal .form-group,
 .client-modal .form-group,
 .personal-info-page .form-group,
