@@ -1,5 +1,5 @@
 // @ts-check
-// 210줄, §6: 상/하차지 onFocus·칩 배선은 폼 응집 유지. 칩 UI는 LocationShortcuts로 분리.
+// 212줄, §6: 상/하차지 onFocus·칩 배선은 폼 응집 유지. 칩 UI는 LocationShortcuts로 분리.
 import { useState } from 'react'
 import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
