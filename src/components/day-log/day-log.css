@@ -11,10 +11,13 @@
 .inline-sheet-panel {
   overflow: hidden;
   min-height: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease;
 }
 .inline-sheet.is-visible .inline-sheet-panel {
   min-height: min-content;
   overflow: visible;
+  opacity: 1;
 }
 
 .work-log-page {
