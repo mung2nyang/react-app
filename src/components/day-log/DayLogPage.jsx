@@ -4,14 +4,18 @@
 // 콜상세 폼은 CallDetailForm.jsx가, 비용(정비/주유/기타)은 useExpenseForm.js가
 // 예전처럼 별도 expenses 스토어에서 즉시 저장으로 관리한다(day record에 넣지 않는다
 // — 왜인지는 migration-audit-plan.md Step 6 기록의 "비용 계약" 항목 참고).
-import { useState } from 'react'
+// 206줄, §6: 즐겨찾기 칩용 이력 구독·고정 저장 배선은 이 페이지 조합 책임에 둔다.
+import { useMemo, useState } from 'react'
 import { expensesForVehicleDay } from '../../domain/calendarBadges.js'
 import { applyFixedRouteRun, getFixedRouteCounts } from '../../domain/day-record.js'
 import { getFixedRouteClient } from '../../domain/clients.js'
 import { removeCallDetail, upsertCallDetail } from '../../domain/call-details.js'
 import { getDetailPaymentSummary } from '../../domain/finance.js'
+import { locationShortcutList, togglePinnedLocation } from '../../domain/locationShortcuts.js'
 import { toggleCallPaymentStatus } from '../../domain/payments.js'
 import { confirmLeaveIfUnsafe } from '../../lib/durableWriteGuard.js'
+import { savePracticeSettings } from '../../lib/practiceSettings.js'
+import { useOwnerWorkData, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
 import { useDayDraft } from './useDayDraft.js'
 import { useExpenseForm } from './useExpenseForm.js'
 import { bindInlinePanelActions } from './inlinePanelActions.js'
@@ -35,6 +39,8 @@ import './day-log.css'
 /** @typedef {import('./day-log-reducer.js').DayDraft} DayDraft */
 /** @typedef {import('../../domain/call-details.js').CallDetailDraft} CallDetailDraft */
 
+const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
+
 /**
  * @param {Object} props
  * @param {number} props.month
@@ -53,6 +59,14 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, showToast, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, showToast, logId)
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
+  const mainWorkData = useOwnerWorkData(ownerKey)
+  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
+  const workData = logId === 'main' ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)
+  const pinnedLocations = settings.pinnedLocations || []
+  const locationShortcuts = useMemo(
+    () => locationShortcutList(workData, draft.callDetails, pinnedLocations),
+    [workData, draft.callDetails, pinnedLocations],
+  )
 
   const dayExpenses = expensesForVehicleDay(expenseForm.expenses, dateKey, logId !== 'main' ? logId : undefined)
   const routePresets = settings.fixedRouteOn ? (settings.fixedRoutePresets || []) : []
@@ -99,6 +113,17 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
     patchDraft({ callDetails: /** @type {Array<DayDraft['callDetails'][number]>} */ (result.items) })
     dispatch({ type: 'closeCallForm' })
     showToast?.(editingIndex >= 0 ? '세부 입력을 수정했습니다.' : '세부 입력을 저장했습니다.')
+  }
+
+  /** @param {string} location */
+  async function handleTogglePinnedLocation(location) {
+    const result = togglePinnedLocation(settings, location)
+    if (result.error) { showToast?.(result.error); return }
+    try {
+      await savePracticeSettings(ownerKey, { pinnedLocations: result.settings.pinnedLocations })
+    } catch {
+      showToast?.('고정 장소 저장에 실패했습니다.')
+    }
   }
 
   /** @param {string} id */
@@ -157,6 +182,9 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
                   clients={clients}
                   settings={settings}
                   logId={logId}
+                  locationShortcuts={locationShortcuts}
+                  pinnedLocations={pinnedLocations}
+                  onTogglePinnedLocation={handleTogglePinnedLocation}
                   onSave={handleSaveCall}
                   onClose={() => dispatch({ type: 'closeCallForm' })}
                 />

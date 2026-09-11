@@ -1,0 +1,46 @@
+/* 원본 style.css:3259-3264 포팅 — 칩 전용. call-detail-form.css(§6 초과)에 넣지 않음. */
+.location-shortcuts {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.location-chip {
+  display: inline-flex;
+  align-items: stretch;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--input-bg);
+}
+
+.location-chip.pinned {
+  border-color: var(--primary-color);
+}
+
+.location-chip button {
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  color: var(--sub-text-color);
+  cursor: pointer;
+}
+
+.location-chip-select {
+  max-width: 100px;
+  padding: 4px 4px 4px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-2);
+}
+
+.location-chip-pin {
+  width: 26px;
+  padding: 3px 6px 3px 2px;
+  color: var(--primary-color) !important;
+  font-size: var(--fs-2);
+}

@@ -4,6 +4,8 @@
 // 남아 이 파일을 재수출한다 — applyTheme은 순수 함수가 아니라(document를 직접 바꿈)
 // domain으로 옮기지 않았다.
 // 203줄, §6 예외: scope별 프리셋 CRUD 함수들이 서로 얽혀 있어 쪼개면 기계적 절단이 됨.
+import { normalizePinnedLocations } from './locationShortcuts.js'
+
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 
 export const RUN_COUNT_PRESET_MAX = 10
@@ -29,6 +31,7 @@ const defaults = {
   subFixedRoutePresets: [],
   subRunCountToggle: false,
   subRunCountPresets: [1, 2, 3, 4, 5],
+  pinnedLocations: [],
 }
 
 /**
@@ -125,6 +128,7 @@ export function normalizeSettings(raw = {}) {
     subRunCountToggle: asBool(raw.subRunCountToggle, defaults.subRunCountToggle),
     subRunCountPresets: normalizeRunCountPresets(raw.subRunCountPresets),
     driverInvoiceBasis: raw.driverInvoiceBasis === 'gross' ? 'gross' : 'net',
+    pinnedLocations: normalizePinnedLocations(raw.pinnedLocations),
   }
 }
 

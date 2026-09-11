@@ -19,7 +19,7 @@ const SETTINGS_KEYS = [
   'bizRepresentative', 'userName', 'bizAddress', 'bizType', 'bizItem', 'bizEmail', 'theme',
   'inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn',
   'fixedRoutePresets', 'runCountToggle', 'runCountPresets', 'subFixedRouteOn', 'subFixedRoutePresets',
-  'subRunCountToggle', 'subRunCountPresets',
+  'subRunCountToggle', 'subRunCountPresets', 'pinnedLocations',
 ]
 /** lib/profile.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
 const PROFILE_KEYS = [
@@ -67,6 +67,7 @@ export function isPersistedSettings(value) {
   if ('subFixedRoutePresets' in value && (!Array.isArray(value.subFixedRoutePresets) || !value.subFixedRoutePresets.every(isRoutePreset))) return false
   if ('runCountPresets' in value && (!Array.isArray(value.runCountPresets) || !value.runCountPresets.every(isFiniteNumber))) return false
   if ('subRunCountPresets' in value && (!Array.isArray(value.subRunCountPresets) || !value.subRunCountPresets.every(isFiniteNumber))) return false
+  if ('pinnedLocations' in value && (!Array.isArray(value.pinnedLocations) || !value.pinnedLocations.every((loc) => typeof loc === 'string'))) return false
   return true
 }
 

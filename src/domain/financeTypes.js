@@ -93,6 +93,7 @@
  * @property {Array<{ id: string, loadLoc: string, unloadLoc: string }>} [subFixedRoutePresets]
  * @property {boolean} [subRunCountToggle]
  * @property {Array<number>} [subRunCountPresets]
+ * @property {Array<string>} [pinnedLocations]
  */
 
 export {}
