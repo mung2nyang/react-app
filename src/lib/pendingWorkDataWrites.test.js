@@ -863,7 +863,6 @@ test('재감사 10차 FAIL 지적 1번 — 임의 문자열·음수·NaN·Infini
   }
   const rejected = [
     registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('oops'))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(''))),
     registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(','))),
     registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('.'))),
     registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('원'))),
@@ -875,10 +874,17 @@ test('재감사 10차 FAIL 지적 1번 — 임의 문자열·음수·NaN·Infini
     registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('1,000.50'))),
     registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount({ nested: 1 }))),
   ]
-  assert.equal(rejected.every((ok) => ok === false), true, 'oops·빈값·기호만·잘못된 쉼표·소수·음수·NaN·Infinity·중첩 객체 amount는 전부 거부돼야 한다')
+  assert.equal(rejected.every((ok) => ok === false), true, 'oops·기호만·잘못된 쉼표·소수·음수·NaN·Infinity·중첩 객체 amount는 전부 거부돼야 한다')
   assert.equal(localStorage.getItem(`reactPracticeDurablePendingWrites:${ownerKey}`), durableBefore, '거부된 등록은 기존 durable 원문을 건드리면 안 된다')
   assert.equal(getPendingDayWrite(ownerKey, dateKeyGood)?.fixedCount, 3, '기존 정상 항목이 그대로 남아 있어야 한다')
   assert.equal(getPendingDayWrite(ownerKey, dateKeyBad), undefined, '거부된 날짜는 큐에 없어야 한다')
+
+  // 빈 문자열 amount = 미입력(0) — isValidCurrencyAmount 규약과 동일(게스트 데이터 유실 버그 수정).
+  const dateKeyEmpty = '2026-09-23'
+  assert.equal(registerPendingDayWrite(ownerKey, dateKeyEmpty, patchWithAmount('')), true, '빈 문자열 amount는 미입력(0)으로 허용돼야 한다')
+  assert.equal(getPendingDayWrite(ownerKey, dateKeyEmpty)?.fixedCount, 9, '빈 amount 접수는 큐에 남아야 한다')
+
   retryPendingDayWrites()
   assert.equal(getPendingDayWrite(ownerKey, dateKeyGood), undefined, '정상 항목은 정리돼야 한다')
+  assert.equal(getPendingDayWrite(ownerKey, dateKeyEmpty), undefined, '빈 amount 항목도 정상 커밋 후 정리돼야 한다')
 })

@@ -33,6 +33,11 @@ export function isValidCurrencyAmount(value) {
   if (typeof value === 'number') return Number.isInteger(value) && Number.isFinite(value) && value >= 0
   if (typeof value !== 'string') return false
   const trimmed = value.trim()
+  // 빈 값 = 미입력(0) — domain/money.js의 parseCurrencyValue('')===0과 같은 규약.
+  // 이게 없어서 산재보험료를 안 채운 콜상세(대부분)가 전부 검증 실패 →
+  // 그 owner의 Store 초기화 전체가 무산되는 버그가 있었다(실측: 2026-09-11
+  // "게스트 데이터 유실" 재현·원인 확정).
+  if (trimmed === '') return true
   // 쉼표 없는 정수, 또는 천 단위 쉼표 그룹(3자리). 선택적으로 끝의 `원`(앞에 공백 하나).
   if (!/^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\s?원)?$/.test(trimmed)) return false
   const parsed = parseCurrencyValue(trimmed)
