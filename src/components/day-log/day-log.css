@@ -15,9 +15,12 @@
   transition: opacity 0.15s ease;
 }
 .inline-sheet.is-visible .inline-sheet-panel {
+  opacity: 1;
+  transition: opacity 0.15s ease 0.25s; /* 0.4s 성장 중 후반 150ms에만 페이드인 */
+}
+.inline-sheet.is-settled .inline-sheet-panel {
   min-height: min-content;
   overflow: visible;
-  opacity: 1;
 }
 
 .work-log-page {
