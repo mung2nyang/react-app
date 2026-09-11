@@ -1,6 +1,7 @@
 // @ts-check
 import { callFareTotal, callVatTotal } from '../../domain/day-record.js'
 import { getDetailPaymentSummary } from '../../lib/finance.js'
+import { parseCurrencyValue } from '../../lib/money.js'
 import { commissionInfo } from './callDetailFormHelpers.js'
 import CallDetailCard from './CallDetailCard.jsx'
 import './call-detail-list.css'
@@ -28,7 +29,8 @@ export default function CallDetailList({ details, settings, clients, canAdd = tr
   const callVat = callVatTotal({ isOff: false, callDetails: details })
   const totalDistance = details.reduce((sum, item) => sum + (parseFloat(item.distanceKm || '') || 0), 0)
   const totalCommission = details.reduce((sum, item) => sum + commissionInfo(item).amount, 0)
-  const grandTotal = callFare - totalCommission + callVat
+  const totalInsuranceFee = details.reduce((sum, item) => sum + parseCurrencyValue(item.insuranceFee || ''), 0)
+  const grandTotal = callFare - totalCommission - totalInsuranceFee + callVat
 
   return (
     <div className="modal-section call-detail-section">
@@ -56,6 +58,9 @@ export default function CallDetailList({ details, settings, clients, canAdd = tr
           <div><b>일일 운행거리</b><strong>{totalDistance} km</strong></div>
           {totalCommission > 0 && (
             <div className="commission-row"><b>수수료</b><strong>- {totalCommission.toLocaleString('ko-KR')}원</strong></div>
+          )}
+          {totalInsuranceFee > 0 && (
+            <div className="commission-row"><b>산재보험료</b><strong>- {totalInsuranceFee.toLocaleString('ko-KR')}원</strong></div>
           )}
           <div><b>부가세(공급가액 기준 10%)</b><strong>{callVat.toLocaleString('ko-KR')}원</strong></div>
           <div className="summary-grand-total">

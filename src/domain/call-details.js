@@ -28,6 +28,7 @@ import { generateLocalId } from './payments.js'
  * @property {string} [platform]
  * @property {string} [cargoTonnage]
  * @property {string} [receipt]
+ * @property {string} [insuranceFee]
  */
 
 /**
@@ -81,6 +82,7 @@ export function buildCallDetail(draft, existing, dateKey, clients = []) {
       platform: String(draft.platform ?? existing?.platform ?? '').trim(),
       cargoTonnage: String(draft.cargoTonnage ?? existing?.cargoTonnage ?? '').trim(),
       receipt: String(draft.receipt ?? existing?.receipt ?? '').trim(),
+      insuranceFee: String(draft.insuranceFee ?? existing?.insuranceFee ?? '').trim(),
       startOdometer,
       endOdometer,
       distanceKm,

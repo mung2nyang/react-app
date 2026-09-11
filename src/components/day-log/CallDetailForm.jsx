@@ -158,6 +158,11 @@ export default function CallDetailForm({ value, previousItem, dateKey, clients, 
               <span className="slider"></span>
             </label>
           </div>
+          <div className="call-inline-field">
+            <label htmlFor="callInsuranceFee">산재보험료</label>
+            <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
+            <span>원</span>
+          </div>
           <div className="payment-due-date-box">
             <div className="form-group">
               <label htmlFor="callPaymentDueDate">입금 예정일</label>
