@@ -1,13 +1,11 @@
-/* Step 6/7: 인라인 시트는 CSS grid 0fr↔1fr. JS max-height/DOM 이동 금지.
-   펼침 시 패널은 내용 높이(min-content)를 쓴다. 1fr만 쓰면 부모 높이가 auto일 때
-   행이 0으로 접혀 실제 브라우저에서 폼이 안 보인다. */
+/* 0fr↔1fr만 보간됨(둘 다 flex 타입) — min-content는 타입이 달라 discrete 전환(점프)된다 */
 .inline-sheet {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.32s ease;
 }
 .inline-sheet.is-visible {
-  grid-template-rows: min-content;
+  grid-template-rows: 1fr;
   margin-top: 12px;
 }
 .inline-sheet-panel {

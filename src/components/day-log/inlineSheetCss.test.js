@@ -12,7 +12,7 @@ test('일지 인라인 호스트는 max-height:0 + is-open 트릭을 쓰지 않�
   assert.equal(/maint-fuel-inline-host[\s\S]{0,120}max-height:\s*0/.test(calendar), false)
   const dayLog = readFileSync(join(here, 'day-log.css'), 'utf8')
   assert.match(dayLog, /\.inline-sheet\.is-visible/)
-  assert.match(dayLog, /grid-template-rows:\s*min-content/)
+  assert.match(dayLog, /\.inline-sheet\.is-visible\s*\{[^}]*grid-template-rows:\s*1fr/)
   assert.match(dayLog, /min-height:\s*min-content/)
   assert.match(dayLog, /scroll-padding-bottom/)
   assert.equal(/inline-sheet-panel[\s\S]{0,180}max-height:\s*calc\(100dvh/.test(dayLog), false)
