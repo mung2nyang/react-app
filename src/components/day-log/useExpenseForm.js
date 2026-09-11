@@ -43,6 +43,15 @@ export function useExpenseForm(ownerKey, dateKey, showToast, logId = 'main') {
 
   /** @param {string} kind */
   function openAdd(kind) {
+    if (kindPick) {
+      setKindPick(false)
+      setTimeout(() => {
+        setEditingId(null)
+        setDraft(emptyExpenseDraft(kind, dateKey, logId !== 'main' ? logId : undefined))
+        setModalOpen(true)
+      }, 420)
+      return
+    }
     setKindPick(false)
     setEditingId(null)
     setDraft(emptyExpenseDraft(kind, dateKey, logId !== 'main' ? logId : undefined))
