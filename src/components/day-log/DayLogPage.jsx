@@ -174,7 +174,11 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
             onAdd={() => openCallForm(null)}
           >
             {settings.callDetail && (
-              <InlineSheet open={callFormOpen} className="call-detail-inline-host">
+              <InlineSheet
+                open={callFormOpen}
+                forceInstant={expenseForm.kindPick || expenseForm.modalOpen}
+                className="call-detail-inline-host"
+              >
                 <CallDetailForm
                   key={editingCallId ?? 'new'}
                   value={editingCallItem}
@@ -200,6 +204,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
         <DayLogExpenses
           dayExpenses={dayExpenses}
           expenseForm={expenseForm}
+          callFormOpen={callFormOpen}
           onKindPick={openExpenseKindPick}
           onAdd={openExpenseAdd}
           onEdit={openExpenseEdit}

@@ -2,7 +2,7 @@
 .inline-sheet {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.32s ease;
+  transition: grid-template-rows 0.4s ease-out;
 }
 .inline-sheet.is-visible {
   grid-template-rows: 1fr;

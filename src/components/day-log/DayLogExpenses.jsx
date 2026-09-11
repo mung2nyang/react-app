@@ -16,11 +16,12 @@ const KIND_ADD_CLASS = { maint: 'maint-add-direct-btn', fuel: 'fuel-add-direct-b
  * @param {Object} props
  * @param {Array<ExpenseItem>} props.dayExpenses
  * @param {ExpenseFormApi} props.expenseForm
+ * @param {boolean} props.callFormOpen
  * @param {() => void} props.onKindPick
  * @param {(kind: string) => void} props.onAdd
  * @param {(item: ExpenseItem) => void} props.onEdit
  */
-export default function DayLogExpenses({ dayExpenses, expenseForm, onKindPick, onAdd, onEdit }) {
+export default function DayLogExpenses({ dayExpenses, expenseForm, callFormOpen, onKindPick, onAdd, onEdit }) {
   return (
     <div className="modal-section maint-section">
       <div className="modal-section-title">
@@ -33,7 +34,11 @@ export default function DayLogExpenses({ dayExpenses, expenseForm, onKindPick, o
           <button key={item.value} type="button" className={`maint-fuel-add-btn ${KIND_ADD_CLASS[item.value]}`} onClick={() => onAdd(item.value)}>+ {item.label} 추가</button>
         ))}
       </div>
-      <InlineSheet open={expenseForm.kindPick || expenseForm.modalOpen} className="maint-fuel-inline-host">
+      <InlineSheet
+        open={expenseForm.kindPick || expenseForm.modalOpen}
+        forceInstant={callFormOpen}
+        className="maint-fuel-inline-host"
+      >
         {expenseForm.kindPick && <ExpenseSelectPanel onPick={onAdd} />}
         {expenseForm.modalOpen && (
           <ExpenseFormModal
