@@ -4,7 +4,7 @@
 // 콜상세 폼은 CallDetailForm.jsx가, 비용(정비/주유/기타)은 useExpenseForm.js가
 // 예전처럼 별도 expenses 스토어에서 즉시 저장으로 관리한다(day record에 넣지 않는다
 // — 왜인지는 migration-audit-plan.md Step 6 기록의 "비용 계약" 항목 참고).
-// 213줄, §6: 즐겨찾기 칩용 이력 구독·고정 저장 배선은 이 페이지 조합 책임에 둔다.
+// 209줄, §6: 즐겨찾기 칩용 이력 구독·고정 저장 배선은 이 페이지 조합 책임에 둔다.
 import { useMemo, useState } from 'react'
 import { expensesForVehicleDay } from '../../domain/calendarBadges.js'
 import { applyFixedRouteRun, getFixedRouteCounts } from '../../domain/day-record.js'
@@ -182,6 +182,8 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
                   clients={clients}
                   settings={settings}
                   logId={logId}
+                  ownerKey={ownerKey}
+                  showToast={showToast}
                   locationShortcuts={locationShortcuts}
                   pinnedLocations={pinnedLocations}
                   onTogglePinnedLocation={handleTogglePinnedLocation}

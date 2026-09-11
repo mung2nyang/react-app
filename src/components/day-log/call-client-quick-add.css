@@ -1,0 +1,27 @@
+/* 원본 style.css:3280-3281 포팅 — 콜상세 거래처 "+ 추가" 버튼. */
+.call-client-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.call-client-add-btn {
+  min-width: 64px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.work-log-page .call-client-row {
+  gap: 7px;
+}
+
+.work-log-page .call-client-add-btn {
+  min-height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: var(--fs-2);
+}

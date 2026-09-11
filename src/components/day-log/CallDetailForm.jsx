@@ -1,11 +1,12 @@
 // @ts-check
-// 212줄, §6: 상/하차지 onFocus·칩 배선은 폼 응집 유지. 칩 UI는 LocationShortcuts로 분리.
+// 223줄, §6: 상/하차지 onFocus·칩 배선은 폼 응집 유지. 칩·거래처+추가는 별도 컴포넌트.
 import { useState } from 'react'
 import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
 import { computeDistanceKm } from '../../lib/workData.js'
 import { draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
+import CallClientQuickAdd from './CallClientQuickAdd.jsx'
 import './call-detail-form.css'
 
 const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전국화물콜', '카카오T트럭커']
@@ -24,6 +25,8 @@ const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
  * @param {Array<ClientLike>} props.clients
  * @param {Settings} props.settings
  * @param {string} [props.logId] 일지 차량 키(`main` 또는 서브 번호). 거래처 자동완성 스코프.
+ * @param {string} [props.ownerKey]
+ * @param {(message: string) => void} [props.showToast]
  * @param {Array<string>} [props.locationShortcuts]
  * @param {Array<string>} [props.pinnedLocations]
  * @param {(location: string) => void} [props.onTogglePinnedLocation]
@@ -31,7 +34,7 @@ const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
  * @param {() => void} props.onClose
  */
 export default function CallDetailForm({
-  value, previousItem, dateKey, clients, settings, logId, onSave, onClose,
+  value, previousItem, dateKey, clients, settings, logId, ownerKey, showToast, onSave, onClose,
   locationShortcuts = [], pinnedLocations = [], onTogglePinnedLocation,
 }) {
   const [draft, setDraft] = useState(() => (value ? draftFromDetail(value, dateKey, clients) : { ...emptyDraft, paymentDueDate: dueDateForClient(dateKey, null) }))
@@ -152,6 +155,15 @@ export default function CallDetailForm({
           <datalist id="callClientOptions">
             {scopedClients.map((client) => <option key={client.id} value={client.companyName} />)}
           </datalist>
+          {ownerKey && (
+            <CallClientQuickAdd
+              ownerKey={ownerKey}
+              clients={clients}
+              logId={logId}
+              showToast={showToast}
+              onClientAdded={applyClient}
+            />
+          )}
         </div>
         {shortcuts.length > 0 && (
           <div className="call-client-shortcuts">
