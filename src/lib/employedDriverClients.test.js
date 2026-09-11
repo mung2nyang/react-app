@@ -162,7 +162,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
     assert.ok(reconciled.some((/** @type {import('../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '방금추가한거래처'))
   })
 
-  test('buildEmployedDriverSnapshot: Supabase clients 조회가 snapshot.clients로 매핑되고 에러 시 throw한다', async () => {
+  test('buildEmployedDriverSnapshot: 배정 차량 스코프로 clients를 좁혀 조회하고 에러 시 throw한다', async () => {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
 
@@ -187,15 +187,15 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
       },
     }
 
-    // RPC mock
-    fakeSupabase.rpc = async (fn) => {
-      if (fn === 'get_linked_owner_profile_settings') {
-        return { data: { name: '차주명', business_name: '차주상호', settings: {} }, error: null }
-      }
-      if (fn === 'get_driver_assigned_vehicle_summary') {
-        return { data: [{ id: 'veh-1', number: '55구1234', type: 'sub' }], error: null }
-      }
-      return { data: null, error: null }
+    handlers.rpc = {
+      get_linked_owner_profile_settings: () => ({
+        data: { name: '차주명', business_name: '차주상호', settings: {} },
+        error: null,
+      }),
+      get_assigned_vehicle_summary: () => ({
+        data: [{ id: 'veh-1', number: '55구1234', type: 'sub' }],
+        error: null,
+      }),
     }
 
     const snapshot = await buildEmployedDriverSnapshot({
@@ -211,6 +211,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
 
     assert.equal(clientSelectFilters.length, 1)
     assert.equal(clientSelectFilters[0].user_id, 'owner-b')
+    assert.equal(clientSelectFilters[0]['raw->>scopedToVehicleNumber'], '55구1234')
     assert.equal(snapshot.clients.length, 1)
     assert.equal(snapshot.clients[0].companyName, '연동차량거래처')
     assert.equal(snapshot.clients[0].scopedToVehicleNumber, '55구1234')
@@ -235,5 +236,39 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
       },
       /clients failed: RLS fail/,
     )
+  })
+
+  test('buildEmployedDriverSnapshot: 배정 차량 없으면 clients 조회를 건너뛰고 빈 배열', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    /** @type {number} */
+    let clientsSelectCalls = 0
+    handlers.clients = {
+      select: () => {
+        clientsSelectCalls += 1
+        return { data: [{ id: 1, company_name: '나오면안됨' }], error: null }
+      },
+    }
+    handlers.rpc = {
+      get_linked_owner_profile_settings: () => ({
+        data: { name: '차주명', business_name: '차주상호', settings: {} },
+        error: null,
+      }),
+      get_assigned_vehicle_summary: () => ({ data: [], error: null }),
+    }
+
+    const snapshot = await buildEmployedDriverSnapshot({
+      userId: 'driver-a',
+      ownerKey: 'owner-b',
+      throwIfAnyHydrateError: (labeled) => {
+        for (const [table, err] of Object.entries(labeled)) {
+          if (err) throw new Error(`${table} failed: ${err.message || 'error'}`)
+        }
+      },
+      localDrivers: [],
+    })
+
+    assert.equal(clientsSelectCalls, 0)
+    assert.deepEqual(snapshot.clients, [])
   })
 })

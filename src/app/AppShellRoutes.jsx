@@ -53,6 +53,7 @@ export default function AppShellRoutes({
     return (
       <MainPageRoute
         ownerKey={ownerKey}
+        session={session}
         userName={session?.name}
         showToast={showToast}
         onWorkChanged={bumpNotifTick}

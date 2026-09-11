@@ -1,6 +1,7 @@
 // @ts-check
 // employed_driver hydrate: use RPCs instead of profiles/vehicles row SELECT.
-// Skip clients / tax invoices (least privilege). 비용 3종은 배정 차량 기준으로 조회.
+// 거래처는 배정 차량 scopedToVehicleNumber만 조회. tax invoices는 스킵(least privilege).
+// 비용 3종은 배정 차량 기준으로 조회.
 //
 // 소속기사 일지 키: UI·일일운행은 workLogs.main 만 쓴다. mergeVehicleDayLogsFromServer
 // 는 sub 차량을 번호판 키로 넣으므로, 여기서 main 으로 재매핑한다.
@@ -105,17 +106,17 @@ async function fetchExpensesForAssignedVehicle(vehicleId, throwIfAnyHydrateError
 export async function buildEmployedDriverSnapshot({
   userId, ownerKey, throwIfAnyHydrateError, driverPhone, localDrivers,
 }) {
-  const [ownerProfile, vehicleRows, linksRes, selfProfileRes, clientsRes] = await Promise.all([
+  // 배정 차량을 먼저 알아야 거래처를 scopedToVehicleNumber로 좁힐 수 있다 —
+  // 예전엔 Promise.all로 동시 조회해서 차주 거래처 전체를 내려받았음.
+  const [ownerProfile, vehicleRows, linksRes, selfProfileRes] = await Promise.all([
     fetchLinkedOwnerProfileSettings(ownerKey),
     fetchAssignedVehicleSummary(),
     supabase.from('driver_links').select('*').eq('driver_id', userId).eq('status', 'linked'),
     supabase.from('profiles').select('phone').eq('id', userId).maybeSingle(),
-    supabase.from('clients').select('*').eq('user_id', ownerKey).order('display_order', { ascending: true }),
   ])
   throwIfAnyHydrateError({
     driver_links: linksRes.error,
     profiles_self: selfProfileRes.error,
-    clients: clientsRes.error,
   })
 
   /** @type {Record<string, unknown>} */
@@ -145,6 +146,20 @@ export async function buildEmployedDriverSnapshot({
     ))
   }
 
+  const assignedVehicleNumber = String(nextCars[0]?.number || '').trim()
+  /** @type {Array<import('./hydrateMergeTypes.js').ClientRow>} */
+  let clientRows = []
+  if (assignedVehicleNumber) {
+    const clientsRes = await supabase
+      .from('clients')
+      .select('*')
+      .eq('user_id', ownerKey)
+      .eq('raw->>scopedToVehicleNumber', assignedVehicleNumber)
+      .order('display_order', { ascending: true })
+    throwIfAnyHydrateError({ clients: clientsRes.error })
+    clientRows = /** @type {Array<import('./hydrateMergeTypes.js').ClientRow>} */ (clientsRes.data || [])
+  }
+
   const { workLogs: rawWorkLogs } = await mergeVehicleDayLogsFromServer({
     cars: nextCars,
     mainTombstoneKeys: [],
@@ -165,7 +180,7 @@ export async function buildEmployedDriverSnapshot({
 
   /** @type {Array<import('../domain/clientTypes.js').ClientLike>} */
   let nextClients = []
-  nextClients = reconcileClients(ownerKey, mergeClientsFromRows(nextClients, clientsRes.data || []))
+  nextClients = reconcileClients(ownerKey, mergeClientsFromRows(nextClients, clientRows))
 
   return {
     workData: workLogs.main || {},

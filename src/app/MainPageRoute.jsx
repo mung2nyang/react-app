@@ -22,9 +22,12 @@ import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../store/ownerD
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
 
+/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+
 /**
  * @param {Object} props
  * @param {string} props.ownerKey
+ * @param {AppSession|null} [props.session]
  * @param {string} [props.userName]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onWorkChanged]
@@ -35,6 +38,7 @@ import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
  */
 export default function MainPageRoute({
   ownerKey,
+  session,
   userName,
   showToast,
   onWorkChanged,
@@ -51,6 +55,10 @@ export default function MainPageRoute({
   const settings = useOwnerSettings(ownerKey)
   const clients = useOwnerClients(ownerKey)
   const cars = useOwnerCars(ownerKey)
+  // 연동 기사 본인 세션: workData는 항상 logId='main'이지만 거래처는 배정 차량 스코프.
+  const clientScopeKey = session?.linkedOwnerId
+    ? (cars[0]?.number || 'main')
+    : logId
   const knownLog = logId === 'main' || cars.some((car) => car.number === logId)
 
   useEffect(() => {
@@ -87,6 +95,7 @@ export default function MainPageRoute({
         dateKey={selected.dateKey}
         ownerKey={ownerKey}
         logId={logId}
+        clientScopeKey={clientScopeKey}
         clients={clients}
         settings={settings}
         showToast={showToast}

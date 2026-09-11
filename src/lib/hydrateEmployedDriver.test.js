@@ -191,5 +191,8 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
     assert.equal(countOf('fuel_records', 'select'), 0)
     assert.equal(countOf('maintenance_records', 'select'), 0)
     assert.equal(countOf('misc_expense_records', 'select'), 0)
+    // 배정 차량 없으면 거래처도 조회하지 않는다(스코프를 알 수 없음).
+    assert.equal(countOf('clients', 'select'), 0)
+    assert.deepEqual(snapshot.clients, [])
   })
 })
