@@ -136,6 +136,10 @@
   margin: 8px 1px;
 }
 
+.work-log-page .call-vat-row > label:first-child {
+  font-size: var(--fs-2);
+}
+
 .work-log-page .payment-due-date-box {
   margin: 9px 0 0;
   padding: 10px 0 0;
