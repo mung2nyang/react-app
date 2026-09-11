@@ -2,7 +2,8 @@
 // CSS grid 0fr↔1fr 슬라이드. 직접 닫을 땐 transitionend까지 자식을 유지하고,
 // 다른 시트로 전환(forceInstant)일 땐 즉시 제거해 두 폼 동시 DOM을 막는다.
 // 열리는 동안은 overflow:hidden으로 클립하고, 전환 완료(is-settled) 후에만 visible.
-import { useEffect, useState } from 'react'
+// 부모가 children을 조건부 언마운트해도 닫히는 동안엔 마지막 내용을 유지한다.
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * @param {Object} props
@@ -14,6 +15,8 @@ import { useEffect, useState } from 'react'
 export default function InlineSheet({ open, forceInstant = false, className = '', children }) {
   const [mounted, setMounted] = useState(open)
   const [settled, setSettled] = useState(false)
+  const lastChildrenRef = useRef(children)
+  if (open) lastChildrenRef.current = children
 
   useEffect(() => {
     if (open) {
@@ -40,7 +43,7 @@ export default function InlineSheet({ open, forceInstant = false, className = ''
       aria-hidden={!open}
       onTransitionEnd={handleTransitionEnd}
     >
-      {mounted && <div className="inline-sheet-panel">{children}</div>}
+      {mounted && <div className="inline-sheet-panel">{open ? children : lastChildrenRef.current}</div>}
     </div>
   )
 }
