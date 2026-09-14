@@ -7,6 +7,7 @@ import { computeDistanceKm } from '../../lib/workData.js'
 import { draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
 import CallClientQuickAdd from './CallClientQuickAdd.jsx'
+import TemporalInput from '../shared/TemporalInput.jsx'
 import './call-detail-form.css'
 
 const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전국화물콜', '카카오T트럭커']
@@ -110,11 +111,11 @@ export default function CallDetailForm({
         <div className="call-detail-panel call-two-column-panel">
           <div className="form-group">
             <label htmlFor="callDepartureTime">출발 시간</label>
-            <input id="callDepartureTime" type="time" className="input-box" value={draft.departureTime} onChange={(e) => setDraft({ ...draft, departureTime: e.target.value })} />
+            <TemporalInput type="time" id="callDepartureTime" value={draft.departureTime} onChange={(e) => setDraft({ ...draft, departureTime: e.target.value })} />
           </div>
           <div className="form-group">
             <label htmlFor="callArrivalTime">도착 시간</label>
-            <input id="callArrivalTime" type="time" className="input-box" value={draft.arrivalTime} onChange={(e) => setDraft({ ...draft, arrivalTime: e.target.value })} />
+            <TemporalInput type="time" id="callArrivalTime" value={draft.arrivalTime} onChange={(e) => setDraft({ ...draft, arrivalTime: e.target.value })} />
           </div>
         </div>
       )}
@@ -198,7 +199,7 @@ export default function CallDetailForm({
           <div className="payment-due-date-box">
             <div className="form-group">
               <label htmlFor="callPaymentDueDate">입금 예정일</label>
-              <input id="callPaymentDueDate" type="date" className="input-box" value={draft.paymentDueDate} onChange={(e) => setDraft({ ...draft, paymentDueDate: e.target.value })} />
+              <TemporalInput type="date" id="callPaymentDueDate" value={draft.paymentDueDate} onChange={(e) => setDraft({ ...draft, paymentDueDate: e.target.value })} />
             </div>
             <p className="payment-term-guide">{paymentGuide}</p>
           </div>
