@@ -27,7 +27,7 @@ export default function CarListItem({ car, assignedView = false, readOnly = fals
             {car.type === 'main' ? '메인' : assignedView ? '배정차량' : '기사차량'}
           </span>
           {car.number}
-          {isSub && car.driverName && ` [기사: ${car.driverName}]`}
+          {isSub && car.driverName && ` [${car.driverName}]`}
           {isSub && car.driverLinkEnabled && <span className="management-badge log-enabled">기사연동</span>}
           {isSub && car.logEnabled && <span className="management-badge log-enabled">운행일지</span>}
         </div>
