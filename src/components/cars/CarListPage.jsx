@@ -105,7 +105,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       if (result.toast) showToast?.(result.toast)
       return
     }
-    const skipInvite = !editingId && inviteSnapshot.connectMode === 'log'
+    const skipInvite = inviteSnapshot.connectMode === 'log'
     const inviteToast = await saveInviteAfterVehicle({
       cloud,
       ownerKey,
