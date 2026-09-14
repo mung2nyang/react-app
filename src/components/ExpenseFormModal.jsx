@@ -6,6 +6,7 @@ import {
 } from '../lib/expenses.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../lib/money.js'
 import TemporalInput from './shared/TemporalInput.jsx'
+import './expense-form.css'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
 
@@ -34,18 +35,31 @@ export default function ExpenseFormModal({
   const categories = draft.kind === 'misc' ? MISC_CATEGORIES : MAINT_CATEGORIES
 
   const form = (
-      <div className={`modal-content${inline ? '' : ' client-modal'}${inline ? ' inline-expense-form' : ''}`} onClick={inline ? undefined : (e) => e.stopPropagation()}>
+      <div className={`modal-content expense-form-content${inline ? '' : ' client-modal'}${inline ? ' inline-expense-form' : ''}`} onClick={inline ? undefined : (e) => e.stopPropagation()}>
         <div className="modal-title">{editingId ? `${kindLabel} 수정` : `${kindLabel} 내역 추가`}</div>
-        <div className="form-group">
-          <label htmlFor="expenseDate">날짜</label>
-          <TemporalInput
-            type="date"
-            id="expenseDate"
-            value={draft.date || ''}
-            disabled={lockDate}
-            centered
-            onChange={(e) => onChange({ ...draft, date: e.target.value })}
-          />
+        <div className="personal-inline-fields">
+          <div className="form-group">
+            <label htmlFor="expenseDate">날짜</label>
+            <TemporalInput
+              type="date"
+              id="expenseDate"
+              value={draft.date || ''}
+              disabled={lockDate}
+              centered
+              onChange={(e) => onChange({ ...draft, date: e.target.value })}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="expenseMileage">누적거리 (km)</label>
+            <input
+              id="expenseMileage"
+              className="input-box"
+              inputMode="numeric"
+              placeholder="0"
+              value={formatCurrencyInput(draft.mileage)}
+              onChange={(e) => onChange({ ...draft, mileage: parseCurrencyValue(e.target.value) })}
+            />
+          </div>
         </div>
 
         {draft.kind !== 'fuel' && (
@@ -115,55 +129,29 @@ export default function ExpenseFormModal({
                 onChange={(e) => onChange({ ...draft, subsidy: parseCurrencyValue(e.target.value) })}
               />
             </div>
-            <div className="personal-inline-fields">
-              <div className="form-group">
-                <label htmlFor="expenseLiters">주유량 (L)</label>
-                <input id="expenseLiters" className="input-box" inputMode="decimal" placeholder="0" value={draft.liters} onChange={(e) => onChange({ ...draft, liters: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label htmlFor="expenseMileage">누적거리 (km)</label>
-                <input
-                  id="expenseMileage"
-                  className="input-box"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={formatCurrencyInput(draft.mileage)}
-                  onChange={(e) => onChange({ ...draft, mileage: parseCurrencyValue(e.target.value) })}
-                />
-              </div>
+            <div className="form-group">
+              <label htmlFor="expenseLiters">주유량 (L)</label>
+              <input id="expenseLiters" className="input-box" inputMode="decimal" placeholder="0" value={draft.liters} onChange={(e) => onChange({ ...draft, liters: e.target.value })} />
             </div>
           </>
         )}
 
         {draft.kind !== 'fuel' && (
-          <>
-            <div className="form-group">
-              <label htmlFor="expenseMileage">누적거리 (km)</label>
-              <input
-                id="expenseMileage"
-                className="input-box"
-                inputMode="numeric"
-                placeholder="0"
-                value={formatCurrencyInput(draft.mileage)}
-                onChange={(e) => onChange({ ...draft, mileage: parseCurrencyValue(e.target.value) })}
-              />
+          <div className="form-group expense-payment-row">
+            <label>결제 방식</label>
+            <div className="segment-control">
+              {['카드', '현금'].map((pay) => (
+                <button
+                  key={pay}
+                  type="button"
+                  className={`segment-btn${draft.payment === pay ? ' active' : ''}`}
+                  onClick={() => onChange({ ...draft, payment: pay })}
+                >
+                  {pay}
+                </button>
+              ))}
             </div>
-            <div className="form-group">
-              <label>결제 방식</label>
-              <div className="settings-segmented-control">
-                {['카드', '현금'].map((pay) => (
-                  <button
-                    key={pay}
-                    type="button"
-                    className={`toggle-btn${draft.payment === pay ? ' active-work' : ''}`}
-                    onClick={() => onChange({ ...draft, payment: pay })}
-                  >
-                    {pay}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
+          </div>
         )}
 
         <p className="car-type-hint">정비·기타는 항목명 또는 비용만 있어도 저장됩니다.</p>

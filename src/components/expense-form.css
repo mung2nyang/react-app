@@ -1,0 +1,56 @@
+/* 정비/주유/기타 공용 폼(ExpenseFormModal) — 원본 style.css:6620-6734 중
+   이 화면 관련분 포팅. maint/fuel/misc 세 종류가 컴포넌트 하나를 공유해서
+   여기 한 곳에만 둔다. 보리 지시(2026-09-14): 날짜 트리거 아이콘 삭제,
+   분류 칩 사각 라운드로, 결제방식은 세그먼트 컨트롤로. */
+
+.expense-form-content .app-temporal-icon {
+  display: none;
+}
+
+.expense-form-content .pill-btn {
+  border-radius: 12px;
+  background: transparent;
+}
+
+.expense-form-content .pill-btn:not(.active) {
+  color: var(--sub-text-color);
+}
+
+.expense-form-content .expense-payment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.expense-form-content .expense-payment-row > label {
+  margin: 0;
+  font-size: var(--fs-2);
+}
+
+.segment-control {
+  display: flex;
+  width: 140px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+}
+
+.segment-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--sub-text-color);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segment-btn.active {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 700;
+}
