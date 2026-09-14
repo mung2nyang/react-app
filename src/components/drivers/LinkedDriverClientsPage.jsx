@@ -18,6 +18,7 @@ import {
 import LinkedDriverDirectClientsList from './LinkedDriverDirectClientsList.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../PageHeader.jsx'
+import CardActionButtons from '../shared/CardActionButtons.jsx'
 import './linked-driver.css'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
@@ -164,8 +165,10 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
                       </div>
                     </div>
                     <div className="car-action-btns">
-                      <button type="button" className="action-icon-btn" onClick={() => openEdit(client)} title="수정">수정</button>
-                      <button type="button" className="action-icon-btn del" onClick={() => setPendingDelete(client)} title="삭제">삭제</button>
+                      <CardActionButtons
+                        onEdit={() => openEdit(client)}
+                        onDelete={() => setPendingDelete(client)}
+                      />
                     </div>
                   </div>
                 </div>

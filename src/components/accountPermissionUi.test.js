@@ -158,9 +158,8 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
 
       assert.equal(container.querySelectorAll('.car-action-btns').length, 1, '차주 세션에선 액션 버튼 영역이 있어야 한다')
       assert.ok(container.querySelector('.management-add-fab'), '차주 세션에선 +추가 버튼이 있어야 한다')
-      const ownerButtons = Array.from(container.querySelectorAll('button')).map((b) => b.textContent?.trim())
-      assert.ok(ownerButtons.includes('수정'))
-      assert.ok(ownerButtons.includes('삭제'))
+      assert.ok(container.querySelector('.action-icon-btn[title="수정"]'), '차주 세션에선 수정 아이콘이 있어야 한다')
+      assert.ok(container.querySelector('.action-icon-btn.del[title="삭제"]'), '차주 세션에선 삭제 아이콘이 있어야 한다')
     } finally {
       await act(async () => { root.unmount() })
       container.remove()

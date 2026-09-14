@@ -1,5 +1,6 @@
 // @ts-check
 import { getPaymentTermLabel } from '../../lib/clients.js'
+import CardActionButtons from '../shared/CardActionButtons.jsx'
 
 /**
  * @param {Object} props
@@ -40,8 +41,7 @@ export default function ClientListItem({
         </div>
       </div>
       <div className="car-action-btns">
-        <button type="button" className="action-icon-btn" onClick={onEdit}>수정</button>
-        <button type="button" className="action-icon-btn del" onClick={onDelete}>삭제</button>
+        <CardActionButtons onEdit={onEdit} onDelete={onDelete} />
       </div>
     </div>
   )

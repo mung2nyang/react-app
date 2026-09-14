@@ -1,5 +1,6 @@
 // @ts-check
 import { formatCurrencyInput } from '../../domain/money.js'
+import CardActionButtons from '../shared/CardActionButtons.jsx'
 
 /**
  * @param {Object} props
@@ -42,10 +43,9 @@ export default function CarListItem({
         </div>
         {subText && <div className="car-sub-text">{subText}</div>}
       </div>
-      {!readOnly && (
+      {!readOnly && onEdit && onDelete && (
         <div className="car-action-btns">
-          <button type="button" className="action-icon-btn" onClick={onEdit}>수정</button>
-          <button type="button" className="action-icon-btn del" onClick={onDelete}>삭제</button>
+          <CardActionButtons onEdit={onEdit} onDelete={onDelete} />
         </div>
       )}
     </div>

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
 import PageHeader from './PageHeader.jsx'
+import CardActionButtons from './shared/CardActionButtons.jsx'
 import { getExpensesForLog } from '../domain/expenseScope.js'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import {
@@ -165,8 +166,10 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
                       <strong>{expenseTitle(item, kindLabel)}</strong>
                     </div>
                     <div className="management-record-actions">
-                      <button type="button" className="action-icon-btn" onClick={() => openEdit(item)}>수정</button>
-                      <button type="button" className="action-icon-btn del" onClick={() => remove(item.id)}>삭제</button>
+                      <CardActionButtons
+                        onEdit={() => openEdit(item)}
+                        onDelete={() => remove(item.id)}
+                      />
                     </div>
                   </div>
                   <div className="management-record-info">

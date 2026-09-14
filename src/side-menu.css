@@ -197,6 +197,10 @@
   padding: 6px;
   cursor: pointer;
   border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
   font: inherit;
   font-size: var(--fs-2);
   font-weight: 700;
@@ -209,6 +213,37 @@
 
 .action-icon-btn.del:hover {
   color: var(--sunday-color);
+}
+
+.action-icon-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.management-list-card .action-icon-btn,
+.management-record-actions .action-icon-btn {
+  width: 34px;
+  height: 34px;
+}
+
+.management-list-card .action-icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.management-record-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.management-record-actions .action-icon-btn svg {
+  width: 15px;
+  height: 15px;
 }
 
 .management-badge {

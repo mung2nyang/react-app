@@ -3,6 +3,7 @@ import { useState } from 'react'
 import ConfirmModal from '../ConfirmModal.jsx'
 import PageHeader from '../PageHeader.jsx'
 import ClientFormModal from './ClientFormModal.jsx'
+import CardActionButtons from '../shared/CardActionButtons.jsx'
 import { requestClientSave } from '../../lib/clientMutations.js'
 import { requestClientDeletion } from '../../lib/directMutationActions.js'
 import { getCloudUserId } from '../../lib/cloudSession.js'
@@ -120,8 +121,10 @@ export default function OwnerScopedClientsView({ ownerKey = 'guest', onBack, sho
                   </div>
                 </div>
                 <div className="car-action-btns">
-                  <button type="button" className="action-icon-btn" onClick={() => openEdit(client)} title="수정">수정</button>
-                  <button type="button" className="action-icon-btn del" onClick={() => setPendingDelete(client)} title="삭제">삭제</button>
+                  <CardActionButtons
+                    onEdit={() => openEdit(client)}
+                    onDelete={() => setPendingDelete(client)}
+                  />
                 </div>
               </div>
             </div>

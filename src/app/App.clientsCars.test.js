@@ -153,6 +153,11 @@ function findButtonByText(container, text) {
   return Array.from(container.querySelectorAll('button')).find((btn) => (btn.textContent || '').includes(text))
 }
 
+/** @param {ParentNode} container @param {string} title */
+function findButtonByTitle(container, title) {
+  return Array.from(container.querySelectorAll('button')).find((btn) => btn.title === title)
+}
+
 /**
  * @param {() => boolean} predicate
  * @param {{ timeoutMs?: number, stepMs?: number }} [options]
@@ -320,8 +325,8 @@ test('일지에서 차량 관리로 가서 번호를 바꾸면 출처 날짜의 
   })
   await act(async () => { findButtonByText(container, '차량 관리')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => window.location.pathname === '/app/cars')
-  await waitUntil(() => !!findButtonByText(container, '수정'))
-  await act(async () => { findButtonByText(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+  await waitUntil(() => !!findButtonByTitle(container, '수정'))
+  await act(async () => { findButtonByTitle(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => !!container.querySelector('#newCarNumber'))
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#newCarNumber'), newNum) })
   await act(async () => {
@@ -363,7 +368,7 @@ test('UI 거래처 추가 후 Store에 supabaseId가 붙고, LS에는 안 남으
     false,
     '로그인이 새로 저장한 거래처는 clients LS에 미러되지 않는다',
   )
-  await act(async () => { findButtonByText(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+  await act(async () => { findButtonByTitle(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => !!container.querySelector('#clientCompanyName'))
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '신거래수정') })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
@@ -401,7 +406,7 @@ test('저장이 겹쳐도(느린 insert 중 재편집) 서버 insert는 1회, �
   await waitUntil(() => inserts.length === 1)
   await act(async () => { release?.() })
   await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '대기중'))
-  await act(async () => { findButtonByText(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+  await act(async () => { findButtonByTitle(container, '수정')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => !!container.querySelector('#clientCompanyName'))
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '최신상호') })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
