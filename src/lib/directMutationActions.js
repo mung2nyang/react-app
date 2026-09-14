@@ -96,13 +96,15 @@ export async function requestDriverStatusChange({ ownerKey, drivers, driverId, s
 /**
  * 로그인 사용자의 기사 초대 삭제. 슬라이스 B: outbox 없이 driver_links.delete 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록에서만 제거한다.
- * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('./outboxTypes.js').DriverRecord>, driverId: string, cloud: boolean }} params
+ * @param {{ ownerKey: string, userId?: string|null, drivers: Array<import('./outboxTypes.js').DriverRecord>, driverId: string, cloud: boolean }} params
+ * @returns {Promise<{ drivers: Array<import('./outboxTypes.js').DriverRecord>, blocked: string|null, toast: string|null|undefined }>}
  */
 export async function requestDriverDeletion({ ownerKey, drivers, driverId, cloud }) {
   const driver = drivers.find((item) => item.id === driverId)
   if (!cloud || !driver?.supabaseId) {
     const { value, toast, failed } = commitLocalOnly({ domain: 'drivers', ownerKey, value: removeDriver(drivers, driverId), successToast: '초대를 삭제했습니다.' })
-    return { drivers: failed ? drivers : value, blocked: null, toast }
+    if (failed || value === undefined) return { drivers, blocked: null, toast }
+    return { drivers: value, blocked: null, toast }
   }
   const blocked = blockedReasonForCloudWrite(driver.supabaseId)
   if (blocked) return { drivers, blocked, toast: blocked }

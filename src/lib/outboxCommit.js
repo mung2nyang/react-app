@@ -27,7 +27,9 @@ export const STORAGE_FAIL_TOAST = '저장에 실패했습니다. 잠시 후 다�
 
 /**
  * 로컬 전용(supabaseId 없음) 도메인 변경 — outbox 없이 commitBatch만 거친다.
- * @param {{ domain: PersistDomain, ownerKey: string, value: DomainValue, successToast: string, extraWrites?: Array<import('../store/atomicPersist.js').KeyedWrite>, replaceWorkLogs?: import('../store/app-store.js').WorkLogsReplace }} params
+ * @template {DomainValue} T
+ * @param {{ domain: PersistDomain, ownerKey: string, value: T, successToast: string, extraWrites?: Array<import('../store/atomicPersist.js').KeyedWrite>, replaceWorkLogs?: import('../store/app-store.js').WorkLogsReplace }} params
+ * @returns {{ value: T|undefined, toast: string, failed: boolean }}
  */
 export function commitLocalOnly({ domain, ownerKey, value, successToast, extraWrites = [], replaceWorkLogs }) {
   try {
