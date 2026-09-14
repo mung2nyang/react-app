@@ -186,6 +186,16 @@
   font-family: inherit;
 }
 
+.input-box:-webkit-autofill,
+.input-box:-webkit-autofill:hover,
+.input-box:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-color);
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  caret-color: var(--text-color);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
 :where(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), textarea, select):focus {
   border-color: var(--primary-color);
   outline: 2px solid var(--primary-color);
