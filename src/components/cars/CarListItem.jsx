@@ -4,13 +4,22 @@ import { formatCurrencyInput } from '../../domain/money.js'
 /**
  * @param {Object} props
  * @param {import('../../domain/financeTypes.js').CarLike} props.car
+ * @param {Array<import('../../lib/outboxTypes.js').DriverRecord>} [props.drivers]
  * @param {boolean} [props.assignedView]
  * @param {boolean} [props.readOnly]
  * @param {() => void} [props.onEdit]
  * @param {() => void} [props.onDelete]
  */
-export default function CarListItem({ car, assignedView = false, readOnly = false, onEdit, onDelete }) {
+export default function CarListItem({
+  car,
+  drivers = [],
+  assignedView = false,
+  readOnly = false,
+  onEdit,
+  onDelete,
+}) {
   const isSub = car.type === 'sub'
+  const hasDriverLink = isSub && drivers.some((d) => d.vehicleNumber === car.number)
   const commissionText = isSub && car.commEnabled && car.commission
     ? ` · 수수료 ${car.commType === 'direct' ? `${formatCurrencyInput(car.commission)}원` : `${car.commission}%`}`
     : ''
@@ -28,8 +37,8 @@ export default function CarListItem({ car, assignedView = false, readOnly = fals
           </span>
           {car.number}
           {isSub && car.driverName && ` [${car.driverName}]`}
-          {isSub && car.driverLinkEnabled && <span className="management-badge log-enabled">기사연동</span>}
-          {isSub && car.logEnabled && <span className="management-badge log-enabled">운행일지</span>}
+          {hasDriverLink && <span className="management-badge log-enabled">기사연동</span>}
+          {isSub && !hasDriverLink && <span className="management-badge log-enabled">운행일지</span>}
         </div>
         {subText && <div className="car-sub-text">{subText}</div>}
       </div>

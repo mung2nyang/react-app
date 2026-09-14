@@ -148,6 +148,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
           <CarListItem
             key={String(car.id || car.number || `car-${index}`)}
             car={car}
+            drivers={drivers}
             assignedView={viewerIsEmployedDriver}
             readOnly={viewerIsEmployedDriver}
             onEdit={() => openEdit(car)}
