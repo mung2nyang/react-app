@@ -138,6 +138,7 @@
 
 .work-log-page .call-vat-row > label:first-child {
   font-size: var(--fs-2);
+  font-weight: 750;
 }
 
 .work-log-page .payment-due-date-box {
