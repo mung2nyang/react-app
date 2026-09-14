@@ -39,8 +39,25 @@
 }
 
 .location-chip-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 26px;
   padding: 3px 6px 3px 2px;
   color: var(--primary-color) !important;
-  font-size: var(--fs-2);
+}
+
+/* 앱 공용 SVG 아이콘 스타일과 통일(day-log-expenses.css .maint-fuel-icon과 같은 규칙). */
+.location-chip-pin .star-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.location-chip-pin .star-icon.is-filled {
+  fill: currentColor;
 }

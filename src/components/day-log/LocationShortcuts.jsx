@@ -1,4 +1,5 @@
 // @ts-check
+import { StarIcon } from './icons.jsx'
 import './location-shortcuts.css'
 
 /**
@@ -28,7 +29,7 @@ export default function LocationShortcuts({ locations, pinnedLocations, onSelect
               aria-label={`${location} ${isPinned ? '고정 해제' : '장소 고정'}`}
               onClick={() => onTogglePin(location)}
             >
-              {isPinned ? '★' : '☆'}
+              <StarIcon filled={isPinned} />
             </button>
           </span>
         )
