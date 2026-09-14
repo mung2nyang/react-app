@@ -12,6 +12,7 @@ import { getCloudUserId, isCloudSession } from '../../lib/cloudSession.js'
 import { generateInviteCode } from '../../lib/drivers.js'
 import { saveInviteAfterVehicle, todayIsoDate } from '../../lib/carInviteFromDraft.js'
 import { useOwnerCars, useOwnerDrivers } from '../../store/ownerDataHooks.js'
+import './car-management.css'
 
 /**
  * @typedef {Object} CarFormDraft

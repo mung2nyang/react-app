@@ -167,15 +167,6 @@
   min-width: 0;
 }
 
-.management-list-card .car-info-text {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  font-size: var(--fs-5);
-  font-weight: 700;
-}
-
 .management-list-card .car-sub-text {
   margin-top: 4px;
   color: var(--sub-text-color);
@@ -297,13 +288,6 @@
   font-size: var(--fs-2);
   font-weight: 800;
   cursor: pointer;
-}
-
-.car-settlement-mode-guide {
-  margin: 7px 0 0;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-  line-height: 1.45;
 }
 
 .car-option-copy {
@@ -441,21 +425,6 @@
   margin: 0 0 16px;
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-}
-
-.car-driver-connect {
-  margin: 0 0 16px;
-}
-
-.car-driver-connect-tabs {
-  margin-bottom: 12px;
-}
-
-.car-driver-connect-copy {
-  margin: 0 0 12px;
-  color: var(--text-color);
-  font-size: var(--fs-2);
-  line-height: 1.55;
 }
 
 .car-daylog-preview {

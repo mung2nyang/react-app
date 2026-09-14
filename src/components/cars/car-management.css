@@ -1,0 +1,33 @@
+/* 차량관리 전용 — side-menu.css에서 분리. CarListPage.jsx가 import.
+   `.car-list`는 MaintFuelPage도 써서 side-menu.css에 공용으로 둠. */
+
+.management-list-card .car-info-text {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: var(--fs-5);
+  font-weight: 700;
+}
+
+.car-settlement-mode-guide {
+  margin: 7px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.45;
+}
+
+.car-driver-connect {
+  margin: 0 0 16px;
+}
+
+.car-driver-connect-tabs {
+  margin-bottom: 12px;
+}
+
+.car-driver-connect-copy {
+  margin: 0 0 12px;
+  color: var(--text-color);
+  font-size: var(--fs-2);
+  line-height: 1.55;
+}
