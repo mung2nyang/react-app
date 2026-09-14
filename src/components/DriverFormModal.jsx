@@ -3,6 +3,7 @@
 // 폼 모달만 분리했다. 로직은 한 글자도 안 바꿨다.
 import { generateInviteCode } from '../lib/drivers.js'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
+import TemporalInput from './shared/TemporalInput.jsx'
 
 /** @typedef {import('../domain/drivers.js').DriverDraft} DriverDraft */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
@@ -51,11 +52,11 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         <div className="personal-inline-fields">
           <div className="form-group">
             <label htmlFor="drvStart">할당 시작일</label>
-            <input id="drvStart" type="date" className="input-box" value={draft.startDate} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
+            <TemporalInput type="date" id="drvStart" value={draft.startDate || ''} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
           </div>
           <div className="form-group">
             <label htmlFor="drvEnd">할당 종료일</label>
-            <input id="drvEnd" type="date" className="input-box" value={draft.endDate} onChange={(e) => setDraft({ ...draft, endDate: e.target.value })} />
+            <TemporalInput type="date" id="drvEnd" value={draft.endDate || ''} onChange={(e) => setDraft({ ...draft, endDate: e.target.value })} />
           </div>
         </div>
         <p className="car-type-hint">한 차량은 한 기사에게만 할당할 수 있습니다. 종료일이 없으면 계속 할당됩니다. 메인 차량은 할당할 수 없습니다.</p>

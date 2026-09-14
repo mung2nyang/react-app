@@ -1,5 +1,6 @@
 // @ts-check
 import { formatWon } from '../lib/money.js'
+import TemporalInput from './shared/TemporalInput.jsx'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
@@ -34,7 +35,7 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
         </div>
         <div className="form-group">
           <label htmlFor="invDate">작성일자</label>
-          <input id="invDate" type="date" className="input-box" value={modalItem.issueDate || ''} onChange={(e) => onChange({ ...modalItem, issueDate: e.target.value })} />
+          <TemporalInput type="date" id="invDate" value={modalItem.issueDate || ''} onChange={(e) => onChange({ ...modalItem, issueDate: e.target.value })} />
         </div>
         <div className="tax-invoice-amount-grid">
           <div><span>공급가액</span><strong>{formatWon(modalItem.supplyAmount)}</strong></div>
