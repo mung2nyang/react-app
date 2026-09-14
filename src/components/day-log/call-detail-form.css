@@ -171,34 +171,23 @@
   font-size: var(--fs-2);
 }
 
-/* 시간·입금예정일 트리거는 가운데 정렬 + 아이콘 우측 고정(원본 style.css:6621-6660 포팅).
-   메뉴는 document.body에 포털돼 이 스코프의 자손이 아니므로 여기서 안 건드린다. */
+/* 가운데 정렬 자체는 TemporalInput의 `centered` prop(공용 .is-centered 모디파이어,
+   temporal-input.css) 담당. 여기는 이 화면에만 있는 추가 디테일만(원본 style.css:6621-6660
+   중 콜상세 전용분) — 말줄임표·트리거 gap·아이콘 크기/색·열림 상태 모서리. */
 .work-log-page .app-temporal-trigger {
-  position: relative;
   gap: 8px;
   overflow: hidden;
-  justify-content: center;
 }
 
 .work-log-page .app-temporal-trigger .app-temporal-value {
-  width: 100%;
   min-width: 0;
-  padding: 0 22px;
   overflow: hidden;
-  color: var(--sub-text-color);
-  font-family: inherit;
-  font-size: var(--fs-3);
-  font-weight: 500;
-  text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .work-log-page .app-temporal-trigger .app-temporal-icon {
-  position: absolute;
-  right: 12px;
   flex: 0 0 14px;
-  margin-left: 0;
   border-color: var(--sub-text-color);
 }
 

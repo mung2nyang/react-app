@@ -111,11 +111,11 @@ export default function CallDetailForm({
         <div className="call-detail-panel call-two-column-panel">
           <div className="form-group">
             <label htmlFor="callDepartureTime">출발 시간</label>
-            <TemporalInput type="time" id="callDepartureTime" value={draft.departureTime} onChange={(e) => setDraft({ ...draft, departureTime: e.target.value })} />
+            <TemporalInput type="time" id="callDepartureTime" value={draft.departureTime} centered onChange={(e) => setDraft({ ...draft, departureTime: e.target.value })} />
           </div>
           <div className="form-group">
             <label htmlFor="callArrivalTime">도착 시간</label>
-            <TemporalInput type="time" id="callArrivalTime" value={draft.arrivalTime} onChange={(e) => setDraft({ ...draft, arrivalTime: e.target.value })} />
+            <TemporalInput type="time" id="callArrivalTime" value={draft.arrivalTime} centered onChange={(e) => setDraft({ ...draft, arrivalTime: e.target.value })} />
           </div>
         </div>
       )}
@@ -199,7 +199,7 @@ export default function CallDetailForm({
           <div className="payment-due-date-box">
             <div className="form-group">
               <label htmlFor="callPaymentDueDate">입금 예정일</label>
-              <TemporalInput type="date" id="callPaymentDueDate" value={draft.paymentDueDate} onChange={(e) => setDraft({ ...draft, paymentDueDate: e.target.value })} />
+              <TemporalInput type="date" id="callPaymentDueDate" value={draft.paymentDueDate} centered onChange={(e) => setDraft({ ...draft, paymentDueDate: e.target.value })} />
             </div>
             <p className="payment-term-guide">{paymentGuide}</p>
           </div>

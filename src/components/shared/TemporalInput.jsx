@@ -22,8 +22,9 @@ const GAP = 7
  * @param {string} [props.min]
  * @param {string} [props.max]
  * @param {boolean} [props.disabled]
+ * @param {boolean} [props.centered] 트리거 값을 가운데 정렬(원본 콜상세·정비·주유 공통 스타일).
  */
-export default function TemporalInput({ type, id, value, onChange, className = '', min, max, disabled = false }) {
+export default function TemporalInput({ type, id, value, onChange, className = '', min, max, disabled = false, centered = false }) {
   const menuId = useId()
   const [open, setOpen] = useState(false)
   const [cursor, setCursor] = useState(() => parseCursor(type, value))
@@ -127,7 +128,7 @@ export default function TemporalInput({ type, id, value, onChange, className = '
       <button
         type="button"
         ref={triggerRef}
-        className="app-temporal-trigger"
+        className={`app-temporal-trigger${centered ? ' is-centered' : ''}`}
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={open}

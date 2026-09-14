@@ -5,6 +5,7 @@ import {
   MISC_CATEGORIES,
 } from '../lib/expenses.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../lib/money.js'
+import TemporalInput from './shared/TemporalInput.jsx'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
 
@@ -37,12 +38,12 @@ export default function ExpenseFormModal({
         <div className="modal-title">{editingId ? `${kindLabel} 수정` : `${kindLabel} 내역 추가`}</div>
         <div className="form-group">
           <label htmlFor="expenseDate">날짜</label>
-          <input
-            id="expenseDate"
+          <TemporalInput
             type="date"
-            className="input-box"
-            value={draft.date}
-            readOnly={lockDate}
+            id="expenseDate"
+            value={draft.date || ''}
+            disabled={lockDate}
+            centered
             onChange={(e) => onChange({ ...draft, date: e.target.value })}
           />
         </div>

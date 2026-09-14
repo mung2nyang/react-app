@@ -97,3 +97,26 @@
   color: var(--primary-color);
   font-weight: 700;
 }
+
+/* `centered` prop — 원본 콜상세/정비/주유 화면이 공통으로 쓰던 가운데 정렬 트리거.
+   화면 두 곳 이상에서 똑같이 필요해 공용 modifier로 둔다(화면별 override 대신). */
+.app-temporal-trigger.is-centered {
+  position: relative;
+  justify-content: center;
+}
+
+.app-temporal-trigger.is-centered .app-temporal-value {
+  width: 100%;
+  padding: 0 22px;
+  color: var(--sub-text-color);
+  font-family: inherit;
+  font-size: var(--fs-3);
+  font-weight: 500;
+  text-align: center;
+}
+
+.app-temporal-trigger.is-centered .app-temporal-icon {
+  position: absolute;
+  right: 12px;
+  margin-left: 0;
+}
