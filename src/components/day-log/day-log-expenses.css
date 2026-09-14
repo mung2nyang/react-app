@@ -17,6 +17,11 @@
   font-size: var(--fs-3);
 }
 
+.work-log-page .maint-fuel-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
 .work-log-page .maint-fuel-icon {
   width: 16px;
   height: 16px;
