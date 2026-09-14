@@ -1,8 +1,4 @@
-:root:not([data-theme="dark"]) {
-  --fs-7: 1.18rem;
-  --hover-bg: #edf2f7;
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
+/* 전역 토큰(:root / [data-theme="dark"])은 variables.css. */
 
 .side-menu-overlay {
   position: fixed;

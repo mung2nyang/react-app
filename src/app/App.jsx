@@ -18,6 +18,7 @@ import {
   setGuestModePersisted,
 } from './guestSessionPersist.js'
 import { useAppSession } from './useAppSession.js'
+import '../variables.css'
 import '../account-flow.css'
 import '../side-menu.css'
 import '../app-shell-base.css'
