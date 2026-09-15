@@ -1,4 +1,5 @@
 // @ts-check
+import CalendarDateSelect from '../calendar/CalendarDateSelect.jsx'
 import { getYearOptions } from '../../lib/calendar.js'
 import { formatWon } from '../../lib/money.js'
 
@@ -29,12 +30,18 @@ export default function SettlementSummaryCard({
           <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <div className="date-select-group">
-          <select className="date-select" value={year} onChange={(e) => onYearChange(Number(e.target.value))}>
-            {YEAR_OPTIONS.map((y) => <option key={y} value={y}>{y}년</option>)}
-          </select>
-          <select className="date-select" value={month} onChange={(e) => onMonthChange(Number(e.target.value))}>
-            {Array.from({ length: 12 }, (_, i) => <option key={i} value={i}>{i + 1}월</option>)}
-          </select>
+          <CalendarDateSelect
+            label="년도 선택"
+            value={year}
+            options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y}년` }))}
+            onChange={(next) => onYearChange(Number(next))}
+          />
+          <CalendarDateSelect
+            label="월 선택"
+            value={month}
+            options={Array.from({ length: 12 }, (_, i) => ({ value: String(i), label: `${i + 1}월` }))}
+            onChange={(next) => onMonthChange(Number(next))}
+          />
         </div>
         <button type="button" className="arrow-btn" title="다음 달" onClick={onNextMonth}>
           <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>

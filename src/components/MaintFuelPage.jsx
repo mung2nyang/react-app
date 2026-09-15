@@ -2,6 +2,7 @@
 // 메인·서브 스코프를 한 화면에서 처리 — AGENTS §6 ≤250.
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
+import CalendarDateSelect from './calendar/CalendarDateSelect.jsx'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import CardActionButtons from './shared/CardActionButtons.jsx'
@@ -123,12 +124,18 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
             <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
           </button>
           <div className="date-select-group">
-            <select className="date-select" value={year} onChange={(e) => setViewDate(setYearMonth(viewDate, Number(e.target.value), month))}>
-              {YEAR_OPTIONS.map((y) => <option key={y} value={y}>{y}년</option>)}
-            </select>
-            <select className="date-select" value={month} onChange={(e) => setViewDate(setYearMonth(viewDate, year, Number(e.target.value)))}>
-              {Array.from({ length: 12 }, (_, m) => <option key={m} value={m}>{m + 1}월</option>)}
-            </select>
+            <CalendarDateSelect
+              label="년도 선택"
+              value={year}
+              options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y}년` }))}
+              onChange={(next) => setViewDate(setYearMonth(viewDate, Number(next), month))}
+            />
+            <CalendarDateSelect
+              label="월 선택"
+              value={month}
+              options={Array.from({ length: 12 }, (_, m) => ({ value: String(m), label: `${m + 1}월` }))}
+              onChange={(next) => setViewDate(setYearMonth(viewDate, year, Number(next)))}
+            />
           </div>
           <button type="button" className="arrow-btn" title="다음 달" onClick={() => setViewDate((d) => shiftMonth(d, 1))}>
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
