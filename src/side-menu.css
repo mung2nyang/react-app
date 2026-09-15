@@ -647,11 +647,6 @@
   margin-bottom: 16px;
 }
 
-.maint-fuel-page .summary-card {
-  margin-bottom: 14px;
-  text-align: left;
-}
-
 .pill-group {
   display: flex;
   flex-wrap: wrap;

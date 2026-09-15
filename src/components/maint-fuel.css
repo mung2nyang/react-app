@@ -1,0 +1,80 @@
+/* 정비/주유/기타 하단 dock — side-menu.css에서 분리 + 원본 style.css 이식.
+   MaintFuelPage.jsx가 import. */
+
+.maint-fuel-page {
+  padding-bottom: 155px;
+}
+
+.maint-management-dock {
+  position: fixed;
+  z-index: 90;
+  right: max(12px, calc((100vw - 480px) / 2 + 12px));
+  bottom: 64px;
+  left: max(12px, calc((100vw - 480px) / 2 + 12px));
+  padding: 9px;
+  border: 1px solid var(--border-color);
+  border-radius: 17px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-md);
+}
+
+.maint-month-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 2px 7px;
+  font-size: var(--fs-floor);
+}
+
+.maint-month-summary > div {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.maint-month-summary strong {
+  color: var(--sunday-color);
+}
+
+.maint-month-summary strong.fuel-color {
+  color: var(--primary-color);
+}
+
+.maint-month-summary strong.misc-color {
+  color: #d97706;
+}
+
+.maint-month-summary span,
+.maint-month-summary b {
+  color: var(--sub-text-color);
+}
+
+.maint-month-summary button {
+  flex-shrink: 0;
+  padding: 5px 9px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--sub-text-color);
+  box-shadow: var(--shadow-sm);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.maint-management-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 0;
+}
+
+.maint-management-tabs .toggle-btn {
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: var(--fs-2);
+}
