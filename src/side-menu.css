@@ -797,74 +797,6 @@
 }
 
 
-.receivable-group-card,
-.receivable-detail-card {
-  align-items: flex-start;
-}
-
-.receivable-group-summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 8px;
-  font-size: var(--fs-3);
-}
-
-.receivable-group-summary strong {
-  color: var(--primary-color);
-  font-size: var(--fs-5);
-}
-
-.receivable-card-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-}
-
-.receivable-detail-summary {
-  margin-bottom: 16px;
-  padding: 16px 18px;
-  border: 1px solid var(--border-color);
-  border-radius: 22px;
-  background: var(--card-bg);
-}
-
-.receivable-detail-eyebrow {
-  color: var(--primary-color);
-  font-size: var(--fs-floor);
-  font-weight: 800;
-}
-
-.receivable-detail-summary h2 {
-  margin: 6px 0 12px;
-  font-size: var(--fs-6);
-}
-
-.receivable-detail-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-weight: 800;
-}
-
-.receivable-dday {
-  margin-top: 4px;
-  color: var(--primary-color);
-  font-size: var(--fs-2);
-  font-weight: 800;
-}
-
-.receivable-dday.overdue {
-  color: var(--sunday-color);
-}
-
-.receivable-amount {
-  font-size: var(--fs-4);
-  color: var(--text-color);
-}
-
 .report-title {
   margin: 4px 0 10px;
   text-align: center;
@@ -1252,37 +1184,6 @@ body.pdf-export-mode .summary-row.total {
 }
 
 .driver-code-row .input-box {
-  flex: 1;
-}
-
-.receivable-payment-status {
-  margin-top: 8px;
-  font-size: var(--fs-2);
-  color: var(--sub-text-color);
-}
-
-.receivable-payment-status.partial {
-  color: var(--primary-color);
-  font-weight: 700;
-}
-
-.receivable-payment-history-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 4px;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-}
-
-.receivable-partial-input-row {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-  margin-top: 10px;
-}
-
-.receivable-partial-input-row .input-box {
   flex: 1;
 }
 

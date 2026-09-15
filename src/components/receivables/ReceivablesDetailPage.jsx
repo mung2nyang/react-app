@@ -9,6 +9,7 @@ import { useReceivablesActions } from './useReceivablesActions.js'
 import { useConfirm } from './useConfirm.jsx'
 import ReceivableItemCard from './ReceivableItemCard.jsx'
 import PageHeader from '../PageHeader.jsx'
+import './receivables.css'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 
@@ -57,7 +58,9 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
           <span>총 미수금</span>
           <strong>{formatWon(detailTotal)}</strong>
         </div>
-        <div className="car-sub-text">{detailItems.length}건 · {dueDates.length ? `입금 예정일 ${dueDates[0].replace(/-/g, '.')}` : '입금 예정일 미등록'}</div>
+        <div className="receivable-detail-meta">
+          {detailItems.length}건 · {dueDates.length ? `입금 예정일 ${dueDates[0].replace(/-/g, '.')}` : '입금 예정일 미등록'}
+        </div>
       </section>
 
       {detailItems.length === 0 && <div className="empty-state">모든 미수금이 입금 완료 처리되었습니다.</div>}
@@ -81,17 +84,19 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
       ))}
 
       {detailItems.length > 0 && (
-        <button
-          type="button"
-          className="personal-account-btn"
-          onClick={async () => {
-            const leave = await actions.payGroup(clientName, monthKey, true)
-            if (leave) navigate('/app/receivables')
-          }}
-          disabled={actions.saving}
-        >
-          전체 입금 완료 처리
-        </button>
+        <div className="receivable-detail-footer">
+          <button
+            type="button"
+            className="receivable-detail-all-paid"
+            onClick={async () => {
+              const leave = await actions.payGroup(clientName, monthKey, true)
+              if (leave) navigate('/app/receivables')
+            }}
+            disabled={actions.saving}
+          >
+            전체 입금 완료 처리
+          </button>
+        </div>
       )}
     </div>
   )
