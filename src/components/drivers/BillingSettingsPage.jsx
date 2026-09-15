@@ -4,7 +4,13 @@ import { useNavigate } from 'react-router-dom'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
 import { useOwnerSettings } from '../../store/ownerDataHooks.js'
 import PageHeader from '../PageHeader.jsx'
+import AppDropdown from '../shared/AppDropdown.jsx'
 import './linked-driver.css'
+
+const INVOICE_BASIS_OPTIONS = [
+  { value: 'net', label: '공제 후 지급액' },
+  { value: 'gross', label: '공제 전 운송료' },
+]
 
 /**
  * @param {Object} props
@@ -22,9 +28,9 @@ export default function BillingSettingsPage({ ownerKey = 'guest', onBack, showTo
     setBasis(practiceSettings.driverInvoiceBasis === 'gross' ? 'gross' : 'net')
   }, [practiceSettings.driverInvoiceBasis])
 
-  /** @param {import('react').ChangeEvent<HTMLSelectElement>} event */
-  async function handleChange(event) {
-    const nextBasis = event.target.value === 'gross' ? 'gross' : 'net'
+  /** @param {string} next */
+  async function handleChange(next) {
+    const nextBasis = next === 'gross' ? 'gross' : 'net'
     setBasis(nextBasis)
     try {
       await savePracticeSettings(ownerKey, { driverInvoiceBasis: nextBasis })
@@ -48,11 +54,13 @@ export default function BillingSettingsPage({ ownerKey = 'guest', onBack, showTo
         <p>계산서 처리 방식(회사 정산/기사 직접 정산 등)은 기사차량마다 달라질 수 있어, 이제 차량 정보 화면에서 차량별로 직접 설정합니다.</p>
       </section>
       <section className="billing-settings-card">
-        <label htmlFor="driverInvoiceBasis">기사 매입 계산서 기준</label>
-        <select id="driverInvoiceBasis" className="input-box" value={basis} onChange={handleChange}>
-          <option value="net">공제 후 지급액</option>
-          <option value="gross">공제 전 운송료</option>
-        </select>
+        <label>기사 매입 계산서 기준</label>
+        <AppDropdown
+          label="기사 매입 계산서 기준"
+          value={basis}
+          options={INVOICE_BASIS_OPTIONS}
+          onChange={handleChange}
+        />
         <div id="billingSettingsModeGuide" className="billing-settings-guide">
           {basis === 'gross'
             ? '기사 매입 계산서는 공제 전 운송료를 기준으로 준비합니다.'

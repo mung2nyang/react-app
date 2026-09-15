@@ -1,6 +1,7 @@
 // @ts-check
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
 import { needsPaymentTermValue, PAYMENT_TERMS } from '../../lib/clients.js'
+import AppDropdown from '../shared/AppDropdown.jsx'
 import ClientTradeFields from './ClientTradeFields.jsx'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
@@ -67,10 +68,13 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
           <input id="clientTaxEmail" className="input-box" type="email" placeholder="이메일" value={draft.taxEmail || ''} onChange={(e) => setDraft({ ...draft, taxEmail: e.target.value })} />
         </div>
         <div className="form-group">
-          <label htmlFor="clientPaymentTerm">결제 주기</label>
-          <select id="clientPaymentTerm" className="input-box" value={draft.paymentTerm || 'next_month_end'} onChange={(e) => setDraft({ ...draft, paymentTerm: e.target.value, paymentTermValue: '' })}>
-            {PAYMENT_TERMS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-          </select>
+          <label>결제 주기</label>
+          <AppDropdown
+            label="결제 주기"
+            value={draft.paymentTerm || 'next_month_end'}
+            options={PAYMENT_TERMS}
+            onChange={(next) => setDraft({ ...draft, paymentTerm: next, paymentTermValue: '' })}
+          />
         </div>
         {needsPaymentTermValue(draft.paymentTerm) && (
           <div className="form-group">

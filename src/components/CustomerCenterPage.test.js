@@ -85,7 +85,7 @@ describe('CustomerCenterPage — 고객센터 진입·FAQ·1:1 문의', () => {
     try {
       assert.ok(container.querySelector('.inquiry-form'), '로그인 세션엔 inquiry-form이 있어야 한다')
       assert.ok(container.querySelector('textarea'))
-      assert.ok(container.querySelector('select'))
+      assert.ok(container.querySelector('.app-dropdown-trigger'), '문의유형 AppDropdown 트리거가 있어야 한다')
       assert.equal(container.textContent?.includes('로그인 후 이용해 주세요'), false)
     } finally {
       await act(async () => { root.unmount() })

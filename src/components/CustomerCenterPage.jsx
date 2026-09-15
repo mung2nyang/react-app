@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { isCloudSession } from '../lib/cloudSession.js'
 import { fetchMyInquiries, requestSupportInquirySave } from '../lib/supportInquiryMutations.js'
 import PageHeader from './PageHeader.jsx'
+import AppDropdown from './shared/AppDropdown.jsx'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
@@ -78,11 +79,12 @@ function InquiryForm({ userId, showToast }) {
     <form className="inquiry-form" onSubmit={onSubmit}>
       <label>
         문의 유형
-        <select className="input-box" value={type} onChange={(e) => setType(e.target.value)} required>
-          {INQUIRY_TYPES.map((option) => (
-            <option key={option} value={option}>{option}</option>
-          ))}
-        </select>
+        <AppDropdown
+          label="문의 유형"
+          value={type}
+          options={INQUIRY_TYPES.map((option) => ({ value: option, label: option }))}
+          onChange={setType}
+        />
       </label>
       <label>
         제목

@@ -1,6 +1,7 @@
 // @ts-check
 // 리포트 "세부" 화면 + 거래처 선택 모달.
 import { formatWon } from '../lib/money.js'
+import AppDropdown from './shared/AppDropdown.jsx'
 
 /**
  * @typedef {Object} DetailReportItem
@@ -38,19 +39,16 @@ export function ReportClientPickerModal({ open, options, value, onChange, onConf
       <div className="modal-content report-picker-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">세부 내역서 조회</div>
         <div className="form-group">
-          <label htmlFor="detailReportClientSelect">거래처</label>
-          <select
-            id="detailReportClientSelect"
-            className="input-box"
+          <label>거래처</label>
+          <AppDropdown
+            label="거래처"
             value={value}
-            onChange={(e) => onChange(e.target.value)}
-          >
-            {options.map((option) => (
-              <option key={option} value={option}>
-                {option === 'ALL' ? '전체 (모두)' : option}
-              </option>
-            ))}
-          </select>
+            options={options.map((option) => ({
+              value: option,
+              label: option === 'ALL' ? '전체 (모두)' : option,
+            }))}
+            onChange={onChange}
+          />
         </div>
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>

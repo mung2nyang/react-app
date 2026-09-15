@@ -12,6 +12,7 @@ import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { monthKeyOf, won } from './revenueFormat.js'
 import { scopeSettingsToVehicle, scopeWorkDataToVehicle } from './driverRevenueScope.js'
 import { filterDriverExpensesByVehicle } from '../../domain/financeOwnerExpenseSweep.js'
+import AppDropdown from '../shared/AppDropdown.jsx'
 const SCOPES = [
   { value: 'all', label: '전체 손익' },
   { value: 'owner', label: '차주' },
@@ -128,26 +129,19 @@ export default function OwnerRevenueView({ ownerKey }) {
         </div>
         {showDriverSelect && (
           <div className="revenue-driver-select">
-            <select
-              className="input-box"
+            <AppDropdown
+              label="기사 선택"
               value={driverVehicle}
-              onChange={(e) => setDriverVehicle(e.target.value)}
-              aria-label="기사 선택"
-            >
-              <option value={ALL_DRIVERS}>전체 기사 합산</option>
-              {subCars.map((car) => {
-                const vehicleNumber = String(car.number || '').trim()
-                const name = String(car.driverName || '기사').trim() || '기사'
-                return (
-                  <option key={vehicleNumber} value={vehicleNumber}>
-                    {name}({vehicleNumber})
-                  </option>
-                )
-              })}
-            </select>
-            <span className="revenue-driver-select-chevron" aria-hidden="true">
-              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </span>
+              options={[
+                { value: ALL_DRIVERS, label: '전체 기사 합산' },
+                ...subCars.map((car) => {
+                  const vehicleNumber = String(car.number || '').trim()
+                  const name = String(car.driverName || '기사').trim() || '기사'
+                  return { value: vehicleNumber, label: `${name}(${vehicleNumber})` }
+                }),
+              ]}
+              onChange={setDriverVehicle}
+            />
           </div>
         )}
       </div>
