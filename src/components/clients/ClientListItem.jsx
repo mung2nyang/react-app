@@ -28,18 +28,22 @@ export default function ClientListItem({
       <div className="management-card-copy">
         <div className="client-card-title">
           <strong>{client.companyName}</strong>
-          {client.isPinned && <span className="management-badge pinned">★ 즐겨찾기</span>}
-          {client.commEnabled && (
-            <span className="management-badge commission">
-              수수료 {client.commType === 'direct' ? `${client.commValue || ''}원` : `${client.commValue || ''}%`}
-            </span>
-          )}
           {client.fixedRouteLinked && <span className="management-badge tax-invoice">고정노선 연동</span>}
-          {client.palletOn && (
-            <span className="management-badge tax-invoice">파렛트 {client.palletPrice || ''}원</span>
-          )}
-          {client.managerName && <span>{client.managerName} 담당</span>}
         </div>
+        {(client.isPinned || client.commEnabled || client.palletOn || client.managerName) && (
+          <div className="client-card-badges">
+            {client.isPinned && <span className="management-badge pinned">★ 즐겨찾기</span>}
+            {client.commEnabled && (
+              <span className="management-badge commission">
+                수수료 {client.commType === 'direct' ? `${client.commValue || ''}원` : `${client.commValue || ''}%`}
+              </span>
+            )}
+            {client.palletOn && (
+              <span className="management-badge tax-invoice">파렛트 {client.palletPrice || ''}원</span>
+            )}
+            {client.managerName && <span>{client.managerName} 담당</span>}
+          </div>
+        )}
         <div className="car-sub-text">
           <span>사업자 {client.bizNumber || '-'}</span>
           <span>연락처 {client.phone || '-'}</span>
