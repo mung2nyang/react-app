@@ -177,16 +177,13 @@
 }
 
 .maint-fuel-page .management-record-info > div span {
-  color: var(--sub-text-color);
-  font-size: var(--fs-2);
-}
-
-.maint-fuel-page .management-record-info > div span:first-child {
   padding: 3px 7px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
 }
 
 .maint-fuel-page .management-record-info > strong {
