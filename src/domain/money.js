@@ -24,7 +24,7 @@ export function calcSupplyVat(supplyAmount, vatExempt = false) {
  * @returns {string}
  */
 export function formatWon(amount) {
-  return `${Math.max(0, Number(amount) || 0).toLocaleString('ko-KR')} 원`
+  return `${Math.max(0, Number(amount) || 0).toLocaleString('ko-KR')}원`
 }
 
 /**

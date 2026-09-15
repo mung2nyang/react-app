@@ -46,7 +46,7 @@ test('일지를 커밋하면 운송비 내역서가 리마운트 없이 합계�
       'loadWorkData 스냅샷이면 리마운트 없이 거래처 매출이 안 바뀐다',
     )
     assert.ok(
-      container.textContent.includes('40,000 원'),
+      container.textContent.includes('40,000원'),
       '4회×10,000원이 리마운트 없이 반영돼야 한다',
     )
   } finally {

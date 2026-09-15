@@ -55,7 +55,7 @@ test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 �
     assert.equal(container.querySelector('.summary-price-input'), null, '정산 카드에 1회 단가 입력이 없어야 한다')
     assert.equal(container.textContent.includes('1회 단가'), false)
     assert.ok(
-      container.textContent.includes('30,000 원'),
+      container.textContent.includes('30,000원'),
       `3회×거래처 10,000원=30,000원이어야 한다 — 실제: ${container.textContent.slice(0, 400)}`,
     )
 
@@ -65,7 +65,7 @@ test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 �
       ], { syncToCloud: false })
     })
     assert.ok(
-      container.textContent.includes('45,000 원'),
+      container.textContent.includes('45,000원'),
       `거래처 단가 변경 후 3회×15,000원=45,000원이어야 한다 — 실제: ${container.textContent.slice(0, 400)}`,
     )
 
@@ -100,7 +100,7 @@ test('고정노선 거래처가 없으면 정산 카드에 1회 단가가 없고
     })
     assert.equal(container.querySelector('.summary-price-input'), null)
     assert.equal(container.textContent.includes('1회 단가'), false)
-    assert.equal(container.textContent.includes('15,000 원'), false, '설정 unitPrice 5,000×3회를 쓰면 안 된다')
+    assert.equal(container.textContent.includes('15,000원'), false, '설정 unitPrice 5,000×3회를 쓰면 안 된다')
   } finally {
     await act(async () => { root.unmount() })
     container.remove()
@@ -144,14 +144,14 @@ test('홈 월간 정산 카드는 그 화면 자신의 거래처 수수료를 �
 
     assert.ok(container.textContent.includes('수수료거래처 수수료 (10%)'), '거래처별 수수료 행이 있어야 한다')
     assert.ok(
-      container.textContent.includes('- 10,000 원'),
-      `수수료 금액이 - 10,000 원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
+      container.textContent.includes('- 10,000원'),
+      `수수료 금액이 - 10,000원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
     )
 
     const totalRow = container.querySelector('.summary-row.total .summary-value')
     assert.equal(
       totalRow?.textContent,
-      `${expected.total.toLocaleString('ko-KR')} 원`,
+      `${expected.total.toLocaleString('ko-KR')}원`,
       `합계는 monthSettlementSummary.total(${expected.total.toLocaleString('ko-KR')})과 같아야 한다`,
     )
   } finally {
@@ -222,7 +222,7 @@ test('수수료가 없으면 거래처 수수료 행이 없고 합계는 monthSe
     const totalRow = container.querySelector('.summary-row.total .summary-value')
     assert.equal(
       totalRow?.textContent,
-      `${expected.total.toLocaleString('ko-KR')} 원`,
+      `${expected.total.toLocaleString('ko-KR')}원`,
       '합계는 monthSettlementSummary.total과 같아야 한다',
     )
   } finally {
@@ -288,7 +288,7 @@ test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생
     })
     const withoutProp = container.textContent
     assert.ok(withoutProp.includes('메인수수료 수수료 (10%)'))
-    assert.ok(withoutProp.includes('- 10,000 원'))
+    assert.ok(withoutProp.includes('- 10,000원'))
 
     await act(async () => {
       root.render(React.createElement(
@@ -298,7 +298,7 @@ test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생
       ))
     })
     assert.equal(container.textContent.includes('메인수수료 수수료 (10%)'), true)
-    assert.equal(container.textContent.includes('- 10,000 원'), true)
+    assert.equal(container.textContent.includes('- 10,000원'), true)
     assert.equal(container.querySelector('.sub-car-log-banner'), null)
   } finally {
     await act(async () => { root.unmount() })
@@ -350,8 +350,8 @@ test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수
     assert.equal(container.querySelector('.summary-client-commission-row'), null, '이 픽스처엔 수수료 없음')
     // 고정 2×20,000 + 콜 50,000 = 거래처 버킷 90,000 (구조 통일 후 한 행으로 합산)
     assert.ok(container.textContent.includes('서브거래처 기본 운송료'))
-    assert.ok(container.textContent.includes('90,000 원'), '서브 고정+콜 합산')
-    assert.equal(container.textContent.includes('180,000 원'), false, '메인 fixedCount 9는 안 보임')
+    assert.ok(container.textContent.includes('90,000원'), '서브 고정+콜 합산')
+    assert.equal(container.textContent.includes('180,000원'), false, '메인 fixedCount 9는 안 보임')
     assert.equal(
       container.querySelector('.unpaid-summary-card'),
       null,
@@ -399,7 +399,7 @@ test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님
     })
     assert.equal(settled.fareByClient['고정노선'], expectedFixed)
     assert.ok(
-      container.textContent.includes('75,000 원'),
+      container.textContent.includes('75,000원'),
       `달력 고정운임이 매출과 같은 75,000원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
     )
   } finally {
