@@ -141,6 +141,7 @@ export default function OwnerRevenueView({ ownerKey }) {
                 }),
               ]}
               onChange={setDriverVehicle}
+              className="app-dropdown-boxed"
             />
           </div>
         )}

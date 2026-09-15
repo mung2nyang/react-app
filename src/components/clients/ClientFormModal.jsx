@@ -74,6 +74,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
             value={draft.paymentTerm || 'next_month_end'}
             options={PAYMENT_TERMS}
             onChange={(next) => setDraft({ ...draft, paymentTerm: next, paymentTermValue: '' })}
+            className="app-dropdown-boxed"
           />
         </div>
         {needsPaymentTermValue(draft.paymentTerm) && (

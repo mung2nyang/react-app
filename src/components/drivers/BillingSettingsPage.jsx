@@ -60,6 +60,7 @@ export default function BillingSettingsPage({ ownerKey = 'guest', onBack, showTo
           value={basis}
           options={INVOICE_BASIS_OPTIONS}
           onChange={handleChange}
+          className="app-dropdown-boxed"
         />
         <div id="billingSettingsModeGuide" className="billing-settings-guide">
           {basis === 'gross'

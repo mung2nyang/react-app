@@ -48,6 +48,7 @@ export function ReportClientPickerModal({ open, options, value, onChange, onConf
               label: option === 'ALL' ? '전체 (모두)' : option,
             }))}
             onChange={onChange}
+            className="app-dropdown-boxed"
           />
         </div>
         <div className="modal-btns">

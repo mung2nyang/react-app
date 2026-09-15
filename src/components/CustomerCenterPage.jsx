@@ -84,6 +84,7 @@ function InquiryForm({ userId, showToast }) {
           value={type}
           options={INQUIRY_TYPES.map((option) => ({ value: option, label: option }))}
           onChange={setType}
+          className="app-dropdown-boxed"
         />
       </label>
       <label>
