@@ -421,6 +421,40 @@
   text-align: center;
 }
 
+/* 거래처 수수료 입력 — 차량용 car-commission-panel과 별개, 원본처럼
+   토글 버튼+입력을 한 줄로 붙인다(ClientTradeFields.jsx). */
+.commission-settings-panel {
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--hover-bg);
+}
+
+.commission-inline-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.commission-inline-row .toggle-btn {
+  flex: 0 0 auto;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 10px;
+  font-size: var(--fs-floor);
+}
+
+.commission-inline-row .input-box {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  min-height: 38px;
+  margin-top: 0;
+  padding: 6px 10px;
+  font-size: var(--fs-floor);
+  text-align: right;
+}
+
 .car-type-hint {
   margin: 0 0 16px;
   color: var(--sub-text-color);

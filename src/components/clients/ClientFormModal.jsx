@@ -84,7 +84,6 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
           </div>
         )}
         <ClientTradeFields draft={draft} setDraft={setDraft} hideFixedRoute={hideFixedRoute} />
-        <p className="car-type-hint">즐겨찾기는 목록 위에 두고, 같은 그룹끼리 끌어 순서를 바꿀 수 있습니다. 로그인하면 서버의 핀·정렬 순서에도 반영됩니다.</p>
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
           <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>

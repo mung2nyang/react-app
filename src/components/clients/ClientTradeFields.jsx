@@ -93,31 +93,22 @@ export default function ClientTradeFields({ draft, setDraft, hideFixedRoute = fa
         </label>
       </div>
       {draft.commEnabled && (
-        <div className="car-commission-panel">
-          <div className="car-commission-type" role="group" aria-label="수수료 입력 방식">
-            <button type="button" className={draft.commType === 'percent' ? 'active' : ''} aria-pressed={draft.commType === 'percent'} onClick={() => setCommType('percent')}>
-              <span>%</span> 비율
-            </button>
-            <button type="button" className={draft.commType === 'direct' ? 'active' : ''} aria-pressed={draft.commType === 'direct'} onClick={() => setCommType('direct')}>
-              <span>₩</span> 금액
-            </button>
+        <div className="commission-settings-panel">
+          <div className="commission-inline-row">
+            <button type="button" className={`toggle-btn${draft.commType === 'percent' ? ' active-work' : ''}`} onClick={() => setCommType('percent')}>퍼센트 (%)</button>
+            <button type="button" className={`toggle-btn${draft.commType === 'direct' ? ' active-work' : ''}`} onClick={() => setCommType('direct')}>금액 (원)</button>
+            <input
+              id="clientCommValue"
+              className="input-box"
+              inputMode={draft.commType === 'direct' ? 'numeric' : 'decimal'}
+              placeholder={draft.commType === 'direct' ? '금액(원) 입력' : '비율(%) 입력'}
+              value={String(draft.commValue || '')}
+              onChange={(e) => setDraft({
+                ...draft,
+                commValue: draft.commType === 'direct' ? formatCurrencyInput(e.target.value) : formatPercentInput(e.target.value),
+              })}
+            />
           </div>
-          <label className="car-commission-value" htmlFor="clientCommValue">
-            <span>{draft.commType === 'direct' ? '건당 수수료' : '수수료율'}</span>
-            <span className="car-commission-input">
-              <input
-                id="clientCommValue"
-                inputMode={draft.commType === 'direct' ? 'numeric' : 'decimal'}
-                placeholder="0"
-                value={String(draft.commValue || '')}
-                onChange={(e) => setDraft({
-                  ...draft,
-                  commValue: draft.commType === 'direct' ? formatCurrencyInput(e.target.value) : formatPercentInput(e.target.value),
-                })}
-              />
-              <b>{draft.commType === 'direct' ? '원' : '%'}</b>
-            </span>
-          </label>
         </div>
       )}
     </>
