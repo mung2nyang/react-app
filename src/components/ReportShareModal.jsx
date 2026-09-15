@@ -7,6 +7,7 @@ import {
 } from '../lib/report.js'
 import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../lib/messageTemplates.js'
 import { createReportImageFile, createReportPdfFile } from '../lib/reportExport.js'
+import './report/report.css'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 

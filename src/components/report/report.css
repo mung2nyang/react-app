@@ -1,0 +1,233 @@
+/* 운송비 내역서(리포트) 전용 — side-menu.css에서 분리.
+   ReportPage·ReportDetailView·ReportShareModal·ReportSummaryContent가 import. */
+
+.report-title {
+  margin: 4px 0 10px;
+  text-align: center;
+  font-size: var(--fs-6);
+  font-weight: 850;
+}
+
+.info-table {
+  width: 100%;
+  margin-bottom: 16px;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--card-bg);
+}
+
+.info-table th,
+.info-table td {
+  padding: 10px 8px;
+  border: 1px solid var(--border-color);
+  font-size: var(--fs-2);
+  text-align: left;
+}
+
+.info-table th {
+  width: 22%;
+  background: var(--input-bg);
+  color: var(--sub-text-color);
+  font-weight: 750;
+}
+
+.report-page-wrap .summary-card {
+  text-align: left;
+}
+
+.report-pdf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.report-share-content { width: min(calc(100% - 32px), 390px); padding: 22px; border-radius: 22px; }
+.report-share-head strong { display: block; font-size: var(--fs-6); }
+.report-share-head p { margin: 5px 0 16px; color: var(--sub-text-color); font-size: var(--fs-2); }
+.report-share-options { display: grid; gap: 8px; }
+.report-share-channel { padding: 12px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--input-bg); }
+.report-share-channel-title { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 11px; }
+.report-share-channel-title > span:last-child { min-width: 0; }
+.report-share-channel-title strong, .report-share-channel-title small { display: block; }
+.report-share-channel-title strong { font-size: var(--fs-3); }
+.report-share-channel-title small { margin-top: 3px; color: var(--sub-text-color); font-size: var(--fs-floor); }
+.report-share-format-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 11px; }
+.report-share-format-buttons button { min-height: 42px; padding: 9px 6px; border: 1px solid color-mix(in srgb, var(--primary-color) 28%, var(--border-color)); border-radius: 11px; background: var(--card-bg); color: var(--primary-color); text-align: center; cursor: pointer; touch-action: manipulation; }
+.report-share-format-buttons button strong { font-size: var(--fs-2); }
+.report-share-file-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; background: color-mix(in srgb, var(--primary-color) 14%, var(--card-bg)); color: var(--primary-color); font-size: var(--fs-floor); font-weight: 900; }
+.report-share-file-icon.kakao { background: #fee500; color: #191919; font-size: var(--fs-2); }
+.report-share-file-icon.sms { background: color-mix(in srgb, #40a36f 16%, var(--card-bg)); color: #268a57; font-size: var(--fs-floor); }
+
+.report-table {
+  width: 100%;
+  margin-bottom: 16px;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--card-bg);
+}
+
+.report-table th,
+.report-table td {
+  padding: 10px 8px;
+  border: 1px solid var(--border-color);
+  font-size: var(--fs-2);
+}
+
+.report-table th {
+  background: var(--input-bg);
+  color: var(--sub-text-color);
+  font-weight: 750;
+  text-align: center;
+}
+
+.report-table td.amount,
+.report-table .detail-amount-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.report-table .detail-date-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.detail-report-table .detail-location-cell {
+  white-space: normal;
+  word-break: break-all;
+}
+
+.report-page-wrap .summary-row-indent span:first-child {
+  padding-left: 10px;
+  font-size: 0.9rem;
+  color: var(--sub-text-color);
+}
+
+.report-page-wrap .summary-client-commission-row {
+  margin-top: -2px;
+}
+
+.report-page-wrap .summary-client-commission-label {
+  position: relative;
+  min-width: 0;
+  margin-left: 10px;
+  padding-left: 15px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-4);
+  line-height: 1.35;
+}
+
+.report-page-wrap .summary-client-commission-label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -3px;
+  width: 11px;
+  height: 16px;
+  box-sizing: border-box;
+  border-left: 1.5px solid color-mix(in srgb, var(--sub-text-color) 72%, transparent);
+  border-bottom: 1.5px solid color-mix(in srgb, var(--sub-text-color) 72%, transparent);
+  border-bottom-left-radius: 11px;
+}
+
+.report-split-container {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.report-split-column {
+  flex: 1;
+  width: 50%;
+}
+
+/* PDF 출력 모드 — 네비게이션 숨김 + 표/요약 인쇄용 색·여백 */
+body.pdf-export-mode {
+  --bg-color: #ffffff !important;
+  --text-color: #000000 !important;
+  --sub-text-color: #333333 !important;
+  --card-bg: #f9f9f9 !important;
+  --border-color: #cccccc !important;
+  --input-bg: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+body.pdf-export-mode .report-page-wrap .settings-header,
+body.pdf-export-mode .report-page-wrap .maint-fuel-nav,
+body.pdf-export-mode .report-page-wrap .report-pdf-actions {
+  display: none !important;
+}
+
+body.pdf-export-mode .report-page-wrap {
+  margin-top: 0 !important;
+  padding: 10px !important;
+  padding-bottom: 10px !important;
+  min-height: 0 !important;
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+body.pdf-export-mode .report-title {
+  color: #000000 !important;
+}
+
+body.pdf-export-mode .info-table {
+  border-radius: 0 !important;
+}
+
+body.pdf-export-mode .info-table th {
+  background-color: #f2f2f2 !important;
+  color: #333333 !important;
+  border: 1px solid #cccccc !important;
+}
+
+body.pdf-export-mode .info-table td {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #cccccc !important;
+  white-space: normal !important;
+  word-break: break-all !important;
+}
+
+body.pdf-export-mode .report-table {
+  border-radius: 0 !important;
+}
+
+body.pdf-export-mode .report-table th {
+  background-color: #f2f2f2 !important;
+  color: #333333 !important;
+  border: 1px solid #cccccc !important;
+}
+
+body.pdf-export-mode .report-table td {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #cccccc !important;
+}
+
+body.pdf-export-mode .detail-report-table .detail-location-cell {
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+
+body.pdf-export-mode .report-page-wrap .summary-card {
+  background-color: #f9f9f9 !important;
+  border: 1px solid #cccccc !important;
+  color: #000000 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.pdf-export-mode .summary-row {
+  color: #000000 !important;
+}
+
+body.pdf-export-mode .summary-row.total {
+  color: #3182ce !important;
+  border-top: 1px dashed #cccccc !important;
+}

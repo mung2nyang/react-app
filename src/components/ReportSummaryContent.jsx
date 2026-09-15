@@ -1,5 +1,6 @@
 // @ts-check
 // 리포트 "요약" 화면 — 정보표·일자표·월간 정산 카드.
+import './report/report.css'
 /**
  * @typedef {Object} ReportDayRow
  * @property {number} day

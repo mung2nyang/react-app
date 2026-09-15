@@ -2,6 +2,7 @@
 // 리포트 "세부" 화면 + 거래처 선택 모달.
 import { formatWon } from '../lib/money.js'
 import AppDropdown from './shared/AppDropdown.jsx'
+import './report/report.css'
 
 /**
  * @typedef {Object} DetailReportItem

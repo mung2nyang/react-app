@@ -18,6 +18,7 @@ import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'
 import ReportShareModal from './ReportShareModal.jsx'
 import PageHeader from './PageHeader.jsx'
+import './report/report.css'
 
 const YEAR_OPTIONS = getYearOptions()
 
