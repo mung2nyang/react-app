@@ -455,6 +455,12 @@
   text-align: right;
 }
 
+/* 모달 안 토글버튼 라운드 12px로 통일(이식 누락분, 원본 style.css:5672). */
+.modal-content .toggle-btn {
+  min-height: 44px;
+  border-radius: 12px;
+}
+
 .car-type-hint {
   margin: 0 0 16px;
   color: var(--sub-text-color);
