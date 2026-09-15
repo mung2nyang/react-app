@@ -102,7 +102,7 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
         )}
         <div className="summary-row total">
           <span>합계</span>
-          <span className="summary-value">{(Number(detail.income.total) || 0).toLocaleString('ko-KR')}원</span>
+          <span className="summary-value">{(Number(detail.income.total) || 0).toLocaleString('ko-KR')} 원</span>
         </div>
       </div>
 
@@ -135,7 +135,7 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
         )}
         <div className="summary-row total revenue-expense-total">
           <span>합계</span>
-          <span className="summary-value">-{(Number(detail.expense.total) || 0).toLocaleString('ko-KR')}원</span>
+          <span className="summary-value">-{(Number(detail.expense.total) || 0).toLocaleString('ko-KR')} 원</span>
         </div>
       </div>
     </>
