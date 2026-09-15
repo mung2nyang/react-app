@@ -3,6 +3,7 @@ import { formatPhoneNumber } from '../../lib/formatPhone.js'
 import { needsPaymentTermValue, PAYMENT_TERMS } from '../../lib/clients.js'
 import AppDropdown from '../shared/AppDropdown.jsx'
 import ClientTradeFields from './ClientTradeFields.jsx'
+import './client-management.css'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
 

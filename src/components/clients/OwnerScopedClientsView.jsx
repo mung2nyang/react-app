@@ -9,6 +9,7 @@ import { requestClientDeletion } from '../../lib/directMutationActions.js'
 import { getCloudUserId } from '../../lib/cloudSession.js'
 import { useOwnerCars, useOwnerClients } from '../../store/ownerDataHooks.js'
 import '../drivers/linked-driver.css'
+import './client-management.css'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
 /** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */

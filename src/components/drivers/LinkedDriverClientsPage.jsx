@@ -18,6 +18,7 @@ import {
 import LinkedDriverDirectClientsList from './LinkedDriverDirectClientsList.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../PageHeader.jsx'
+import '../clients/client-management.css'
 import CardActionButtons from '../shared/CardActionButtons.jsx'
 import './linked-driver.css'
 

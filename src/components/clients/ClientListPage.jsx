@@ -9,6 +9,7 @@ import { requestClientSave } from '../../lib/clientMutations.js'
 import { requestClientDeletion } from '../../lib/directMutationActions.js'
 import { getCloudUserId } from '../../lib/cloudSession.js'
 import { useOwnerClients } from '../../store/ownerDataHooks.js'
+import './client-management.css'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
 /** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
