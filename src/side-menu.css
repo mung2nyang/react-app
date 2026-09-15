@@ -854,12 +854,6 @@
   color: #f0ad2b;
 }
 
-.management-badge.commission {
-  border-color: #f0ad2b;
-  color: #f0ad2b;
-  background: color-mix(in srgb, #f0ad2b 12%, var(--input-bg));
-}
-
 .client-list-card {
   cursor: grab;
 }
