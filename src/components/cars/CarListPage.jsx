@@ -37,7 +37,7 @@ import './car-management.css'
 const emptyDraft = {
   number: '', tonnage: '', type: 'main', driverName: '', driverPhone: '',
   driverPayMode: 'revenue', driverSalaryAmount: '', commEnabled: false, commType: 'percent', commission: '',
-  inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'link',
+  inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'log',
 }
 const DELETE_CAR_CONFIRM = '해당 차량을 삭제하시겠습니까? 이 차량으로 기록된 운행 내역도 함께 삭제되며 복구할 수 없습니다.'
 const DISCONNECT_CONFIRM = '이 차량의 기사 연동을 해제하시겠습니까? 해제하면 되돌릴 수 없습니다.'
