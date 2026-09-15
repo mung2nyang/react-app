@@ -78,3 +78,30 @@
   border-radius: 12px;
   font-size: var(--fs-2);
 }
+
+/* 항목 카드 제목 앞 kind별 아이콘 — 원본 style.css:4345-4369 */
+.maint-fuel-page .management-record-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.maint-fuel-page .management-record-title svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: var(--sunday-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.maint-fuel-page .fuel-record .management-record-title svg {
+  stroke: var(--primary-color);
+}
+
+.maint-fuel-page .misc-record .management-record-title svg {
+  stroke: #d97706;
+}
