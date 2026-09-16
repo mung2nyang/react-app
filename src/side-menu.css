@@ -221,6 +221,15 @@
   height: 34px;
 }
 
+.management-list-card .action-icon-btn.action-text-btn,
+.management-record-actions .action-icon-btn.action-text-btn {
+  width: auto;
+  height: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 6px 10px;
+}
+
 .management-list-card .action-icon-btn svg {
   width: 16px;
   height: 16px;

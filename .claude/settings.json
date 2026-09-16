@@ -4,5 +4,12 @@
       "Bash(git commit:*)",
       "Bash(git push:*)"
     ]
+  },
+  "autoMode": {
+    "hard_deny": [
+      "$defaults",
+      "git commit (any form, any flags) in this repository — always ask the user first, even if the conversation already said to proceed. Chat approval ('진행해', '승인' etc.) does not clear this; only a real permission prompt each time does.",
+      "git push (any form, any flags) in this repository — always ask the user first, even if the conversation already said to proceed. Chat approval does not clear this; only a real permission prompt each time does."
+    ]
   }
 }

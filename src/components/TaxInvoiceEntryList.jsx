@@ -51,13 +51,13 @@ export default function TaxInvoiceEntryList({
         </div>
       </div>
       <div className="receivable-card-actions">
-        <button type="button" className="action-icon-btn" onClick={() => onOpenDraft(item)}>
+        <button type="button" className="action-icon-btn action-text-btn" onClick={() => onOpenDraft(item)}>
           {item.status === 'issued' ? '내용 보기' : (flow === 'purchase' ? '내용 입력' : '작성하기')}
         </button>
-        <button type="button" className="action-icon-btn" onClick={() => onExportExcel?.(item)}>엑셀 저장</button>
+        <button type="button" className="action-icon-btn action-text-btn" onClick={() => onExportExcel?.(item)}>엑셀 저장</button>
         {item.status === 'issued'
-          ? <button type="button" className="action-icon-btn del" onClick={() => onChangeStatus(item, 'draft')}>{flow === 'purchase' ? '수취 취소' : '발급 취소'}</button>
-          : <button type="button" className="action-icon-btn" onClick={() => onChangeStatus(item, 'issued')}>{flowMeta.completeLabel}</button>}
+          ? <button type="button" className="action-icon-btn action-text-btn del" onClick={() => onChangeStatus(item, 'draft')}>{flow === 'purchase' ? '수취 취소' : '발급 취소'}</button>
+          : <button type="button" className="action-icon-btn action-text-btn" onClick={() => onChangeStatus(item, 'issued')}>{flowMeta.completeLabel}</button>}
       </div>
     </div>
   ))
