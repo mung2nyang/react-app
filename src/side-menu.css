@@ -603,6 +603,7 @@
 .settings-segmented-control .toggle-btn {
   min-width: 64px;
   padding: 8px 10px;
+  border-radius: 12px;
 }
 
 .toggle-btn.active-work {
