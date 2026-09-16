@@ -35,8 +35,7 @@
 }
 
 .tax-invoice-guide-title {
-  margin: 0 0 6px;
-  padding: 0 14px;
+  margin: 0 0 4px;
   font-weight: 700;
   font-size: var(--fs-2);
   color: var(--text-color);
@@ -49,6 +48,10 @@
   background: var(--input-bg);
   color: var(--sub-text-color);
   font-size: var(--fs-2);
+}
+
+.tax-invoice-guide-desc {
+  margin: 0;
 }
 
 .tax-invoice-guide.ready {
@@ -74,4 +77,63 @@
   font-size: var(--fs-floor);
   font-weight: 700;
   margin-left: 4px;
+}
+
+.toggle-btn.active-work .tab-count-badge,
+.tax-invoice-subtab.active .tab-count-badge {
+  background: rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
+
+.tax-invoice-top-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.tax-invoice-top-card .maint-fuel-nav {
+  margin-bottom: 14px;
+}
+
+.tax-invoice-top-card .maint-fuel-tabs {
+  margin-bottom: 0;
+}
+
+.tax-invoice-subtabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3px;
+  margin: 0 0 10px;
+  padding: 3px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--input-bg);
+}
+
+.tax-invoice-subtab {
+  min-height: 44px;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--sub-text-color);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 750;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.tax-invoice-subtab.active {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 2px 5px color-mix(in srgb, var(--primary-color) 24%, transparent);
+}
+
+.tax-invoice-page .summary-card {
+  margin-bottom: 14px;
 }

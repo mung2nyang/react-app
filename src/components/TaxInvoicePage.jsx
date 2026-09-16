@@ -149,22 +149,24 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
         flowCounts={flowCounts}
       />
 
-      {!issuerReady && <p className="tax-invoice-guide-title">회사 사업자 정보가 필요합니다.</p>}
-      <p className={`tax-invoice-guide${issuerReady ? ' ready' : ''}`}>
-        {flow === 'purchase'
-          ? (issuerReady
-            ? `기사에게 받을 매입 계산서 · ${settings.driverInvoiceBasis === 'gross' ? '총 운송료' : '수수료·산재보험 차감 후 기사 정산액'} 기준`
-            : '마이페이지 → 개인정보에서 계산서를 받을 회사의 사업자 정보를 입력해 주세요.')
-          : (issuerReady
-            ? `${settings.bizName} · ${settings.bizNumber} · ${flowMeta.label}`
-            : '마이페이지 → 개인정보에서 계산서를 발행할 회사의 사업자 정보를 입력해 주세요.')}
-      </p>
+      <div className={`tax-invoice-guide${issuerReady ? ' ready' : ''}`}>
+        {!issuerReady && <p className="tax-invoice-guide-title">회사 사업자 정보가 필요합니다.</p>}
+        <p className="tax-invoice-guide-desc">
+          {flow === 'purchase'
+            ? (issuerReady
+              ? `기사에게 받을 매입 계산서 · ${settings.driverInvoiceBasis === 'gross' ? '총 운송료' : '수수료·산재보험 차감 후 기사 정산액'} 기준`
+              : '마이페이지 → 개인정보에서 계산서를 받을 회사의 사업자 정보를 입력해 주세요.')
+            : (issuerReady
+              ? `${settings.bizName} · ${settings.bizNumber} · ${flowMeta.label}`
+              : '마이페이지 → 개인정보에서 계산서를 발행할 회사의 사업자 정보를 입력해 주세요.')}
+        </p>
+      </div>
 
-      <div className="settings-segmented-control maint-fuel-tabs">
-        <button type="button" className={`toggle-btn${tab === 'draft' ? ' active-work' : ''}`} onClick={() => setTab('draft')}>
+      <div className="tax-invoice-subtabs">
+        <button type="button" className={`tax-invoice-subtab${tab === 'draft' ? ' active' : ''}`} onClick={() => setTab('draft')}>
           {flow === 'purchase' ? '수취 전' : '작성 전'} <span className="tab-count-badge">{listed.draftEntries.length}</span>
         </button>
-        <button type="button" className={`toggle-btn${tab === 'issued' ? ' active-work' : ''}`} onClick={() => setTab('issued')}>
+        <button type="button" className={`tax-invoice-subtab${tab === 'issued' ? ' active' : ''}`} onClick={() => setTab('issued')}>
           {flowMeta.completeLabel} <span className="tab-count-badge">{listed.issuedEntries.length}</span>
         </button>
       </div>

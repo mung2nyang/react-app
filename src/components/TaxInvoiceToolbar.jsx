@@ -20,7 +20,7 @@ export default function TaxInvoiceToolbar({ viewDate, setViewDate, flow, onFlow,
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   return (
-    <>
+    <div className="tax-invoice-top-card">
       <div className="maint-fuel-nav">
         <div className="date-navigator">
           <button type="button" className="arrow-btn" title="이전 달" onClick={() => setViewDate((d) => shiftMonth(d, -1))}>
@@ -57,6 +57,6 @@ export default function TaxInvoiceToolbar({ viewDate, setViewDate, flow, onFlow,
           </button>
         ))}
       </div>
-    </>
+    </div>
   )
 }
