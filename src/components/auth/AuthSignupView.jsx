@@ -1,8 +1,9 @@
 // @ts-check
+import { assetPath } from '../../lib/assetPath.js'
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
 import AuthBackIcon from './AuthBackIcon.jsx'
 
-const BANNER = '/images/banner_image.png'
+const BANNER = assetPath('/images/banner_image.png')
 
 /**
  * @typedef {{ name: string, phone: string, password: string, passwordConfirm: string }} AuthSignupFields

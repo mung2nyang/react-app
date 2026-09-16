@@ -1,5 +1,7 @@
 // @ts-check
-const BANNER = '/images/banner_image.png'
+import { assetPath } from '../../lib/assetPath.js'
+
+const BANNER = assetPath('/images/banner_image.png')
 
 /**
  * @param {Object} props

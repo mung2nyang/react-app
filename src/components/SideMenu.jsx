@@ -1,7 +1,9 @@
 // @ts-check
 // 이 메뉴 전용 SVG 아이콘 10개 포함 ~220줄 — 한 파일 유지(AGENTS §6 응집도 우선)
-const BANNER_LIGHT = '/images/banner_image_Light.png'
-const BANNER_DARK = '/images/banner_image_dark.png'
+import { assetPath } from '../lib/assetPath.js'
+
+const BANNER_LIGHT = assetPath('/images/banner_image_Light.png')
+const BANNER_DARK = assetPath('/images/banner_image_dark.png')
 
 function CarIcon() {
   return (

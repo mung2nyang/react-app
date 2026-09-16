@@ -1,7 +1,8 @@
 // @ts-check
+import { assetPath } from '../../lib/assetPath.js'
 import CalendarDateSelect from './CalendarDateSelect.jsx'
 
-const BANNER = '/images/banner_image.png'
+const BANNER = assetPath('/images/banner_image.png')
 
 /**
  * @param {Object} props

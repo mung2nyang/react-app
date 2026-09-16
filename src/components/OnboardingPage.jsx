@@ -1,9 +1,10 @@
 // @ts-check
 import { useState } from 'react'
+import { assetPath } from '../lib/assetPath.js'
 
 /** @typedef {import('../lib/onboardingFinish.js').OnboardingWizard} OnboardingWizard */
 
-const BANNER = '/images/banner_image.png'
+const BANNER = assetPath('/images/banner_image.png')
 const STEP_SEQUENCE = [1, 2, 3, 4]
 
 /**
