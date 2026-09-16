@@ -1,3 +1,5 @@
+/* §9 전용 화면 스타일 — 응집도 우선 §6 예외, ~250줄까지 허용 */
+
 /* §9 세금계산서 전용 — side-menu.css H·J 블록에서 분리 */
 
 .tax-invoice-page {
@@ -136,4 +138,81 @@
 
 .tax-invoice-page .summary-card {
   margin-bottom: 14px;
+}
+
+.tax-invoice-entry-card {
+  margin-bottom: 10px;
+  padding: 14px 15px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.tax-invoice-entry-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.tax-invoice-entry-head strong {
+  color: var(--text-color);
+  font-size: var(--fs-4);
+  font-weight: 850;
+}
+
+.tax-invoice-amount-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.tax-invoice-amount-row + .tax-invoice-amount-row {
+  margin-top: 6px;
+}
+
+.tax-invoice-amount-row span {
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
+
+.tax-invoice-amount-row.total strong {
+  color: var(--primary-color);
+  font-size: var(--fs-4);
+}
+
+.tax-invoice-entry-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+}
+
+.tax-invoice-action-btn {
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 38%, transparent);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--primary-color);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.tax-invoice-action-btn.primary {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.tax-invoice-action-btn.danger {
+  border-color: color-mix(in srgb, var(--sunday-color) 45%, transparent);
+  color: var(--sunday-color);
 }
