@@ -1,6 +1,7 @@
 // @ts-check
 import { formatWon } from '../lib/money.js'
 import TemporalInput from './shared/TemporalInput.jsx'
+import './tax-invoice/tax-invoice.css'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 

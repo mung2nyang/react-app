@@ -1,0 +1,77 @@
+/* §9 세금계산서 전용 — side-menu.css H·J 블록에서 분리 */
+
+.tax-invoice-page {
+  min-height: calc(100vh - 40px);
+  padding-bottom: 92px;
+  text-align: left;
+}
+
+.tax-invoice-amount-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 4px 0 14px;
+}
+
+.tax-invoice-amount-grid > div {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--input-bg);
+}
+
+.tax-invoice-amount-grid span {
+  display: block;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
+
+.tax-invoice-amount-grid strong {
+  font-size: var(--fs-4);
+}
+
+.tax-invoice-amount-grid .total {
+  grid-column: 1 / -1;
+  background: color-mix(in srgb, var(--primary-color) 10%, var(--card-bg));
+}
+
+.tax-invoice-guide-title {
+  margin: 0 0 6px;
+  padding: 0 14px;
+  font-weight: 700;
+  font-size: var(--fs-2);
+  color: var(--text-color);
+}
+
+.tax-invoice-guide {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--input-bg);
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+}
+
+.tax-invoice-guide.ready {
+  color: var(--text-color);
+}
+
+.tax-invoice-amount-box {
+  background: var(--input-bg);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.tab-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  margin-left: 4px;
+}

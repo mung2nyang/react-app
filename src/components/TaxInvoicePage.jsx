@@ -21,6 +21,7 @@ import TaxInvoiceDraftModal from './TaxInvoiceDraftModal.jsx'
 import TaxInvoiceEntryList from './TaxInvoiceEntryList.jsx'
 import TaxInvoiceToolbar from './TaxInvoiceToolbar.jsx'
 import PageHeader from './PageHeader.jsx'
+import './tax-invoice/tax-invoice.css'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
@@ -148,6 +149,7 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
         flowCounts={flowCounts}
       />
 
+      {!issuerReady && <p className="tax-invoice-guide-title">회사 사업자 정보가 필요합니다.</p>}
       <p className={`tax-invoice-guide${issuerReady ? ' ready' : ''}`}>
         {flow === 'purchase'
           ? (issuerReady
@@ -160,10 +162,10 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
 
       <div className="settings-segmented-control maint-fuel-tabs">
         <button type="button" className={`toggle-btn${tab === 'draft' ? ' active-work' : ''}`} onClick={() => setTab('draft')}>
-          {flow === 'purchase' ? '수취 전' : '작성 전'} {listed.draftEntries.length}
+          {flow === 'purchase' ? '수취 전' : '작성 전'} <span className="tab-count-badge">{listed.draftEntries.length}</span>
         </button>
         <button type="button" className={`toggle-btn${tab === 'issued' ? ' active-work' : ''}`} onClick={() => setTab('issued')}>
-          {flowMeta.completeLabel} {listed.issuedEntries.length}
+          {flowMeta.completeLabel} <span className="tab-count-badge">{listed.issuedEntries.length}</span>
         </button>
       </div>
 

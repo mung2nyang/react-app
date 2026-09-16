@@ -2,6 +2,7 @@
 import CalendarDateSelect from './calendar/CalendarDateSelect.jsx'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { getTaxInvoiceFlowMeta } from '../lib/finance.js'
+import './tax-invoice/tax-invoice.css'
 
 const YEAR_OPTIONS = getYearOptions()
 /** @type {Array<'sales'|'purchase'|'commission'>} */
@@ -52,7 +53,7 @@ export default function TaxInvoiceToolbar({ viewDate, setViewDate, flow, onFlow,
             className={`toggle-btn${flow === id ? ' active-work' : ''}`}
             onClick={() => onFlow(id)}
           >
-            {getTaxInvoiceFlowMeta(id).label} {flowCounts[id]}
+            {getTaxInvoiceFlowMeta(id).label} <span className="tab-count-badge">{flowCounts[id]}</span>
           </button>
         ))}
       </div>

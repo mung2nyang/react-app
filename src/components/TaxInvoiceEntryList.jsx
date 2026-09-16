@@ -1,5 +1,6 @@
 // @ts-check
 import { formatWon } from '../lib/money.js'
+import './tax-invoice/tax-invoice.css'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
@@ -27,7 +28,12 @@ export default function TaxInvoiceEntryList({
   return entries.map((item) => (
     <div key={item.id} className="management-list-card">
       <div className="management-card-copy">
-        <div className="client-card-title"><strong>{item.clientName}</strong></div>
+        <div className="client-card-title">
+          <strong>{item.clientName}</strong>
+          <span className="management-badge">
+            {tab === 'issued' ? flowMeta.completeLabel : (flow === 'purchase' ? '수취 전' : '작성 전')}
+          </span>
+        </div>
         <div className="car-sub-text">{item.count || 0}건 · {item.clientBizNumber || '사업자번호 미입력'}</div>
         {item.vehicleLabel && <div className="car-sub-text">{item.vehicleLabel}</div>}
         {item.partyType === 'driver' && (
@@ -37,9 +43,10 @@ export default function TaxInvoiceEntryList({
             {item.insuranceAmount ? ` · 산재보험 ${formatWon(item.insuranceAmount)}` : ''}
           </div>
         )}
-        <div className="receivable-group-summary">
-          <span>공급가 {formatWon(item.supplyAmount)}</span>
+        <div className="receivable-group-summary tax-invoice-amount-box">
+          <span>공급가액 {formatWon(item.supplyAmount)}</span>
           <span>세액 {formatWon(item.taxAmount)}</span>
+          <span>합계</span>
           <strong>{formatWon(item.totalAmount)}</strong>
         </div>
       </div>
