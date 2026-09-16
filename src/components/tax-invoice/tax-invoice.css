@@ -64,6 +64,7 @@
   background: var(--input-bg);
   border-radius: 12px;
   padding: 10px 12px;
+  margin-top: 10px;
 }
 
 .tab-count-badge {
@@ -163,19 +164,27 @@
   font-weight: 850;
 }
 
+.tax-invoice-entry-card .car-sub-text {
+  margin-top: 4px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+}
+
 .tax-invoice-amount-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
 }
 
-.tax-invoice-amount-row + .tax-invoice-amount-row {
-  margin-top: 6px;
+.tax-invoice-amount-row:not(.total) {
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tax-invoice-amount-row span {
   color: var(--sub-text-color);
-  font-size: var(--fs-floor);
+  font-size: var(--fs-2);
 }
 
 .tax-invoice-amount-row.total strong {
@@ -185,15 +194,12 @@
 
 .tax-invoice-entry-actions {
   display: flex;
-  justify-content: flex-end;
   gap: 7px;
   margin-top: 9px;
-  padding-top: 8px;
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
 }
 
 .tax-invoice-action-btn {
-  width: auto;
+  flex: 1;
   min-height: 44px;
   margin: 0;
   padding: 5px 10px;
