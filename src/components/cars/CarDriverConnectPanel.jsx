@@ -1,7 +1,7 @@
 // @ts-check
 /** @typedef {import('../../lib/outboxTypes.js').DriverRecord} DriverRecord */
 import { generateInviteCode } from '../../lib/drivers.js'
-import '../drivers/linked-driver.css'
+import '../drivers/driver-connection.css'
 
 /**
  * Sub-car "기사 연동 / 운행 일지" panel (slice F mockup).

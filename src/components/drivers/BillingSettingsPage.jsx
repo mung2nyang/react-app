@@ -5,7 +5,7 @@ import { savePracticeSettings } from '../../lib/practiceSettings.js'
 import { useOwnerSettings } from '../../store/ownerDataHooks.js'
 import PageHeader from '../PageHeader.jsx'
 import AppDropdown from '../shared/AppDropdown.jsx'
-import './linked-driver.css'
+import './billing-settings.css'
 
 const INVOICE_BASIS_OPTIONS = [
   { value: 'net', label: '공제 후 지급액' },

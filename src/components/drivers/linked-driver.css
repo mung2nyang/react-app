@@ -1,4 +1,6 @@
-/* LinkedDriverManagementPage — 바닐라 linked-driver 프로필·칩·계산서 카드 */
+/* LinkedDriverManagementPage — 바닐라 linked-driver 프로필·칩·계산서 카드.
+   DriverConnectionPage/BillingSettingsPage 몫은 driver-connection.css/
+   billing-settings.css로 분리(§15 슬라이스 A). */
 .linked-driver-profile-card {
   display: flex;
   align-items: center;
@@ -143,201 +145,31 @@
   font-weight: 700;
   color: var(--sub-text-color);
 }
-.driver-section-heading {
-  margin: 0 0 10px;
-}
-.driver-section-heading h3 {
-  margin: 0;
-  font-size: var(--fs-3);
-  color: var(--text-color);
-}
-.driver-section-heading p {
-  margin: 4px 0 0;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-}
-.driver-summary-card {
-  margin-bottom: 10px;
+/* 원본 style.css 2162~2165행 그대로 — 부모 .main-app-container의
+   text-align:center를 flex(shrink-to-fit)로 상쇄해 왼쪽정렬 확정(§15 슬라이스 A) */
+.driver-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.driver-section-heading h3, .driver-section-heading p { margin: 0; }
+.driver-section-heading h3 { color: var(--text-color); font-size: var(--fs-3); }
+.driver-section-heading p { margin-top: 4px; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; }
+
+/* 원본 style.css 2153·6954행 — 이관 시 누락된 배경카드 복원(§15 슬라이스 A) */
+.driver-list-section {
+  margin-top: 10px;
   padding: 14px;
   border: 1px solid var(--border-color);
-  border-radius: 16px;
-  background: var(--card-bg);
-}
-.driver-summary-card .driver-section-heading {
-  margin-bottom: 0;
-}
-.driver-summary-counts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
-}
-.driver-summary-counts > div {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 5px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--input-bg);
-  white-space: nowrap;
-}
-.driver-summary-counts span {
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-}
-.driver-summary-counts strong {
-  color: var(--text-color);
-  font-size: var(--fs-floor);
-}
-
-/* DriverConnectionPage 카드 — §12 슬라이스 2, tax-invoice-entry-card와 같은 방식(도메인 전용 카드) */
-.driver-connection-card {
-  margin-bottom: 14px;
-  padding: 14px 15px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 18px;
+  border-radius: 17px;
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
 }
-.driver-connection-card-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-.driver-connection-card-head strong {
-  color: var(--text-color);
-  font-size: var(--fs-4);
-  font-weight: 850;
-}
-.driver-connection-card .car-sub-text {
-  margin-top: 4px;
-}
-.driver-assignment-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin: 10px 0;
-}
-.driver-assignment-grid > div {
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--input-bg);
-}
-.driver-assignment-grid span {
-  display: block;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-}
-.driver-assignment-grid strong {
-  font-size: var(--fs-3);
-}
-.driver-card-actions {
-  display: flex;
-  gap: 7px;
-  margin-top: 10px;
-}
-.driver-card-action-btn {
-  flex: 1;
-  min-height: 44px;
-  margin: 0;
-  padding: 5px 10px;
-  border: 1px solid color-mix(in srgb, var(--primary-color) 38%, transparent);
-  border-radius: 9px;
-  background: transparent;
-  color: var(--primary-color);
-  font: inherit;
-  font-size: var(--fs-floor);
-  font-weight: 800;
-  cursor: pointer;
-}
-.driver-card-action-btn.primary {
-  background: var(--primary-color);
-  color: #fff;
-}
-.driver-card-action-btn.danger {
-  border-color: color-mix(in srgb, var(--sunday-color) 45%, transparent);
-  color: var(--sunday-color);
-}
-
-/* 기사 초대 모달 — 시계/달력 아이콘 삭제(expense-form.css/call-detail-form.css와 같은 처리,
-   이 모달 범위로만 scoped). 차량번호 datalist 네이티브 드롭다운 화살표도 같이 숨김. */
-.driver-form-modal .app-temporal-icon {
-  display: none;
-}
-.driver-car-input::-webkit-calendar-picker-indicator {
-  display: none;
-}
-
-/* BillingSettingsPage — 바닐라 billing-settings 스타일 */
-.billing-settings-hero {
-  margin-bottom: 12px;
-  padding: 14px;
-  border-radius: 16px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-}
-.billing-settings-hero span {
-  color: var(--primary-color);
-  font-size: var(--fs-floor);
-  font-weight: 900;
-  letter-spacing: .12em;
-}
-.billing-settings-hero strong {
-  display: block;
-  margin-top: 7px;
-  color: var(--text-color);
-  font-size: var(--fs-4);
-  line-height: 1.4;
-}
-.billing-settings-hero p {
-  margin: 6px 0 0;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-  line-height: 1.5;
-}
-.billing-settings-card {
-  margin-bottom: 10px;
-  padding: 14px;
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  background: var(--card-bg);
-}
-.billing-settings-card > label {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--text-color);
-  font-size: var(--fs-2);
-  font-weight: 850;
-}
-.billing-settings-card .input-box {
+.tax-invoice-summary {
   width: 100%;
-  margin: 0;
+  margin-bottom: 10px;
+  padding: 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
 }
-.billing-settings-guide {
-  margin-top: 10px;
-  padding: 10px 11px;
-  border-radius: 11px;
-  background: var(--input-bg);
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-  line-height: 1.5;
-}
-.billing-settings-card .billing-settings-note {
-  margin: 10px 0 0;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-  line-height: 1.5;
-}
-
-/* side-menu.css J 블록(§12 몫) 이동 — CarDriverConnectPanel/DriverFormModal 초대코드 줄 */
-.driver-code-row {
-  display: flex;
-  gap: 8px;
-}
-
-.driver-code-row .input-box {
-  flex: 1;
-}
-
+.tax-invoice-summary .summary-title { margin-bottom: 14px; }
+.tax-invoice-summary .summary-row { margin-bottom: 9px; font-size: var(--fs-3); }
+.tax-invoice-summary .summary-row.total { margin-bottom: 0; margin-top: 12px; padding-top: 11px; font-size: var(--fs-5); }

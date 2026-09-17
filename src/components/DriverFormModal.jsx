@@ -5,7 +5,7 @@ import { buildDriverInviteSmsHref } from '../lib/driverInviteSms.js'
 import { generateInviteCode } from '../lib/drivers.js'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
 import TemporalInput from './shared/TemporalInput.jsx'
-import './drivers/linked-driver.css'
+import './drivers/driver-connection.css'
 
 /** @typedef {import('../domain/drivers.js').DriverDraft} DriverDraft */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */

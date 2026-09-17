@@ -16,7 +16,7 @@ import { countByStatus, generateInviteCode, saveDrivers, upsertDriver } from '..
 import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import DriverFormModal from './DriverFormModal.jsx'
 import PageHeader from './PageHeader.jsx'
-import './drivers/linked-driver.css'
+import './drivers/driver-connection.css'
 
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }
 
