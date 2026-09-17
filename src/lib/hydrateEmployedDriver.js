@@ -112,7 +112,7 @@ export async function buildEmployedDriverSnapshot({
     fetchLinkedOwnerProfileSettings(ownerKey),
     fetchAssignedVehicleSummary(),
     supabase.from('driver_links').select('*').eq('driver_id', userId).eq('status', 'linked'),
-    supabase.from('profiles').select('phone').eq('id', userId).maybeSingle(),
+    supabase.from('profiles').select('name, phone').eq('id', userId).maybeSingle(),
   ])
   throwIfAnyHydrateError({
     driver_links: linksRes.error,
@@ -129,9 +129,12 @@ export async function buildEmployedDriverSnapshot({
     ...settingsJson,
     theme: (themeRaw === 'dark' || themeRaw === 'light') ? themeRaw : 'light',
   })
+  // 기사 본인 개인정보(이름/연락처)는 연동된 차주 것이 아니라 기사 자신의
+  // profiles 행을 쓴다 — 원본 driver-link.js:1066과 동일(기사 개인정보는
+  // 연동으로 손대지 않음, 차주 이름은 별도로만 취급).
   const nextProfile = {
-    name: ownerProfile?.name || '',
-    phone: '',
+    name: selfProfileRes.data?.name || '',
+    phone: selfProfileRes.data?.phone || '',
     bizName: ownerProfile?.business_name || '',
   }
   /** @type {Array<LocalCar>} */

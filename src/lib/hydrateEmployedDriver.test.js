@@ -143,6 +143,41 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
     assert.equal(miscFilters[0]?.vehicle_id, 'veh-assigned-1')
   })
 
+  test('개인정보(profile.name/phone)는 차주가 아니라 기사 본인 profiles 행에서 온다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    handlers.rpc = {
+      get_linked_owner_profile_settings: () => ({
+        data: { name: '차주대표', business_name: '차주상사', settings: {} },
+        error: null,
+      }),
+      get_assigned_vehicle_summary: () => ({ data: [], error: null }),
+    }
+    handlers.driver_links = { select: () => ({ data: [], error: null }) }
+    handlers.profiles = {
+      select: () => ({ data: { name: '기사본인', phone: '010-9999-8888' }, error: null }),
+    }
+    handlers.clients = { select: () => ({ data: [], error: null }) }
+    handlers.daily_logs = { select: () => ({ data: [], error: null }) }
+    handlers.transport_details = { select: () => ({ data: [], error: null }) }
+
+    const snapshot = await buildEmployedDriverSnapshot({
+      userId: 'driver-1',
+      ownerKey: 'owner-1',
+      throwIfAnyHydrateError: (labeled) => {
+        for (const [table, err] of Object.entries(labeled)) {
+          if (err) throw new Error(`${table} failed: ${err.message || 'error'}`)
+        }
+      },
+      localDrivers: [],
+    })
+
+    assert.equal(snapshot.profile.name, '기사본인')
+    assert.equal(snapshot.profile.phone, '010-9999-8888')
+    // 사업자명(상호)은 소속 차주 사업자 정보를 쓰는 게 맞다(계산서용) — 이건 그대로.
+    assert.equal(snapshot.profile.bizName, '차주상사')
+  })
+
   test('배정 0대: 배정 차량이 없으면 비용 3종 조회를 하지 않고 expenses는 빈 배열이다', async () => {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
