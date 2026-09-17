@@ -1,0 +1,36 @@
+/* CustomerCenterPage.jsx 전용. .support-panel/.support-card/.support-card-label/
+   .faq-item/.support-detail은 NoticePage.jsx와 공유해 notice.css에 별도 복제
+   (둘 다 lazyPages.js에서 별도 청크라 자기완결 유지, side-menu.css §6 분리). */
+.customer-center-page { padding-bottom: 110px; text-align: left; }
+.support-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0 14px; padding: 5px; border-radius: 14px; background: var(--input-bg); }
+.support-tab { min-height: 44px; padding: 7px 4px; border: 0; border-radius: 10px; background: transparent; color: var(--sub-text-color); font: inherit; font-size: var(--fs-floor); font-weight: 750; cursor: pointer; }
+.support-tab.active { color: #fff; background: var(--primary-color); box-shadow: 0 4px 12px rgba(56, 115, 220, .22); }
+.support-panel { display: grid; gap: 9px; }
+.support-card { padding: 22px 20px; border: 1px solid var(--border-color); border-radius: 22px; background: linear-gradient(145deg, var(--card-bg), var(--input-bg)); }
+.support-card-label { margin-bottom: 9px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: 850; letter-spacing: .12em; }
+.support-card h3 { margin: 0 0 7px; font-size: var(--fs-6); }
+.support-card p { margin: 0; color: var(--sub-text-color); font-size: var(--fs-3); line-height: 1.55; }
+.faq-item { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%; padding: 17px 16px; overflow: hidden; border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-color); background: var(--card-bg); text-align: left; font: inherit; cursor: pointer; }
+.faq-item span { font-size: var(--fs-4); font-weight: 700; }
+.faq-item i { color: var(--primary-color); font-size: var(--fs-7); font-style: normal; }
+.support-detail { display: none; grid-column: 1 / -1; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border-color); color: var(--sub-text-color); font-size: var(--fs-3); font-weight: 500; line-height: 1.6; }
+.faq-item.open .support-detail { display: block; }
+.support-panel-empty { padding: 32px 16px; border: 1px dashed var(--border-color); border-radius: 16px; color: var(--sub-text-color); font-size: var(--fs-3); text-align: center; display: grid; gap: 12px; justify-items: center; }
+.inquiry-form { display: grid; gap: 14px; padding: 20px; border: 1px solid var(--border-color); border-radius: 22px; background: var(--card-bg); }
+.inquiry-form label { display: grid; gap: 8px; font-size: var(--fs-3); font-weight: 750; text-align: left; }
+.inquiry-form .input-box { width: 100%; margin: 0; box-sizing: border-box; text-align: left; }
+.inquiry-form .app-dropdown-trigger { font-weight: 750; }
+.inquiry-form textarea { resize: vertical; line-height: 1.5; }
+.my-inquiries-list { display: grid; gap: 10px; }
+.my-inquiry-card { padding: 16px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--card-bg); text-align: left; }
+.my-inquiry-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.my-inquiry-type { padding: 3px 9px; border-radius: 999px; background: var(--input-bg); color: var(--sub-text-color); font-size: var(--fs-floor); font-weight: 750; }
+.my-inquiry-status { padding: 3px 9px; border-radius: 999px; font-size: var(--fs-floor); font-weight: 750; }
+.my-inquiry-status.pending { color: var(--sub-text-color); background: var(--input-bg); }
+.my-inquiry-status.answered { color: #fff; background: var(--primary-color); }
+.my-inquiry-title { display: block; margin-bottom: 6px; font-size: var(--fs-4); }
+.my-inquiry-content { margin: 0; color: var(--sub-text-color); font-size: var(--fs-3); line-height: 1.55; white-space: pre-wrap; }
+.my-inquiry-date { margin-top: 8px; color: var(--sub-text-color); font-size: var(--fs-floor); }
+.my-inquiry-answer { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); }
+.my-inquiry-answer-label { display: block; margin-bottom: 4px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: 800; }
+.my-inquiry-answer p { margin: 0; font-size: var(--fs-3); line-height: 1.55; white-space: pre-wrap; }

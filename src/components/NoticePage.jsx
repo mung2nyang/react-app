@@ -1,6 +1,7 @@
 // @ts-check
 import { useState } from 'react'
 import PageHeader from './PageHeader.jsx'
+import './notice.css'
 
 const NOTICES = [
   {

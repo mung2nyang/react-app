@@ -5,6 +5,7 @@ import { isCloudSession } from '../lib/cloudSession.js'
 import { fetchMyInquiries, requestSupportInquirySave } from '../lib/supportInquiryMutations.js'
 import PageHeader from './PageHeader.jsx'
 import AppDropdown from './shared/AppDropdown.jsx'
+import './customer-center.css'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
