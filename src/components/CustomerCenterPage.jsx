@@ -189,7 +189,6 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
       {tab === 'faq' && (
         <section className="support-panel" aria-label="FAQ">
           <div className="support-card">
-            <div className="support-card-label">FAQ</div>
             <h3>자주 묻는 질문</h3>
             <p>궁금한 내용을 빠르게 확인해 보세요.</p>
           </div>
@@ -206,7 +205,6 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
       {tab === 'inquiry' && (
         <section className="support-panel" aria-label="1:1 문의/건의">
           <div className="support-card">
-            <div className="support-card-label">1:1 SUPPORT</div>
             <h3>무엇을 도와드릴까요?</h3>
             <p>문의나 개선 의견을 남겨주시면 확인 후 답변드리겠습니다.</p>
           </div>
@@ -217,7 +215,6 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
       {tab === 'myInquiries' && (
         <section className="support-panel" aria-label="나의 문의·건의 확인">
           <div className="support-card">
-            <div className="support-card-label">MY INQUIRIES</div>
             <h3>나의 문의·건의 확인</h3>
             <p>접수하신 문의와 답변 상태를 확인할 수 있습니다.</p>
           </div>

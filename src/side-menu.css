@@ -824,6 +824,7 @@
 .inquiry-form { display: grid; gap: 14px; padding: 20px; border: 1px solid var(--border-color); border-radius: 22px; background: var(--card-bg); }
 .inquiry-form label { display: grid; gap: 8px; font-size: var(--fs-3); font-weight: 750; text-align: left; }
 .inquiry-form .input-box { width: 100%; margin: 0; box-sizing: border-box; text-align: left; }
+.inquiry-form .app-dropdown-trigger { font-weight: 750; }
 .inquiry-form textarea { resize: vertical; line-height: 1.5; }
 .my-inquiries-list { display: grid; gap: 10px; }
 .my-inquiry-card { padding: 16px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--card-bg); text-align: left; }
