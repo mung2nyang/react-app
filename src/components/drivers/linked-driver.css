@@ -331,3 +331,13 @@
   line-height: 1.5;
 }
 
+/* side-menu.css J 블록(§12 몫) 이동 — CarDriverConnectPanel/DriverFormModal 초대코드 줄 */
+.driver-code-row {
+  display: flex;
+  gap: 8px;
+}
+
+.driver-code-row .input-box {
+  flex: 1;
+}
+

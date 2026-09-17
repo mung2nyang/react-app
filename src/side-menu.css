@@ -805,15 +805,6 @@
   font-size: var(--fs-2);
 }
 
-.driver-code-row {
-  display: flex;
-  gap: 8px;
-}
-
-.driver-code-row .input-box {
-  flex: 1;
-}
-
 .setting-item.fixed-route-preset-setting,
 .setting-item.run-count-preset-setting {
   flex-direction: column;
