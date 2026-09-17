@@ -159,42 +159,42 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOp
     <div className="page report-page-wrap">
       <PageHeader title="운송비 내역서" onBack={handleHeaderBack} onOpenMenu={onOpenMenu} />
 
-      <div className="maint-fuel-nav">
-        <div className="date-navigator">
-          <button type="button" className="arrow-btn" title="이전 달" onClick={() => setViewDate((d) => shiftMonth(d, -1))}>
-            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-          <div className="date-select-group">
-            <CalendarDateSelect
-              label="년도 선택"
-              value={year}
-              options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y}년` }))}
-              onChange={(next) => setViewDate(setYearMonth(viewDate, Number(next), month))}
-            />
-            <CalendarDateSelect
-              label="월 선택"
-              value={month}
-              options={Array.from({ length: 12 }, (_, m) => ({ value: String(m), label: `${m + 1}월` }))}
-              onChange={(next) => setViewDate(setYearMonth(viewDate, year, Number(next)))}
-            />
+      <div className="report-top-card">
+        <div className="maint-fuel-nav">
+          <div className="date-navigator">
+            <button type="button" className="arrow-btn" title="이전 달" onClick={() => setViewDate((d) => shiftMonth(d, -1))}>
+              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div className="date-select-group">
+              <CalendarDateSelect
+                label="년도 선택"
+                value={year}
+                options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y}년` }))}
+                onChange={(next) => setViewDate(setYearMonth(viewDate, Number(next), month))}
+              />
+              <CalendarDateSelect
+                label="월 선택"
+                value={month}
+                options={Array.from({ length: 12 }, (_, m) => ({ value: String(m), label: `${m + 1}월` }))}
+                onChange={(next) => setViewDate(setYearMonth(viewDate, year, Number(next)))}
+              />
+            </div>
+            <button type="button" className="arrow-btn" title="다음 달" onClick={() => setViewDate((d) => shiftMonth(d, 1))}>
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
           </div>
-          <button type="button" className="arrow-btn" title="다음 달" onClick={() => setViewDate((d) => shiftMonth(d, 1))}>
-            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
         </div>
-      </div>
 
-      <div className="report-pdf-actions">
-        {viewMode === 'summary' && (
+        <div className="report-pdf-actions">
           <button type="button" className="theme-toggle-btn" onClick={openDetailPicker}>세부 내역서</button>
-        )}
-        <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={handleDownloadPdf}>
-          {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
-        </button>
-        <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={handleDownloadImage}>
-          {savingImage ? '이미지 저장 중…' : '이미지 저장'}
-        </button>
-        <button type="button" className="theme-toggle-btn" onClick={() => setShareOpen(true)}>공유</button>
+          <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={handleDownloadPdf}>
+            {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
+          </button>
+          <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={handleDownloadImage}>
+            {savingImage ? '이미지 저장 중…' : '이미지 저장'}
+          </button>
+          <button type="button" className="theme-toggle-btn" onClick={() => setShareOpen(true)}>공유</button>
+        </div>
       </div>
 
       <div id="reportContentToExport" ref={exportRef}>
@@ -203,6 +203,8 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOp
             report={detailReport}
             clientFilter={clientFilter}
             showClientColumn={clientFilter === 'ALL'}
+            profile={report.profile}
+            car={report.mainCar}
           />
         ) : (
           <ReportSummaryContent

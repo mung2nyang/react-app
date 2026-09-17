@@ -1,6 +1,7 @@
 // @ts-check
 // 리포트 "세부" 화면 + 거래처 선택 모달.
 import { formatWon } from '../lib/money.js'
+import { dash } from '../lib/report.js'
 import AppDropdown from './shared/AppDropdown.jsx'
 import './report/report.css'
 
@@ -66,14 +67,42 @@ export function ReportClientPickerModal({ open, options, value, onChange, onConf
  * @param {DetailReport} props.report
  * @param {string} props.clientFilter
  * @param {boolean} props.showClientColumn
+ * @param {{ name?: string, phone?: string, bankName?: string, accountNumber?: string, accountHolder?: string }} props.profile
+ * @param {{ number?: string, tonnage?: string }|null} props.car
  */
-export default function ReportDetailContent({ report, clientFilter, showClientColumn }) {
+export default function ReportDetailContent({ report, clientFilter, showClientColumn, profile, car }) {
   const clientKeys = Object.keys(report.monthFareByClient)
   const showDefaultBase = report.defaultBaseFare > 0 || clientKeys.length === 0
   const filterLabel = clientFilter === 'ALL' ? '전체' : clientFilter
 
   return (
     <>
+      <table className="info-table">
+        <tbody>
+          <tr>
+            <th>성명</th>
+            <td>{dash(profile?.name)}</td>
+            <th>연락처</th>
+            <td>{dash(profile?.phone)}</td>
+          </tr>
+          <tr>
+            <th>차량번호</th>
+            <td>{dash(car?.number)}</td>
+            <th>차량톤수</th>
+            <td>{dash(car?.tonnage)}</td>
+          </tr>
+          <tr>
+            <th>입금은행</th>
+            <td>{dash(profile?.bankName)}</td>
+            <th>예금주</th>
+            <td>{dash(profile?.accountHolder)}</td>
+          </tr>
+          <tr>
+            <th>계좌번호</th>
+            <td colSpan={3}>{dash(profile?.accountNumber)}</td>
+          </tr>
+        </tbody>
+      </table>
       <table className="report-table detail-report-table">
         <thead>
           <tr>

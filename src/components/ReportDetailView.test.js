@@ -33,7 +33,7 @@ const baseReport = {
 
 /**
  * @param {Partial<typeof baseReport>} [reportPatch]
- * @param {{ clientFilter?: string, showClientColumn?: boolean }} [extra]
+ * @param {{ clientFilter?: string, showClientColumn?: boolean, profile?: object, car?: object|null }} [extra]
  */
 async function renderDetail(reportPatch = {}, extra = {}) {
   const container = document.createElement('div')
@@ -44,6 +44,14 @@ async function renderDetail(reportPatch = {}, extra = {}) {
       report: { ...baseReport, ...reportPatch },
       clientFilter: extra.clientFilter ?? 'ALL',
       showClientColumn: extra.showClientColumn ?? true,
+      profile: extra.profile ?? {
+        name: '차주',
+        phone: '010',
+        bankName: '국민',
+        accountNumber: '123-456-789012',
+        accountHolder: '홍길동',
+      },
+      car: extra.car !== undefined ? extra.car : { number: '12가3456', tonnage: '5' },
     }))
   })
   return {
@@ -82,6 +90,29 @@ test('세부내역서: 특정 거래처 필터면 라벨·회수 반영', async 
   }
 })
 
+test('세부내역서: info-table에 성명·차량번호·계좌 배치 반영', async () => {
+  const { container, cleanup } = await renderDetail()
+  try {
+    const table = container.querySelector('.info-table')
+    assert.ok(table)
+    const text = table.textContent || ''
+    assert.ok(text.includes('성명'))
+    assert.ok(text.includes('차주'))
+    assert.ok(text.includes('차량번호'))
+    assert.ok(text.includes('12가3456'))
+    assert.ok(text.includes('입금은행'))
+    assert.ok(text.includes('예금주'))
+    assert.ok(text.includes('홍길동'))
+    assert.ok(text.includes('계좌번호'))
+    assert.ok(text.includes('123-456-789012'))
+    const rows = [...table.querySelectorAll('tr')]
+    assert.ok((rows[2].textContent || '').includes('예금주'))
+    assert.ok((rows[3].textContent || '').includes('계좌번호'))
+  } finally {
+    await cleanup()
+  }
+})
+
 test('report.css: info-table th·report-table td 중앙정렬, detail-amount right 없음', () => {
   const cssPath = join(dirname(fileURLToPath(import.meta.url)), 'report', 'report.css')
   const css = readFileSync(cssPath, 'utf8')
@@ -89,4 +120,7 @@ test('report.css: info-table th·report-table td 중앙정렬, detail-amount rig
   assert.ok(/\.report-table td\s*\{[^}]*text-align:\s*center/s.test(css))
   assert.equal(/\.detail-amount-cell\s*\{[^}]*text-align:\s*right/s.test(css), false)
   assert.equal(css.includes(':not(.detail-report-table)'), false)
+  assert.ok(css.includes('.report-top-card'))
+  assert.ok(css.includes('.report-pdf-actions .theme-toggle-btn'))
+  assert.equal(css.includes('.report-title'), false)
 })

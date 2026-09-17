@@ -2,11 +2,21 @@
 /* 운송비 내역서(리포트) 전용 — side-menu.css에서 분리.
    ReportPage·ReportDetailView·ReportShareModal·ReportSummaryContent가 import. */
 
-.report-title {
-  margin: 4px 0 10px;
-  text-align: center;
-  font-size: var(--fs-6);
-  font-weight: 850;
+.report-top-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  padding: 18px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.report-top-card .maint-fuel-nav {
+  margin-bottom: 14px;
+}
+
+.report-top-card .report-pdf-actions {
+  margin-bottom: 0;
 }
 
 .info-table {
@@ -44,6 +54,10 @@
   justify-content: flex-end;
   gap: 8px;
   margin: 0 0 12px;
+}
+
+.report-pdf-actions .theme-toggle-btn {
+  flex: 1;
 }
 
 .report-share-content { width: min(calc(100% - 32px), 390px); padding: 22px; border-radius: 22px; }
@@ -177,10 +191,6 @@ body.pdf-export-mode .report-page-wrap {
   padding-bottom: 10px !important;
   min-height: 0 !important;
   background-color: #ffffff !important;
-  color: #000000 !important;
-}
-
-body.pdf-export-mode .report-title {
   color: #000000 !important;
 }
 
