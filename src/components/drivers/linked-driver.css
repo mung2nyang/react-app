@@ -119,6 +119,10 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+/* 보리 검증 지적(2026-09-17) — "N건 · 차량번호"를 거래처명과 굵기 통일 */
+.linked-driver-client-head-row span {
+  font-weight: 700;
+}
 .linked-driver-invoice-card {
   margin-bottom: 10px;
   padding: 12px;
@@ -145,9 +149,10 @@
   font-weight: 700;
   color: var(--sub-text-color);
 }
-/* 원본 style.css 2162~2165행 그대로 — 부모 .main-app-container의
-   text-align:center를 flex(shrink-to-fit)로 상쇄해 왼쪽정렬 확정(§15 슬라이스 A) */
-.driver-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+/* 원본 style.css 2162~2165행 + text-align:left — 부모 .main-app-container가
+   text-align:center라 h3/p 각각의 짧은 줄이 개별적으로 가운데 정렬돼 보이는
+   문제까지 명시적으로 상쇄(§15 슬라이스 A, 보리 검증 지적으로 추가) */
+.driver-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; text-align: left; }
 .driver-section-heading h3, .driver-section-heading p { margin: 0; }
 .driver-section-heading h3 { color: var(--text-color); font-size: var(--fs-3); }
 .driver-section-heading p { margin-top: 4px; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; }
