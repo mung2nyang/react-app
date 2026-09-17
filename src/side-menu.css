@@ -805,13 +805,6 @@
   font-size: var(--fs-2);
 }
 
-.driver-management-counts {
-  display: flex;
-  gap: 12px;
-  margin-top: 10px;
-  color: var(--sub-text-color);
-}
-
 .driver-code-row {
   display: flex;
   gap: 8px;

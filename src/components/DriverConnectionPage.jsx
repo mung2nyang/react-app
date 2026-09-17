@@ -16,6 +16,7 @@ import { countByStatus, generateInviteCode, saveDrivers, upsertDriver } from '..
 import { useOwnerCars, useOwnerDrivers } from '../store/ownerDataHooks.js'
 import DriverFormModal from './DriverFormModal.jsx'
 import PageHeader from './PageHeader.jsx'
+import './drivers/linked-driver.css'
 
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }
 
@@ -101,13 +102,16 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
     <div className="page driver-connection-page">
       <PageHeader title="기사 연동 관리" onBack={onBack} />
 
-      <section className="personal-intro">
-        <span className="personal-intro-kicker">DRIVER CONNECTION</span>
-        <strong>기사 초대부터 차량 할당까지</strong>
-        <p>{cloud ? '한 차량은 한 기사에게만 할당할 수 있습니다. 로그인한 계정은 클라우드에도 저장됩니다.' : '연습 앱에서는 초대 목록만 이 기기에 저장합니다. 한 차량은 한 기사에게만 할당할 수 있습니다.'}</p>
-        <div className="driver-management-counts">
-          <span>연동 중 <b>{counts.linked}</b></span>
-          <span>초대 대기 <b>{counts.pending}</b></span>
+      <section className="driver-summary-card">
+        <div className="driver-section-heading">
+          <div>
+            <h3>기사 연결 현황</h3>
+            <p>연동 상태와 차량 할당 기간을 관리합니다.</p>
+          </div>
+        </div>
+        <div className="driver-summary-counts">
+          <div><span>연동 중</span><strong>{counts.linked}</strong></div>
+          <div><span>초대 대기</span><strong>{counts.pending}</strong></div>
         </div>
       </section>
 
