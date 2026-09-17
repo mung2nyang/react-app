@@ -13,7 +13,7 @@ import {
   requestDriverStatusChange,
 } from '../lib/directMutationActions.js'
 import { countByStatus, generateInviteCode, saveDrivers, upsertDriver } from '../lib/drivers.js'
-import { useOwnerCars, useOwnerDrivers } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import DriverFormModal from './DriverFormModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import './drivers/linked-driver.css'
@@ -26,6 +26,7 @@ const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', sta
 export default function DriverConnectionPage({ ownerKey = 'guest', session, onBack, showToast, navigate }) {
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
+  const profile = useOwnerProfile(ownerKey)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
@@ -117,38 +118,47 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
 
       {drivers.length === 0 && <div className="empty-state">초대된 기사가 없습니다.</div>}
       {drivers.map((driver) => (
-        <div key={driver.id} className="management-list-card">
-          <div className="management-card-copy">
-            <div className="client-card-title">
-              <strong>{driver.name}</strong>
-              <span className={`management-badge ${driver.status === 'linked' ? 'main' : ''}`}>
-                {driver.status === 'linked' ? '연동 중' : '초대 대기'}
-              </span>
+        <div key={driver.id} className="driver-connection-card">
+          <div className="driver-connection-card-head">
+            <strong>{driver.name}</strong>
+            <span className={`management-badge ${driver.status === 'linked' ? 'main' : ''}`}>
+              {driver.status === 'linked' ? '연동 중' : '초대 대기'}
+            </span>
+          </div>
+          <div className="car-sub-text">초대코드 {driver.inviteCode}</div>
+          <div className="car-sub-text">{driver.phone}</div>
+
+          <div className="driver-assignment-grid">
+            <div>
+              <span>할당 차량</span>
+              <strong>{driver.vehicleNumber || '차량 미지정'}</strong>
             </div>
-            <div className="car-sub-text">{driver.phone} · 코드 {driver.inviteCode}</div>
-            <div className="car-sub-text">
-              {driver.vehicleNumber || '차량 미지정'}
-              {driver.startDate ? ` · ${driver.startDate}` : ''}
-              {driver.endDate ? ` ~ ${driver.endDate}` : ' · 종료일 없음'}
+            <div>
+              <span>할당 기간</span>
+              <strong>{driver.startDate || '-'}{driver.endDate ? ` ~ ${driver.endDate}` : ' ~ 계속'}</strong>
             </div>
           </div>
-          <div className="receivable-card-actions">
-            {driver.status === 'linked' && (
-              <button
-                type="button"
-                className="action-icon-btn"
-                onClick={() => navigate?.(`/app/drivers/${encodeURIComponent(driver.id)}`)}
-              >
-                기록 조회
-              </button>
-            )}
-            <button type="button" className="action-icon-btn" onClick={() => openEdit(driver)}>수정</button>
-            {driver.status !== 'linked' ? (
-              <button type="button" className="action-icon-btn" onClick={() => changeStatus(driver.id, 'linked')}>연동 완료</button>
+
+          <div className="driver-card-actions">
+            {driver.status === 'linked' ? (
+              <>
+                <button
+                  type="button"
+                  className="driver-card-action-btn primary"
+                  onClick={() => navigate?.(`/app/drivers/${encodeURIComponent(driver.id)}`)}
+                >
+                  기사 관리
+                </button>
+                <button type="button" className="driver-card-action-btn" onClick={() => openEdit(driver)}>수정</button>
+                <button type="button" className="driver-card-action-btn danger" onClick={() => remove(driver.id)}>연동 해제</button>
+              </>
             ) : (
-              <button type="button" className="action-icon-btn" onClick={() => changeStatus(driver.id, 'pending')}>대기</button>
+              <>
+                <button type="button" className="driver-card-action-btn" onClick={() => openEdit(driver)}>초대 수정</button>
+                <button type="button" className="driver-card-action-btn primary" onClick={() => changeStatus(driver.id, 'linked')}>연동 완료</button>
+                <button type="button" className="driver-card-action-btn danger" onClick={() => remove(driver.id)}>초대 취소</button>
+              </>
             )}
-            <button type="button" className="action-icon-btn del" onClick={() => remove(driver.id)}>삭제</button>
           </div>
         </div>
       ))}
@@ -164,6 +174,8 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
           editingId={editingId}
           drivers={drivers}
           assignableCars={assignableCars}
+          ownerDisplayName={profile.bizName || profile.name || '운송사'}
+          showToast={showToast}
           onCancel={() => setModalOpen(false)}
           onSave={save}
         />

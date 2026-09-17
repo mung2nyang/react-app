@@ -191,6 +191,85 @@
   font-size: var(--fs-floor);
 }
 
+/* DriverConnectionPage 카드 — §12 슬라이스 2, tax-invoice-entry-card와 같은 방식(도메인 전용 카드) */
+.driver-connection-card {
+  margin-bottom: 14px;
+  padding: 14px 15px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+.driver-connection-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+.driver-connection-card-head strong {
+  color: var(--text-color);
+  font-size: var(--fs-4);
+  font-weight: 850;
+}
+.driver-connection-card .car-sub-text {
+  margin-top: 4px;
+}
+.driver-assignment-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0;
+}
+.driver-assignment-grid > div {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--input-bg);
+}
+.driver-assignment-grid span {
+  display: block;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
+.driver-assignment-grid strong {
+  font-size: var(--fs-3);
+}
+.driver-card-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 10px;
+}
+.driver-card-action-btn {
+  flex: 1;
+  min-height: 44px;
+  margin: 0;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 38%, transparent);
+  border-radius: 9px;
+  background: transparent;
+  color: var(--primary-color);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 800;
+  cursor: pointer;
+}
+.driver-card-action-btn.primary {
+  background: var(--primary-color);
+  color: #fff;
+}
+.driver-card-action-btn.danger {
+  border-color: color-mix(in srgb, var(--sunday-color) 45%, transparent);
+  color: var(--sunday-color);
+}
+
+/* 기사 초대 모달 — 시계/달력 아이콘 삭제(expense-form.css/call-detail-form.css와 같은 처리,
+   이 모달 범위로만 scoped). 차량번호 datalist 네이티브 드롭다운 화살표도 같이 숨김. */
+.driver-form-modal .app-temporal-icon {
+  display: none;
+}
+.driver-car-input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
 /* BillingSettingsPage — 바닐라 billing-settings 스타일 */
 .billing-settings-hero {
   margin-bottom: 12px;
