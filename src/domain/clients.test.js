@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { reorderClients, resolveFixedUnitPrice, sortClientsPinnedFirst, upsertClient } from './clients.js'
+import { computeFixedRouteFare, reorderClients, resolveFixedUnitPrice, sortClientsPinnedFirst, upsertClient } from './clients.js'
 import { monthWorkFareSummary } from './day-record.js'
 import { getMonthlyFareRevenue } from './finance.js'
 
@@ -124,5 +124,36 @@ describe('resolveFixedUnitPrice — 달력·매출이 같은 단가를 쓰는지
     const revenueFixedFare = getMonthlyFareRevenue('2026-08', settings, { main: data }).totalFare
     assert.equal(calendarFixedFare, 0, '거래처 단가가 없으면 고정노선분은 0원이어야 한다')
     assert.equal(revenueFixedFare, calendarFixedFare, '매출 화면 합계도 달력과 같은 값이어야 한다(단일 계약)')
+  })
+})
+
+// 2026-09-17: 기사 정산액이 고정노선 운행을 못 잡던 버그(financeCore.js
+// getMonthlyDriverTotals)의 원인 함수. 실제 day record는 fare 필드를 안 저장하고
+// fixedCount만 있다 — record.fare 같은 필드가 있는 픽스처가 아니라 실제 저장
+// 모양으로 검증한다.
+describe('computeFixedRouteFare — 고정노선 단가×횟수(fare 필드 없는 실제 저장 모양)', () => {
+  test('fixedCount × fixedUnitPrice', () => {
+    const record = { isOff: false, fixedCount: 2 }
+    assert.equal(computeFixedRouteFare(record, { fixedUnitPrice: 250000 }), 500000)
+  })
+
+  test('휴무(isOff)면 0', () => {
+    const record = { isOff: true, fixedCount: 2 }
+    assert.equal(computeFixedRouteFare(record, { fixedUnitPrice: 250000 }), 0)
+  })
+
+  test('파렛트는 subFixedOn·activePalletOn 둘 다 켜졌을 때만 더한다', () => {
+    const record = { isOff: false, fixedCount: 1, palletCount: 3 }
+    const base = { fixedUnitPrice: 250000, palletUnitPrice: 10000 }
+    assert.equal(computeFixedRouteFare(record, base), 250000, '토글 꺼짐 — 파렛트 미포함')
+    assert.equal(
+      computeFixedRouteFare(record, { ...base, subFixedOn: true, activePalletOn: true }),
+      250000 + 3 * 10000,
+      '토글 켜짐 — 파렛트 포함',
+    )
+  })
+
+  test('fixedCount 0이면 0', () => {
+    assert.equal(computeFixedRouteFare({ isOff: false, fixedCount: 0 }, { fixedUnitPrice: 250000 }), 0)
   })
 })

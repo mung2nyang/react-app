@@ -66,7 +66,7 @@ export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLo
       // C-3 getMonthlyDriverRevenueShareExpense per-car 와 줄 단위 대응(데이터만 main).
       const links = Array.isArray(settings?.driverLinks) ? settings.driverLinks : []
       const link = links.find((item) => item.id === assigned.driverLinkId || item.vehicleNumber === assigned.number) || null
-      const totals = getMonthlyDriverTotals(logData(workDataByLogId, 'main'), monthKey, link)
+      const totals = getMonthlyDriverTotals(logData(workDataByLogId, 'main'), monthKey, link, settings)
       const commission = calculateDriverVehicleCommission(assigned, totals.grossAmount, totals.count)
       const insurance = assigned.insuranceOn ? totals.insuranceAmount : 0
       settlementTotal = Math.max(0, commission - insurance)

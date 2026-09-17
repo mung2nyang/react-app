@@ -173,4 +173,14 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     assert.equal(ownerAll.expense.salary.total, SHARE_NET)
     assert.equal(self.income.settlement.total, ownerAll.expense.salary.total)
   })
+
+  // 2026-09-17 버그 재현·수정 확인: 고정노선(fare 필드 없이 fixedCount만 저장된
+  // 실제 day record 모양)으로 뛴 매출제(%) 기사의 정산액이 0으로 나오던 문제.
+  test('③ 고정노선만 뛴 기사도 정산액이 0이 아니다(실제 저장 모양, fare 필드 없음)', () => {
+    const settings = settingsWithCars([REVENUE_CAR])
+    const realisticFixedOnly = { main: { '2026-05-12': { isOff: false, fixedCount: 1 } } }
+    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settings, realisticFixedOnly)
+    assert.equal(detail.netProfit, 37500, 'fixedUnitPrice(250,000) × 15%')
+    assert.equal(detail.income.settlement.label, '기사 정산(15%)')
+  })
 })

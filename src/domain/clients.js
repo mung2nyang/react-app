@@ -5,6 +5,8 @@
 // clientTypes.js가 정본이다(200줄 제한 때문에 타입만 뺐다) — day-log/dayLogTypes.js도
 // 그걸 alias한다. 결제 주기/입금 예정일 계산은 clientPaymentTerms.js로 뺐고(같은
 // 이유), 여기서 그대로 재수출해서 기존 `from './clients.js'` import 경로는 안 바뀐다.
+// §6 예외(224줄, ~250 한도 내) — 2026-09-17 computeFixedRouteFare 추가.
+// resolveFixedUnitPrice와 같은 고정노선 계산 소스라 옆에 둬야 응집됨.
 import { parseCurrencyValue } from './money.js'
 
 export * from './clientPaymentTerms.js'
@@ -26,6 +28,26 @@ export function getFixedRouteClient(settings) {
  */
 export function resolveFixedUnitPrice(settings) {
   return Math.max(0, parseCurrencyValue(getFixedRouteClient(settings)?.fixedUnitPrice))
+}
+
+// 고정노선 운행은 그날 기록에 금액을 안 저장하고(fixedCount만) 매번 단가×횟수로
+// 계산한다(getOwnerMonthlyFinanceDetail과 같은 공식) — 기사 정산 쪽(financeCore.js
+// getMonthlyDriverTotals)도 이 공식을 재사용해야 금액이 안 빠진다(2026-09-17,
+// §6 응집도 예외로 여기 배치: resolveFixedUnitPrice 바로 옆).
+/**
+ * @param {{ isOff?: boolean, fixedCount?: number|string, palletCount?: number|string }|null|undefined} record
+ * @param {{ fixedUnitPrice: number, palletUnitPrice?: number, subFixedOn?: boolean, activePalletOn?: boolean }} opts
+ * @returns {number}
+ */
+export function computeFixedRouteFare(record, opts) {
+  if (!record || record.isOff) return 0
+  const count = Math.max(0, parseInt(String(record.fixedCount), 10) || 0)
+  let amount = count > 0 ? count * opts.fixedUnitPrice : 0
+  const palletCount = Math.max(0, parseInt(String(record.palletCount), 10) || 0)
+  if (palletCount > 0 && opts.subFixedOn && opts.activePalletOn) {
+    amount += palletCount * (opts.palletUnitPrice || 0)
+  }
+  return amount
 }
 
 /**

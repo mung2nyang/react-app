@@ -1,11 +1,13 @@
 // @ts-check
 // finance.js 분할 조각 — 결제·수수료·월 매출(getMonthlyFareRevenue) 등 순수 계산.
 // finance.js는 이 모듈군을 재수출하는 배럴만 남았다.
+// §6 예외(215줄, ~250 한도 내) — 2026-09-17 고정노선 정산액 버그 수정으로 초과,
+// getMonthlyDriverTotals 계산 로직이 한 함수 안에서 응집돼야 해서 추가 분할 안 함.
 import {
   getShortCarNum,
   isVehicleRevenueSharedWithOwner,
 } from './cars.js'
-import { getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
+import { computeFixedRouteFare, getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
 import { isDateWithinAssignment } from './drivers.js'
 import { parseCurrencyValue } from './money.js'
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
@@ -88,8 +90,25 @@ export function getCallDetailCommissionAmount(detail, fare, settings) {
   return type === 'direct' ? parseCurrencyValue(value) : Math.floor(fare * (parseFloat(String(value)) || 0) / 100)
 }
 
-/** @param {Record<string, DayRecordLike>} data @param {string} monthKey @param {DriverLinkLike|null} [link] */
-export function getMonthlyDriverTotals(data, monthKey, link = null) {
+// 고정노선 운행(fixedCount)은 그날 기록에 금액이 저장 안 되고 단가×횟수로 매번
+// 계산된다(clients.js computeFixedRouteFare, getOwnerMonthlyFinanceDetail과 공식
+// 공유) — settings 없이는 이 계산을 못 하므로 인자로 받는다(2026-09-17, 예전엔
+// record.fare/fixedFare/totalFare 필드만 읽어 고정노선 운행이 항상 0으로 잡히던
+// 버그, 원본 vanilla driver-link.js도 동일한 한계였음).
+/**
+ * @param {Record<string, DayRecordLike>} data
+ * @param {string} monthKey
+ * @param {DriverLinkLike|null} [link]
+ * @param {FinanceSettings} [settings]
+ */
+export function getMonthlyDriverTotals(data, monthKey, link = null, settings = {}) {
+  const fixedRouteClient = getFixedRouteClient(settings)
+  const fixedRouteOpts = {
+    fixedUnitPrice: resolveFixedUnitPrice(settings),
+    palletUnitPrice: parseCurrencyValue(fixedRouteClient?.palletPrice),
+    subFixedOn: !!settings.subFixedOn,
+    activePalletOn: !!fixedRouteClient?.palletOn,
+  }
   let grossAmount = 0
   let insuranceAmount = 0
   let count = 0
@@ -105,8 +124,8 @@ export function getMonthlyDriverTotals(data, monthKey, link = null) {
       insuranceAmount += parseCurrencyValue(/** @type {{insuranceFee?: string|number}} */ (detail).insuranceFee)
       count += 1
     })
-    const fixedFare = parseCurrencyValue(record.fare || record.fixedFare || record.totalFare)
-    if (fixedFare > 0) grossAmount += fixedFare
+    const storedFare = parseCurrencyValue(record.fare || record.fixedFare || record.totalFare)
+    grossAmount += storedFare > 0 ? storedFare : computeFixedRouteFare(record, fixedRouteOpts)
     count += Number(record.fixedCount || record.count || 0)
   })
   return { grossAmount, insuranceAmount, count }

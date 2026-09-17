@@ -2,7 +2,7 @@
    CalendarPage.jsx가 main-calendar.css 다음에 이 파일을 import한다. */
 
 .main-page .header {
-  margin-top: 40px;
+  margin-top: -40px;
   margin-bottom: 10px;
 }
 

@@ -3,8 +3,10 @@
 // 기사 정산 상세·거래처별 재그룹)만 담는다 — 레코드 조립(id/발급 상태 등)은
 // financeTaxInvoiceEntries.js로 뺐다. cars.js의 getVehicleSupplierIdentity는 아직
 // 타입이 없어 반환 모양을 SupplierIdentity로 명시적으로 좁힌다.
+// §6 예외(204줄, ~250 한도 내) — 2026-09-17 고정노선 정산액 버그 수정으로 초과,
+// flattenLinkedDriverTrips/getLinkedDriverSettlementDetail이 같은 흐름이라 분할 안 함.
 import { getEffectiveDriverSettlementMode, getShortCarNum, getVehicleSupplierIdentity } from './cars.js'
-import { getFixedRouteClient } from './clients.js'
+import { computeFixedRouteFare, getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
 import { isDateWithinAssignment } from './drivers.js'
 import { parseCurrencyValue } from './money.js'
 import { calculateDriverVehicleCommission, getDriverCarWorkData, getMonthlyDriverTotals, logData } from './financeCore.js'
@@ -91,7 +93,7 @@ export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {
     const mode = getEffectiveDriverSettlementMode(car, settings)
     if ((flow === 'purchase' && mode !== 'company') || (flow === 'commission' && mode !== 'driver_direct')) return []
     const link = (settings.driverLinks || []).find((item) => item.id === car.driverLinkId || item.vehicleNumber === car.number)
-    const totals = getMonthlyDriverTotals(getDriverCarWorkData(car, workDataByLogId), monthKey, link)
+    const totals = getMonthlyDriverTotals(getDriverCarWorkData(car, workDataByLogId), monthKey, link, settings)
     if (totals.grossAmount <= 0) return []
     const commissionAmount = calculateDriverVehicleCommission(car, totals.grossAmount, totals.count)
     const insuranceAmount = car.insuranceOn ? totals.insuranceAmount : 0
@@ -118,8 +120,18 @@ export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {
   })
 }
 
-/** @param {Record<string, import('./day-record.js').DayRecordLike>} data @param {string} monthKey @param {DriverLinkLike} [link] */
-export function flattenLinkedDriverTrips(data, monthKey, link) {
+// 고정노선(fixedCount)은 그날 기록에 금액이 없어 단가×횟수로 계산해야
+// 드릴다운 목록의 "고정" 트립 금액도 0이 아니게 나온다(getMonthlyDriverTotals와
+// 같은 공식, computeFixedRouteFare 재사용, 2026-09-17).
+/** @param {Record<string, import('./day-record.js').DayRecordLike>} data @param {string} monthKey @param {DriverLinkLike} [link] @param {FinanceSettings} [settings] */
+export function flattenLinkedDriverTrips(data, monthKey, link, settings = {}) {
+  const fixedRouteClient = getFixedRouteClient(settings)
+  const fixedRouteOpts = {
+    fixedUnitPrice: resolveFixedUnitPrice(settings),
+    palletUnitPrice: parseCurrencyValue(fixedRouteClient?.palletPrice),
+    subFixedOn: !!settings.subFixedOn,
+    activePalletOn: !!fixedRouteClient?.palletOn,
+  }
   /** @type {Array<DriverTrip>} */
   const trips = []
   Object.entries(data || {}).forEach(([dateKey, record]) => {
@@ -146,7 +158,8 @@ export function flattenLinkedDriverTrips(data, monthKey, link) {
     })
 
     const fixedCount = Number(record.fixedCount || record.count || 0)
-    const fixedFare = parseCurrencyValue(record.fare || record.fixedFare || record.totalFare)
+    const storedFare = parseCurrencyValue(record.fare || record.fixedFare || record.totalFare)
+    const fixedFare = storedFare > 0 ? storedFare : computeFixedRouteFare(record, fixedRouteOpts)
     if (fixedCount > 0 || fixedFare > 0) {
       trips.push({ type: 'fixed', dateKey, client: '', loadLoc: '', unloadLoc: '', fare: fixedFare, vatExempt: false, fixedCount })
     }
@@ -154,13 +167,13 @@ export function flattenLinkedDriverTrips(data, monthKey, link) {
   return trips.sort((a, b) => b.dateKey.localeCompare(a.dateKey))
 }
 
-/** @param {Record<string, import('./day-record.js').DayRecordLike>} data @param {string} monthKey @param {DriverLinkLike} link @param {CarLike} car */
-export function getLinkedDriverSettlementDetail(data, monthKey, link, car) {
-  const totals = getMonthlyDriverTotals(data, monthKey, link)
+/** @param {Record<string, import('./day-record.js').DayRecordLike>} data @param {string} monthKey @param {DriverLinkLike} link @param {CarLike} car @param {FinanceSettings} [settings] */
+export function getLinkedDriverSettlementDetail(data, monthKey, link, car, settings = {}) {
+  const totals = getMonthlyDriverTotals(data, monthKey, link, settings)
   const commissionAmount = calculateDriverVehicleCommission(car, totals.grossAmount, totals.count)
   const insuranceAmount = car?.insuranceOn ? totals.insuranceAmount : 0
   const finalAmount = Math.max(0, totals.grossAmount - commissionAmount - insuranceAmount)
-  const trips = flattenLinkedDriverTrips(data, monthKey, link)
+  const trips = flattenLinkedDriverTrips(data, monthKey, link, settings)
   return {
     totalFare: totals.grossAmount,
     tripCount: totals.count,

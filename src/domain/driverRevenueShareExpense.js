@@ -32,7 +32,7 @@ export function getMonthlyDriverRevenueShareExpense(monthKey, settings, subCars,
     if (car.driverPayMode && car.driverPayMode !== 'revenue') continue
 
     const link = links.find((item) => item.id === car.driverLinkId || item.vehicleNumber === car.number) || null
-    const totals = getMonthlyDriverTotals(getDriverCarWorkData(car, workDataByLogId), monthKey, link)
+    const totals = getMonthlyDriverTotals(getDriverCarWorkData(car, workDataByLogId), monthKey, link, settings)
     const commission = calculateDriverVehicleCommission(car, totals.grossAmount, totals.count)
     const insurance = car.insuranceOn ? totals.insuranceAmount : 0
     const amount = Math.max(0, commission - insurance)

@@ -190,6 +190,20 @@ describe('같은 운행 픽스처 — 원본 vs react-app', () => {
     same(ours, theirs)
     assert.equal(ours.grossAmount < 999999, true)
   })
+
+  // 2026-09-17: 실제 day record는 fare 필드를 안 저장한다(고정노선은 fixedCount만,
+  // saveDayRecord). FIXTURE_WORK['서울12가3456']는 fare:250000이 같이 박혀 있어
+  // (레거시 픽스처 모양) 이 버그를 못 잡았다 — settings 없이 부르면(4번째 인자 생략)
+  // 예전과 동일하게 0인 채로 남아야 하고(하위호환), settings를 넘기면 고정노선분이
+  // 잡혀야 한다.
+  test('fare 필드 없는 실제 고정노선 기록 — settings 없으면 0, 있으면 단가×횟수로 잡힘', () => {
+    const realisticData = { '2026-05-12': { isOff: false, fixedCount: 1 } }
+    const withoutSettings = getMonthlyDriverTotals(realisticData, MONTH_KEY, null)
+    assert.equal(withoutSettings.grossAmount, 0, 'settings 없이는 하위호환으로 0')
+    const withSettings = getMonthlyDriverTotals(realisticData, MONTH_KEY, null, FIXTURE_SETTINGS)
+    assert.equal(withSettings.grossAmount, 250000, 'fixedUnitPrice(250,000) × 1건')
+    assert.equal(withSettings.count, 1)
+  })
 })
 
 // Step 6 재감사(FAIL 지적 2번) — 비용 단일 계약: canonical expenses가 정본이고,
