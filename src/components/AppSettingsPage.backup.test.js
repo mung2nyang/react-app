@@ -28,18 +28,21 @@ test('AppSettingsPage 백업 섹션: 게스트 세션에서만 노출되고 비�
       root.render(React.createElement(AppSettingsPage, { ownerKey: 'guest', onBack: () => {}, showToast: () => {} }))
     })
 
-    const buttonsGuest = [...container.querySelectorAll('button')].map((b) => b.textContent?.trim())
-    assert.ok(buttonsGuest.includes('백업 파일 다운로드'), '게스트 화면에는 백업 다운로드 버튼이 있어야 한다')
-    assert.ok(buttonsGuest.includes('백업 파일 불러오기'), '게스트 화면에는 백업 불러오기 버튼이 있어야 한다')
+    const buttonsGuest = [...container.querySelectorAll('button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())
+    assert.ok(buttonsGuest.some((t) => t?.includes('백업 저장하기')), '게스트 화면에는 백업 저장 버튼이 있어야 한다')
+    assert.ok(buttonsGuest.some((t) => t?.includes('백업 불러오기')), '게스트 화면에는 백업 불러오기 버튼이 있어야 한다')
+    assert.ok(container.textContent?.includes('데이터 관리 (백업 / 복구)'))
+    assert.ok(container.textContent?.includes('아직 백업한 적 없음') || container.textContent?.includes('마지막 백업:'))
 
     // 2. 비게스트(로그인/소속기사/차주) 세션 (ownerKey !== 'guest')
     await act(async () => {
       root.render(React.createElement(AppSettingsPage, { ownerKey: 'owner-user-99', onBack: () => {}, showToast: () => {} }))
     })
 
-    const buttonsOwner = [...container.querySelectorAll('button')].map((b) => b.textContent?.trim())
-    assert.equal(buttonsOwner.includes('백업 파일 다운로드'), false, '로그인 화면에는 백업 다운로드 버튼이 없어야 한다')
-    assert.equal(buttonsOwner.includes('백업 파일 불러오기'), false, '로그인 화면에는 백업 불러오기 버튼이 없어야 한다')
+    const buttonsOwner = [...container.querySelectorAll('button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())
+    assert.equal(buttonsOwner.some((t) => t?.includes('백업 저장하기')), false, '로그인 화면에는 백업 저장 버튼이 없어야 한다')
+    assert.equal(buttonsOwner.some((t) => t?.includes('백업 불러오기')), false, '로그인 화면에는 백업 불러오기 버튼이 없어야 한다')
+    assert.equal(container.textContent?.includes('데이터 관리 (백업 / 복구)'), false)
   } finally {
     await act(async () => { root.unmount() })
     container.remove()

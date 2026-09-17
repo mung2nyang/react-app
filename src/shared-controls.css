@@ -209,3 +209,78 @@
   color: var(--sub-text-color);
   padding-left: 4px;
 }
+
+/* §8 결제방식·§13 횟수/금액 공용 세그먼트 (expense-form.css에서 이동) */
+.segment-control {
+  display: flex;
+  width: 140px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+}
+
+.segment-btn {
+  flex: 1;
+  padding: 8px 0;
+  border: none;
+  background: transparent;
+  color: var(--sub-text-color);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segment-btn.active {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 700;
+}
+
+/* 게스트 백업 버튼·상태 (§13) */
+.backup-btn-group {
+  display: flex;
+  gap: 10px;
+}
+
+.backup-btn {
+  flex: 1;
+  padding: 12px 10px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-weight: 600;
+  font-size: var(--fs-3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.last-backup-status {
+  margin: 2px 0 12px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
+
+/* 전역 인라인 아이콘(테마·백업 버튼) — calendar.css에도 동일 정의가 있으나
+   앱설정은 calendar를 import하지 않으므로 공용 파일에 둔다. */
+.inline-icon {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  vertical-align: middle;
+}
+
+.inline-icon.sm {
+  width: 16px;
+  height: 16px;
+}

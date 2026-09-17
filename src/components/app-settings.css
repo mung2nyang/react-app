@@ -1,0 +1,181 @@
+/* §13 앱 설정 전용 — side-menu.css K 블록(앱설정 프리셋)에서 분리.
+   테마 버튼 아이콘 정렬 + 고정노선/운행횟수 프리셋 편집기(RunCountChips.jsx/
+   RoutePresetEditor.jsx, AppSettingsPage.jsx에서만 렌더) 전용 확인 후 이동. */
+
+.settings-theme-card .theme-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.setting-item.fixed-route-preset-setting,
+.setting-item.run-count-preset-setting {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 7px;
+  padding: 6px 0 8px;
+}
+
+.run-count-preset-copy label {
+  display: block;
+  color: var(--text-color);
+  font-size: var(--fs-2);
+  font-weight: 750;
+}
+
+.run-count-preset-copy p {
+  margin: 4px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.45;
+}
+
+.run-count-preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  padding-inline: 2px;
+  box-sizing: border-box;
+}
+
+.run-count-preset-chip-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: calc(20% - 5px);
+  min-width: 50px;
+}
+
+.run-count-preset-chip {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 5px 2px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  outline: none;
+  box-sizing: border-box;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 750;
+  text-align: center;
+  appearance: textfield;
+}
+
+.run-count-preset-chip::-webkit-inner-spin-button,
+.run-count-preset-chip::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.run-count-preset-chip-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--card-bg);
+  color: var(--sub-text-color);
+  font-size: 11px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.run-count-preset-add-chip {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 5px 2px;
+  border: 1px dashed var(--primary-color);
+  border-radius: 10px;
+  box-sizing: border-box;
+  background: transparent;
+  color: var(--primary-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.fixed-route-preset-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.fixed-route-preset-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--input-bg);
+}
+
+.fixed-route-preset-row span {
+  font-size: var(--fs-2);
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+.fixed-route-preset-row button {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  background: var(--card-bg);
+  color: var(--sub-text-color);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.fixed-route-preset-empty {
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  padding: 4px 2px;
+}
+
+.fixed-route-preset-add-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.fixed-route-preset-add-row .input-box {
+  min-height: 40px;
+  padding: 8px 10px;
+  font-size: var(--fs-2);
+}
+
+.fixed-route-preset-arrow {
+  color: var(--sub-text-color);
+  font-weight: 700;
+}
+
+.fixed-route-preset-add-row button {
+  min-height: 40px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary-color);
+  color: #fff;
+  font: inherit;
+  font-weight: 750;
+  font-size: var(--fs-2);
+  cursor: pointer;
+}

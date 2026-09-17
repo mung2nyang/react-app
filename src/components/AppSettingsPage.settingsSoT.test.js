@@ -30,13 +30,13 @@ test('설정을 커밋하면 앱 설정 화면이 리마운트 없이 표시 방
     })
     const fareBtn = [...container.querySelectorAll('button')].find((el) => el.textContent === '금액')
     assert.ok(fareBtn, '금액 버튼이 있어야 한다')
-    assert.equal(fareBtn.classList.contains('active-work'), false)
+    assert.equal(fareBtn.classList.contains('active'), false)
 
     await act(async () => {
       commitSettings(ownerKey, normalizeSettings({ inputMode: 'fare' }), { syncToCloud: false })
     })
     assert.ok(
-      fareBtn.classList.contains('active-work'),
+      fareBtn.classList.contains('active'),
       'loadPracticeSettings 스냅샷이면 리마운트 없이 금액 모드가 안 바뀐다',
     )
   } finally {

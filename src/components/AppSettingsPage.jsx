@@ -1,14 +1,34 @@
 // @ts-check
-import { useRef } from 'react'
 import { useOwnerSettings } from '../store/ownerDataHooks.js'
 import { applyTheme, savePracticeSettings } from '../lib/practiceSettings.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
-import { applyGuestBackupData, buildGuestBackupData, markBackupDone } from '../lib/guestBackup.js'
 import SwitchRow from './SwitchRow.jsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
 import PageHeader from './PageHeader.jsx'
+import AppSettingsBackupSection from './AppSettingsBackupSection.jsx'
+import './app-settings.css'
 
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+
+const SUN_ICON = (
+  <svg className="inline-icon sm" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"></circle>
+    <line x1="12" y1="1" x2="12" y2="3"></line>
+    <line x1="12" y1="21" x2="12" y2="23"></line>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+    <line x1="1" y1="12" x2="3" y2="12"></line>
+    <line x1="21" y1="12" x2="23" y2="12"></line>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+  </svg>
+)
+
+const MOON_ICON = (
+  <svg className="inline-icon sm" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+)
 
 /**
  * @param {Object} props
@@ -20,7 +40,6 @@ import PageHeader from './PageHeader.jsx'
 export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
   const locked = useHydrationLock()
   const settings = useOwnerSettings(ownerKey)
-  const fileInputRef = useRef(/** @type {HTMLInputElement|null} */ (null))
 
   /**
    * @param {Partial<FinanceSettings>} nextPatch
@@ -35,58 +54,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
     }
   }
 
-  function handleExport() {
-    try {
-      const data = buildGuestBackupData()
-      markBackupDone()
-      const json = JSON.stringify(data, null, 2)
-      const blob = new Blob([json], { type: 'application/json;charset=utf-8' })
-      if (typeof URL.createObjectURL === 'function') {
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        const todayStr = new Date().toISOString().slice(0, 10)
-        a.href = url
-        a.download = `운송내역_백업_${todayStr}.json`
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-        setTimeout(() => URL.revokeObjectURL(url), 1000)
-      }
-      showToast?.('백업 파일을 저장했습니다.')
-    } catch (error) {
-      console.error('백업 내보내기 실패:', error)
-      showToast?.('백업 파일 생성에 실패했습니다.')
-    }
-  }
-
-  /**
-   * @param {import('react').ChangeEvent<HTMLInputElement>} e
-   */
-  async function handleImport(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    try {
-      const text = await file.text()
-      let parsed
-      try {
-        parsed = JSON.parse(text.replace(/^\uFEFF/, ''))
-      } catch {
-        showToast?.('파일 내용이 손상되었거나 JSON 파일이 아닙니다.')
-        return
-      }
-      const res = applyGuestBackupData(parsed)
-      if (!res.ok) {
-        showToast?.(res.error || '백업 데이터를 복원하지 못했습니다.')
-        return
-      }
-      showToast?.('백업 데이터를 복원했습니다.')
-    } catch (err) {
-      console.error('백업 불러오기 실패:', err)
-      showToast?.('백업 파일을 읽지 못했습니다.')
-    } finally {
-      e.target.value = ''
-    }
-  }
+  const isDark = settings.theme === 'dark'
 
   return (
     <div className="page app-settings-page">
@@ -99,29 +67,16 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
       )}
 
       <fieldset disabled={locked} style={{ border: 0, margin: 0, padding: 0 }}>
-        {ownerKey === 'guest' && (
-          <section className="setting-section">
-            <h3>데이터 백업</h3>
-            <p className="car-type-hint" style={{ marginTop: 4, marginBottom: 12 }}>
-              기기에 저장된 운행 기록과 설정을 파일로 백업하거나 복원합니다.
-            </p>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button type="button" className="theme-toggle-btn" onClick={handleExport}>백업 파일 다운로드</button>
-              <button type="button" className="theme-toggle-btn" onClick={() => fileInputRef.current?.click()}>백업 파일 불러오기</button>
-              <input ref={fileInputRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={handleImport} />
-            </div>
-          </section>
-        )}
-
         <section className="setting-section settings-theme-card">
           <div className="setting-item">
             <label>테마 선택</label>
             <button
               type="button"
               className="theme-toggle-btn"
-              onClick={() => patch({ theme: settings.theme === 'dark' ? 'light' : 'dark' })}
+              onClick={() => patch({ theme: isDark ? 'light' : 'dark' })}
             >
-              {settings.theme === 'dark' ? '다크 모드' : '라이트 모드'}
+              {isDark ? MOON_ICON : SUN_ICON}
+              <span>{isDark ? '다크 모드' : '라이트 모드'}</span>
             </button>
           </div>
         </section>
@@ -130,17 +85,17 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
           <h3>운행 일지 설정</h3>
           <div className="setting-item">
             <label>달력 일일 표시 방식</label>
-            <div className="settings-segmented-control">
+            <div className="segment-control">
               <button
                 type="button"
-                className={`toggle-btn${settings.inputMode === 'count' ? ' active-work' : ''}`}
+                className={`segment-btn${settings.inputMode === 'count' ? ' active' : ''}`}
                 onClick={() => patch({ inputMode: 'count' })}
               >
                 횟수
               </button>
               <button
                 type="button"
-                className={`toggle-btn${settings.inputMode === 'fare' ? ' active-work' : ''}`}
+                className={`segment-btn${settings.inputMode === 'fare' ? ' active' : ''}`}
                 onClick={() => patch({ inputMode: 'fare' })}
               >
                 금액
@@ -175,10 +130,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
           <FixedRouteBlock scope="main" settings={settings} onPatch={patch} showToast={showToast} />
         </section>
 
-        <section className="setting-section">
-          <h3>기사차량 운행 일지 설정</h3>
-          <FixedRouteBlock scope="sub" settings={settings} onPatch={patch} showToast={showToast} />
-        </section>
+        {ownerKey === 'guest' && <AppSettingsBackupSection showToast={showToast} />}
       </fieldset>
     </div>
   )
