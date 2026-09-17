@@ -32,6 +32,7 @@
   background: var(--input-bg);
   color: var(--sub-text-color);
   font-weight: 750;
+  text-align: center;
 }
 
 .report-page-wrap .summary-card {
@@ -86,8 +87,8 @@
   text-align: center;
 }
 
-/* 요약 일자표만 가운데 정렬(세부내역서 detail-report-table은 제외) */
-.report-table:not(.detail-report-table) td {
+/* 요약·세부내역서 표 셀 모두 가운데 정렬 */
+.report-table td {
   text-align: center;
 }
 
@@ -96,12 +97,10 @@
 }
 
 .report-table .detail-amount-cell {
-  text-align: right;
   white-space: nowrap;
 }
 
 .report-table .detail-date-cell {
-  text-align: center;
   white-space: nowrap;
 }
 

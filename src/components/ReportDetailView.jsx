@@ -66,15 +66,14 @@ export function ReportClientPickerModal({ open, options, value, onChange, onConf
  * @param {DetailReport} props.report
  * @param {string} props.clientFilter
  * @param {boolean} props.showClientColumn
- * @param {string} props.title
  */
-export default function ReportDetailContent({ report, clientFilter, showClientColumn, title }) {
+export default function ReportDetailContent({ report, clientFilter, showClientColumn }) {
   const clientKeys = Object.keys(report.monthFareByClient)
   const showDefaultBase = report.defaultBaseFare > 0 || clientKeys.length === 0
+  const filterLabel = clientFilter === 'ALL' ? '전체' : clientFilter
 
   return (
     <>
-      <div className="report-title">{title}</div>
       <table className="report-table detail-report-table">
         <thead>
           <tr>
@@ -106,8 +105,8 @@ export default function ReportDetailContent({ report, clientFilter, showClientCo
 
       <div className="summary-card">
         <div className="summary-title">
-          <span>세부 운송료 정산</span>
-          <span>{clientFilter === 'ALL' ? '전체' : clientFilter}</span>
+          <span>세부 운송료 정산 ({filterLabel})</span>
+          <span>총 {report.items.length}회 운행</span>
         </div>
         {showDefaultBase && (
           <div className="summary-row">

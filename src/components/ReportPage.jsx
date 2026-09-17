@@ -59,8 +59,6 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOp
     () => buildDetailReport(workData, year, month, clientFilter, { clients }),
     [workData, year, month, clientFilter, clients],
   )
-  const clientText = clientFilter === 'ALL' ? '전체' : clientFilter
-  const detailTitle = `${year}년 ${month + 1}월 운송비 내역서 (${clientText})`
 
   async function handleDownloadPdf() {
     const element = exportRef.current
@@ -205,7 +203,6 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOp
             report={detailReport}
             clientFilter={clientFilter}
             showClientColumn={clientFilter === 'ALL'}
-            title={detailTitle}
           />
         ) : (
           <ReportSummaryContent
