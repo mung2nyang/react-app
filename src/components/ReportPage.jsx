@@ -209,12 +209,12 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOp
           />
         ) : (
           <ReportSummaryContent
-            title={report.title}
             profile={report.profile}
             car={report.mainCar}
             report={report}
             dash={dash}
             formatWon={formatWon}
+            distanceOn={!!practiceSettings.distanceOn}
             isExporting={savingPdf || savingImage}
           />
         )}

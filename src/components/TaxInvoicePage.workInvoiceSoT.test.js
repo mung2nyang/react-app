@@ -33,7 +33,7 @@ test('일지를 커밋하면 운송비 내역서가 리마운트 없이 합계�
     await act(async () => {
       root.render(React.createElement(ReportPage, { ownerKey, onBack: () => {} }))
     })
-    assert.ok(container.textContent.includes('월간 총 운행거리'), '요약 화면에 거리 행이 있어야 한다')
+    assert.ok(container.textContent.includes('부가세 (공급가액 기준 10%)'), '요약 화면에 부가세 행이 있어야 한다')
     assert.equal(container.textContent.includes('소트거래처 기본 운송료'), false)
 
     await act(async () => {

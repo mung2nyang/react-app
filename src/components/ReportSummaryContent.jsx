@@ -84,7 +84,6 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
 
 /**
  * @param {Object} props
- * @param {string} props.title
  * @param {{ name?: string, phone?: string, bankName?: string, accountNumber?: string, accountHolder?: string }} props.profile
  * @param {{ number?: string, tonnage?: string }|null} props.car
  * @param {{
@@ -92,6 +91,8 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
  *   days: Array<ReportDayRow>,
  *   showPallet: boolean,
  *   distanceKm: number,
+ *   trips?: number,
+ *   callTrips?: number,
  *   fixedBaseFare: number,
  *   defaultBaseFare: number,
  *   fareByClient: Record<string, number>,
@@ -102,18 +103,20 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
  * }} props.report
  * @param {(value: unknown) => string} props.dash
  * @param {(value: number|string) => string} props.formatWon
+ * @param {boolean} [props.distanceOn]
  * @param {boolean} [props.isExporting]
  */
-export function ReportSummaryContent({ title, profile, car, report, dash, formatWon, isExporting = false }) {
+export function ReportSummaryContent({ profile, car, report, dash, formatWon, distanceOn = false, isExporting = false }) {
   const clientNames = Object.keys(report.fareByClient || {})
   const baseFare = (Number(report.fixedBaseFare) || 0) + (Number(report.defaultBaseFare) || 0)
   const showBaseFare = baseFare > 0 || clientNames.length === 0
   const days = Array.isArray(report.days) ? report.days : []
   const showPallet = !!report.showPallet
+  const tripCount = (Number(report.trips) || 0) + (Number(report.callTrips) || 0)
+  const showDistance = distanceOn && report.distanceKm > 0
 
   return (
     <>
-      <div className="report-title">{title}</div>
       <table className="info-table">
         <tbody>
           <tr>
@@ -131,30 +134,27 @@ export function ReportSummaryContent({ title, profile, car, report, dash, format
           <tr>
             <th>입금은행</th>
             <td>{dash(profile.bankName)}</td>
-            <th>계좌번호</th>
-            <td>{dash(profile.accountNumber)}</td>
+            <th>예금주</th>
+            <td>{dash(profile.accountHolder)}</td>
           </tr>
           <tr>
-            <th>예금주</th>
-            <td colSpan={3}>{dash(profile.accountHolder)}</td>
+            <th>계좌번호</th>
+            <td colSpan={3}>{dash(profile.accountNumber)}</td>
           </tr>
         </tbody>
       </table>
       {renderSummaryDayTables(days, report.monthIndex, showPallet, isExporting)}
       <div className="summary-card">
-        <div
-          className="summary-row"
-          style={{
-            color: 'var(--primary-color)',
-            fontWeight: 700,
-            borderBottom: '1px dashed var(--border-color)',
-            paddingBottom: 10,
-            marginBottom: 10,
-          }}
-        >
-          <span>월간 총 운행거리</span>
-          <span className="summary-value">{report.distanceKm} km</span>
+        <div className="summary-title">
+          <span>월간 운송료 정산</span>
+          <span>총 {tripCount}회 운행</span>
         </div>
+        {showDistance && (
+          <div className="summary-row">
+            <span>월간 총 운행거리</span>
+            <span className="summary-value">{report.distanceKm} km</span>
+          </div>
+        )}
         {showBaseFare && (
           <div className="summary-row">
             <span>기본 운송료</span>

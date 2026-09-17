@@ -1,3 +1,4 @@
+/* §10 전용 화면 스타일 — 응집도 우선 §6 예외, ~250줄까지 허용 */
 /* 운송비 내역서(리포트) 전용 — side-menu.css에서 분리.
    ReportPage·ReportDetailView·ReportShareModal·ReportSummaryContent가 import. */
 
@@ -85,7 +86,15 @@
   text-align: center;
 }
 
-.report-table td.amount,
+/* 요약 일자표만 가운데 정렬(세부내역서 detail-report-table은 제외) */
+.report-table:not(.detail-report-table) td {
+  text-align: center;
+}
+
+.report-table td.amount {
+  white-space: nowrap;
+}
+
 .report-table .detail-amount-cell {
   text-align: right;
   white-space: nowrap;

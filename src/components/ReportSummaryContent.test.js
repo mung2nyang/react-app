@@ -22,6 +22,8 @@ const baseReport = {
   days: [],
   showPallet: false,
   distanceKm: 0,
+  trips: 3,
+  callTrips: 2,
   fixedBaseFare: 20000,
   defaultBaseFare: 5000,
   fareByClient: { 한진: 100000 },
@@ -33,7 +35,7 @@ const baseReport = {
 
 /**
  * @param {Partial<typeof baseReport>} [reportPatch]
- * @param {{ isExporting?: boolean }} [extra]
+ * @param {{ isExporting?: boolean, distanceOn?: boolean }} [extra]
  */
 async function renderSummary(reportPatch = {}, extra = {}) {
   const container = document.createElement('div')
@@ -41,12 +43,18 @@ async function renderSummary(reportPatch = {}, extra = {}) {
   const root = createRoot(container)
   await act(async () => {
     root.render(React.createElement(ReportSummaryContent, {
-      title: '2026년 9월 운송비 내역서',
-      profile: { name: '차주', phone: '010' },
+      profile: {
+        name: '차주',
+        phone: '010',
+        bankName: '국민',
+        accountNumber: '123-456-789012',
+        accountHolder: '홍길동',
+      },
       car: { number: '12가3456', tonnage: '5' },
       report: { ...baseReport, ...reportPatch },
       dash,
       formatWon,
+      distanceOn: extra.distanceOn ?? false,
       isExporting: extra.isExporting ?? false,
     }))
   })
@@ -59,15 +67,61 @@ async function renderSummary(reportPatch = {}, extra = {}) {
   }
 }
 
-test('요약 화면: 거리·거래처별 행, 1회단가·지출·타이틀 없음', async () => {
+test('요약 화면: 총 N회 운행 상시, 거래처별 행, 1회단가·지출·본문 타이틀 없음', async () => {
   const { container, cleanup } = await renderSummary()
   try {
     const text = container.textContent || ''
-    assert.ok(text.includes('월간 총 운행거리'))
+    assert.ok(text.includes('총 5회 운행'))
+    assert.ok(text.includes('월간 운송료 정산'))
     assert.ok(text.includes('한진 수수료 (10%)'))
-    assert.equal(text.includes('월간 운송료 정산'), false)
+    assert.equal(text.includes('월간 총 운행거리'), false)
+    assert.equal(text.includes('2026년 9월 운송비 내역서'), false)
     assert.equal(text.includes('1회 단가'), false)
     assert.equal(text.includes('차량 정비비'), false)
+  } finally {
+    await cleanup()
+  }
+})
+
+test('distanceOn on + distanceKm > 0이면 거리 행 표시, off면 숨김', async () => {
+  const on = await renderSummary({ distanceKm: 120 }, { distanceOn: true })
+  try {
+    assert.ok(on.container.textContent.includes('월간 총 운행거리'))
+    assert.ok(on.container.textContent.includes('120 km'))
+  } finally {
+    await on.cleanup()
+  }
+
+  const off = await renderSummary({ distanceKm: 120 }, { distanceOn: false })
+  try {
+    assert.equal(off.container.textContent.includes('월간 총 운행거리'), false)
+  } finally {
+    await off.cleanup()
+  }
+
+  const zero = await renderSummary({ distanceKm: 0 }, { distanceOn: true })
+  try {
+    assert.equal(zero.container.textContent.includes('월간 총 운행거리'), false)
+  } finally {
+    await zero.cleanup()
+  }
+})
+
+test('정보표: 입금은행|예금주 한 줄, 계좌번호 단독 줄', async () => {
+  const { container, cleanup } = await renderSummary()
+  try {
+    const rows = [...container.querySelectorAll('.info-table tr')]
+    assert.equal(rows.length, 4)
+    const row3 = rows[2].textContent || ''
+    const row4 = rows[3].textContent || ''
+    assert.ok(row3.includes('입금은행'))
+    assert.ok(row3.includes('예금주'))
+    assert.ok(row3.includes('국민'))
+    assert.ok(row3.includes('홍길동'))
+    assert.equal(row3.includes('계좌번호'), false)
+    assert.ok(row4.includes('계좌번호'))
+    assert.ok(row4.includes('123-456-789012'))
+    assert.equal(row4.includes('예금주'), false)
   } finally {
     await cleanup()
   }

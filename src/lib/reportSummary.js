@@ -88,6 +88,8 @@ export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwne
     days,
     showPallet,
     distanceKm: settled.distanceKm,
+    trips: settled.trips,
+    callTrips: settled.callTrips,
     fixedBaseFare: settled.fixedBaseFare,
     defaultBaseFare: settled.defaultBaseFare,
     fareByClient: settled.fareByClient,
