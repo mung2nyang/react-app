@@ -22,10 +22,16 @@ export function dateLabel(date) {
 }
 
 /**
- * driverSelf 순이익 라벨: settlement.label 끝의 (30%)/(월급)을 붙인다.
- * @param {{ label?: string }|null|undefined} settlement
+ * driverSelf 상단 카드 라벨: 월급제 → "이번 달 월급", 매출제(%) →
+ * "이번 달 정산액 N%", 매출제(건당·비율 미확정) → "이번 달 정산액".
+ * (차주 화면의 "당월 순이익"과 구분)
+ * @param {{ label?: string, payMode?: string|null }|null|undefined} settlement
  */
 export function driverSelfNetProfitLabel(settlement) {
-  const m = settlement?.label && /\(([^)]+)\)\s*$/.exec(String(settlement.label))
-  return m ? `당월 순이익 (${m[1]})` : '당월 순이익'
+  if (settlement?.payMode === 'salary') return '이번 달 월급'
+  const label = String(settlement?.label || '')
+  const m = /\(([^)]+)\)\s*$/.exec(label)
+  if (m?.[1] === '월급') return '이번 달 월급'
+  if (m && /^\d+(\.\d+)?%$/.test(m[1])) return `이번 달 정산액 ${m[1]}`
+  return '이번 달 정산액'
 }

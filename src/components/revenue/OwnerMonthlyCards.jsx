@@ -7,7 +7,7 @@ import { dateLabel, driverSelfNetProfitLabel, won } from './revenueFormat.js'
 
 /** @typedef {ReturnType<typeof import('../../domain/finance.js').getOwnerMonthlyFinanceDetail>} OwnerMonthlyDetail */
 /** @typedef {{ label: string, amount: number, date?: string }} DetailLine */
-/** @typedef {{ total: number, items: Array<DetailLine>, label?: string }} SettlementBucket */
+/** @typedef {{ total: number, items: Array<DetailLine>, label?: string, payMode?: string|null }} SettlementBucket */
 /**
  * @typedef {Omit<OwnerMonthlyDetail, 'income'> & {
  *   income: OwnerMonthlyDetail['income'] & { settlement?: SettlementBucket }
