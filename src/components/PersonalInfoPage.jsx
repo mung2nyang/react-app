@@ -7,6 +7,7 @@ import { useHydrationLock } from '../app/useHydrationLock.js'
 import { useOwnerProfile } from '../store/ownerDataHooks.js'
 import ConfirmModal from './ConfirmModal.jsx'
 import PageHeader from './PageHeader.jsx'
+import './PersonalInfoPage.css'
 
 /** @typedef {null|'first'|'second'} WithdrawStep */
 
@@ -52,12 +53,6 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
   return (
     <div className="page personal-info-page">
       <PageHeader title="개인정보" onBack={onBack} onOpenMenu={onOpenMenu} />
-
-      <div className="personal-intro">
-        <span className="personal-intro-kicker">MY PROFILE</span>
-        <strong>업무에 필요한 정보를<br />한곳에서 관리하세요.</strong>
-        <p>입력하면 바로 저장됩니다. 소속 연결은 나중에 붙입니다.</p>
-      </div>
 
       {locked && (
         <p id="settingsHydrationLockNotice" className="car-type-hint">
@@ -140,11 +135,8 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">04</span>
-            <div><h3>계정</h3><p>로그인 상태</p></div>
+            <div><h3>계정</h3><p>로그인 상태와 계정 연결 관리</p></div>
           </div>
-          <p className="car-type-hint">
-            {guest ? '비회원으로 사용 중입니다.' : `${session?.name || '로그인'} 계정으로 사용 중입니다.`}
-          </p>
           {guest ? (
             <button type="button" className="personal-account-btn" onClick={onGoAuth}>로그인하러 가기</button>
           ) : (
@@ -161,7 +153,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
               </button>
               <button
                 type="button"
-                className="personal-account-btn ghost personal-withdraw-btn"
+                className="withdraw-link"
                 disabled={withdrawBusy}
                 onClick={() => setWithdrawStep('first')}
               >

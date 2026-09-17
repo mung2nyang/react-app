@@ -61,7 +61,7 @@ describe('PersonalInfoPage — 회원 탈퇴', () => {
   test('게스트 세션엔 탈퇴 버튼이 없다', async () => {
     const { container, root } = await renderPage({ guestMode: true, name: '비회원' })
     try {
-      assert.equal(container.querySelector('.personal-withdraw-btn'), null)
+      assert.equal(container.querySelector('.withdraw-link'), null)
       assert.equal(findButtonByText(container, '회원 탈퇴'), undefined)
     } finally {
       await act(async () => { root.unmount() })
@@ -83,8 +83,8 @@ describe('PersonalInfoPage — 회원 탈퇴', () => {
       },
     )
     try {
-      const withdrawBtn = container.querySelector('.personal-withdraw-btn')
-      assert.ok(withdrawBtn, '로그인 세션엔 탈퇴 버튼이 있어야 한다')
+      const withdrawBtn = container.querySelector('.withdraw-link')
+      assert.ok(withdrawBtn, '로그인 세션엔 탈퇴 링크가 있어야 한다')
       await act(async () => { /** @type {HTMLButtonElement} */ (withdrawBtn).click() })
       assert.ok(container.textContent?.includes('정말 탈퇴하시겠습니까'))
       await act(async () => { findButtonByText(container, '확인')?.click() })
@@ -114,7 +114,7 @@ describe('PersonalInfoPage — 회원 탈퇴', () => {
       },
     )
     try {
-      await act(async () => { container.querySelector('.personal-withdraw-btn')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+      await act(async () => { container.querySelector('.withdraw-link')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
       await act(async () => { findButtonByText(container, '확인')?.click() })
       await act(async () => { findButtonByText(container, '확인')?.click() })
       await act(async () => { await Promise.resolve() })
@@ -122,8 +122,9 @@ describe('PersonalInfoPage — 회원 탈퇴', () => {
       assert.equal(goAuthCalls, 0)
       assert.equal(toasts.length, 1)
       assert.ok(toasts[0].includes('오류') || toasts[0].includes('실패') || toasts[0].includes('탈퇴'))
-      assert.ok(container.querySelector('.personal-withdraw-btn'), '실패 후에도 탈퇴 버튼이 남아야 한다')
-      assert.ok(container.textContent?.includes('홍길동'))
+      assert.ok(container.querySelector('.withdraw-link'), '실패 후에도 탈퇴 링크가 남아야 한다')
+      assert.ok(container.textContent?.includes('로그아웃'), '실패 후에도 로그인 계정 UI가 남아야 한다')
+      assert.ok(container.textContent?.includes('로그인 상태와 계정 연결 관리'))
     } finally {
       await act(async () => { root.unmount() })
       container.remove()

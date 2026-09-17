@@ -497,52 +497,6 @@
   font-size: var(--fs-floor);
 }
 
-.personal-card-grid {
-  display: grid;
-  gap: 8px;
-}
-
-.personal-card,
-.setting-section {
-  padding: 14px 15px;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  background: var(--card-bg);
-  box-shadow: var(--shadow-sm);
-  text-align: left;
-}
-
-.personal-card-heading {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-bottom: 11px;
-}
-
-.personal-card-icon {
-  display: grid;
-  place-items: center;
-  flex: 0 0 30px;
-  height: 30px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--primary-color) 10%, var(--input-bg));
-  color: var(--primary-color);
-  font-size: var(--fs-floor);
-  font-weight: 700;
-}
-
-.personal-card-heading h3 {
-  margin: 0 0 2px;
-  font-size: var(--fs-4);
-  font-weight: 800;
-}
-
-.personal-card-heading p {
-  margin: 0;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-}
-
 .personal-inline-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -569,6 +523,12 @@
 
 .setting-section {
   margin-bottom: 10px;
+  padding: 14px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
 }
 
 .setting-section h3 {
