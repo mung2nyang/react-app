@@ -85,8 +85,8 @@ export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
       startDate: row.assignment_start || '',
       endDate: row.assignment_end || '',
       status: /** @type {'pending'|'linked'} */ (row.status === 'linked' ? 'linked' : 'pending'),
-      name: local.name || local.driverName || '기사',
-      phone: local.phone || '',
+      name: car?.driverName || local.name || local.driverName || '기사',
+      phone: car?.driverPhone || local.phone || '',
     }
   })
   // 슬라이스 B 보완(2026-09-01): linkRows가 배열이면(빈 배열 포함) 서버가 정본이다.
