@@ -74,7 +74,10 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   const quickCounts = settings.runCountToggle ? (settings.runCountPresets || []) : []
   // settings.clients는 항상 비어 있다(normalizeSettings가 안 만든다) — 실제 거래처
   // 목록은 이 화면의 clients prop(MainPageRoute.jsx가 넘긴다)이라 그쪽을 써야 한다.
-  const fixedRouteClient = getFixedRouteClient({ clients })
+  // 연동기사 본인 로그인이면 배정 차량 스코프(clientScopeKey)를 먼저 보고, 그
+  // 스코프에 아직 자기 고정노선이 없으면 차주 것으로 fallback한다(getFixedRouteClient
+  // 내부 규칙) — 전체 clients를 넘겨야 fallback 대상(차주 것)도 같이 보인다.
+  const fixedRouteClient = getFixedRouteClient({ clients }, clientScopeKey || logId)
   const palletVisible = !!(settings.fixedOn && fixedRouteClient?.palletOn)
   const showCallDetailList = settings.callDetail || draft.callDetails.length > 0
   const editingCallItem = editingCallId ? draft.callDetails.find((item) => item.id === editingCallId) || null : null

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { computeFixedRouteFare, reorderClients, resolveFixedUnitPrice, sortClientsPinnedFirst, upsertClient } from './clients.js'
+import { computeFixedRouteFare, getFixedRouteClient, reorderClients, resolveFixedUnitPrice, sortClientsPinnedFirst, upsertClient } from './clients.js'
 import { monthWorkFareSummary } from './day-record.js'
 import { getMonthlyFareRevenue } from './finance.js'
 
@@ -84,6 +84,54 @@ describe('거래처 저장 — 세금계산서 필드', () => {
     ]
     const reordered = reorderClients(clients, 'c1', 'c3')
     assert.deepEqual(reordered.map((c) => c.id), ['c2', 'c3', 'c1', 's1'])
+  })
+
+  // §15 슬라이스 D(2026-09-18) — 고정노선 "1곳 제한"이 차주 본인과 연동기사
+  // 각자의 스코프(scopedToVehicleNumber)별로 독립돼야 한다(sot.md §4-4c는
+  // "1곳"까지만 확정, 범위는 이번에 스코프별로 정정).
+  test('연동기사(스코프 다름)의 고정노선은 차주 본인 고정노선을 해제하지 않는다', () => {
+    const owner = upsertClient([], { companyName: '차주거래처', fixedRouteLinked: true, fixedUnitPrice: '100000' }).clients
+    const withDriver = upsertClient(owner, {
+      companyName: '기사거래처', fixedRouteLinked: true, fixedUnitPrice: '200000', scopedToVehicleNumber: '11가1111',
+    }).clients
+    assert.equal(withDriver.find((c) => c.companyName === '차주거래처')?.fixedRouteLinked, true, '차주 것은 그대로 켜져 있어야 한다')
+    assert.equal(withDriver.find((c) => c.companyName === '기사거래처')?.fixedRouteLinked, true)
+  })
+
+  test('같은 연동기사(같은 스코프) 안에서는 여전히 1곳만 남는다', () => {
+    const first = upsertClient([], { companyName: 'A기사거래처', fixedRouteLinked: true, fixedUnitPrice: '100000', scopedToVehicleNumber: '11가1111' }).clients
+    const two = upsertClient(first, { companyName: 'B기사거래처', fixedRouteLinked: true, fixedUnitPrice: '200000', scopedToVehicleNumber: '11가1111' }).clients
+    assert.equal(two.filter((c) => c.fixedRouteLinked).length, 1)
+    assert.equal(two.find((c) => c.companyName === 'B기사거래처')?.fixedRouteLinked, true)
+    assert.equal(two.find((c) => c.companyName === 'A기사거래처')?.fixedRouteLinked, false)
+  })
+})
+
+describe('getFixedRouteClient/resolveFixedUnitPrice — 스코프 지정 시 fallback (§15 슬라이스 D)', () => {
+  test('스코프 전용 고정노선이 있으면 그걸 쓴다', () => {
+    const settings = {
+      clients: [
+        { id: 'c-owner', companyName: '차주거래처', fixedRouteLinked: true, fixedUnitPrice: '100000' },
+        { id: 'c-driver', companyName: '기사거래처', fixedRouteLinked: true, fixedUnitPrice: '200000', scopedToVehicleNumber: '11가1111' },
+      ],
+    }
+    assert.equal(getFixedRouteClient(settings, '11가1111')?.id, 'c-driver')
+    assert.equal(resolveFixedUnitPrice(settings, '11가1111'), 200000)
+  })
+
+  test('스코프 전용 고정노선이 없으면 차주 본인(미스코프) 것으로 fallback한다', () => {
+    const settings = {
+      clients: [{ id: 'c-owner', companyName: '차주거래처', fixedRouteLinked: true, fixedUnitPrice: '100000' }],
+    }
+    assert.equal(getFixedRouteClient(settings, '11가1111')?.id, 'c-owner')
+    assert.equal(resolveFixedUnitPrice(settings, '11가1111'), 100000)
+  })
+
+  test('scopeKey를 안 넘기면 기존처럼 계정 전체에서 찾는다(하위호환)', () => {
+    const settings = {
+      clients: [{ id: 'c-driver', companyName: '기사거래처', fixedRouteLinked: true, fixedUnitPrice: '200000', scopedToVehicleNumber: '11가1111' }],
+    }
+    assert.equal(getFixedRouteClient(settings)?.id, undefined, '스코프 없이는 scoped 전용 고정노선을 안 찾는다(차주 fallback 대상이 없음)')
   })
 })
 

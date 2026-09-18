@@ -125,9 +125,9 @@ export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {
 // 같은 공식, computeFixedRouteFare 재사용, 2026-09-17).
 /** @param {Record<string, import('./day-record.js').DayRecordLike>} data @param {string} monthKey @param {DriverLinkLike} [link] @param {FinanceSettings} [settings] */
 export function flattenLinkedDriverTrips(data, monthKey, link, settings = {}) {
-  const fixedRouteClient = getFixedRouteClient(settings)
+  const fixedRouteClient = getFixedRouteClient(settings, link?.vehicleNumber)
   const fixedRouteOpts = {
-    fixedUnitPrice: resolveFixedUnitPrice(settings),
+    fixedUnitPrice: resolveFixedUnitPrice(settings, link?.vehicleNumber),
     palletUnitPrice: parseCurrencyValue(fixedRouteClient?.palletPrice),
     subFixedOn: !!settings.subFixedOn,
     activePalletOn: !!fixedRouteClient?.palletOn,

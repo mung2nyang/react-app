@@ -102,9 +102,9 @@ export function getCallDetailCommissionAmount(detail, fare, settings) {
  * @param {FinanceSettings} [settings]
  */
 export function getMonthlyDriverTotals(data, monthKey, link = null, settings = {}) {
-  const fixedRouteClient = getFixedRouteClient(settings)
+  const fixedRouteClient = getFixedRouteClient(settings, link?.vehicleNumber)
   const fixedRouteOpts = {
-    fixedUnitPrice: resolveFixedUnitPrice(settings),
+    fixedUnitPrice: resolveFixedUnitPrice(settings, link?.vehicleNumber),
     palletUnitPrice: parseCurrencyValue(fixedRouteClient?.palletPrice),
     subFixedOn: !!settings.subFixedOn,
     activePalletOn: !!fixedRouteClient?.palletOn,

@@ -15,19 +15,31 @@ import { PAYMENT_TERMS, needsPaymentTermValue } from './clientPaymentTerms.js'
 /** @typedef {import('./clientTypes.js').ClientLike} ClientLike */
 /** @typedef {import('./clientTypes.js').ClientDraft} ClientDraft */
 
-/** @param {{ clients?: Array<ClientLike> }} settings */
-export function getFixedRouteClient(settings) {
-  return (settings.clients || []).find((client) => client.fixedRouteLinked) || null
+// scopeKey를 안 넘기면 계정 전체에서 찾는다(기존 동작, 하위호환). 넘기면 그
+// 스코프(예: 연동기사 배정 차량번호) 전용 고정노선을 먼저 찾고, 없으면 차주
+// 본인(미스코프) 것으로 fallback한다 — 아직 그 스코프가 자기 고정노선을 등록
+// 안 했으면 지금처럼 차주 것을 그대로 쓰게 하기 위함(2026-09-18, §15 슬라이스 D).
+/** @param {{ clients?: Array<ClientLike> }} settings @param {string} [scopeKey] */
+export function getFixedRouteClient(settings, scopeKey) {
+  const list = settings.clients || []
+  const key = String(scopeKey || '').trim()
+  if (key) {
+    const scoped = list.find((client) => client.fixedRouteLinked && client.scopedToVehicleNumber === key)
+    if (scoped) return scoped
+  }
+  return list.find((client) => client.fixedRouteLinked && !client.scopedToVehicleNumber) || null
 }
 
-// 바닐라는 별도 "1회 단가" 설정이 없다. 계정에서 고정노선에 연결한 거래처 1곳의
-// fixedUnitPrice만 본다. settings.unitPrice는 포트 초기 임시값이라 더 이상 fallback하지 않는다.
+// 바닐라는 별도 "1회 단가" 설정이 없다. 계정(또는 scopeKey 스코프)에서 고정노선에
+// 연결한 거래처 1곳의 fixedUnitPrice만 본다. settings.unitPrice는 포트 초기
+// 임시값이라 더 이상 fallback하지 않는다.
 /**
  * @param {{ clients?: Array<ClientLike>, unitPrice?: number|string }} settings
+ * @param {string} [scopeKey]
  * @returns {number}
  */
-export function resolveFixedUnitPrice(settings) {
-  return Math.max(0, parseCurrencyValue(getFixedRouteClient(settings)?.fixedUnitPrice))
+export function resolveFixedUnitPrice(settings, scopeKey) {
+  return Math.max(0, parseCurrencyValue(getFixedRouteClient(settings, scopeKey)?.fixedUnitPrice))
 }
 
 // 고정노선 운행은 그날 기록에 금액을 안 저장하고(fixedCount만) 매번 단가×횟수로
@@ -121,8 +133,13 @@ export function upsertClient(clients, draft, editingId = null) {
   }
 
   const savedId = editingId || list[list.length - 1].id
+  const savedScope = next.scopedToVehicleNumber || ''
   const unique = fixedRouteLinked
-    ? list.map((client) => (client.id === savedId ? client : { ...client, fixedRouteLinked: false }))
+    ? list.map((client) => {
+      if (client.id === savedId) return client
+      if ((client.scopedToVehicleNumber || '') !== savedScope) return client
+      return { ...client, fixedRouteLinked: false }
+    })
     : list
   return { clients: sortClientsPinnedFirst(unique), id: savedId }
 }
