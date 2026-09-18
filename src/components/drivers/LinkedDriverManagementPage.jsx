@@ -27,8 +27,6 @@ import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../PageHeader.jsx'
 import './linked-driver.css'
 
-const SOON = '준비 중입니다.'
-
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
@@ -158,7 +156,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
         >
           거래처
         </button>
-        <button type="button" className="linked-driver-chip" onClick={() => showToast?.(SOON)}>운송내역서</button>
+        <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/report`)}>운송내역서</button>
         <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/expenses`)}>정비/주유/기타</button>
       </div>
 

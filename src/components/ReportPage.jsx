@@ -1,6 +1,7 @@
 // @ts-check
 // §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도, 250줄)
 import { useMemo, useRef, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
 import {
@@ -12,7 +13,7 @@ import {
 } from '../lib/report.js'
 import { buildDetailReport, detailReportClientOptions } from '../lib/reportDetail.js'
 import { buildMonthReport } from '../lib/reportSummary.js'
-import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkData } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../store/ownerDataHooks.js'
 import CalendarDateSelect from './calendar/CalendarDateSelect.jsx'
 import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'
@@ -25,11 +26,14 @@ const YEAR_OPTIONS = getYearOptions()
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
+ * @param {string} [props.logId] 특정 차량(연동기사 배정차량·미연동 서브차량)으로 스코프. 없으면 메인 차량.
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
+export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBack, showToast, onOpenMenu }) {
+  const { logId: rawLogId } = useParams()
+  const logKey = (logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)) || 'main'
   const [viewDate, setViewDate] = useState(() => new Date())
   const [savingPdf, setSavingPdf] = useState(false)
   const [savingImage, setSavingImage] = useState(false)
@@ -42,9 +46,11 @@ export default function ReportPage({ ownerKey = 'guest', onBack, showToast, onOp
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const expenses = useOwnerExpenses(ownerKey)
-  const cars = useOwnerCars(ownerKey)
+  const allCars = useOwnerCars(ownerKey)
+  const cars = useMemo(() => (logKey === 'main' ? allCars : allCars.filter((car) => car.number === logKey)), [allCars, logKey])
   const practiceSettings = useOwnerSettings(ownerKey)
-  const workData = useOwnerWorkData(ownerKey)
+  const workByLogId = useOwnerWorkDataByLogId(ownerKey)
+  const workData = workByLogId[logKey] || {}
   const clients = useOwnerClients(ownerKey)
   const storedProfile = useOwnerProfile(ownerKey)
   const report = useMemo(

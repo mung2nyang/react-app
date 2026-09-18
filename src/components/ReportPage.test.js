@@ -14,6 +14,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
+const { MemoryRouter } = await import('react-router-dom')
 const { default: ReportPage } = await import('./ReportPage.jsx')
 const { commitClients, commitWorkData } = await import('../store/commitHelpers.js')
 
@@ -25,7 +26,11 @@ async function renderReport(ownerKey) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(ReportPage, { ownerKey, onBack: () => {} }))
+    root.render(React.createElement(
+      MemoryRouter,
+      { initialEntries: ['/app/report'] },
+      React.createElement(ReportPage, { ownerKey, onBack: () => {} }),
+    ))
   })
   return {
     container,
