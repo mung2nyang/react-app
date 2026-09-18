@@ -153,7 +153,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
                 className="action-icon-btn"
                 title="기사차량 운행일지 설정"
                 aria-label="기사차량 운행일지 설정"
-                onClick={() => showToast?.('준비 중입니다.')}
+                onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/settings`)}
               >
                 <GearIcon />
               </button>
