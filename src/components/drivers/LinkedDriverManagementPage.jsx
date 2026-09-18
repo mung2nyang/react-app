@@ -27,6 +27,12 @@ import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../PageHeader.jsx'
 import './linked-driver.css'
 
+function GearIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+  )
+}
+
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
@@ -113,8 +119,11 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
 
   const assignment = link ? getAssignmentState(link) : null
   const driverName = link?.driverName || '기사'
-  const nameLine = unlinked ? plate : `${driverName} · ${plate || '차량 미지정'}`
-  const initial = String(unlinked ? plate : driverName).slice(0, 1)
+  const carDriverName = unlinked ? String(ctx.car?.driverName || '').trim() : ''
+  const nameLine = unlinked
+    ? (carDriverName ? `${carDriverName} · ${plate}` : plate)
+    : `${driverName} · ${plate || '차량 미지정'}`
+  const initial = String(unlinked ? (carDriverName || plate) : driverName).slice(0, 1)
 
   return (
     <div className="page">
@@ -124,18 +133,31 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
           <span className="linked-driver-avatar">{initial}</span>
           <span>
             <strong>{nameLine}</strong>
-            {!unlinked && <small>{link?.phone || '연락처 없음'}</small>}
+            {unlinked
+              ? carDriverName && <small>{ctx.car?.driverPhone || '연락처 없음'}</small>
+              : <small>{link?.phone || '연락처 없음'}</small>}
           </span>
         </div>
         <div>
           {unlinked ? (
-            <button
-              type="button"
-              className="linked-driver-chip"
-              onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}`)}
-            >
-              운행일지
-            </button>
+            <div className="linked-driver-profile-actions">
+              <button
+                type="button"
+                className="linked-driver-chip"
+                onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}`)}
+              >
+                운행일지
+              </button>
+              <button
+                type="button"
+                className="action-icon-btn"
+                title="기사차량 운행일지 설정"
+                aria-label="기사차량 운행일지 설정"
+                onClick={() => showToast?.('준비 중입니다.')}
+              >
+                <GearIcon />
+              </button>
+            </div>
           ) : (
             <>
               <span>{plate || '차량 미지정'}</span>

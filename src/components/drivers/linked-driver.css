@@ -61,6 +61,7 @@
   font-weight: 900;
 }
 .linked-driver-chip-row { display: flex; gap: 8px; margin: 12px 0 18px; }
+.linked-driver-profile-actions { display: flex; align-items: center; gap: 8px; }
 .linked-driver-chip {
   flex: 1;
   border: 1px solid var(--border-color);
