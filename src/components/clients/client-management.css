@@ -40,6 +40,18 @@
   flex-direction: column;
 }
 
+.management-card-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.client-card-copy {
+  flex: 1;
+  min-width: 0;
+}
+
 .client-card-title,
 .client-card-badges {
   display: flex;
