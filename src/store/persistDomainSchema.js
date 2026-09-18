@@ -13,13 +13,14 @@ import { DRIVER_INVOICE_BASES, DRIVER_SETTLEMENT_MODES, isAllowedEnum } from './
 
 const DRIVER_LINK_KEYS = ['id', 'vehicleNumber', 'assignmentStart', 'assignmentEnd', 'status']
 const ROUTE_PRESET_KEYS = ['id', 'loadLoc', 'unloadLoc']
+const SUB_CAR_SETTINGS_KEYS = ['inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn']
 const SETTINGS_KEYS = [
   'cars', 'clients', 'driverLinks', 'paymentOn', 'subPaymentOn', 'fixedOn', 'subFixedOn',
   'defaultDriverSettlementMode', 'driverInvoiceBasis', 'unitPrice', 'bizName', 'bizNumber',
   'bizRepresentative', 'userName', 'bizAddress', 'bizType', 'bizItem', 'bizEmail', 'theme',
   'inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn',
   'fixedRoutePresets', 'runCountToggle', 'runCountPresets', 'subFixedRouteOn', 'subFixedRoutePresets',
-  'subRunCountToggle', 'subRunCountPresets', 'pinnedLocations',
+  'subRunCountToggle', 'subRunCountPresets', 'pinnedLocations', 'subCarSettings',
 ]
 /** lib/profile.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
 const PROFILE_KEYS = [
@@ -47,6 +48,16 @@ function isRoutePreset(value) {
 }
 
 /** @param {JsonValue} value */
+function isPersistedSubCarSettings(value) {
+  if (!isPlainObject(value) || !hasOnlyKeys(value, SUB_CAR_SETTINGS_KEYS)) return false
+  if ('inputMode' in value && value.inputMode !== 'count' && value.inputMode !== 'fare') return false
+  for (const flag of ['callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn']) {
+    if (flag in value && typeof value[flag] !== 'boolean') return false
+  }
+  return true
+}
+
+/** @param {JsonValue} value */
 export function isPersistedSettings(value) {
   if (!isPlainObject(value) || !hasOnlyKeys(value, SETTINGS_KEYS)) return false
   if ('theme' in value && value.theme !== 'light' && value.theme !== 'dark') return false
@@ -68,6 +79,10 @@ export function isPersistedSettings(value) {
   if ('runCountPresets' in value && (!Array.isArray(value.runCountPresets) || !value.runCountPresets.every(isFiniteNumber))) return false
   if ('subRunCountPresets' in value && (!Array.isArray(value.subRunCountPresets) || !value.subRunCountPresets.every(isFiniteNumber))) return false
   if ('pinnedLocations' in value && (!Array.isArray(value.pinnedLocations) || !value.pinnedLocations.every((loc) => typeof loc === 'string'))) return false
+  if ('subCarSettings' in value) {
+    if (!isPlainObject(value.subCarSettings)) return false
+    if (!Object.values(value.subCarSettings).every(isPersistedSubCarSettings)) return false
+  }
   return true
 }
 

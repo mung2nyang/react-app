@@ -3,6 +3,8 @@ import { describe, test } from 'node:test'
 import {
   addFixedRoutePreset,
   addRunCountPreset,
+  defaultCarSettings,
+  normalizeCarSettings,
   normalizeFixedRoutePresets,
   normalizeRunCountPresets,
   normalizeSettings,
@@ -101,5 +103,48 @@ describe('driverInvoiceBasis — 기사 매입 계산서 발행 기준 보존', 
     const updated = normalizeSettings({ ...prev, unitPrice: 60000 })
     assert.equal(updated.driverInvoiceBasis, 'gross')
     assert.equal(updated.unitPrice, 60000)
+  })
+})
+
+describe('§16 슬라이스 C — 서브차량별 설정(subCarSettings)', () => {
+  test('기본값은 메인과 동일한 값에서 시작한다', () => {
+    assert.deepEqual(defaultCarSettings(), {
+      inputMode: 'count',
+      callDetail: false,
+      timeOn: false,
+      platformOn: false,
+      distanceOn: false,
+      cargoTonnageOn: false,
+    })
+  })
+
+  test('subFixedOn이 꺼져 있으면 메인과 동일하게 callDetail을 강제로 켠다', () => {
+    assert.equal(normalizeCarSettings({ callDetail: false }, false).callDetail, true)
+    assert.equal(normalizeCarSettings({ callDetail: false }, true).callDetail, false)
+  })
+
+  test('normalizeSettings가 차량번호별 subCarSettings 맵을 정규화한다', () => {
+    const settings = normalizeSettings({
+      subFixedOn: true,
+      subCarSettings: {
+        '22가2222': { inputMode: 'fare', cargoTonnageOn: true },
+        '33나3333': { callDetail: true },
+      },
+    })
+    assert.equal(settings.subCarSettings['22가2222'].inputMode, 'fare')
+    assert.equal(settings.subCarSettings['22가2222'].cargoTonnageOn, true)
+    assert.equal(settings.subCarSettings['22가2222'].timeOn, false)
+    assert.equal(settings.subCarSettings['33나3333'].callDetail, true)
+  })
+
+  test('깨진 값(배열·null·빈 키)은 걸러진다', () => {
+    const settings = normalizeSettings({
+      subCarSettings: { valid: { callDetail: true }, broken: null, '': { callDetail: true }, arr: [1, 2] },
+    })
+    assert.deepEqual(Object.keys(settings.subCarSettings), ['valid'])
+  })
+
+  test('subCarSettings 없이 저장해도 다른 필드가 탈락하지 않는다(빈 맵으로 정규화)', () => {
+    assert.deepEqual(normalizeSettings({}).subCarSettings, {})
   })
 })

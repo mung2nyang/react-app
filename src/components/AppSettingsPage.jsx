@@ -1,6 +1,9 @@
 // @ts-check
-import { useOwnerSettings } from '../store/ownerDataHooks.js'
+import { useParams } from 'react-router-dom'
+import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
 import { applyTheme, savePracticeSettings } from '../lib/practiceSettings.js'
+import { defaultCarSettings } from '../domain/practiceSettings.js'
+import { resolveDriverOrPlateLabel } from '../domain/driverManagementContext.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
 import SwitchRow from './SwitchRow.jsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
@@ -9,6 +12,7 @@ import AppSettingsBackupSection from './AppSettingsBackupSection.jsx'
 import './app-settings.css'
 
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../domain/financeTypes.js').SubCarPracticeSettings} SubCarPracticeSettings */
 
 const SUN_ICON = (
   <svg className="inline-icon sm" viewBox="0 0 24 24" aria-hidden="true">
@@ -40,6 +44,13 @@ const MOON_ICON = (
 export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
   const locked = useHydrationLock()
   const settings = useOwnerSettings(ownerKey)
+  const { logId: rawLogId } = useParams()
+  const logId = rawLogId ? decodeURIComponent(rawLogId) : ''
+  const cars = useOwnerCars(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
+  const carLabel = logId ? resolveDriverOrPlateLabel(logId, drivers, cars) : ''
+  const carSettings = logId ? (settings.subCarSettings?.[logId] || defaultCarSettings()) : defaultCarSettings()
+  const fixedOn = logId ? !!settings.subFixedOn : !!settings.fixedOn
 
   /**
    * @param {Partial<FinanceSettings>} nextPatch
@@ -54,11 +65,19 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
     }
   }
 
+  /** @param {Partial<SubCarPracticeSettings>} nextPatch 차량별(logId) 전용 항목만 — 결제/고정노선은 patch() 그대로 */
+  function patchActive(nextPatch) {
+    if (!logId) return patch(nextPatch)
+    const nextCar = { ...carSettings, ...nextPatch }
+    return patch({ subCarSettings: { ...(settings.subCarSettings || {}), [logId]: nextCar } })
+  }
+
   const isDark = settings.theme === 'dark'
+  const activeSettings = logId ? carSettings : settings
 
   return (
     <div className="page app-settings-page">
-      <PageHeader title="앱 설정" onBack={onBack} onOpenMenu={onOpenMenu} />
+      <PageHeader title={logId ? `${carLabel} 운행일지 설정` : '앱 설정'} onBack={onBack} onOpenMenu={onOpenMenu} />
 
       {locked && (
         <p id="settingsHydrationLockNotice" className="car-type-hint">
@@ -67,19 +86,21 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
       )}
 
       <fieldset disabled={locked} style={{ border: 0, margin: 0, padding: 0 }}>
-        <section className="setting-section settings-theme-card">
-          <div className="setting-item">
-            <label>테마 선택</label>
-            <button
-              type="button"
-              className="theme-toggle-btn"
-              onClick={() => patch({ theme: isDark ? 'light' : 'dark' })}
-            >
-              {isDark ? MOON_ICON : SUN_ICON}
-              <span>{isDark ? '다크 모드' : '라이트 모드'}</span>
-            </button>
-          </div>
-        </section>
+        {!logId && (
+          <section className="setting-section settings-theme-card">
+            <div className="setting-item">
+              <label>테마 선택</label>
+              <button
+                type="button"
+                className="theme-toggle-btn"
+                onClick={() => patch({ theme: isDark ? 'light' : 'dark' })}
+              >
+                {isDark ? MOON_ICON : SUN_ICON}
+                <span>{isDark ? '다크 모드' : '라이트 모드'}</span>
+              </button>
+            </div>
+          </section>
+        )}
 
         <section className="setting-section">
           <h3>운행 일지 설정</h3>
@@ -88,15 +109,15 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
             <div className="segment-control">
               <button
                 type="button"
-                className={`segment-btn${settings.inputMode === 'count' ? ' active' : ''}`}
-                onClick={() => patch({ inputMode: 'count' })}
+                className={`segment-btn${activeSettings.inputMode === 'count' ? ' active' : ''}`}
+                onClick={() => patchActive({ inputMode: 'count' })}
               >
                 횟수
               </button>
               <button
                 type="button"
-                className={`segment-btn${settings.inputMode === 'fare' ? ' active' : ''}`}
-                onClick={() => patch({ inputMode: 'fare' })}
+                className={`segment-btn${activeSettings.inputMode === 'fare' ? ' active' : ''}`}
+                onClick={() => patchActive({ inputMode: 'fare' })}
               >
                 금액
               </button>
@@ -108,29 +129,31 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
           <SwitchRow
             id="callDetailToggle"
             label="운행 일지 세부 입력"
-            checked={!!settings.callDetail}
-            disabled={!settings.fixedOn}
-            onChange={(checked) => patch({ callDetail: checked })}
+            checked={!!activeSettings.callDetail}
+            disabled={!fixedOn}
+            onChange={(checked) => patchActive({ callDetail: checked })}
           />
-          {!settings.fixedOn && (
+          {!fixedOn && (
             <p className="car-type-hint">고정 노선을 끄면 세부 입력이 필수로 켜집니다.</p>
           )}
-          {settings.callDetail && (
+          {activeSettings.callDetail && (
             <div className="tree-line-group">
-              <SwitchRow id="paymentToggle" label="결제 및 수금 입력" checked={!!settings.paymentOn} onChange={(checked) => patch({ paymentOn: checked })} />
-              <SwitchRow id="timeToggle" label="운행 시간 입력" checked={!!settings.timeOn} onChange={(checked) => patch({ timeOn: checked })} />
-              <SwitchRow id="platformToggle" label="플랫폼 입력" checked={!!settings.platformOn} onChange={(checked) => patch({ platformOn: checked })} />
-              <SwitchRow id="distanceToggle" label="계기판 입력" checked={!!settings.distanceOn} onChange={(checked) => patch({ distanceOn: checked })} />
-              <SwitchRow id="cargoTonnageToggle" label="화물 톤수 입력" checked={!!settings.cargoTonnageOn} onChange={(checked) => patch({ cargoTonnageOn: checked })} />
+              {!logId && (
+                <SwitchRow id="paymentToggle" label="결제 및 수금 입력" checked={!!settings.paymentOn} onChange={(checked) => patch({ paymentOn: checked })} />
+              )}
+              <SwitchRow id="timeToggle" label="운행 시간 입력" checked={!!activeSettings.timeOn} onChange={(checked) => patchActive({ timeOn: checked })} />
+              <SwitchRow id="platformToggle" label="플랫폼 입력" checked={!!activeSettings.platformOn} onChange={(checked) => patchActive({ platformOn: checked })} />
+              <SwitchRow id="distanceToggle" label="계기판 입력" checked={!!activeSettings.distanceOn} onChange={(checked) => patchActive({ distanceOn: checked })} />
+              <SwitchRow id="cargoTonnageToggle" label="화물 톤수 입력" checked={!!activeSettings.cargoTonnageOn} onChange={(checked) => patchActive({ cargoTonnageOn: checked })} />
             </div>
           )}
         </section>
 
         <section className="setting-section">
-          <FixedRouteBlock scope="main" settings={settings} onPatch={patch} showToast={showToast} />
+          <FixedRouteBlock scope={logId ? 'sub' : 'main'} settings={settings} onPatch={patch} showToast={showToast} />
         </section>
 
-        {ownerKey === 'guest' && <AppSettingsBackupSection showToast={showToast} />}
+        {!logId && ownerKey === 'guest' && <AppSettingsBackupSection showToast={showToast} />}
       </fieldset>
     </div>
   )

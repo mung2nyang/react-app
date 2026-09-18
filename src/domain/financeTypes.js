@@ -94,6 +94,17 @@
  * @property {boolean} [subRunCountToggle]
  * @property {Array<number>} [subRunCountPresets]
  * @property {Array<string>} [pinnedLocations]
+ * @property {Record<string, SubCarPracticeSettings>} [subCarSettings] 서브차량 번호별 전용 값(§16 슬라이스 C — 세부입력 5종+달력 표시방식만, 결제/고정노선은 여전히 공용)
+ */
+
+/**
+ * @typedef {Object} SubCarPracticeSettings
+ * @property {'count'|'fare'} inputMode
+ * @property {boolean} callDetail
+ * @property {boolean} timeOn
+ * @property {boolean} platformOn
+ * @property {boolean} distanceOn
+ * @property {boolean} cargoTonnageOn
  */
 
 export {}

@@ -3,7 +3,8 @@
 // (loadPracticeSettings/savePracticeSettings)와 DOM 부작용(applyTheme)은 lib/practiceSettings.js에
 // 남아 이 파일을 재수출한다 — applyTheme은 순수 함수가 아니라(document를 직접 바꿈)
 // domain으로 옮기지 않았다.
-// 203줄, §6 예외: scope별 프리셋 CRUD 함수들이 서로 얽혀 있어 쪼개면 기계적 절단이 됨.
+// 249줄, §6 예외: scope별 프리셋 CRUD 함수들이 서로 얽혀 있어 쪼개면 기계적 절단이 됨
+// (§16 슬라이스 C에서 서브차량 전용 정규화 함수 추가로 증가).
 import { normalizePinnedLocations } from './locationShortcuts.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
@@ -129,7 +130,48 @@ export function normalizeSettings(raw = {}) {
     subRunCountPresets: normalizeRunCountPresets(raw.subRunCountPresets),
     driverInvoiceBasis: raw.driverInvoiceBasis === 'gross' ? 'gross' : 'net',
     pinnedLocations: normalizePinnedLocations(raw.pinnedLocations),
+    subCarSettings: normalizeSubCarSettingsMap(raw.subCarSettings, asBool(raw.subFixedOn, fixedOn)),
   }
+}
+
+/**
+ * 서브차량 전용 설정(§16 슬라이스 C, 세부입력 5종+달력 표시방식만). `subFixedOn`
+ * 꺼지면 메인과 동일 규칙으로 `callDetail` 강제 켬(고정노선은 여전히 공용).
+ * @param {Partial<import('./financeTypes.js').SubCarPracticeSettings>} [raw]
+ * @param {boolean} [subFixedOn]
+ * @returns {import('./financeTypes.js').SubCarPracticeSettings}
+ */
+export function normalizeCarSettings(raw = {}, subFixedOn = true) {
+  return {
+    inputMode: raw.inputMode === 'fare' ? 'fare' : 'count',
+    callDetail: subFixedOn ? asBool(raw.callDetail, defaults.callDetail) : true,
+    timeOn: asBool(raw.timeOn, defaults.timeOn),
+    platformOn: asBool(raw.platformOn, defaults.platformOn),
+    distanceOn: asBool(raw.distanceOn, defaults.distanceOn),
+    cargoTonnageOn: asBool(raw.cargoTonnageOn, defaults.cargoTonnageOn),
+  }
+}
+
+/** @returns {import('./financeTypes.js').SubCarPracticeSettings} */
+export function defaultCarSettings() {
+  return normalizeCarSettings()
+}
+
+/**
+ * @param {unknown} raw
+ * @param {boolean} subFixedOn
+ * @returns {Record<string, import('./financeTypes.js').SubCarPracticeSettings>}
+ */
+function normalizeSubCarSettingsMap(raw, subFixedOn) {
+  /** @type {Record<string, import('./financeTypes.js').SubCarPracticeSettings>} */
+  const map = {}
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return map
+  Object.entries(raw).forEach(([carNumber, value]) => {
+    const key = String(carNumber || '').trim()
+    if (!key || !value || typeof value !== 'object' || Array.isArray(value)) return
+    map[key] = normalizeCarSettings(/** @type {Partial<import('./financeTypes.js').SubCarPracticeSettings>} */ (value), subFixedOn)
+  })
+  return map
 }
 
 /**
