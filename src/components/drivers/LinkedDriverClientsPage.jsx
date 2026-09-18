@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ConfirmModal from '../ConfirmModal.jsx'
 import ClientFormModal from '../clients/ClientFormModal.jsx'
-import { getEffectiveDriverSettlementMode } from '../../domain/cars.js'
+import { getEffectiveDriverSettlementMode, getShortCarNum } from '../../domain/cars.js'
 import { resolveDriverManagementContext } from '../../domain/driverManagementContext.js'
 import { requestClientSave } from '../../lib/clientMutations.js'
 import { requestClientDeletion } from '../../lib/directMutationActions.js'
@@ -124,7 +124,7 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
   }
 
   const title = unlinked
-    ? (ctx.plate ? `${ctx.plate} 거래처` : '거래처')
+    ? (ctx.plate ? `${ctx.car?.driverName || getShortCarNum(ctx.plate)} 거래처` : '거래처')
     : `${link?.driverName || '기사'} 기사 거래처`
 
   if (ctx.notFound) {

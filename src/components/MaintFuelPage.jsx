@@ -6,6 +6,7 @@ import CalendarDateSelect from './calendar/CalendarDateSelect.jsx'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import CardActionButtons from './shared/CardActionButtons.jsx'
+import { resolveDriverOrPlateLabel } from '../domain/driverManagementContext.js'
 import { getExpensesForLog } from '../domain/expenseScope.js'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import {
@@ -13,7 +14,7 @@ import {
   monthTotal, removeExpense, saveExpenses, upsertExpense,
 } from '../lib/expenses.js'
 import { formatWon } from '../lib/money.js'
-import { readOwnerExpenses, useOwnerExpenses } from '../store/ownerDataHooks.js'
+import { readOwnerExpenses, useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../store/ownerDataHooks.js'
 import './maint-fuel.css'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
@@ -59,6 +60,8 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
   const { logId: rawLogId } = useParams()
   const logId = logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)
   const items = useOwnerExpenses(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
+  const cars = useOwnerCars(ownerKey)
   const [kind, setKind] = useState(/** @type {ExpenseItem['kind']} */ ('maint'))
   const [viewDate, setViewDate] = useState(() => new Date())
   const [modalOpen, setModalOpen] = useState(false)
@@ -72,7 +75,9 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
   const groups = useMemo(() => groupExpensesByDate(list), [list])
   const total = monthTotal(scopedItems, kind, year, month)
   const kindLabel = KINDS.find((item) => item.value === kind)?.label || '정비'
-  const title = !logId || logId === 'main' ? '정비/주유/기타' : `${logId} 정비/주유/기타`
+  const title = !logId || logId === 'main'
+    ? '정비/주유/기타'
+    : `${resolveDriverOrPlateLabel(logId, drivers, cars)} 정비/주유/기타`
 
   /** @param {Array<ExpenseItem>} next @returns {Promise<boolean>} */
   async function persist(next) {
