@@ -1,4 +1,5 @@
 // @ts-check
+import './notification-panel.css'
 /** @typedef {ReturnType<typeof import('../lib/notifications.js').collectNotifications>[number]} NotificationItem */
 
 /**
