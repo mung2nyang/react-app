@@ -289,14 +289,6 @@
   cursor: pointer;
 }
 
-.car-commission-panel {
-  margin: 3px 0 14px;
-  padding: 14px;
-  border: 1px solid color-mix(in srgb, var(--primary-color) 22%, var(--border-color));
-  border-radius: 16px;
-  background: color-mix(in srgb, var(--primary-color) 5%, var(--input-bg));
-}
-
 /* 모달 안 토글버튼 라운드 12px로 통일(이식 누락분, 원본 style.css:5672). */
 .modal-content .toggle-btn {
   min-height: 44px;
@@ -455,13 +447,6 @@
   background: var(--primary-color);
   border-color: var(--primary-color);
   color: #fff;
-}
-
-.work-log-expense-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
 }
 
 .top-notification-btn.icon-btn:hover,
