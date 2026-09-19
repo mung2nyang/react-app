@@ -172,6 +172,10 @@
   font-size: var(--fs-2);
 }
 
+.management-list-card .car-sub-text span + span {
+  margin-left: 8px;
+}
+
 .car-action-btns {
   display: flex;
   align-self: flex-start;
@@ -301,10 +305,6 @@
   font-size: var(--fs-2);
 }
 
-.management-list-card .car-sub-text span + span {
-  margin-left: 8px;
-}
-
 .personal-inline-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -393,23 +393,6 @@
   cursor: pointer;
 }
 
-.tree-line-group {
-  position: relative;
-  padding-left: 24px;
-  margin-top: 8px;
-}
-
-.tree-line-group::before {
-  content: '';
-  position: absolute;
-  left: 8px;
-  top: 4px;
-  bottom: 4px;
-  width: 2px;
-  border-radius: 2px;
-  background: var(--border-color);
-}
-
 .maint-fuel-tabs {
   margin-bottom: 14px;
 }
@@ -422,31 +405,6 @@
   display: flex;
   justify-content: center;
   margin-bottom: 16px;
-}
-
-.pill-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.pill-btn {
-  min-height: 36px;
-  padding: 6px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--input-bg);
-  color: var(--text-color);
-  font: inherit;
-  font-size: var(--fs-2);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.pill-btn.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #fff;
 }
 
 .top-notification-btn.icon-btn:hover,

@@ -16,6 +16,32 @@
   color: var(--sub-text-color);
 }
 
+/* 알약 버튼 — side-menu.css에서 이동(ExpenseFormModal 전용). 위 .expense-form-content 규칙 뒤에 둬야 활성 배경이 유지됨. */
+.pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pill-btn {
+  min-height: 36px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pill-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+
 .expense-form-content .expense-payment-row {
   display: flex;
   align-items: center;

@@ -179,3 +179,21 @@
   font-size: var(--fs-2);
   cursor: pointer;
 }
+
+/* 세부 입력 트리선 — side-menu.css에서 이동(AppSettingsPage·FixedRouteBlock 전용). */
+.tree-line-group {
+  position: relative;
+  padding-left: 24px;
+  margin-top: 8px;
+}
+
+.tree-line-group::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--border-color);
+}
