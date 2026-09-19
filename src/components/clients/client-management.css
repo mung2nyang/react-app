@@ -1,5 +1,5 @@
 /* 거래처 전용 — side-menu.css에서 분리. ClientListPage 등 거래처 화면이 import.
-   `.management-badge` 기본·`.tax-invoice`는 공용이라 side-menu.css에 둠. */
+   `.management-badge` 기본·`.tax-invoice`는 공용이라 management-common.css에 둠. */
 
 /* 거래처 수수료 입력 — 차량용 수수료 입력(car-management.css)과 별개, 원본처럼
    토글 버튼+입력을 한 줄로 붙인다(ClientTradeFields.jsx). */

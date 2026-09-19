@@ -1,5 +1,5 @@
 /* 차량관리 전용 — side-menu.css에서 분리. CarListPage.jsx가 import.
-   `.car-list`는 MaintFuelPage도 써서 side-menu.css에 공용으로 둠. */
+   `.car-list`는 MaintFuelPage도 써서 management-common.css에 공용으로 둠. */
 
 .management-list-card .car-info-text {
   display: flex;

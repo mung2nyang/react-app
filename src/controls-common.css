@@ -1,0 +1,121 @@
+/* 폼·컨트롤 공용(모달 토글·개인정보 폼 조각·설정 행·구간 토글·테마 토글·탭·헤더 아이콘 hover) — side-menu.css에서 분리. */
+
+/* 모달 안 토글버튼 라운드 12px로 통일(이식 누락분, 원본 style.css:5672). */
+.modal-content .toggle-btn {
+  min-height: 44px;
+  border-radius: 12px;
+}
+
+.car-type-hint {
+  margin: 0 0 16px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+}
+
+.personal-inline-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.personal-account-btn {
+  width: 100%;
+  min-height: 44px;
+  border: none;
+  border-radius: 14px;
+  background: var(--primary-color);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.personal-account-btn.ghost {
+  background: var(--input-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.setting-section {
+  margin-bottom: 10px;
+  padding: 14px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.setting-section h3 {
+  margin: 0 0 10px;
+  font-size: var(--fs-3);
+  font-weight: 800;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  min-height: 36px;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-item > label:first-child {
+  font-weight: 600;
+  font-size: var(--fs-4);
+}
+
+.settings-segmented-control {
+  display: flex;
+  gap: 6px;
+}
+
+.settings-segmented-control .toggle-btn {
+  min-width: 64px;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+.toggle-btn.active-work {
+  background-color: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+
+.theme-toggle-btn {
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 13px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.maint-fuel-tabs {
+  margin-bottom: 14px;
+}
+
+.maint-fuel-tabs .toggle-btn {
+  flex: 1;
+}
+
+.maint-fuel-nav {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.top-notification-btn.icon-btn:hover,
+.top-menu-btn.icon-btn:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+}

@@ -1,6 +1,6 @@
 /* §11 개인정보 전용 — side-menu.css 블록 D에서 분리.
    .personal-inline-fields / .personal-account-btn 은
-   다른 화면 공유라 side-menu.css에 유지. */
+   다른 화면 공유라 controls-common.css에 유지. */
 
 .personal-info-page .personal-card-grid {
   display: grid;

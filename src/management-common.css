@@ -1,0 +1,166 @@
+/* 관리형 화면 공용(화면 셸·카드·액션 아이콘 버튼·배지·빈 화면·추가 FAB) — side-menu.css에서 분리. */
+
+.car-management-page,
+.client-management-page,
+.personal-info-page,
+.app-settings-page,
+.maint-fuel-page,
+.receivables-page,
+.report-page-wrap,
+.coming-soon-page,
+.revenue-page,
+.my-page {
+  min-height: calc(100vh - 40px);
+  padding-bottom: 92px;
+  text-align: left;
+}
+
+.car-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.management-list-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 94px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 26px;
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.management-card-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.management-list-card .car-sub-text {
+  margin-top: 4px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+}
+
+.management-list-card .car-sub-text span + span {
+  margin-left: 8px;
+}
+
+.car-action-btns {
+  display: flex;
+  align-self: flex-start;
+  flex-shrink: 0;
+  gap: 3px;
+  margin-left: 10px;
+}
+
+.action-icon-btn {
+  background: none;
+  border: none;
+  color: var(--sub-text-color);
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 700;
+}
+
+.action-icon-btn:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-color);
+}
+
+.action-icon-btn.del:hover {
+  color: var(--sunday-color);
+}
+
+.action-icon-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.management-list-card .action-icon-btn,
+.management-record-actions .action-icon-btn {
+  width: 34px;
+  height: 34px;
+}
+
+.management-list-card .action-icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.management-record-actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.management-record-actions .action-icon-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.management-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 6px;
+  border-radius: 5px;
+  font-size: var(--fs-floor);
+  font-weight: 800;
+  line-height: 1;
+  border: 1px solid var(--sub-text-color);
+  color: var(--sub-text-color);
+  background: transparent;
+}
+
+.management-badge.main {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.management-badge.log-enabled {
+  border: none;
+  background: var(--today-bg);
+  color: var(--sub-text-color);
+}
+
+.empty-state {
+  padding: 36px 20px;
+  color: var(--sub-text-color);
+  font-weight: 600;
+  text-align: center;
+  background-color: var(--card-bg);
+  border-radius: 24px;
+  border: 1px dashed var(--border-color);
+}
+
+.management-add-fab {
+  position: fixed;
+  z-index: 95;
+  right: max(20px, calc((100vw - 480px) / 2 + 20px));
+  bottom: 88px;
+  min-height: 44px;
+  padding: 8px 13px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--sub-text-color);
+  box-shadow: var(--shadow-md);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 800;
+  cursor: pointer;
+}
