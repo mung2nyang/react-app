@@ -31,3 +31,89 @@
   font-size: var(--fs-2);
   line-height: 1.55;
 }
+
+/* 차량 수수료 입력 — side-menu.css에서 이동(CarFormModal 전용). */
+.car-commission-type {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--border-color) 55%, transparent);
+}
+
+.car-commission-type button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--sub-text-color);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.car-commission-type button span {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 4px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--sub-text-color) 10%, transparent);
+  font-size: var(--fs-floor);
+}
+
+.car-commission-type button.active {
+  background: var(--card-bg);
+  color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.car-commission-type button.active span {
+  background: color-mix(in srgb, var(--primary-color) 13%, transparent);
+}
+
+.car-commission-value {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  color: var(--text-color);
+  font-size: var(--fs-2);
+  font-weight: 800;
+}
+
+.car-commission-input {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg);
+}
+
+.car-commission-input input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-4);
+  font-weight: 800;
+  text-align: right;
+}
+
+.car-commission-input b {
+  min-width: 18px;
+  margin-left: 7px;
+  color: var(--primary-color);
+  font-size: var(--fs-2);
+  text-align: center;
+}

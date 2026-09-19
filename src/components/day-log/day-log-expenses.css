@@ -87,3 +87,48 @@
   font-size: var(--fs-6);
   font-weight: 800;
 }
+
+/* 일지 비용 위젯 기본 규칙 — side-menu.css에서 이동(day-log 전용). */
+.compact-add-btn {
+  min-height: 36px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.work-log-expense-group {
+  margin-top: 10px;
+}
+
+.maint-fuel-item {
+  padding: 8px 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.maint-fuel-head,
+.maint-fuel-info,
+.maint-fuel-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.maint-fuel-total {
+  margin-top: 6px;
+  color: var(--primary-color);
+  font-size: var(--fs-3);
+}
+
+.expense-kind-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 4px;
+}

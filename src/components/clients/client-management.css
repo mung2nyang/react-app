@@ -124,3 +124,23 @@
   opacity: 0.72;
   cursor: grabbing;
 }
+
+/* 거래처 폼 거래 옵션 문구 — side-menu.css에서 이동(ClientTradeFields 전용). */
+.car-option-copy {
+  min-width: 0;
+  padding-right: 14px;
+  text-align: left;
+}
+
+.car-option-copy label {
+  color: var(--text-color);
+  font-size: var(--fs-4);
+  font-weight: 750;
+}
+
+.car-option-copy p {
+  margin: 4px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.4;
+}
