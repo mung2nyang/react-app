@@ -13,10 +13,11 @@
 // 일지를 닫을 때 진짜 뒤로가기(navigate(-1))와 직접 진입 시의 교체 이동을 구분한다
 // (resolveWorkLogCloseTarget — workLogNavigation.js).
 // Step 9 슬라이스 B: `/app/logs/:logId` 서브 차량 달력 + 일지 닫기 시 그 달력 복귀.
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import CalendarPage from '../components/calendar/CalendarPage.jsx'
 import DayLogPage from '../components/day-log/DayLogPage.jsx'
+import { resolveLogSettings } from '../domain/carSettingsScope.js'
 import { parseDateKeySelection } from '../lib/calendar.js'
 import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../store/ownerDataHooks.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
@@ -52,7 +53,8 @@ export default function MainPageRoute({
   const navigate = useNavigate()
   const location = useLocation()
   const selected = parseDateKeySelection(date)
-  const settings = useOwnerSettings(ownerKey)
+  const ownerSettings = useOwnerSettings(ownerKey)
+  const settings = useMemo(() => resolveLogSettings(ownerSettings, logId), [ownerSettings, logId])
   const clients = useOwnerClients(ownerKey)
   const cars = useOwnerCars(ownerKey)
   // 연동 기사 본인 세션: workData는 항상 logId='main'이지만 거래처는 배정 차량 스코프.

@@ -12,6 +12,7 @@ import { useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../domain/calendarViewDate.js'
+import { resolveLogSettings } from '../../domain/carSettingsScope.js'
 import { getFixedRouteClient, resolveFixedUnitPrice } from '../../domain/clients.js'
 import { monthCallUnpaidTotal } from '../../domain/day-record.js'
 import { monthSettlementSummary } from '../../domain/monthSettlement.js'
@@ -54,6 +55,7 @@ export default function CalendarPage({
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const workData = isMain ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)
   const settings = useOwnerSettings(ownerKey)
+  const inputMode = resolveLogSettings(settings, logId).inputMode === 'fare' ? 'fare' : 'count'
   const clients = useOwnerClients(ownerKey)
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
   const unitPrice = resolveFixedUnitPrice({ clients })
@@ -100,7 +102,7 @@ export default function CalendarPage({
         cells={cells}
         month={month + 1}
         workData={workData}
-        inputMode={settings.inputMode === 'fare' ? 'fare' : 'count'}
+        inputMode={inputMode}
         unitPrice={unitPrice}
         paymentOn={paymentOn}
         expenses={expenses}
