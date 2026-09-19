@@ -221,15 +221,6 @@
   height: 34px;
 }
 
-.management-list-card .action-icon-btn.action-text-btn,
-.management-record-actions .action-icon-btn.action-text-btn {
-  width: auto;
-  height: auto;
-  white-space: nowrap;
-  flex-shrink: 0;
-  padding: 6px 10px;
-}
-
 .management-list-card .action-icon-btn svg {
   width: 16px;
   height: 16px;
@@ -323,25 +314,6 @@
   border: 1px solid color-mix(in srgb, var(--primary-color) 22%, var(--border-color));
   border-radius: 16px;
   background: color-mix(in srgb, var(--primary-color) 5%, var(--input-bg));
-}
-
-.car-commission-heading {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-bottom: 12px;
-}
-
-.car-commission-heading strong {
-  color: var(--text-color);
-  font-size: var(--fs-3);
-  font-weight: 850;
-}
-
-.car-commission-heading span {
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-  line-height: 1.4;
 }
 
 .car-commission-type {
@@ -438,26 +410,6 @@
 .car-type-hint {
   margin: 0 0 16px;
   color: var(--sub-text-color);
-  font-size: var(--fs-2);
-}
-
-.car-daylog-preview {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.car-daylog-preview li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  background: var(--card-bg);
-  color: var(--text-color);
   font-size: var(--fs-2);
 }
 
