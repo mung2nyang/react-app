@@ -1,0 +1,33 @@
+/* 기사 초대코드 입력 화면 안내 카드 — side-menu.css에서 이동(InviteRedeemPage 전용). */
+
+.personal-intro {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 10px;
+  padding: 14px 16px 13px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 30%, var(--border-color));
+  border-radius: 22px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--primary-color) 13%, var(--card-bg)), var(--card-bg) 72%);
+  text-align: left;
+}
+
+.personal-intro-kicker {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--primary-color);
+  font-size: var(--fs-floor);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.personal-intro strong {
+  display: block;
+  font-size: var(--fs-6);
+  line-height: 1.38;
+}
+
+.personal-intro p {
+  margin-top: 5px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}

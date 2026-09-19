@@ -1,6 +1,7 @@
 // @ts-check
 import { assetPath } from '../../lib/assetPath.js'
 import CalendarDateSelect from './CalendarDateSelect.jsx'
+import './calendar-header.css'
 
 const BANNER = assetPath('/images/banner_image.png')
 

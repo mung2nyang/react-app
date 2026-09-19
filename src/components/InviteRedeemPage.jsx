@@ -5,6 +5,7 @@ import { redeemDriverInviteCode } from '../lib/driverLinkRpc.js'
 import { buildCloudAppSession, ownerKeyFromSession } from '../app/boot.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
 import PageHeader from './PageHeader.jsx'
+import './InviteRedeemPage.css'
 
 /**
  * @param {{ session: AppSession|null, showToast?: (message: string) => void, onBack: () => void, onLinked: (session: AppSession) => void }} props

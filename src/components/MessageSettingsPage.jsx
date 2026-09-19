@@ -9,6 +9,7 @@ import {
   saveMessageTemplateSettings,
 } from '../lib/messageTemplates.js'
 import PageHeader from './PageHeader.jsx'
+import './message-settings.css'
 
 /**
  * @param {Object} props

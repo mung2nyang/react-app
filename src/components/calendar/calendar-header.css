@@ -1,0 +1,23 @@
+/* 캘린더 헤더 알림 버튼·배지 — side-menu.css에서 이동(CalendarHeader 전용). */
+
+.top-notification-btn {
+  position: relative;
+  z-index: 100;
+  overflow: visible;
+}
+
+.notification-count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e11d48;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}

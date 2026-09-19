@@ -313,38 +313,6 @@
   margin-left: 8px;
 }
 
-.personal-intro {
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 10px;
-  padding: 14px 16px 13px;
-  border: 1px solid color-mix(in srgb, var(--primary-color) 30%, var(--border-color));
-  border-radius: 22px;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--primary-color) 13%, var(--card-bg)), var(--card-bg) 72%);
-  text-align: left;
-}
-
-.personal-intro-kicker {
-  display: block;
-  margin-bottom: 5px;
-  color: var(--primary-color);
-  font-size: var(--fs-floor);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-}
-
-.personal-intro strong {
-  display: block;
-  font-size: var(--fs-6);
-  line-height: 1.38;
-}
-
-.personal-intro p {
-  margin-top: 5px;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-}
-
 .personal-inline-fields {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -496,43 +464,8 @@
   gap: 10px;
 }
 
-.top-notification-btn {
-  position: relative;
-  z-index: 100;
-  overflow: visible;
-}
-
-.notification-count-badge {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border-radius: 999px;
-  background: #e11d48;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 18px;
-  text-align: center;
-}
-
 .top-notification-btn.icon-btn:hover,
 .top-menu-btn.icon-btn:hover {
   background-color: var(--hover-bg);
   color: var(--text-color);
 }
-
-.message-settings-section { margin-bottom: 10px; padding: 14px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--card-bg); box-shadow: var(--shadow-sm); }
-.message-settings-heading { margin-bottom: 10px; }
-.message-settings-heading h3, .message-settings-heading p, .message-settings-variables { margin: 0; }
-.message-settings-heading h3 { color: var(--text-color); font-size: var(--fs-3); font-weight: 850; }
-.message-settings-heading p { margin-top: 4px; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.45; }
-.message-settings-textarea { display: block; width: 100%; min-height: 104px; padding: 11px 12px; resize: vertical; border: 1px solid var(--border-color); border-radius: 12px; outline: none; box-sizing: border-box; background: var(--input-bg); color: var(--text-color); font: inherit; font-size: var(--fs-2); font-weight: 500; line-height: 1.55; }
-.message-settings-variables { margin-top: 8px; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; }
-.message-settings-variables b { color: var(--primary-color); }
-.message-settings-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.message-settings-actions button { min-height: 44px; margin: 0; border-radius: 12px; font: inherit; font-size: var(--fs-floor); font-weight: 850; cursor: pointer; }
-.message-settings-reset { border: 1px solid var(--border-color); background: var(--input-bg); color: var(--sub-text-color); }
-.message-settings-save { border: 1px solid var(--primary-color); background: var(--primary-color); color: #ffffff; }
