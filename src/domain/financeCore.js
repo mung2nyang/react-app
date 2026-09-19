@@ -153,13 +153,13 @@ export function getMonthlyFareRevenue(monthKey, settings = {}, workDataByLogId =
   /** @type {Array<{ logId: string, label: string, fare: number, tripCount: number }>} */
   const byVehicle = []
 
-  const fixedRouteClientForTotals = getFixedRouteClient(settings)
   sources.forEach((source) => {
     const isMain = source.logId === 'main'
     const activeFixedOn = isMain ? settings.fixedOn : settings.subFixedOn
+    // 소스(차량)별 스코프 고정노선 우선, 없으면 차주 것 fallback(getFixedRouteClient).
+    const fixedRouteClientForTotals = getFixedRouteClient(settings, source.logId)
     const activePalletOn = !!fixedRouteClientForTotals?.palletOn
-    // 달력·매출 단가는 고정노선 연결 거래처 fixedUnitPrice만 (resolveFixedUnitPrice).
-    const fixedUnitPrice = resolveFixedUnitPrice(settings)
+    const fixedUnitPrice = resolveFixedUnitPrice(settings, source.logId)
     const palletUnitPrice = parseCurrencyValue(fixedRouteClientForTotals?.palletPrice)
 
     let vehicleFare = 0

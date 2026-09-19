@@ -407,3 +407,55 @@ test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님
     container.remove()
   }
 })
+
+// 미연동 고정노선 슬라이스(2026-09-19) — 서브차량 달력이 그 차량 스코프 고정노선을 먼저 쓰고,
+// 없으면 차주 고정노선으로 fallback한다.
+/** @param {string} ownerKey @param {Array<import('../../domain/clientTypes.js').ClientLike>} clients */
+async function renderSubLogCalendar(ownerKey, clients) {
+  const plate = '서울99가9999'
+  commitCars(ownerKey, [
+    { id: 'main-1', type: 'main', number: '서울00가0000' },
+    { id: 'sub-1', type: 'sub', number: plate, logEnabled: true, shareRevenueWithOwner: true },
+  ], { syncToCloud: false })
+  commitClients(ownerKey, clients, { syncToCloud: false })
+  commitSettings(ownerKey, normalizeSettings({ paymentOn: true, subPaymentOn: false, fixedOn: true, subFixedOn: true }), { syncToCloud: false })
+  commitLogWorkData(ownerKey, plate, { '2026-08-15': { isOff: false, fixedCount: 2, callDetails: [] } })
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => {
+    root.render(React.createElement(
+      MemoryRouter,
+      { initialEntries: [`/app/logs/${encodeURIComponent(plate)}?y=2026&m=7`] },
+      React.createElement(CalendarPage, { ownerKey, logId: plate, onSelectDay: () => {} }),
+    ))
+  })
+  return { container, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
+}
+
+test('서브 달력: 그 차량 스코프 고정노선 단가(70,000)를 쓰고 차주 단가(20,000)는 안 씀', async () => {
+  const { container, cleanup } = await renderSubLogCalendar('test-calendar-sub-scoped-fixed', [
+    { id: 'client-owner-fx', companyName: '차주고정', fixedRouteLinked: true, fixedUnitPrice: 20000 },
+    { id: 'client-sub-fx', companyName: '서브고정', fixedRouteLinked: true, fixedUnitPrice: 70000, scopedToVehicleNumber: '서울99가9999' },
+  ])
+  try {
+    assert.ok(container.textContent.includes('서브고정 기본 운송료'), '스코프 거래처명으로 표시')
+    assert.ok(container.textContent.includes('140,000원'), `2회×70,000=140,000 — 실제: ${container.textContent.slice(0, 400)}`)
+    assert.equal(container.textContent.includes('차주고정 기본 운송료'), false)
+  } finally {
+    await cleanup()
+  }
+})
+
+test('서브 달력: 스코프 고정노선이 없으면 차주 고정노선 단가로 fallback(기존과 동일)', async () => {
+  const { container, cleanup } = await renderSubLogCalendar('test-calendar-sub-fallback-fixed', [
+    { id: 'client-owner-fx', companyName: '차주고정', fixedRouteLinked: true, fixedUnitPrice: 20000 },
+  ])
+  try {
+    assert.ok(container.textContent.includes('차주고정 기본 운송료'))
+    assert.ok(container.textContent.includes('40,000원'), `2회×20,000=40,000 — 실제: ${container.textContent.slice(0, 400)}`)
+  } finally {
+    await cleanup()
+  }
+})

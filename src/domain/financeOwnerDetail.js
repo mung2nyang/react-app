@@ -45,9 +45,6 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
     })
   }
 
-  const fixedRouteClientForTotals = getFixedRouteClient(settings)
-  const fixedClientLabel = fixedRouteClientForTotals?.companyName || '고정노선'
-
   let tripCount = 0
   let distanceKm = 0
   let durationMinutes = 0
@@ -61,8 +58,11 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
   sources.forEach((source) => {
     const isMain = source.logId === 'main'
     const activeFixedOn = isMain ? settings.fixedOn : settings.subFixedOn
+    // 소스(차량)별 스코프 고정노선 우선, 없으면 차주 것 fallback(getFixedRouteClient).
+    const fixedRouteClientForTotals = getFixedRouteClient(settings, source.logId)
+    const fixedClientLabel = fixedRouteClientForTotals?.companyName || '고정노선'
     const activePalletOn = !!fixedRouteClientForTotals?.palletOn
-    const fixedUnitPrice = resolveFixedUnitPrice(settings)
+    const fixedUnitPrice = resolveFixedUnitPrice(settings, source.logId)
     const palletUnitPrice = parseCurrencyValue(fixedRouteClientForTotals?.palletPrice)
 
     Object.entries(source.data || {}).forEach(([dateKey, record]) => {

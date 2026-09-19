@@ -58,11 +58,11 @@ export default function CalendarPage({
   const inputMode = resolveLogSettings(settings, logId).inputMode === 'fare' ? 'fare' : 'count'
   const clients = useOwnerClients(ownerKey)
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
-  const unitPrice = resolveFixedUnitPrice({ clients })
+  const unitPrice = resolveFixedUnitPrice({ clients }, logId)
   const cars = useOwnerCars(ownerKey)
   const expenses = useOwnerExpenses(ownerKey)
 
-  const fixedRouteClient = getFixedRouteClient({ clients })
+  const fixedRouteClient = getFixedRouteClient({ clients }, logId)
   const activeFixedOn = isMain ? !!settings.fixedOn : !!settings.subFixedOn
   const car = isMain ? null : (cars || []).find((c) => c.number === logId) || null
   // 서브차량 실거리: react-app에 subDistanceOn 설정이 없어 이번 슬라이스는 메인만.

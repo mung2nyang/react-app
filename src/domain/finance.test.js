@@ -403,3 +403,58 @@ describe('숫자 비교표용 스냅샷', () => {
     }
   })
 })
+
+// 미연동 고정노선 슬라이스(2026-09-19) — 차주 집계(월 매출·손익 상세·세금계산서)가 서브차량
+// 소스별로 그 차량 스코프 고정노선을 먼저 쓰고, 없으면 차주 것으로 fallback한다.
+describe('서브차량 스코프 고정노선 — 차주 집계', () => {
+  const SUB_PLATE = '서울12가3456'
+  const scopedClient = {
+    id: 'client-sub-fx', companyName: '서브고정', fixedRouteLinked: true,
+    fixedUnitPrice: '100,000', scopedToVehicleNumber: SUB_PLATE,
+  }
+  const withScoped = { ...FIXTURE_SETTINGS, clients: [...FIXTURE_SETTINGS.clients, scopedClient] }
+  const otherPlateScoped = {
+    ...FIXTURE_SETTINGS,
+    clients: [...FIXTURE_SETTINGS.clients, { ...scopedClient, scopedToVehicleNumber: '부산33나1111' }],
+  }
+  /** @param {ReturnType<typeof getMonthlyFareRevenue>} result @param {string} logId */
+  const vehicleFare = (result, logId) => {
+    const item = result.byVehicle.find((entry) => entry.logId === logId)
+    assert.ok(item, `${logId} 소스가 있어야 한다`)
+    return item.fare
+  }
+
+  test('월 매출: 서브차량은 자기 스코프 단가(100,000), 메인은 차주 단가 그대로', () => {
+    const base = getMonthlyFareRevenue(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
+    const scoped = getMonthlyFareRevenue(MONTH_KEY, withScoped, FIXTURE_WORK)
+    assert.equal(vehicleFare(scoped, 'main'), vehicleFare(base, 'main'))
+    assert.equal(vehicleFare(scoped, SUB_PLATE), vehicleFare(base, SUB_PLATE) - 150000, '고정 1건: 250,000 → 100,000')
+    assert.equal(scoped.totalFare, base.totalFare - 150000)
+  })
+
+  test('월 매출: 다른 차량 스코프 고정노선은 무시하고 차주 단가로 fallback(기존과 동일)', () => {
+    same(
+      getMonthlyFareRevenue(MONTH_KEY, otherPlateScoped, FIXTURE_WORK),
+      getMonthlyFareRevenue(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK),
+    )
+  })
+
+  test('차주 상세 손익(all): 서브 고정노선은 스코프 거래처명·금액, 메인 거래처 금액은 그대로', () => {
+    const amountOf = (/** @type {ReturnType<typeof getOwnerMonthlyFinanceDetail>} */ detail, /** @type {string} */ label) => (
+      detail.income.fare.items.find((item) => item.label === label)?.amount
+    )
+    const ownerDetail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', withScoped, FIXTURE_WORK, [])
+    const allDetail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'all', withScoped, FIXTURE_WORK, [])
+    assert.equal(amountOf(allDetail, '서브고정'), 100000)
+    assert.equal(amountOf(allDetail, '한진'), amountOf(ownerDetail, '한진'), '서브 고정분이 한진에 섞이면 안 됨')
+  })
+
+  test('세금계산서(매출): 서브차량 고정노선분은 스코프 거래처·100,000, 없으면 차주 거래처·250,000', () => {
+    const findGroup = (/** @type {ReturnType<typeof getTaxInvoiceSourceGroups>} */ groups, /** @type {string} */ key) => groups.find((group) => group.partyKey === key)
+    const scoped = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', withScoped, FIXTURE_WORK)
+    assert.equal(findGroup(scoped, `서브고정__${SUB_PLATE}`)?.supplyAmount, 100000)
+    assert.equal(findGroup(scoped, `한진__${SUB_PLATE}`), undefined)
+    const base = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK)
+    assert.equal(findGroup(base, `한진__${SUB_PLATE}`)?.supplyAmount, 250000)
+  })
+})

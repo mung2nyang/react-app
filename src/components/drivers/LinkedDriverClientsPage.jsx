@@ -91,7 +91,7 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
   }
 
   async function save() {
-    const payload = { ...draft, scopedToVehicleNumber: scopeKey, fixedRouteLinked: unlinked ? false : !!draft.fixedRouteLinked }
+    const payload = { ...draft, scopedToVehicleNumber: scopeKey }
     const result = await requestClientSave({
       ownerKey,
       userId: getCloudUserId(),
@@ -175,7 +175,6 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
           editingId={editingId}
           onCancel={() => setModalOpen(false)}
           onSave={save}
-          hideFixedRoute={unlinked}
         />
       )}
       {pendingDelete && (

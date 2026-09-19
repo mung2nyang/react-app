@@ -50,11 +50,11 @@ export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {
       return grouped[groupKey]
     }
 
-    const fixedRouteClientForInvoice = getFixedRouteClient(settings)
-    const fixedClientName = fixedRouteClientForInvoice?.companyName || ''
-    const fixedUnitPrice = parseCurrencyValue(fixedRouteClientForInvoice?.fixedUnitPrice)
-
     sources.forEach((source) => {
+      // 소스(차량)별 스코프 고정노선 우선, 없으면 차주 것 fallback(getFixedRouteClient).
+      const fixedRouteClientForInvoice = getFixedRouteClient(settings, source.logId)
+      const fixedClientName = fixedRouteClientForInvoice?.companyName || ''
+      const fixedUnitPrice = parseCurrencyValue(fixedRouteClientForInvoice?.fixedUnitPrice)
       const supplier = /** @type {SupplierIdentity} */ (getVehicleSupplierIdentity(source.car, settings))
       Object.entries(source.data || {}).forEach(([dateKey, record]) => {
         ;(record?.callDetails || []).forEach((detail) => {
