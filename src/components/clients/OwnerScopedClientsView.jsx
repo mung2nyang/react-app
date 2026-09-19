@@ -63,14 +63,14 @@ export default function OwnerScopedClientsView({ ownerKey = 'guest', onBack, sho
       paymentTerm: item.paymentTerm || 'next_month_end', paymentTermValue: item.paymentTermValue || '',
       isPinned: !!item.isPinned, scopedToVehicleNumber: item.scopedToVehicleNumber || scopeKey,
       commEnabled: !!item.commEnabled, commType: item.commType === 'direct' ? 'direct' : 'percent',
-      commValue: String(item.commValue || ''), fixedRouteLinked: false,
-      fixedUnitPrice: '', palletOn: !!item.palletOn, palletPrice: String(item.palletPrice || ''),
+      commValue: String(item.commValue || ''), fixedRouteLinked: !!item.fixedRouteLinked,
+      fixedUnitPrice: String(item.fixedUnitPrice || ''), palletOn: !!item.palletOn, palletPrice: String(item.palletPrice || ''),
     })
     setModalOpen(true)
   }
 
   async function save() {
-    const payload = { ...draft, scopedToVehicleNumber: scopeKey, fixedRouteLinked: false }
+    const payload = { ...draft, scopedToVehicleNumber: scopeKey }
     const result = await requestClientSave({
       ownerKey,
       userId: getCloudUserId(),
@@ -141,7 +141,6 @@ export default function OwnerScopedClientsView({ ownerKey = 'guest', onBack, sho
           editingId={editingId}
           onCancel={() => setModalOpen(false)}
           onSave={save}
-          hideFixedRoute={true}
         />
       )}
       {pendingDelete && (

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ConfirmModal from '../ConfirmModal.jsx'
 import ClientFormModal from '../clients/ClientFormModal.jsx'
-import { getEffectiveDriverSettlementMode, getShortCarNum } from '../../domain/cars.js'
+import { getShortCarNum } from '../../domain/cars.js'
 import { resolveDriverManagementContext } from '../../domain/driverManagementContext.js'
 import { requestClientSave } from '../../lib/clientMutations.js'
 import { requestClientDeletion } from '../../lib/directMutationActions.js'
@@ -13,9 +13,7 @@ import {
   useOwnerCars,
   useOwnerClients,
   useOwnerDrivers,
-  useOwnerSettings,
 } from '../../store/ownerDataHooks.js'
-import LinkedDriverDirectClientsList from './LinkedDriverDirectClientsList.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../PageHeader.jsx'
 import '../clients/client-management.css'
@@ -49,7 +47,6 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const clients = useOwnerClients(ownerKey)
-  const practiceSettings = useOwnerSettings(ownerKey)
 
   const ctx = useMemo(
     () => resolveDriverManagementContext({ linkId, logId }, drivers, cars),
@@ -58,8 +55,6 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
   const link = ctx.driver ? toLinkedDriverLink(ctx.driver) : null
   const unlinked = ctx.mode === 'unlinked'
   const scopeKey = (unlinked ? ctx.plate : (ctx.car?.number || '')) || ''
-  const settlementMode = getEffectiveDriverSettlementMode(ctx.car, practiceSettings)
-  const isDriverDirect = ctx.mode === 'linked' && settlementMode === 'driver_direct'
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
@@ -89,14 +84,14 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
       paymentTerm: item.paymentTerm || 'next_month_end', paymentTermValue: item.paymentTermValue || '',
       isPinned: !!item.isPinned, scopedToVehicleNumber: item.scopedToVehicleNumber || scopeKey,
       commEnabled: !!item.commEnabled, commType: item.commType === 'direct' ? 'direct' : 'percent',
-      commValue: String(item.commValue || ''), fixedRouteLinked: false,
-      fixedUnitPrice: '', palletOn: !!item.palletOn, palletPrice: String(item.palletPrice || ''),
+      commValue: String(item.commValue || ''), fixedRouteLinked: !!item.fixedRouteLinked,
+      fixedUnitPrice: String(item.fixedUnitPrice || ''), palletOn: !!item.palletOn, palletPrice: String(item.palletPrice || ''),
     })
     setModalOpen(true)
   }
 
   async function save() {
-    const payload = { ...draft, scopedToVehicleNumber: scopeKey, fixedRouteLinked: false }
+    const payload = { ...draft, scopedToVehicleNumber: scopeKey, fixedRouteLinked: unlinked ? false : !!draft.fixedRouteLinked }
     const result = await requestClientSave({
       ownerKey,
       userId: getCloudUserId(),
@@ -144,57 +139,51 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
     <div className="page client-management-page">
       <PageHeader title={title} onBack={handleBack} onOpenMenu={onOpenMenu} />
 
-      {isDriverDirect ? (
-        <LinkedDriverDirectClientsList supabaseLinkId={ctx.driver?.supabaseId} />
-      ) : (
-        <>
-          <div className="client-list" id="linkedDriverClientsListContainer">
-            {!scopedClients.length ? (
-              <div className="empty-state">등록된 거래처가 없습니다.</div>
-            ) : (
-              scopedClients.map((client) => (
-                <div key={client.id} className="management-list-card client-list-card">
-                  <div className="management-card-inner">
-                    <div className="client-card-copy">
-                      <div className="client-card-title">
-                        <strong>{client.companyName}</strong>
-                        {client.managerName && <span>{client.managerName} 담당</span>}
-                      </div>
-                      <div className="car-sub-text">
-                        <span>사업자 {client.bizNumber || '-'}</span>
-                        <span>연락처 {client.phone || '-'}</span>
-                      </div>
-                    </div>
-                    <div className="car-action-btns">
-                      <CardActionButtons
-                        onEdit={() => openEdit(client)}
-                        onDelete={() => setPendingDelete(client)}
-                      />
-                    </div>
+      <div className="client-list" id="linkedDriverClientsListContainer">
+        {!scopedClients.length ? (
+          <div className="empty-state">등록된 거래처가 없습니다.</div>
+        ) : (
+          scopedClients.map((client) => (
+            <div key={client.id} className="management-list-card client-list-card">
+              <div className="management-card-inner">
+                <div className="client-card-copy">
+                  <div className="client-card-title">
+                    <strong>{client.companyName}</strong>
+                    {client.managerName && <span>{client.managerName} 담당</span>}
+                  </div>
+                  <div className="car-sub-text">
+                    <span>사업자 {client.bizNumber || '-'}</span>
+                    <span>연락처 {client.phone || '-'}</span>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-          <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>
-          {modalOpen && (
-            <ClientFormModal
-              draft={draft}
-              setDraft={setDraft}
-              editingId={editingId}
-              onCancel={() => setModalOpen(false)}
-              onSave={save}
-              hideFixedRoute={true}
-            />
-          )}
-          {pendingDelete && (
-            <ConfirmModal
-              message="해당 업체를 삭제하시겠습니까?"
-              onCancel={() => setPendingDelete(null)}
-              onConfirm={confirmRemove}
-            />
-          )}
-        </>
+                <div className="car-action-btns">
+                  <CardActionButtons
+                    onEdit={() => openEdit(client)}
+                    onDelete={() => setPendingDelete(client)}
+                  />
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+      <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>
+      {modalOpen && (
+        <ClientFormModal
+          draft={draft}
+          setDraft={setDraft}
+          editingId={editingId}
+          onCancel={() => setModalOpen(false)}
+          onSave={save}
+          hideFixedRoute={unlinked}
+        />
+      )}
+      {pendingDelete && (
+        <ConfirmModal
+          message="해당 업체를 삭제하시겠습니까?"
+          onCancel={() => setPendingDelete(null)}
+          onConfirm={confirmRemove}
+        />
       )}
     </div>
   )
