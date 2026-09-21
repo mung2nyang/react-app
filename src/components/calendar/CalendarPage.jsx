@@ -33,6 +33,7 @@ const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes
  * @param {Object} props
  * @param {string} props.ownerKey
  * @param {string} [props.logId]
+ * @param {string} [props.clientScopeKey] 고정노선 거래처 스코프(연동기사 본인은 배정 차량번호). 없으면 logId.
  * @param {string} [props.userName]
  * @param {number} [props.notifCount]
  * @param {(() => void)} [props.onOpenMenu]
@@ -42,7 +43,7 @@ const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
 export default function CalendarPage({
-  ownerKey, logId = 'main', userName: _userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth: _onBackToAuth, showToast: _showToast, onSelectDay,
+  ownerKey, logId = 'main', clientScopeKey, userName: _userName, notifCount, onOpenMenu, onOpenNotifs, onBackToAuth: _onBackToAuth, showToast: _showToast, onSelectDay,
 }) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -58,11 +59,12 @@ export default function CalendarPage({
   const inputMode = resolveLogSettings(settings, logId).inputMode === 'fare' ? 'fare' : 'count'
   const clients = useOwnerClients(ownerKey)
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
-  const unitPrice = resolveFixedUnitPrice({ clients }, logId)
+  const fixedScopeKey = clientScopeKey || logId
+  const unitPrice = resolveFixedUnitPrice({ clients }, fixedScopeKey)
   const cars = useOwnerCars(ownerKey)
   const expenses = useOwnerExpenses(ownerKey)
 
-  const fixedRouteClient = getFixedRouteClient({ clients }, logId)
+  const fixedRouteClient = getFixedRouteClient({ clients }, fixedScopeKey)
   const activeFixedOn = isMain ? !!settings.fixedOn : !!settings.subFixedOn
   const car = isMain ? null : (cars || []).find((c) => c.number === logId) || null
   // 서브차량 실거리: react-app에 subDistanceOn 설정이 없어 이번 슬라이스는 메인만.

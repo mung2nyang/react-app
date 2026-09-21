@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { getDriverSelfMonthlyDetail } from './driverSelfRevenue.js'
 import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.js'
+import { getMonthlyDriverTotals } from './financeCore.js'
 import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
@@ -182,5 +183,34 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settings, realisticFixedOnly)
     assert.equal(detail.netProfit, 37500, 'fixedUnitPrice(250,000) × 15%')
     assert.equal(detail.income.settlement.label, '기사 정산(15%)')
+  })
+})
+
+// 스코프 수정 묶음 1(2026-09-21) — 연동기사 본인 세션은 일지가 main인데 거래처는 배정 차량 스코프만 내려온다.
+// 운송료 줄도 정산 계산과 같은 스코프 단가를 써야 한다(예전엔 운송료 0원 vs 정산액만 값).
+describe('getDriverSelfMonthlyDetail — 배정 차량 스코프 고정노선', () => {
+  const scopedClient = { id: 'c-sub', companyName: '기사고정', fixedRouteLinked: true, fixedUnitPrice: '100,000', scopedToVehicleNumber: '서울12가3456' }
+  const realisticFixedOnly = { main: { '2026-05-12': { isOff: false, fixedCount: 1 } } }
+  /** @param {Array<import('./clientTypes.js').ClientLike>} clients */
+  const settingsWithClients = (clients) => ({ ...settingsWithCars([REVENUE_CAR]), clients })
+
+  test('스코프 거래처만 있어도(기사 세션 모양) 운송료가 본인 단가 100,000이고 정산 계산의 총매출과 같다', () => {
+    const settings = settingsWithClients([scopedClient])
+    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settings, realisticFixedOnly)
+    const totals = getMonthlyDriverTotals(realisticFixedOnly.main, MONTH_KEY, FIXTURE_SETTINGS.driverLinks[0], settings)
+    assert.equal(detail.income.fare.total, 100000)
+    assert.equal(detail.income.fare.total, totals.grossAmount, '운송료와 정산 총매출이 어긋나면 안 된다')
+    assert.equal(detail.income.fare.items[0]?.label, '기사고정')
+  })
+
+  test('스코프 거래처와 차주(스코프 없는) 거래처가 함께 있으면 본인 스코프가 우선한다', () => {
+    const owner = { id: 'c-owner', companyName: '차주고정', fixedRouteLinked: true, fixedUnitPrice: '250,000' }
+    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithClients([owner, scopedClient]), realisticFixedOnly)
+    assert.equal(detail.income.fare.total, 100000)
+  })
+
+  test('스코프 거래처가 없으면 예전처럼 스코프 없는 고정노선(250,000)으로 계산된다(하위호환)', () => {
+    const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), realisticFixedOnly)
+    assert.equal(detail.income.fare.total, 250000)
   })
 })

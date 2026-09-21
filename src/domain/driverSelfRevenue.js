@@ -50,8 +50,9 @@ function firstAssignedSubCar(settings) {
  * @param {Array<ExpenseItem>} [expenses]
  */
 export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLogId = {}, expenses = []) {
-  const base = getOwnerMonthlyFinanceDetail(monthKey, 'owner', settings, workDataByLogId, expenses)
   const assigned = firstAssignedSubCar(settings)
+  // 기사 일지는 main으로 저장되지만 거래처는 배정 차량 스코프 — 운송료도 그 스코프로 찾는다(정산 계산과 같은 단가).
+  const base = getOwnerMonthlyFinanceDetail(monthKey, 'owner', settings, workDataByLogId, expenses, [], assigned?.number)
   const monthStart = `${monthKey}-01`
 
   let settlementTotal = 0

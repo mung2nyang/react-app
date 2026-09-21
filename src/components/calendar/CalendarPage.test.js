@@ -459,3 +459,42 @@ test('서브 달력: 스코프 고정노선이 없으면 차주 고정노선 단
     await cleanup()
   }
 })
+
+// 스코프 수정 묶음 1(2026-09-21) — 연동기사 본인 세션은 일지가 main인데 거래처는 배정 차량 스코프만 내려온다.
+// 달력이 그 스코프(clientScopeKey)로 고정노선 단가를 찾아야 한다.
+test('연동기사 본인 달력: clientScopeKey로 배정 차량 스코프 고정노선 단가를 쓴다(안 넘기면 못 찾음)', async () => {
+  const plate = '서울99가9999'
+  /** @param {string} ownerKey @param {string|undefined} clientScopeKey */
+  async function renderDriverCalendar(ownerKey, clientScopeKey) {
+    commitClients(ownerKey, [
+      { id: 'client-drv', companyName: '기사고정', fixedRouteLinked: true, fixedUnitPrice: 100000, scopedToVehicleNumber: plate },
+    ], { syncToCloud: false })
+    commitWorkData(ownerKey, { '2026-08-06': { isOff: false, fixedCount: 1, callDetails: [] } }, { syncToCloud: false })
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, clientScopeKey, onSelectDay: () => {} }),
+      ))
+    })
+    return { container, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
+  }
+
+  const withScope = await renderDriverCalendar('test-calendar-driver-scope', plate)
+  try {
+    assert.ok(withScope.container.textContent.includes('기사고정 기본 운송료'), '스코프 거래처명으로 표시')
+    assert.ok(withScope.container.textContent.includes('100,000원'), `1회×100,000=100,000 — 실제: ${withScope.container.textContent.slice(0, 400)}`)
+  } finally {
+    await withScope.cleanup()
+  }
+
+  const withoutScope = await renderDriverCalendar('test-calendar-driver-noscope', undefined)
+  try {
+    assert.equal(withoutScope.container.textContent.includes('기사고정 기본 운송료'), false, '스코프를 안 넘기면 예전처럼 못 찾는다(logId=main)')
+  } finally {
+    await withoutScope.cleanup()
+  }
+})

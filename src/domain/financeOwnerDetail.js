@@ -31,8 +31,9 @@ import { selectExpensesForScope, sweepExpenseItems } from './financeOwnerExpense
  * @param {WorkDataByLogId} [workDataByLogId]
  * @param {Array<ExpenseLike>} [expenses]
  * @param {Array<ExpenseLike>} [driverExpenses]
+ * @param {string} [mainFixedScopeKey] 메인 소스의 고정노선 스코프 키 — 연동기사 본인 세션(일지는 main, 거래처는 배정 차량 스코프)만 넘긴다
  */
-export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings = {}, workDataByLogId = {}, expenses = [], driverExpenses = []) {
+export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings = {}, workDataByLogId = {}, expenses = [], driverExpenses = [], mainFixedScopeKey = '') {
   const cars = Array.isArray(settings.cars) ? settings.cars : []
   const subCarsInScope = cars.filter((car) => car.type === 'sub' && isVehicleRevenueSharedWithOwner(car))
 
@@ -59,10 +60,11 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
     const isMain = source.logId === 'main'
     const activeFixedOn = isMain ? settings.fixedOn : settings.subFixedOn
     // 소스(차량)별 스코프 고정노선 우선, 없으면 차주 것 fallback(getFixedRouteClient).
-    const fixedRouteClientForTotals = getFixedRouteClient(settings, source.logId)
+    const fixedScopeKey = isMain && mainFixedScopeKey ? mainFixedScopeKey : source.logId
+    const fixedRouteClientForTotals = getFixedRouteClient(settings, fixedScopeKey)
     const fixedClientLabel = fixedRouteClientForTotals?.companyName || '고정노선'
     const activePalletOn = !!fixedRouteClientForTotals?.palletOn
-    const fixedUnitPrice = resolveFixedUnitPrice(settings, source.logId)
+    const fixedUnitPrice = resolveFixedUnitPrice(settings, fixedScopeKey)
     const palletUnitPrice = parseCurrencyValue(fixedRouteClientForTotals?.palletPrice)
 
     Object.entries(source.data || {}).forEach(([dateKey, record]) => {

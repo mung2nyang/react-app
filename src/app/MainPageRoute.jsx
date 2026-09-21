@@ -112,6 +112,7 @@ export default function MainPageRoute({
     <CalendarPage
       ownerKey={ownerKey}
       logId={logId}
+      clientScopeKey={clientScopeKey}
       userName={userName}
       notifCount={notifCount}
       onOpenMenu={onOpenMenu}
