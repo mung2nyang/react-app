@@ -5,7 +5,6 @@ import ComingSoonRoute from './ComingSoonRoute.jsx'
 import MainPageRoute from './MainPageRoute.jsx'
 import {
   AppSettingsPage,
-  BillingSettingsPage,
   CarManagementPage,
   ClientManagementPage,
   DriverConnectionPage,
@@ -94,7 +93,6 @@ export default function AppShellRoutes({
       <Route path="report" element={<ReportPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="tax" element={<TaxInvoicePage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="drivers/:linkId/clients" element={<LinkedDriverClientsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
-      <Route path="drivers/:linkId/billing" element={<BillingSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} />} />
       <Route path="drivers/:linkId" element={<LinkedDriverManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="drivers" element={<DriverConnectionPage ownerKey={ownerKey} session={session} showToast={showToast} navigate={navigate} onBack={() => { navigate('/app/me'); bumpNotifTick() }} />} />
       <Route path="me/invite" element={<InviteRedeemPage session={session} showToast={showToast} onBack={() => navigate('/app/me')} onLinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); navigate('/app') }} />} />
