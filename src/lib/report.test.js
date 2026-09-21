@@ -257,6 +257,48 @@ describe('buildMonthReport', () => {
     assert.equal(report.vat, 0)
     assert.equal(report.total, 0)
   })
+
+  // 스코프 수정 묶음 2(2026-09-21) — 서브차량 내역서(차주 계정)·연동기사 본인 내역서는 그 차량 스코프 고정노선을 쓴다.
+  describe('고정노선 스코프 — 내역서 대상 차량', () => {
+    const plate = '서울99가9999'
+    const subCars = /** @type {Array<import('../domain/financeTypes.js').CarLike>} */ ([{ id: 's1', type: 'sub', number: plate }])
+    const ownerClient = { id: 'c-owner', companyName: '차주고정', fixedRouteLinked: true, fixedUnitPrice: 250000 }
+    const scopedClient = { id: 'c-sub', companyName: '서브고정', fixedRouteLinked: true, fixedUnitPrice: 100000, scopedToVehicleNumber: plate }
+    const oneFixedRun = { '2026-09-01': { fixedCount: 1, callDetails: [] } }
+
+    test('서브차량 내역서는 차주 단가(250,000)가 아니라 그 차량 스코프 단가(100,000)를 쓴다', () => {
+      const report = buildMonthReport('test-report-scope-sub', 2026, 8, [], subCars, settings, oneFixedRun, [ownerClient, scopedClient], profile)
+      assert.equal(report.fareByClient['서브고정'], 100000)
+      assert.equal(report.fareByClient['차주고정'], undefined)
+    })
+
+    test('연동기사 본인 내역서(스코프 거래처만 내려옴)도 본인 단가(100,000)로 나온다', () => {
+      const report = buildMonthReport('test-report-scope-driver', 2026, 8, [], subCars, settings, oneFixedRun, [scopedClient], profile)
+      assert.equal(report.fareByClient['서브고정'], 100000)
+    })
+
+    test('차주 메인 내역서는 스코프 거래처를 무시하고 차주 단가(250,000)를 쓴다(하위호환)', () => {
+      const report = buildMonthReport('test-report-scope-main', 2026, 8, [], cars, settings, oneFixedRun, [ownerClient, scopedClient], profile)
+      assert.equal(report.fareByClient['차주고정'], 250000)
+      assert.equal(report.fareByClient['서브고정'], undefined)
+    })
+
+    test('서브차량에 스코프 고정노선이 없으면 차주 단가로 fallback한다(하위호환)', () => {
+      const report = buildMonthReport('test-report-scope-fallback', 2026, 8, [], subCars, settings, oneFixedRun, [ownerClient], profile)
+      assert.equal(report.fareByClient['차주고정'], 250000)
+    })
+
+    test('운송내역서는 회사 제출용이라 기사차량 수수료를 차감하지 않는다(F-06 — 운송료+부가세)', () => {
+      const commissionCar = /** @type {Array<import('../domain/financeTypes.js').CarLike>} */ ([
+        { id: 's2', type: 'sub', number: plate, commEnabled: true, commType: 'percent', commission: '10' },
+      ])
+      const report = buildMonthReport(
+        'test-report-scope-f06', 2026, 8, [], commissionCar, settings,
+        { '2026-09-01': { callDetails: [{ client: '', fare: 100000 }] } }, [], profile,
+      )
+      assert.equal(report.total, 110000, '운송료 100,000 + 부가세 10,000 — 기사차량 수수료 10,000을 빼지 않는다')
+    })
+  })
 })
 
 describe('buildReportDayRows', () => {

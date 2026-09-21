@@ -63,8 +63,11 @@ export function buildReportDayRows(workData, year, monthIndex, options = {}) {
  */
 export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwnerExpenses(ownerKey), cars = readOwnerCars(ownerKey), practiceSettings = readOwnerSettings(ownerKey), workData = readOwnerWorkData(ownerKey), clients = readOwnerClients(ownerKey), profile = readOwnerProfile(ownerKey)) {
   void expenses
-  const unitPrice = resolveFixedUnitPrice({ clients })
-  const fixedRouteClient = getFixedRouteClient({ clients })
+  const mainCar = (cars || []).find((car) => car.type === 'main') || cars[0] || null
+  // 서브차량 내역서(차주 계정)·연동기사 본인 내역서는 그 차량 스코프 고정노선을 먼저 쓴다(없으면 차주 것 fallback).
+  const fixedScopeKey = mainCar?.type === 'sub' ? String(mainCar.number || '') : ''
+  const unitPrice = resolveFixedUnitPrice({ clients }, fixedScopeKey)
+  const fixedRouteClient = getFixedRouteClient({ clients }, fixedScopeKey)
   const showPallet = !!practiceSettings.fixedOn && !!fixedRouteClient?.palletOn
   const settled = monthSettlementSummary(workData, year, monthIndex, {
     unitPrice,
@@ -77,7 +80,6 @@ export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwne
     fixedRouteClient,
     showPallet,
   })
-  const mainCar = (cars || []).find((car) => car.type === 'main') || cars[0] || null
 
   return {
     year,
