@@ -1,12 +1,12 @@
 // @ts-check
 import { useState } from 'react'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
-import { saveProfile } from '../lib/profile.js'
 import { requestAccountWithdrawal } from '../lib/accountWithdrawal.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
 import { useOwnerProfile } from '../store/ownerDataHooks.js'
 import ConfirmModal from './ConfirmModal.jsx'
 import PageHeader from './PageHeader.jsx'
+import { usePersonalInfoDraft } from './usePersonalInfoDraft.js'
 import './PersonalInfoPage.css'
 
 /** @typedef {null|'first'|'second'} WithdrawStep */
@@ -32,13 +32,10 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
   const [withdrawStep, setWithdrawStep] = useState(/** @type {WithdrawStep} */ (null))
   const [withdrawBusy, setWithdrawBusy] = useState(false)
 
-  /** @param {string} field @param {string} value */
-  function update(field, value) {
-    void saveProfile(ownerKey, { ...profile, [field]: value }).catch((error) => {
-      console.error('개인정보 저장 실패:', error)
-      showToast?.('저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
-    })
-  }
+  // 글자는 즉시 화면에 반영하고 저장은 입력을 멈춘 뒤·칸을 벗어날 때·화면을 나갈 때 묶어서 한다.
+  const { get, set, flush } = usePersonalInfoDraft({ ownerKey, profile, showToast })
+  /** @param {keyof import('../lib/hydrateMergeTypes.js').LocalProfile} field @param {string} value */
+  function update(field, value) { set(field, value) }
 
   async function confirmWithdrawFinal() {
     if (withdrawBusy) return
@@ -60,7 +57,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
         </p>
       )}
 
-      <fieldset className="personal-card-grid" disabled={locked} style={{ border: 0, margin: 0, padding: 0 }}>
+      <fieldset className="personal-card-grid" disabled={locked} onBlur={() => { void flush() }} style={{ border: 0, margin: 0, padding: 0 }}>
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">01</span>
@@ -68,33 +65,33 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           </div>
           <div className="form-group">
             <label htmlFor="bizName">사업자명 (상호)</label>
-            <input id="bizName" className="input-box" placeholder="사업자명을 입력하세요" value={profile.bizName} onChange={(e) => update('bizName', e.target.value)} />
+            <input id="bizName" className="input-box" placeholder="사업자명을 입력하세요" value={get('bizName')} onChange={(e) => update('bizName', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="bizRepresentative">대표자명</label>
-            <input id="bizRepresentative" className="input-box" placeholder="대표자명을 입력하세요" value={profile.bizRepresentative} onChange={(e) => update('bizRepresentative', e.target.value)} />
+            <input id="bizRepresentative" className="input-box" placeholder="대표자명을 입력하세요" value={get('bizRepresentative')} onChange={(e) => update('bizRepresentative', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="bizNumber">사업자 번호</label>
-            <input id="bizNumber" className="input-box" placeholder="사업자 번호를 입력하세요" value={profile.bizNumber} onChange={(e) => update('bizNumber', e.target.value)} />
+            <input id="bizNumber" className="input-box" placeholder="사업자 번호를 입력하세요" value={get('bizNumber')} onChange={(e) => update('bizNumber', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="bizAddress">사업장 주소</label>
-            <input id="bizAddress" className="input-box" placeholder="사업장 주소를 입력하세요" value={profile.bizAddress} onChange={(e) => update('bizAddress', e.target.value)} />
+            <input id="bizAddress" className="input-box" placeholder="사업장 주소를 입력하세요" value={get('bizAddress')} onChange={(e) => update('bizAddress', e.target.value)} />
           </div>
           <div className="personal-inline-fields">
             <div className="form-group">
               <label htmlFor="bizType">업태</label>
-              <input id="bizType" className="input-box" placeholder="예: 운수업" value={profile.bizType} onChange={(e) => update('bizType', e.target.value)} />
+              <input id="bizType" className="input-box" placeholder="예: 운수업" value={get('bizType')} onChange={(e) => update('bizType', e.target.value)} />
             </div>
             <div className="form-group">
               <label htmlFor="bizItem">종목</label>
-              <input id="bizItem" className="input-box" placeholder="예: 화물운송" value={profile.bizItem} onChange={(e) => update('bizItem', e.target.value)} />
+              <input id="bizItem" className="input-box" placeholder="예: 화물운송" value={get('bizItem')} onChange={(e) => update('bizItem', e.target.value)} />
             </div>
           </div>
           <div className="form-group">
             <label htmlFor="bizEmail">세금계산서 이메일</label>
-            <input id="bizEmail" type="email" className="input-box" placeholder="이메일을 입력하세요" value={profile.bizEmail} onChange={(e) => update('bizEmail', e.target.value)} />
+            <input id="bizEmail" type="email" className="input-box" placeholder="이메일을 입력하세요" value={get('bizEmail')} onChange={(e) => update('bizEmail', e.target.value)} />
           </div>
         </section>
 
@@ -105,11 +102,11 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           </div>
           <div className="form-group">
             <label htmlFor="userName">성명 (대표자)</label>
-            <input id="userName" className="input-box" placeholder="성명을 입력하세요" value={profile.name || sessionName} onChange={(e) => update('name', e.target.value)} />
+            <input id="userName" className="input-box" placeholder="성명을 입력하세요" value={get('name') || sessionName} onChange={(e) => update('name', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="userPhone">연락처</label>
-            <input id="userPhone" type="tel" className="input-box" placeholder="010-0000-0000" value={profile.phone || sessionPhone} onChange={(e) => update('phone', formatPhoneNumber(e.target.value))} />
+            <input id="userPhone" type="tel" className="input-box" placeholder="010-0000-0000" value={get('phone') || sessionPhone} onChange={(e) => update('phone', formatPhoneNumber(e.target.value))} />
           </div>
         </section>
 
@@ -120,15 +117,15 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           </div>
           <div className="form-group">
             <label htmlFor="bankName">입금 은행</label>
-            <input id="bankName" className="input-box" placeholder="예: OO은행" value={profile.bankName} onChange={(e) => update('bankName', e.target.value)} />
+            <input id="bankName" className="input-box" placeholder="예: OO은행" value={get('bankName')} onChange={(e) => update('bankName', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="accountNumber">계좌번호</label>
-            <input id="accountNumber" className="input-box" inputMode="numeric" placeholder="계좌번호 입력" value={profile.accountNumber} onChange={(e) => update('accountNumber', e.target.value)} />
+            <input id="accountNumber" className="input-box" inputMode="numeric" placeholder="계좌번호 입력" value={get('accountNumber')} onChange={(e) => update('accountNumber', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="accountHolder">예금주 (계좌 명의)</label>
-            <input id="accountHolder" className="input-box" placeholder="예금주명을 입력하세요" value={profile.accountHolder} onChange={(e) => update('accountHolder', e.target.value)} />
+            <input id="accountHolder" className="input-box" placeholder="예금주명을 입력하세요" value={get('accountHolder')} onChange={(e) => update('accountHolder', e.target.value)} />
           </div>
         </section>
 
