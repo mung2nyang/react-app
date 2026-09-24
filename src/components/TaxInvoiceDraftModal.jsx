@@ -26,9 +26,29 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
           <label htmlFor="invBiz">사업자등록번호</label>
           <input id="invBiz" className="input-box" value={modalItem.clientBizNumber || ''} onChange={(e) => onChange({ ...modalItem, clientBizNumber: e.target.value })} />
         </div>
+        <div className="personal-inline-fields">
+          <div className="form-group">
+            <label htmlFor="invRep">대표자</label>
+            <input id="invRep" className="input-box" value={modalItem.clientRepresentative || ''} onChange={(e) => onChange({ ...modalItem, clientRepresentative: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="invEmail">이메일</label>
+            <input id="invEmail" className="input-box" value={modalItem.clientEmail || ''} onChange={(e) => onChange({ ...modalItem, clientEmail: e.target.value })} />
+          </div>
+        </div>
+        <div className="personal-inline-fields">
+          <div className="form-group">
+            <label htmlFor="invBizType">업태</label>
+            <input id="invBizType" className="input-box" value={modalItem.clientBizType || ''} onChange={(e) => onChange({ ...modalItem, clientBizType: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="invBizItem">종목</label>
+            <input id="invBizItem" className="input-box" value={modalItem.clientBizItem || ''} onChange={(e) => onChange({ ...modalItem, clientBizItem: e.target.value })} />
+          </div>
+        </div>
         <div className="form-group">
-          <label htmlFor="invRep">대표자</label>
-          <input id="invRep" className="input-box" value={modalItem.clientRepresentative || ''} onChange={(e) => onChange({ ...modalItem, clientRepresentative: e.target.value })} />
+          <label htmlFor="invAddress">사업장 주소</label>
+          <input id="invAddress" className="input-box" value={modalItem.clientAddress || ''} onChange={(e) => onChange({ ...modalItem, clientAddress: e.target.value })} />
         </div>
         <div className="form-group">
           <label htmlFor="invItem">품목</label>

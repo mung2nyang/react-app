@@ -2,6 +2,16 @@
 import { getPaymentTermLabel } from '../../lib/clients.js'
 import CardActionButtons from '../shared/CardActionButtons.jsx'
 
+const TAX_INFO_FIELDS = /** @type {const} */ (['bizNumber', 'taxRepresentative', 'taxAddress', 'taxBizType', 'taxBizItem', 'taxEmail'])
+
+/**
+ * 계산서 작성에 쓰는 세무정보 6칸이 전부 채워졌는지 — 이 카드 배지 전용.
+ * @param {import('../../domain/clientTypes.js').ClientLike} client
+ */
+function hasCompleteTaxInfo(client) {
+  return TAX_INFO_FIELDS.every((key) => String(client[key] || '').trim() !== '')
+}
+
 /**
  * @param {Object} props
  * @param {import('../../domain/clientTypes.js').ClientLike} props.client
@@ -29,6 +39,7 @@ export default function ClientListItem({
         <div className="client-card-title">
           <strong>{client.companyName}</strong>
           {client.fixedRouteLinked && <span className="management-badge tax-invoice">고정노선 연동</span>}
+          {hasCompleteTaxInfo(client) && <span className="management-badge tax-invoice">정보 작성 완료</span>}
         </div>
         {(client.isPinned || client.commEnabled || client.palletOn || client.managerName) && (
           <div className="client-card-badges">
