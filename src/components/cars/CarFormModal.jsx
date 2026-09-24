@@ -15,6 +15,7 @@ import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
  * @property {boolean} commEnabled
  * @property {string} commType
  * @property {string} commission
+ * @property {boolean} [insuranceOn]
  * @property {string} inviteCode
  * @property {string} inviteStartDate
  * @property {string|null} inviteDriverId
@@ -122,6 +123,21 @@ export default function CarFormModal({
                   <b>{isSalary ? '원' : '%'}</b>
                 </span>
               </div>
+            </div>
+            <div className="setting-item">
+              <div className="car-option-copy">
+                <label htmlFor="newCarInsuranceOn">산재보험 적용</label>
+                <p>기사차량의 산재보험 정산에 반영합니다.</p>
+              </div>
+              <label className="switch">
+                <input
+                  id="newCarInsuranceOn"
+                  type="checkbox"
+                  checked={!!draft.insuranceOn}
+                  onChange={(e) => setDraft({ ...draft, insuranceOn: e.target.checked })}
+                />
+                <span className="slider"></span>
+              </label>
             </div>
           </>
         )}

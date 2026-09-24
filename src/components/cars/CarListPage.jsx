@@ -27,6 +27,7 @@ import './car-management.css'
  * @property {boolean} commEnabled
  * @property {string} commType
  * @property {string} commission
+ * @property {boolean} [insuranceOn]
  * @property {string} inviteCode
  * @property {string} inviteStartDate
  * @property {string|null} inviteDriverId
@@ -89,6 +90,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       commEnabled: !!car.commEnabled,
       commType: car.commType === 'direct' ? 'direct' : 'percent',
       commission: String(car.commission ?? ''),
+      insuranceOn: !!car.insuranceOn,
       inviteCode: linked?.inviteCode || (car.type === 'sub' && cloud ? generateInviteCode(drivers) : ''),
       inviteStartDate: linked?.startDate || todayIsoDate(),
       inviteDriverId: linked?.id || null,

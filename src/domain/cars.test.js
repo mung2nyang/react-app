@@ -13,7 +13,6 @@ describe('차량 저장 — 기사명·정산·수수료', () => {
     const created = upsertCar([], { number: '서울12가3456', type: 'sub', driverName: '김기사', driverPhone: '010-1234-5678' })
     created.cars[0].supabaseId = 'veh-1'
     created.cars[0].logEnabled = true
-    created.cars[0].insuranceOn = true
     created.cars[0].archived = false
     const edited = upsertCar(created.cars, {
       number: '서울12가9999',
@@ -24,8 +23,50 @@ describe('차량 저장 — 기사명·정산·수수료', () => {
     assert.equal(edited.error, undefined)
     assert.equal(edited.cars[0].supabaseId, 'veh-1')
     assert.equal(edited.cars[0].logEnabled, true)
-    assert.equal(edited.cars[0].insuranceOn, true)
     assert.equal(edited.cars[0].number, '서울12가9999')
+  })
+
+  test('기사차량 신규 등록 시 산재보험 토글을 저장한다', () => {
+    const result = upsertCar([], {
+      number: '서울12가3456',
+      type: 'sub',
+      driverName: '김기사',
+      driverPhone: '010-1234-5678',
+      insuranceOn: true,
+    })
+    assert.equal(result.error, undefined)
+    assert.equal(result.cars[0].insuranceOn, true)
+  })
+
+  test('메인 차량은 draft에 insuranceOn을 넣어도 항상 false다', () => {
+    const result = upsertCar([], { number: '11가1111', type: 'main', insuranceOn: true })
+    assert.equal(result.error, undefined)
+    assert.equal(result.cars[0].insuranceOn, false)
+  })
+
+  test('draft에 insuranceOn이 없으면 기본값은 false다', () => {
+    const result = upsertCar([], { number: '서울12가3456', type: 'sub', driverName: '김기사', driverPhone: '010-1234-5678' })
+    assert.equal(result.error, undefined)
+    assert.equal(result.cars[0].insuranceOn, false)
+  })
+
+  test('수정 시 산재보험 토글을 끄면 저장값도 꺼진다', () => {
+    const created = upsertCar([], {
+      number: '서울12가3456',
+      type: 'sub',
+      driverName: '김기사',
+      driverPhone: '010-1234-5678',
+      insuranceOn: true,
+    })
+    const edited = upsertCar(created.cars, {
+      number: '서울12가3456',
+      type: 'sub',
+      driverName: '김기사',
+      driverPhone: '010-1234-5678',
+      insuranceOn: false,
+    }, created.cars[0].id)
+    assert.equal(edited.error, undefined)
+    assert.equal(edited.cars[0].insuranceOn, false)
   })
   test('메인 차량은 한 대만 등록할 수 있다', () => {
     const first = upsertCar([], { number: '11가1111', type: 'main' })
