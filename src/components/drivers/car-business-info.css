@@ -1,0 +1,32 @@
+/* 기사 관리 화면 하단 "사업자·정산 계좌 정보" 카드(CarBusinessInfoSection 전용). */
+.car-biz-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 17px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+.car-biz-card h3 { margin: 0; color: var(--text-color); font-size: var(--fs-3); font-weight: 850; }
+.car-biz-card .form-group { margin: 0; }
+.car-biz-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.car-biz-toggle > div { min-width: 0; text-align: left; }
+.car-biz-toggle > div > label { color: var(--text-color); font-size: var(--fs-4); font-weight: 750; }
+.car-biz-toggle p { margin: 4px 0 0; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; }
+.car-biz-owner-line { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--input-bg); color: var(--sub-text-color); font-size: var(--fs-floor); }
+.car-biz-save {
+  min-height: 44px;
+  margin: 0;
+  border: 1px solid var(--primary-color);
+  border-radius: 12px;
+  background: var(--primary-color);
+  color: #ffffff;
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 850;
+  cursor: pointer;
+}
+.car-biz-save:disabled { opacity: 0.6; cursor: default; }

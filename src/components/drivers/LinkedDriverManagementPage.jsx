@@ -21,6 +21,7 @@ import {
   useOwnerSettings,
   useOwnerWorkDataByLogId,
 } from '../../store/ownerDataHooks.js'
+import CarBusinessInfoSection from './CarBusinessInfoSection.jsx'
 import ClientInvoiceGroups from './ClientInvoiceGroups.jsx'
 import SettlementSummaryCard from './SettlementSummaryCard.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
@@ -191,6 +192,9 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
         detail={detail}
       />
       <ClientInvoiceGroups invoice={invoice} />
+      {ctx.car?.type === 'sub' && ctx.car.id && (
+        <CarBusinessInfoSection key={ctx.car.id} ownerKey={ownerKey} car={ctx.car} cars={cars} profile={profile} showToast={showToast} />
+      )}
     </div>
   )
 }

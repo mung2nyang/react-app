@@ -21,6 +21,8 @@ import {
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {ReturnType<typeof readOwnerProfile>} ProfileLike */
 
 /**
  * 리포트 요약 중간 일자별 표 행(원본 buildReportPage workList 규칙).
@@ -57,6 +59,19 @@ export function buildReportDayRows(workData, year, monthIndex, options = {}) {
 }
 
 /**
+ * 기사차량 내역서는 그 차량이 "내 사업자와 동일"이 꺼져 있고 계좌(은행·계좌번호·예금주)가 하나라도 입력돼 있으면
+ * 세 칸 모두 차량 값으로 보여 준다(차주 계좌번호에 차량 은행이 섞이지 않게 묶어서 교체).
+ * 동일이 켜져 있거나 비어 있으면 차주 계좌 그대로 — 켜짐인데 personalInfo에 옛 계좌값이 남아 있어도 무시한다.
+ * @param {CarLike|null} car
+ * @param {ProfileLike} profile
+ */
+function withVehicleAccount(car, profile) {
+  const info = car?.type === 'sub' && car.businessInfo && !car.businessInfo.sameAsOwner ? car.personalInfo : null
+  if (!info || !(info.bank || info.account || info.accountHolder)) return profile
+  return { ...profile, bankName: info.bank || '', accountNumber: info.account || '', accountHolder: info.accountHolder || '' }
+}
+
+/**
  * @param {string} ownerKey
  * @param {number} year
  * @param {number} monthIndex
@@ -85,7 +100,7 @@ export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwne
     year,
     monthIndex,
     title: `${year}년 ${monthIndex + 1}월 운송비 내역서`,
-    profile,
+    profile: withVehicleAccount(mainCar, profile),
     mainCar,
     days,
     showPallet,

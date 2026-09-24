@@ -1,6 +1,7 @@
 // @ts-check
 // Step 7: 차량 추가/수정 + 서브 번호 변경 시 로컬 일지 키·pending 큐 이동.
 import { upsertCar } from '../domain/cars.js'
+import { applyBusinessForm } from '../domain/carBusinessInfo.js'
 import {
   assertSessionStillCurrent,
   blockedReasonForOwnerDataWrite,
@@ -18,6 +19,7 @@ import { STORAGE_FAIL_TOAST } from './outboxCommit.js'
 
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 const SESSION_CHANGED_TOAST = '세션이 바뀌어 저장을 중단했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SAVED_TOAST = '저장했습니다.'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
@@ -145,4 +147,45 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
     console.error('[vehicleMutations] 차량 저장 실패:', error)
     return { cars, toast: STORAGE_FAIL_TOAST, failed: true, saved: null, renamedFrom: null }
   }
+}
+
+/**
+ * 기사 관리 화면의 사업자·정산 계좌 저장 — requestVehicleSave와 같은 순서(차단 확인 → 로그인이면 서버 먼저 → 성공 후 commitBatch).
+ * @param {{ ownerKey: string, cars: Array<CarLike>, carId: string, form: import('../domain/carBusinessInfo.js').CarBusinessForm, userId?: string|null }} params
+ */
+export async function requestCarBusinessInfoSave({ ownerKey, cars, carId, form, userId }) {
+  const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
+  if (blocked) return { cars, toast: blocked, failed: true }
+  if (!cars.some((item) => item.id === carId && item.type === 'sub')) {
+    return { cars, toast: '차량을 찾지 못했습니다.', failed: true }
+  }
+  const nextCars = cars.map((item) => (item.id === carId ? applyBusinessForm(item, form) : item))
+  if (getCloudOwnerKey() !== ownerKey) {
+    try {
+      commitBatch([{ domain: 'cars', ownerKey, value: nextCars }], { extraWrites: [] })
+      return { cars: nextCars, toast: SAVED_TOAST, failed: false }
+    } catch (error) {
+      console.error('[vehicleMutations] 사업자정보 저장 실패:', error)
+      return { cars, toast: STORAGE_FAIL_TOAST, failed: true }
+    }
+  }
+  const cloudUserId = userId || getCloudUserId()
+  return runOwnerSaveSerialized(ownerKey, async () => {
+    try {
+      const captured = captureSession()
+      const remoteId = await upsertVehicleFromList(
+        /** @type {string} */ (cloudUserId), ownerKey, nextCars, carId, captured,
+      )
+      assertSessionStillCurrent(captured)
+      const withId = remoteId != null
+        ? nextCars.map((item) => (item.id === carId ? { ...item, supabaseId: String(remoteId) } : item))
+        : nextCars
+      commitBatch([{ domain: 'cars', ownerKey, value: withId }], { extraWrites: [], syncToCloud: false })
+      return { cars: withId, toast: SAVED_TOAST, failed: false }
+    } catch (error) {
+      if (error instanceof StaleSessionError) return { cars, toast: SESSION_CHANGED_TOAST, failed: true }
+      console.error('[vehicleMutations] 사업자정보 저장 실패:', error)
+      return { cars, toast: SAVE_FAIL_TOAST, failed: true }
+    }
+  })
 }
