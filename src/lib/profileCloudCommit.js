@@ -21,8 +21,10 @@ export async function upsertProfileOnSupabase(userId, profile, settings) {
     business_type: profile.bizType || null,
     business_item: profile.bizItem || null,
     business_email: profile.bizEmail || null,
+    business_representative: profile.bizRepresentative || null,
     bank_name: profile.bankName || null,
     account_number: profile.accountNumber || null,
+    account_holder: profile.accountHolder || null,
     settings,
     updated_at: new Date().toISOString(),
   })

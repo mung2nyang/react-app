@@ -50,8 +50,10 @@ export function mergeProfileRow(localProfile, profileRow) {
     bizType: profileRow?.business_type || localProfile.bizType || '',
     bizItem: profileRow?.business_item || localProfile.bizItem || '',
     bizEmail: profileRow?.business_email || localProfile.bizEmail || '',
+    bizRepresentative: profileRow?.business_representative || localProfile.bizRepresentative || '',
     bankName: profileRow?.bank_name || localProfile.bankName || '',
     accountNumber: profileRow?.account_number || localProfile.accountNumber || '',
+    accountHolder: profileRow?.account_holder || localProfile.accountHolder || '',
   }
 }
 

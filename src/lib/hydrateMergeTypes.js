@@ -17,7 +17,7 @@
 /** @typedef {Error & { failedTables?: Array<string>, cause?: Record<string, SupabaseQueryError> }} HydrateError */
 
 /** @typedef {{ name?: string, phone?: string, bizName?: string, bizRepresentative?: string, bizNumber?: string, bizAddress?: string, bizType?: string, bizItem?: string, bizEmail?: string, bankName?: string, accountNumber?: string, accountHolder?: string }} LocalProfile */
-/** @typedef {{ name?: string, phone?: string, business_name?: string, business_number?: string, business_address?: string, business_type?: string, business_item?: string, business_email?: string, bank_name?: string, account_number?: string }|null|undefined} ProfileRow */
+/** @typedef {{ name?: string, phone?: string, business_name?: string, business_number?: string, business_address?: string, business_type?: string, business_item?: string, business_email?: string, business_representative?: string, bank_name?: string, account_number?: string, account_holder?: string }|null|undefined} ProfileRow */
 
 // Step 7 후속(hydrate producer 정규화, 2026-08-31) — LocalCar/LocalClient/LocalDriver는 이제
 // 각 도메인의 정본 타입(CarLike/ClientLike/DriverRecord — persistDomainRecords.js의
