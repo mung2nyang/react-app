@@ -72,4 +72,17 @@ describe('carFromAssignedSummary', () => {
     assert.equal(car.commType, 'percent')
     assert.equal(car.commission, '')
   })
+
+  // 서버 함수가 돌려주는 산재 적용 여부(insurance_on)만 진짜 true일 때 산재 차감이 켜진다.
+  test('insurance_on true → insuranceOn true (기사 본인 매출이 산재를 차감)', () => {
+    const car = carFromAssignedSummary({ id: 'veh-4', number: '서울12가3456', type: 'sub', insurance_on: true })
+    assert.equal(car.insuranceOn, true)
+  })
+
+  test('insurance_on false·null·없음 → insuranceOn false', () => {
+    const base = { id: 'veh-5', number: '서울12가3456', type: 'sub' }
+    assert.equal(carFromAssignedSummary({ ...base, insurance_on: false }).insuranceOn, false)
+    assert.equal(carFromAssignedSummary({ ...base, insurance_on: null }).insuranceOn, false)
+    assert.equal(carFromAssignedSummary(base).insuranceOn, false)
+  })
 })

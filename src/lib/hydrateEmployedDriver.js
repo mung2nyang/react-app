@@ -27,7 +27,7 @@ import { supabase } from '../supabaseClient.js'
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
 /**
- * @param {{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null }} row
+ * @param {{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null, insurance_on?: boolean|null }} row
  * @returns {LocalCar}
  */
 export function carFromAssignedSummary(row) {
@@ -43,6 +43,7 @@ export function carFromAssignedSummary(row) {
     commEnabled: !!row.comm_enabled,
     commType: row.comm_type || 'percent',
     commission: row.comm_value ?? '',
+    insuranceOn: row.insurance_on === true,
     infoType: 'existing',
     driverName: '',
     driverPhone: '',
