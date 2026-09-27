@@ -104,6 +104,7 @@ export default function MainPageRoute({
         onWorkChanged={onWorkChanged}
         onClose={closeWorkLog}
         onOpenMenu={onOpenMenu}
+        isEmployedDriver={session?.accountType === 'employed_driver'}
       />
     )
   }

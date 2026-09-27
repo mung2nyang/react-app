@@ -55,8 +55,9 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  * @param {(() => void)} [props.onOpenMenu]
  * @param {string} [props.logId]
  * @param {string} [props.clientScopeKey] 거래처 스코프(연동 기사는 배정 차량번호). 없으면 logId.
+ * @param {boolean} [props.isEmployedDriver] 기사연동 계정 세션이면 콜 상세의 산재보험료 칸을 숨긴다(CallDetailForm 참고).
  */
-export default function DayLogPage({ month, day, dateKey, ownerKey, clients, settings, showToast, onWorkChanged, onClose, onOpenMenu, logId = 'main', clientScopeKey }) {
+export default function DayLogPage({ month, day, dateKey, ownerKey, clients, settings, showToast, onWorkChanged, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false }) {
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, showToast, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, showToast, logId)
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
@@ -196,6 +197,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
                   locationShortcuts={locationShortcuts}
                   pinnedLocations={pinnedLocations}
                   onTogglePinnedLocation={handleTogglePinnedLocation}
+                  isEmployedDriver={isEmployedDriver}
                   onSave={handleSaveCall}
                   onClose={() => dispatch({ type: 'closeCallForm' })}
                 />

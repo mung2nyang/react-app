@@ -34,10 +34,11 @@ const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
  * @param {(location: string) => void} [props.onTogglePinnedLocation]
  * @param {(item: CallDetailDraft) => void} props.onSave
  * @param {() => void} props.onClose
+ * @param {boolean} [props.isEmployedDriver] 기사연동 계정(고용된 기사 본인) 세션이면 산재보험료 칸을 숨긴다 — 자기 명의로 플랫폼 일을 받는 게 아니라서 의미가 없다.
  */
 export default function CallDetailForm({
   value, previousItem, dateKey, clients, settings, logId, clientScopeKey, ownerKey, showToast, onSave, onClose,
-  locationShortcuts = [], pinnedLocations = [], onTogglePinnedLocation,
+  locationShortcuts = [], pinnedLocations = [], onTogglePinnedLocation, isEmployedDriver = false,
 }) {
   const [draft, setDraft] = useState(() => (value ? draftFromDetail(value, dateKey, clients) : { ...emptyDraft, paymentDueDate: dueDateForClient(dateKey, null) }))
   const [activeLocationTarget, setActiveLocationTarget] = useState(/** @type {'load'|'unload'} */ ('load'))
@@ -191,11 +192,13 @@ export default function CallDetailForm({
               <span className="slider"></span>
             </label>
           </div>
-          <div className="call-inline-field">
-            <label htmlFor="callInsuranceFee">산재보험료</label>
-            <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
-            <span>원</span>
-          </div>
+          {!isEmployedDriver && (
+            <div className="call-inline-field">
+              <label htmlFor="callInsuranceFee">산재보험료</label>
+              <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
+              <span>원</span>
+            </div>
+          )}
           <div className="payment-due-date-box">
             <div className="form-group">
               <label htmlFor="callPaymentDueDate">입금 예정일</label>
