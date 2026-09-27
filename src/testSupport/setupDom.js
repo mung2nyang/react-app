@@ -1,7 +1,7 @@
 // 여러 store/lib 테스트가 공유하는 최소 DOM 전역(localStorage) 설정.
 // persist.js/cloudSync.js는 브라우저의 전역 localStorage를 그대로 쓰므로, Node 테스트
-// 프로세스에도 jsdom으로 그 전역을 채워 넣는다 — originalWindow.js가 이미 이 프로젝트에서
-// jsdom을 쓰고 있는 것과 같은 이유. 부작용 임포트로만 쓴다: `import '../testSupport/setupDom.js'`
+// 프로세스에도 jsdom으로 그 전역을 채워 넣는다.
+// 부작용 임포트로만 쓴다: `import '../testSupport/setupDom.js'`
 // 를 다른 임포트보다 먼저 적어서, persist.js 등이 읽어 들일 때 이미 전역이 있게 한다.
 import { JSDOM } from 'jsdom'
 

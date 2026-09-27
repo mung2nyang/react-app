@@ -17,113 +17,100 @@ import {
 } from './finance.js'
 import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
 import { parseCurrencyValue } from './money.js'
-import { applyOriginalFixture, loadOriginalWindow } from '../lib/originalWindow.js'
 
 /** @template T @param {T} a @param {T} b */
 function same(a, b) {
   assert.equal(JSON.stringify(a), JSON.stringify(b))
 }
 
-const original = loadOriginalWindow()
-applyOriginalFixture(original, FIXTURE_SETTINGS, FIXTURE_WORK)
-
-describe('원본 core-logic와 같은 입력', () => {
+// 아래 기대값은 확정 규칙 기준 직접 값이다. 2026-09에 원본 앱 대조에서 전환했고,
+// 그 시점에 원본과 일치가 확인된 값이다(원본과 다르게 확정한 부분은 해당 테스트에 표시).
+describe('기본 계산 규칙', () => {
   test('parseCurrencyValue', () => {
-    assert.equal(parseCurrencyValue('250,000'), original.parseCurrencyValue('250,000'))
-    assert.equal(parseCurrencyValue(''), original.parseCurrencyValue(''))
-    assert.equal(parseCurrencyValue(null), original.parseCurrencyValue(null))
-    assert.equal(parseCurrencyValue(undefined), original.parseCurrencyValue(undefined))
-    assert.equal(parseCurrencyValue(250000), original.parseCurrencyValue(250000))
-    assert.equal(parseCurrencyValue('원'), original.parseCurrencyValue('원'))
+    assert.equal(parseCurrencyValue('250,000'), 250000)
+    assert.equal(parseCurrencyValue(''), 0)
+    assert.equal(parseCurrencyValue(null), 0)
+    assert.equal(parseCurrencyValue(undefined), 0)
+    assert.equal(parseCurrencyValue(250000), 250000)
+    assert.equal(parseCurrencyValue('원'), 0)
   })
 
   test('isDateWithinAssignment', () => {
+    // [날짜, 시작, 끝, 기대값] — 경계일 포함, 시작/끝이 비면 그쪽은 제한 없음
     const cases = [
-      ['2026-05-15', '2026-05-01', '2026-05-31'],
-      ['2026-04-30', '2026-05-01', '2026-05-31'],
-      ['2026-06-01', '2026-05-01', '2026-05-31'],
-      ['2026-05-01', '2026-05-01', '2026-05-31'],
-      ['2026-05-31', '2026-05-01', '2026-05-31'],
-      ['2020-01-01', '', '2026-05-31'],
-      ['2099-01-01', '', ''],
+      ['2026-05-15', '2026-05-01', '2026-05-31', true],
+      ['2026-04-30', '2026-05-01', '2026-05-31', false],
+      ['2026-06-01', '2026-05-01', '2026-05-31', false],
+      ['2026-05-01', '2026-05-01', '2026-05-31', true],
+      ['2026-05-31', '2026-05-01', '2026-05-31', true],
+      ['2020-01-01', '', '2026-05-31', true],
+      ['2099-01-01', '', '', true],
     ]
-    for (const args of cases) {
-      assert.equal(isDateWithinAssignment(...args), original.isDateWithinAssignment(...args), String(args))
+    for (const [date, start, end, expected] of cases) {
+      assert.equal(isDateWithinAssignment(date, start, end), expected, String([date, start, end]))
     }
   })
 
   test('getDetailPaymentSummary', () => {
     const samples = [
-      { fare: '300,000', paymentStatus: '미수' },
-      { fare: '300,000', paymentStatus: '수금 완료' },
-      { fare: 300000, payments: [{ amount: 100000 }] },
-      { fare: 300000, payments: [{ amount: 300000 }] },
-      { fare: 300000, payments: [{ amount: 200000 }, { amount: 200000 }] },
+      [{ fare: '300,000', paymentStatus: '미수' }, { paidAmount: 0, remainingAmount: 300000, status: 'unpaid' }],
+      [{ fare: '300,000', paymentStatus: '수금 완료' }, { paidAmount: 300000, remainingAmount: 0, status: 'paid' }],
+      [{ fare: 300000, payments: [{ amount: 100000 }] }, { paidAmount: 100000, remainingAmount: 200000, status: 'partial' }],
+      [{ fare: 300000, payments: [{ amount: 300000 }] }, { paidAmount: 300000, remainingAmount: 0, status: 'paid' }],
+      // 운임보다 많이 입금돼도 남은 금액은 0(음수 안 됨)
+      [{ fare: 300000, payments: [{ amount: 200000 }, { amount: 200000 }] }, { paidAmount: 400000, remainingAmount: 0, status: 'paid' }],
     ]
-    for (const detail of samples) {
-        same(getDetailPaymentSummary(detail), original.getDetailPaymentSummary(detail))
+    for (const [detail, expected] of samples) {
+      same(getDetailPaymentSummary(detail), expected)
     }
   })
 
   test('getEffectiveDriverSettlementMode', () => {
-    assert.equal(
-      getEffectiveDriverSettlementMode({ settlementMode: 'driver_direct' }, { defaultDriverSettlementMode: 'employee' }),
-      original.getEffectiveDriverSettlementMode({ settlementMode: 'driver_direct' }, { defaultDriverSettlementMode: 'employee' }),
-    )
-    assert.equal(
-      getEffectiveDriverSettlementMode({ settlementMode: 'default' }, { defaultDriverSettlementMode: 'employee' }),
-      original.getEffectiveDriverSettlementMode({ settlementMode: 'default' }, { defaultDriverSettlementMode: 'employee' }),
-    )
-    assert.equal(
-      getEffectiveDriverSettlementMode({ settlementMode: 'default' }, {}),
-      original.getEffectiveDriverSettlementMode({ settlementMode: 'default' }, {}),
-    )
-    assert.equal(
-      getEffectiveDriverSettlementMode({}, { defaultDriverSettlementMode: 'none' }),
-      original.getEffectiveDriverSettlementMode({}, { defaultDriverSettlementMode: 'none' }),
-    )
-    assert.equal(
-      getEffectiveDriverSettlementMode(null, { defaultDriverSettlementMode: 'employee' }),
-      original.getEffectiveDriverSettlementMode(null, { defaultDriverSettlementMode: 'employee' }),
-    )
-    assert.equal(
-      getEffectiveDriverSettlementMode(undefined, {}),
-      original.getEffectiveDriverSettlementMode(undefined, {}),
-    )
+    // [차량, 설정, 기대값] — 차량이 default면 설정 기본값, 둘 다 없으면 company
+    const cases = [
+      [{ settlementMode: 'driver_direct' }, { defaultDriverSettlementMode: 'employee' }, 'driver_direct'],
+      [{ settlementMode: 'default' }, { defaultDriverSettlementMode: 'employee' }, 'employee'],
+      [{ settlementMode: 'default' }, {}, 'company'],
+      [{}, { defaultDriverSettlementMode: 'none' }, 'none'],
+      [null, { defaultDriverSettlementMode: 'employee' }, 'employee'],
+      [undefined, {}, 'company'],
+    ]
+    for (const [car, settings, expected] of cases) {
+      assert.equal(getEffectiveDriverSettlementMode(car, settings), expected, JSON.stringify([car, settings]))
+    }
   })
 })
 
-describe('같은 운행 픽스처 — 원본 vs react-app', () => {
+describe('같은 운행 픽스처 — 확정 금액', () => {
   test('월 운송료 합계', () => {
     const ours = getMonthlyFareRevenue(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
-    const theirs = original.getMonthlyFareRevenue(MONTH_KEY)
     // Step 9-B: isVehicleRevenueSharedWithOwner 단일 게이트 — shareRevenueWithOwner 서브차량은
-    // settlementMode와 무관하게 포함(부산33나1111 운임 80,000·1회 추가).
-    assert.equal(ours.totalFare, theirs.totalFare + 80000)
-    assert.equal(ours.tripCount, theirs.tripCount + 1)
-    assert.notEqual(JSON.stringify(ours.byVehicle), JSON.stringify(theirs.byVehicle))
+    // settlementMode와 무관하게 포함(부산33나1111 운임 80,000·1회 추가). 원본은 이 차량을 뺀
+    // 1,110,000원·6회였고, 확정 규칙은 포함이다.
+    assert.equal(ours.totalFare, 1190000)
+    assert.equal(ours.tripCount, 7)
+    assert.deepEqual(
+      ours.byVehicle.map((item) => [item.logId, item.fare, item.tripCount]),
+      [['main', 660000, 4], ['서울12가3456', 450000, 2], ['부산33나1111', 80000, 1]],
+    )
   })
 
   test('차주 월 손익', () => {
-    // 재감사(FAIL 지적 2번) — 비용(maint/fuel/misc)은 이제 canonical expenses 배열에서
-    // 읽는다(record.maintItems/fuelItems/miscItems가 아니라). vanilla(theirs)는 여전히
-    // day record에 박힌 필드를 읽으므로 입력 데이터 모양은 다르지만, FIXTURE_EXPENSES를
-    // FIXTURE_WORK의 같은 필드와 같은 금액으로 맞춰 뒀기 때문에(finance.fixtures.js)
-    // 합계는 여전히 같아야 한다 — 그 "숫자가 같다"만 확인한다(이건 계획적 이탈이지
-    // 실수가 아니다).
+    // 재감사(FAIL 지적 2번) — 비용(maint/fuel/misc)은 canonical expenses 배열에서 읽는다
+    // (record.maintItems/fuelItems/miscItems가 아니라). FIXTURE_EXPENSES는 FIXTURE_WORK의 같은
+    // 필드와 같은 금액으로 맞춰 뒀다(finance.fixtures.js) — 아래 합계는 그 금액 기준이다.
     const ours = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, FIXTURE_EXPENSES)
-    const theirs = original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner')
-    assert.equal(ours.tripCount, theirs.tripCount)
-    assert.equal(ours.vatAmount, theirs.vatAmount)
-    assert.equal(ours.netProfit, theirs.netProfit)
-    assert.equal(ours.income.total, theirs.income.total)
-    assert.equal(ours.income.fare.total, theirs.income.fare.total)
-    assert.equal(ours.income.commission.total, theirs.income.commission.total)
-    assert.equal(ours.income.fuelSubsidy.total, theirs.income.fuelSubsidy.total)
-    assert.equal(ours.expense.total, theirs.expense.total)
-    assert.equal(ours.unpaid.total, theirs.unpaid.total)
-    assert.equal(ours.distanceKm, theirs.distanceKm)
-    assert.equal(ours.durationHours, theirs.durationHours)
+    assert.equal(ours.tripCount, 4)
+    assert.equal(ours.vatAmount, 66000)
+    assert.equal(ours.netProfit, 514000)
+    assert.equal(ours.income.total, 652000)
+    assert.equal(ours.income.fare.total, 660000)
+    assert.equal(ours.income.commission.total, 13000)
+    assert.equal(ours.income.fuelSubsidy.total, 5000)
+    assert.equal(ours.expense.total, 138000)
+    assert.equal(ours.unpaid.total, 130000)
+    assert.equal(ours.distanceKm, 40)
+    assert.equal(ours.durationHours, 3)
   })
 
   test('기사 정산 합계', () => {
@@ -131,63 +118,63 @@ describe('같은 운행 픽스처 — 원본 vs react-app', () => {
     const link = FIXTURE_SETTINGS.driverLinks[0]
     const data = FIXTURE_WORK['서울12가3456']
     const ours = getLinkedDriverSettlementDetail(data, MONTH_KEY, link, car)
-    const theirs = original.getLinkedDriverSettlementDetail(data, MONTH_KEY, link, car)
-    assert.equal(ours.totalFare, theirs.totalFare)
-    assert.equal(ours.tripCount, theirs.tripCount)
-    assert.equal(ours.commissionAmount, theirs.commissionAmount)
-    assert.equal(ours.insuranceAmount, theirs.insuranceAmount)
-    assert.equal(ours.finalAmount, theirs.finalAmount)
+    // 운송료 450,000 − 수수료 15%(67,500) − 산재 3,000 = 379,500
+    assert.equal(ours.totalFare, 450000)
+    assert.equal(ours.tripCount, 2)
+    assert.equal(ours.commissionAmount, 67500)
+    assert.equal(ours.insuranceAmount, 3000)
+    assert.equal(ours.finalAmount, 379500)
   })
 
   test('세금계산서 그룹 금액', () => {
+    // 세액은 공급가의 10%, 합계는 공급가+세액
+    const expected = {
+      sales: [
+        { supplyAmount: 630000, taxAmount: 63000, totalAmount: 693000, count: 5 },
+        { supplyAmount: 200000, taxAmount: 20000, totalAmount: 220000, count: 1 },
+        { supplyAmount: 250000, taxAmount: 25000, totalAmount: 275000, count: 1 },
+      ],
+      purchase: [{ supplyAmount: 379500, taxAmount: 37950, totalAmount: 417450, count: 2 }],
+      commission: [{ supplyAmount: 20000, taxAmount: 2000, totalAmount: 22000, count: 1 }],
+    }
     for (const flow of ['sales', 'purchase', 'commission']) {
       const ours = getTaxInvoiceSourceGroups(MONTH_KEY, flow, FIXTURE_SETTINGS, FIXTURE_WORK)
-      const theirs = original.getTaxInvoiceSourceGroups(MONTH_KEY, flow)
-      assert.equal(ours.length, theirs.length, flow)
+      assert.equal(ours.length, expected[flow].length, flow)
       ours.forEach((group, index) => {
-        assert.equal(group.supplyAmount, theirs[index].supplyAmount, `${flow} supply`)
-        assert.equal(group.taxAmount, theirs[index].taxAmount, `${flow} tax`)
-        assert.equal(group.totalAmount, theirs[index].totalAmount, `${flow} total`)
-        assert.equal(group.count, theirs[index].count, `${flow} count`)
+        assert.equal(group.supplyAmount, expected[flow][index].supplyAmount, `${flow} supply`)
+        assert.equal(group.taxAmount, expected[flow][index].taxAmount, `${flow} tax`)
+        assert.equal(group.totalAmount, expected[flow][index].totalAmount, `${flow} total`)
+        assert.equal(group.count, expected[flow][index].count, `${flow} count`)
       })
     }
   })
 
   test('미수금 잔액', () => {
     const ours = getReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK)
-    const theirs = original.getReceivableItems()
-    assert.equal(ours.length, theirs.length)
-    same(
-      ours.map((item) => item.remainingAmount),
-      theirs.map((item) => item.remainingAmount),
-    )
+    assert.deepEqual(ours.map((item) => item.remainingAmount), [100000, 0, 20000, 10000, 200000, 999999])
+    // 기준일 2026-08-25에 입금 예정일이 지난 미수 건수(옛 "숫자 비교표" 테스트에서 옮겨 옴)
+    assert.equal(getOverdueReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK, new Date('2026-08-25')).length, 1)
   })
 
   test('수수료 경계: 운행 0건이면 건당 수수료 0', () => {
     const car = { commEnabled: true, commType: 'direct', commission: '20,000' }
-    assert.equal(calculateDriverVehicleCommission(car, 0, 0), original.calculateDriverVehicleCommission(car, 0, 0))
-    assert.equal(calculateDriverVehicleCommission(car, 0, 3), original.calculateDriverVehicleCommission(car, 0, 3))
+    assert.equal(calculateDriverVehicleCommission(car, 0, 0), 0)
+    assert.equal(calculateDriverVehicleCommission(car, 0, 3), 60000)
   })
 
   test('거래처 운임 수수료 스냅샷', () => {
     const fare = 100000
     const withSnap = { commissionSnapshot: { enabled: true, type: 'direct', value: '7,000' }, client: '한진' }
     const withoutSnap = { client: '한진' }
-    assert.equal(
-      getCallDetailCommissionAmount(withSnap, fare, FIXTURE_SETTINGS),
-      original.getCallDetailCommissionAmount(withSnap, fare, FIXTURE_SETTINGS),
-    )
-    assert.equal(
-      getCallDetailCommissionAmount(withoutSnap, fare, FIXTURE_SETTINGS),
-      original.getCallDetailCommissionAmount(withoutSnap, fare, FIXTURE_SETTINGS),
-    )
+    // 스냅샷이 있으면 그 값(7,000), 없으면 거래처 설정 10%(10,000)
+    assert.equal(getCallDetailCommissionAmount(withSnap, fare, FIXTURE_SETTINGS), 7000)
+    assert.equal(getCallDetailCommissionAmount(withoutSnap, fare, FIXTURE_SETTINGS), 10000)
   })
 
   test('할당 기간 밖은 기사 정산에 안 넣음', () => {
     const link = FIXTURE_SETTINGS.driverLinks[0]
     const ours = getMonthlyDriverTotals(FIXTURE_WORK['서울12가3456'], MONTH_KEY, link)
-    const theirs = original.getMonthlyDriverTotals(FIXTURE_WORK['서울12가3456'], MONTH_KEY, link)
-    same(ours, theirs)
+    same(ours, { grossAmount: 450000, insuranceAmount: 3000, count: 2 })
     assert.equal(ours.grossAmount < 999999, true)
   })
 
@@ -351,55 +338,18 @@ describe('입금예정일', () => {
   // 2026-09-01 보리 지시로 기사 할당 "기간 겹침" 계산을 제거했다 — assignmentRangesOverlap
   // / findOverlappingDriverLink 원본 대조 테스트도 그 기능과 함께 삭제한다.
   test('calculatePaymentDueDate', () => {
+    // [결제일, 주기, 값, 기대 입금예정일] — 말일이 없는 달은 그 달 말일로 맞춘다
     const cases = [
-      ['2026-01-31', 'next_month_end', ''],
-      ['2026-01-31', 'second_month_end', ''],
-      ['2026-01-31', 'next_month_day', '31'],
-      ['2026-01-31', 'second_month_day', '31'],
-      ['2026-05-01', 'after_days', '10'],
-      ['2026-05-01', 'same_day', ''],
+      ['2026-01-31', 'next_month_end', '', '2026-02-28'],
+      ['2026-01-31', 'second_month_end', '', '2026-03-31'],
+      ['2026-01-31', 'next_month_day', '31', '2026-02-28'],
+      ['2026-01-31', 'second_month_day', '31', '2026-03-31'],
+      ['2026-05-01', 'after_days', '10', '2026-05-11'],
+      ['2026-05-01', 'same_day', '', '2026-05-01'],
+      ['2026-05-10', 'next_month_end', '', '2026-06-30'],
     ]
-    for (const args of cases) {
-      assert.equal(calculatePaymentDueDate(...args), original.calculatePaymentDueDate(...args), String(args))
-    }
-  })
-})
-
-describe('숫자 비교표용 스냅샷', () => {
-  test('콘솔에 원본/연습앱 숫자를 같이 출력한다', () => {
-    const revenue = getMonthlyFareRevenue(MONTH_KEY, FIXTURE_SETTINGS, FIXTURE_WORK)
-    const owner = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner', FIXTURE_SETTINGS, FIXTURE_WORK, FIXTURE_EXPENSES)
-    const driver = getLinkedDriverSettlementDetail(
-      FIXTURE_WORK['서울12가3456'],
-      MONTH_KEY,
-      FIXTURE_SETTINGS.driverLinks[0],
-      FIXTURE_SETTINGS.cars[1],
-    )
-    const sales = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK)
-    const purchase = getTaxInvoiceSourceGroups(MONTH_KEY, 'purchase', FIXTURE_SETTINGS, FIXTURE_WORK)
-    const rows = [
-      ['월 운송료 합계', revenue.totalFare, original.getMonthlyFareRevenue(MONTH_KEY).totalFare + 80000],
-      ['월 운행 횟수', revenue.tripCount, original.getMonthlyFareRevenue(MONTH_KEY).tripCount + 1],
-      ['차주 순이익', owner.netProfit, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').netProfit],
-      ['차주 부가세', owner.vatAmount, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').vatAmount],
-      ['운임 수수료', owner.income.commission.total, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').income.commission.total],
-      ['유가보조금', owner.income.fuelSubsidy.total, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').income.fuelSubsidy.total],
-      ['운행 지출', owner.expense.total, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').expense.total],
-      ['미입금 운송료', owner.unpaid.total, original.getOwnerMonthlyFinanceDetail(MONTH_KEY, 'owner').unpaid.total],
-      ['기사 총 운송료', driver.totalFare, original.getLinkedDriverSettlementDetail(FIXTURE_WORK['서울12가3456'], MONTH_KEY, FIXTURE_SETTINGS.driverLinks[0], FIXTURE_SETTINGS.cars[1]).totalFare],
-      ['기사 수수료', driver.commissionAmount, original.getLinkedDriverSettlementDetail(FIXTURE_WORK['서울12가3456'], MONTH_KEY, FIXTURE_SETTINGS.driverLinks[0], FIXTURE_SETTINGS.cars[1]).commissionAmount],
-      ['기사 산재', driver.insuranceAmount, original.getLinkedDriverSettlementDetail(FIXTURE_WORK['서울12가3456'], MONTH_KEY, FIXTURE_SETTINGS.driverLinks[0], FIXTURE_SETTINGS.cars[1]).insuranceAmount],
-      ['기사 정산액', driver.finalAmount, original.getLinkedDriverSettlementDetail(FIXTURE_WORK['서울12가3456'], MONTH_KEY, FIXTURE_SETTINGS.driverLinks[0], FIXTURE_SETTINGS.cars[1]).finalAmount],
-      ['매출계산서 1번째 공급가', sales[0]?.supplyAmount ?? 0, original.getTaxInvoiceSourceGroups(MONTH_KEY, 'sales')[0]?.supplyAmount ?? 0],
-      ['매출계산서 1번째 세액', sales[0]?.taxAmount ?? 0, original.getTaxInvoiceSourceGroups(MONTH_KEY, 'sales')[0]?.taxAmount ?? 0],
-      ['매입계산서 공급가', purchase[0]?.supplyAmount ?? 0, original.getTaxInvoiceSourceGroups(MONTH_KEY, 'purchase')[0]?.supplyAmount ?? 0],
-      ['연체 미수 건수', getOverdueReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK, new Date('2026-08-25')).length, original.getOverdueReceivableItems().length],
-    ]
-    console.log('\n비교표')
-    console.log(['항목', '연습앱', '원본', '일치'].join('\t'))
-    for (const [label, ours, theirs] of rows) {
-      console.log([label, ours, theirs, ours === theirs ? '같음' : '다름'].join('\t'))
-      assert.equal(ours, theirs, label)
+    for (const [date, cycle, value, expected] of cases) {
+      assert.equal(calculatePaymentDueDate(date, cycle, value), expected, String([date, cycle, value]))
     }
   })
 })
