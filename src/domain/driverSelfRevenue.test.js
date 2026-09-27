@@ -14,11 +14,13 @@ const REVENUE_CAR = /** @type {CarLike} */ (FIXTURE_SETTINGS.cars.find((c) => c.
 const SALARY_CAR = /** @type {CarLike} */ (FIXTURE_SETTINGS.cars.find((c) => c.number === '부산33나1111'))
 const MAIN_ONLY_WORK = { main: FIXTURE_WORK['서울12가3456'] }
 
-/** owner scope: fixed 250000 + call 200000, tripCount 2, 15% → 67500 − 산재 3000 */
+// 로드맵 4-2 슬라이스 2: 산재보험료를 콜 상세 건별 insuranceFee가 아니라 정산액 기준 월 계산으로 바꿨다
+// (driverIncomeDeductions.js와 같은 식, 차주 화면과 동일). 기본 경비율 30.5%·요율 1.8%, 산재 적용 ON.
+/** owner scope: fixed 250000 + call 200000, tripCount 2, 15% → 67500. 월보수액 46913 → 산재 총액 844 → 기사 몫 422 */
 const FARE_TOTAL = 450000
 const TRIP_COUNT = 2
 const SHARE_GROSS = 67500
-const SHARE_NET = 64500
+const SHARE_NET = 67078
 const SALARY = 2000000
 
 /**
@@ -38,7 +40,7 @@ function settingsWithCars(cars, driverLinks = FIXTURE_SETTINGS.driverLinks) {
 }
 
 describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
-  test('(b) {main: 트립} 입력 직후와 동일 — 순이익 = 배정기간 내 운송료 × % − 산재', () => {
+  test('(b) {main: 트립} 입력 직후와 동일 — 순이익 = 배정기간 내 운송료 × % − 산재 기사 몫', () => {
     const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
     assert.equal(detail.income.fare.total, FARE_TOTAL)
     assert.equal(detail.tripCount, TRIP_COUNT)
@@ -72,7 +74,14 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     )
     assert.equal(withIns.netProfit, SHARE_NET)
     assert.equal(withoutIns.netProfit, SHARE_GROSS)
-    assert.equal(withIns.netProfit + 3000, withoutIns.netProfit)
+    assert.equal(withIns.netProfit + 422, withoutIns.netProfit, '산재 기사 몫 422원만큼 차이')
+  })
+
+  // 로드맵 4-2 슬라이스 2 — 원천징수(3.3%) 토글도 차주 화면과 같은 함수로 반영되는지.
+  test('(c-2) withholdingOn이면 3.3% 원천징수도 함께 차감된다(산재 공제 전 정산액 기준)', () => {
+    const withWithholding = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([{ ...REVENUE_CAR, withholdingOn: true }]), MAIN_ONLY_WORK)
+    // 67,500 − 산재 기사 몫 422 − 3.3%(67,500×3.3%=2,227) = 64,851
+    assert.equal(withWithholding.netProfit, SHARE_NET - 2227)
   })
 
   test('(d) 월급제 — 고정급, 라벨 기사 정산(월급)', () => {
@@ -159,11 +168,11 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     assert.equal(narrow.income.fare.total, 200000, '운송료 표시 라인은 배정기간 필터 안 함')
   })
 
-  // 로드맵 4-2: 차주 손익의 기사 급여는 산재를 빼지 않은 정산액 전체로 바뀌었고, 기사 본인 화면은 다음 슬라이스에서 같은
-  // 새 계산으로 바뀐다. 그 전까지는 건별 산재를 쓰지 않는 조건(insuranceOn 꺼짐)에서만 두 화면의 정산액이 같다.
-  test('② settlement == 차주 all 탭 김기사 급여 항목 (같은 트립·main↔번호판, 산재 꺼짐)', () => {
+  // 로드맵 4-2 슬라이스 2 완료: 기사 본인 화면과 차주 화면이 이제 같은 함수(driverIncomeDeductions.js)를 써서,
+  // 산재 ON 상태에서도 두 화면의 기사 몫 금액이 원 단위까지 같다(슬라이스 1 직후의 임시 조건 해소).
+  test('② settlement == 차주 all 탭 김기사 급여 항목 (같은 트립·main↔번호판, 산재 ON)', () => {
     const plateWork = FIXTURE_WORK['서울12가3456']
-    const settings = settingsWithCars([{ ...REVENUE_CAR, insuranceOn: false }])
+    const settings = settingsWithCars([REVENUE_CAR])
     const self = getDriverSelfMonthlyDetail(MONTH_KEY, settings, { main: plateWork })
     const ownerAll = getOwnerMonthlyFinanceDetail(
       MONTH_KEY,
@@ -173,18 +182,20 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
       [],
     )
     const ownerKim = ownerAll.expense.salary.items.find((item) => item.label === '김기사')
-    assert.equal(self.income.settlement.total, SHARE_GROSS)
-    assert.equal(ownerKim?.amount, SHARE_GROSS)
-    assert.equal(self.income.settlement.total, ownerKim?.amount)
+    assert.equal(self.income.settlement.total, SHARE_NET)
+    assert.equal(ownerKim?.amount, SHARE_GROSS, '차주 손익의 기사 급여는 산재를 빼지 않은 정산액 전체')
+    assert.equal(self.income.settlement.total, SHARE_GROSS - 422, '기사 본인 실수령 = 정산액 − 산재 기사 몫')
   })
 
   // 2026-09-17 버그 재현·수정 확인: 고정노선(fare 필드 없이 fixedCount만 저장된
   // 실제 day record 모양)으로 뛴 매출제(%) 기사의 정산액이 0으로 나오던 문제.
+  // 로드맵 4-2: 산재가 이제 콜 상세 유무와 무관하게 정산액 기준으로 항상 계산되므로,
+  // 옛 계산(콜 상세 없음 → 산재 0원)과 달리 이 달도 산재 기사 몫(234원)이 빠진다.
   test('③ 고정노선만 뛴 기사도 정산액이 0이 아니다(실제 저장 모양, fare 필드 없음)', () => {
     const settings = settingsWithCars([REVENUE_CAR])
     const realisticFixedOnly = { main: { '2026-05-12': { isOff: false, fixedCount: 1 } } }
     const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settings, realisticFixedOnly)
-    assert.equal(detail.netProfit, 37500, 'fixedUnitPrice(250,000) × 15%')
+    assert.equal(detail.netProfit, 37266, 'fixedUnitPrice(250,000) × 15% = 37,500 − 산재 기사 몫 234')
     assert.equal(detail.income.settlement.label, '기사 정산(15%)')
   })
 })

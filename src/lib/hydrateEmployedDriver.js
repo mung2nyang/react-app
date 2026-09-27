@@ -15,6 +15,7 @@ import {
   fetchAssignedVehicleSummary,
   fetchLinkedOwnerProfileSettings,
 } from './driverLinkRpc.js'
+import { carFromAssignedSummary } from './hydrateEmployedDriverCar.js'
 import { mergeClientsFromRows, mergeDriversFromRows, mergeExpenseKind } from './hydrateMerge.js'
 import { reconcileClients } from './outboxReconcile.js'
 import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
@@ -26,30 +27,7 @@ import { supabase } from '../supabaseClient.js'
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
-/**
- * @param {{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null, insurance_on?: boolean|null }} row
- * @returns {LocalCar}
- */
-export function carFromAssignedSummary(row) {
-  return {
-    id: `car-${row.id}`,
-    number: row.number || '',
-    type: row.type === 'main' ? 'main' : 'sub',
-    tonnage: row.tonnage || '',
-    supabaseId: row.id,
-    settlementMode: row.settlement_mode || 'default',
-    driverPayMode: row.driver_pay_mode || 'revenue',
-    driverSalaryAmount: row.driver_salary_amount ?? '',
-    commEnabled: !!row.comm_enabled,
-    commType: row.comm_type || 'percent',
-    commission: row.comm_value ?? '',
-    insuranceOn: row.insurance_on === true,
-    infoType: 'existing',
-    driverName: '',
-    driverPhone: '',
-    driverLinkId: '',
-  }
-}
+export { carFromAssignedSummary }
 
 /**
  * 배정차 서버 일지(번호판 키) → workLogs.main. 번호판 키는 남기지 않는다.

@@ -85,4 +85,29 @@ describe('carFromAssignedSummary', () => {
     assert.equal(carFromAssignedSummary({ ...base, insurance_on: null }).insuranceOn, false)
     assert.equal(carFromAssignedSummary(base).insuranceOn, false)
   })
+
+  // 로드맵 4-2 슬라이스 2 — 산재보험료·3.3% 원천징수 계산에 쓰는 4개 필드(서버가 0007로 돌려줌).
+  test('driver_income_type·withholding_on·expense_rate·insurance_rate를 그대로 옮긴다', () => {
+    const car = carFromAssignedSummary({
+      id: 'veh-6', number: '서울12가3456', type: 'sub',
+      driver_income_type: 'employee', withholding_on: true, expense_rate: '43.1', insurance_rate: '2',
+    })
+    assert.equal(car.driverIncomeType, 'employee')
+    assert.equal(car.withholdingOn, true)
+    assert.equal(car.expenseRate, '43.1')
+    assert.equal(car.insuranceRate, '2')
+  })
+
+  test('4개 필드가 없거나 이상하면 차량 폼과 같은 기본값(사업소득자·원천징수 꺼짐·30.5·1.8)으로 되돌린다', () => {
+    const base = { id: 'veh-7', number: '서울12가3456', type: 'sub' }
+    const missing = carFromAssignedSummary(base)
+    assert.equal(missing.driverIncomeType, 'business')
+    assert.equal(missing.withholdingOn, false)
+    assert.equal(missing.expenseRate, '30.5')
+    assert.equal(missing.insuranceRate, '1.8')
+    const weird = carFromAssignedSummary({ ...base, driver_income_type: '근로자', expense_rate: '', insurance_rate: '가나다' })
+    assert.equal(weird.driverIncomeType, 'business')
+    assert.equal(weird.expenseRate, '30.5')
+    assert.equal(weird.insuranceRate, '1.8')
+  })
 })
