@@ -15,20 +15,22 @@ export default function PalletSection({ visible, palletCount, isOff, onChange })
   const value = !isOff && palletCount > 0 ? String(palletCount) : ''
   return (
     <div className="form-group fixed-route-group pallet-route-group">
-      <label htmlFor="modalPalletCount">파렛트 회수</label>
       <div className="fixed-route-input-row">
-        <input
-          id="modalPalletCount"
-          type="number"
-          className="input-box"
-          inputMode="numeric"
-          min="0"
-          placeholder="0"
-          value={value}
-          disabled={isOff}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        <span className="fixed-route-unit">장</span>
+        <label htmlFor="modalPalletCount">파렛트 회수</label>
+        <div className="input-with-suffix">
+          <input
+            id="modalPalletCount"
+            type="number"
+            className="input-box"
+            inputMode="numeric"
+            min="0"
+            placeholder="0"
+            value={value}
+            disabled={isOff}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <span className="suffix">장</span>
+        </div>
       </div>
     </div>
   )

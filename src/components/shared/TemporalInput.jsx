@@ -128,7 +128,7 @@ export default function TemporalInput({ type, id, value, onChange, className = '
       <button
         type="button"
         ref={triggerRef}
-        className={`app-temporal-trigger${centered ? ' is-centered' : ''}`}
+        className={`app-temporal-trigger${centered ? ' is-centered' : ''}${value ? ' has-value' : ''}`}
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={open}

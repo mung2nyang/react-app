@@ -94,17 +94,21 @@ export default function CallDetailForm({
       </div>
       <div className="call-detail-panel call-money-panel">
         <div className="call-inline-field">
-          <label htmlFor="callFare">운송료 (부가세 별도 금액)</label>
-          <input id="callFare" className="input-box" inputMode="numeric" placeholder="운송료 입력" value={draft.fare} onChange={(e) => setDraft({ ...draft, fare: formatCurrencyInput(e.target.value) })} />
-          <span>원</span>
+          <label htmlFor="callFare">운송료<br />(부가세{' '}별도)</label>
+          <div className="input-with-suffix">
+            <input id="callFare" className="input-box" inputMode="numeric" placeholder="운송료 입력" value={draft.fare} onChange={(e) => setDraft({ ...draft, fare: formatCurrencyInput(e.target.value) })} />
+            <span className="suffix">원</span>
+          </div>
         </div>
         <p className="billing-settings-note">부가세 포함 금액으로 계약하셨다면 ÷1.1 한 금액을 입력해 주세요.</p>
         {vatPreview && <p className="billing-settings-note vat-preview">{vatPreview}</p>}
         {settings.cargoTonnageOn && (
           <div className="call-inline-field">
             <label htmlFor="callCargoTonnage">화물 톤수</label>
-            <input id="callCargoTonnage" type="number" className="input-box" inputMode="decimal" min="0" step="0.1" placeholder="선택 입력" value={draft.cargoTonnage} onChange={(e) => setDraft({ ...draft, cargoTonnage: e.target.value })} />
-            <span>톤</span>
+            <div className="input-with-suffix">
+              <input id="callCargoTonnage" type="number" className="input-box" inputMode="decimal" min="0" step="0.1" placeholder="선택 입력" value={draft.cargoTonnage} onChange={(e) => setDraft({ ...draft, cargoTonnage: e.target.value })} />
+              <span className="suffix">톤</span>
+            </div>
           </div>
         )}
       </div>
@@ -195,8 +199,10 @@ export default function CallDetailForm({
           {!isEmployedDriver && (
             <div className="call-inline-field">
               <label htmlFor="callInsuranceFee">산재보험료</label>
-              <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
-              <span>원</span>
+              <div className="input-with-suffix">
+                <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
+                <span className="suffix">원</span>
+              </div>
             </div>
           )}
           <div className="payment-due-date-box">

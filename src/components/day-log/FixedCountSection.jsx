@@ -10,20 +10,22 @@ export default function FixedCountSection({ count, isOff, quickCounts, onChange 
   const value = !isOff && count > 0 ? String(count) : ''
   return (
     <>
-      <label htmlFor="modalFixedCountInput">운행 횟수 입력</label>
       <div className="fixed-route-input-row">
-        <input
-          id="modalFixedCountInput"
-          type="number"
-          className="input-box"
-          inputMode="numeric"
-          min="0"
-          placeholder="0"
-          value={value}
-          disabled={isOff}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        <span className="fixed-route-unit">회 운행</span>
+        <label htmlFor="modalFixedCountInput">운행 횟수 입력</label>
+        <div className="input-with-suffix">
+          <input
+            id="modalFixedCountInput"
+            type="number"
+            className="input-box"
+            inputMode="numeric"
+            min="0"
+            placeholder="0"
+            value={value}
+            disabled={isOff}
+            onChange={(e) => onChange(e.target.value)}
+          />
+          <span className="suffix">회</span>
+        </div>
       </div>
       {quickCounts.length > 0 && (
         <div className="fixed-count-quick-buttons" aria-label="운행 횟수 빠른 선택">

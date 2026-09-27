@@ -1,25 +1,32 @@
 /* 일지 고정노선·파렛트·빠른노선 칩 — main-calendar.css에서 옮김. DayLogPage.jsx가 day-log.css 직전에 import. */
 
-.fixed-route-group > label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: var(--fs-2);
-  font-weight: 750;
-}
-
+/* 한 줄 입력(라벨·입력칸, 단위는 칸 안) */
 .fixed-route-input-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: 96px minmax(0, 1fr);
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
-.fixed-route-unit {
-  min-width: 46px;
-  color: var(--text-color);
-  font-size: var(--fs-3);
-  font-weight: 800;
+.fixed-route-input-row .input-with-suffix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fixed-route-input-row .input-box {
+  padding-right: 34px;
+}
+
+.fixed-route-input-row .input-with-suffix .suffix {
+  max-width: none;
+  position: absolute;
+  right: 10px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  font-weight: 700;
   white-space: nowrap;
+  pointer-events: none;
 }
 
 .fixed-count-quick-buttons {
@@ -92,4 +99,8 @@
   color: var(--sub-text-color);
   font-size: var(--fs-3);
   border-left: 1px solid var(--border-color);
+}
+
+.pallet-route-group {
+  margin-top: 16px;
 }

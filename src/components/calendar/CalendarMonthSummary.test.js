@@ -160,7 +160,7 @@ test('지출 3행 아이콘·색상·구분선과 서브수수료→파렛트 �
     const maintRow = rows[maintIdx]
     assert.equal(maintRow.style.marginTop, '8px')
     assert.equal(maintRow.style.paddingTop, '8px')
-    assert.equal(maintRow.style.borderTop, '1px dashed var(--border-color)')
+    assert.ok(maintRow.classList.contains('summary-expense-first'), '정비비 행 위에 구분선 클래스가 있어야 한다')
     assert.ok(maintRow.querySelector('svg.inline-icon.sm path'))
 
     const fuelRow = rows[fuelIdx]

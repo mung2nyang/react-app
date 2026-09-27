@@ -61,7 +61,7 @@
 .work-log-page .maint-fuel-total {
   margin-top: 7px;
   padding-top: 8px;
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
   font-size: var(--fs-3);
 }
 

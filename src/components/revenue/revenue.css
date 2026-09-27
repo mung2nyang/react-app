@@ -258,7 +258,7 @@
 }
 
 .revenue-detail-line:not(:last-child) {
-  border-bottom: 1px dashed var(--border-color);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
 }
 
 .revenue-detail-empty {

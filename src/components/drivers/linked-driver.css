@@ -102,7 +102,7 @@
   gap: 5px;
   margin-top: 11px;
   padding-top: 11px;
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
 }
 .linked-driver-client-trip-row {
   display: flex;

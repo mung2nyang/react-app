@@ -1,38 +1,31 @@
-/* 정비/주유/기타 하단 dock — side-menu.css에서 분리 + 원본 style.css 이식.
-   MaintFuelPage.jsx가 import. */
+/* 정비/주유/기타 상단 카드(년월·탭·월 합계) — 매출 화면 상단 카드와 같은 배치.
+   MaintFuelPage.jsx가 import. + 추가는 관리 화면 공용 .management-add-fab. */
 
 .maint-fuel-page {
-  padding-bottom: 155px;
+  padding-bottom: 140px;
 }
 
-.maint-management-dock {
-  position: fixed;
-  z-index: 90;
-  right: max(12px, calc((100vw - 480px) / 2 + 12px));
-  bottom: 64px;
-  left: max(12px, calc((100vw - 480px) / 2 + 12px));
-  padding: 9px;
+.maint-top-card {
+  margin-bottom: 12px;
+  padding: 18px;
   border: 1px solid var(--border-color);
-  border-radius: 17px;
-  background: var(--card-bg);
-  box-shadow: var(--shadow-md);
+  border-radius: 24px;
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.maint-top-card .maint-fuel-nav {
+  margin-bottom: 14px;
 }
 
 .maint-month-summary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 2px 7px;
-  font-size: var(--fs-floor);
-}
-
-.maint-month-summary > div {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 12px;
+  padding: 0 4px;
+  font-size: var(--fs-2);
 }
 
 .maint-month-summary strong {
@@ -50,20 +43,6 @@
 .maint-month-summary span,
 .maint-month-summary b {
   color: var(--sub-text-color);
-}
-
-.maint-month-summary button {
-  flex-shrink: 0;
-  padding: 5px 9px;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--input-bg);
-  color: var(--sub-text-color);
-  box-shadow: var(--shadow-sm);
-  font: inherit;
-  font-size: var(--fs-floor);
-  font-weight: 800;
-  cursor: pointer;
 }
 
 .maint-management-tabs {

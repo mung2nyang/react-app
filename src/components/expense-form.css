@@ -7,6 +7,63 @@
   display: none;
 }
 
+.expense-form-content .form-group {
+  margin-top: 6px;
+}
+
+.expense-form-content .form-group > label + * {
+  margin-top: 6px;
+}
+
+/* 입력 라벨 공통: 0.85rem·750·흰색 (운행 일지 라벨과 동일) */
+.modal-content.expense-form-content .form-group > label {
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+/* 한 줄 입력(라벨·입력칸) — 운행 일지 운송료 줄과 같은 배치 */
+.expense-form-content .expense-inline-field {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.expense-form-content .expense-inline-field > label + * {
+  margin-top: 0;
+}
+
+.expense-form-content .expense-inline-pills .pill-group {
+  flex-wrap: nowrap;
+}
+
+.expense-form-content .expense-fuel-pair {
+  margin-top: 12px;
+}
+
+/* 입력칸 안 단위(km·원·L) — 운행 일지 계기판 칸과 같은 모양 */
+.expense-form-content .input-with-suffix {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.expense-form-content .input-with-suffix .input-box {
+  padding-right: 34px;
+}
+
+.expense-form-content .input-with-suffix .suffix {
+  position: absolute;
+  right: 10px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .expense-form-content .pill-btn {
   border-radius: 12px;
   background: transparent;
@@ -51,5 +108,8 @@
 
 .expense-form-content .expense-payment-row > label {
   margin: 0;
-  font-size: var(--fs-2);
+}
+
+.expense-form-content .car-type-hint {
+  margin-top: 9px;
 }

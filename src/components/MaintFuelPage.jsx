@@ -139,28 +139,47 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
     <div className="page maint-fuel-page">
       <PageHeader title={title} onBack={onBack} onOpenMenu={onOpenMenu} />
 
-      <div className="maint-fuel-nav">
-        <div className="date-navigator">
-          <button type="button" className="arrow-btn" title="이전 달" onClick={() => setViewDate((d) => shiftMonth(d, -1))}>
-            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          </button>
-          <div className="date-select-group">
-            <CalendarDateSelect
-              label="년도 선택"
-              value={year}
-              options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y}년` }))}
-              onChange={(next) => setViewDate(setYearMonth(viewDate, Number(next), month))}
-            />
-            <CalendarDateSelect
-              label="월 선택"
-              value={month}
-              options={Array.from({ length: 12 }, (_, m) => ({ value: String(m), label: `${m + 1}월` }))}
-              onChange={(next) => setViewDate(setYearMonth(viewDate, year, Number(next)))}
-            />
+      <div className="maint-top-card">
+        <div className="maint-fuel-nav">
+          <div className="date-navigator">
+            <button type="button" className="arrow-btn" title="이전 달" onClick={() => setViewDate((d) => shiftMonth(d, -1))}>
+              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+            <div className="date-select-group">
+              <CalendarDateSelect
+                label="년도 선택"
+                value={year}
+                options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y}년` }))}
+                onChange={(next) => setViewDate(setYearMonth(viewDate, Number(next), month))}
+              />
+              <CalendarDateSelect
+                label="월 선택"
+                value={month}
+                options={Array.from({ length: 12 }, (_, m) => ({ value: String(m), label: `${m + 1}월` }))}
+                onChange={(next) => setViewDate(setYearMonth(viewDate, year, Number(next)))}
+              />
+            </div>
+            <button type="button" className="arrow-btn" title="다음 달" onClick={() => setViewDate((d) => shiftMonth(d, 1))}>
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
           </div>
-          <button type="button" className="arrow-btn" title="다음 달" onClick={() => setViewDate((d) => shiftMonth(d, 1))}>
-            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </button>
+        </div>
+        <div className="settings-segmented-control maint-fuel-tabs maint-management-tabs">
+          {KINDS.map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              className={`toggle-btn${kind === item.value ? ' active-work' : ''}`}
+              onClick={() => setKind(/** @type {ExpenseItem['kind']} */ (item.value))}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <div className="maint-month-summary">
+          <strong className={monthLabelClass}>{month + 1}월 {kindLabel}</strong>
+          <span>합계</span>
+          <b>{formatWon(total)}</b>
         </div>
       </div>
 
@@ -207,28 +226,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
         ))}
       </div>
 
-      <div className="maint-management-dock">
-        <div className="maint-month-summary">
-          <div>
-            <strong className={monthLabelClass}>{month + 1}월 {kindLabel}</strong>
-            <span>합계</span>
-            <b>{formatWon(total)}</b>
-          </div>
-          <button type="button" onClick={openAdd}>+ 추가</button>
-        </div>
-        <div className="maint-fuel-tabs maint-management-tabs">
-          {KINDS.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              className={`toggle-btn${kind === item.value ? ' active-work' : ''}`}
-              onClick={() => setKind(/** @type {ExpenseItem['kind']} */ (item.value))}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>
 
       {modalOpen && (
         <ExpenseFormModal

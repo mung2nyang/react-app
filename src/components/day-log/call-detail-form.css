@@ -16,7 +16,7 @@
   width: 100%;
   margin-bottom: 9px;
   padding: 10px;
-  border: 1px dashed var(--primary-color);
+  border: 1px solid var(--primary-color);
   border-radius: 14px;
   background: transparent;
   color: var(--primary-color);
@@ -37,7 +37,7 @@
   text-align: left;
 }
 
-.work-log-page .call-detail-panel:last-of-type {
+.work-log-page .call-detail-panel:has(+ .call-detail-form-actions) {
   border-bottom: 0;
 }
 
@@ -54,37 +54,39 @@
   margin: 0;
 }
 
-.work-log-page .load-label { color: var(--primary-color); font-weight: 800; }
-.work-log-page .unload-label { color: var(--sunday-color); font-weight: 800; }
+.work-log-page .call-route-panel .form-group > label + *,
+.work-log-page .call-two-column-panel .form-group > label + *,
+.work-log-page .payment-due-date-box .form-group > label + * {
+  margin-top: 6px;
+}
+
+.work-log-page .call-two-column-panel .form-group > label,
+.work-log-page .payment-due-date-box .form-group > label {
+  color: var(--text-color);
+}
+
+/* 일지 입력 라벨 공통: 0.85rem·750·흰색 (상·하차지는 색만 유지) */
+.work-log-page .call-detail-panel label:not(.switch),
+.work-log-page .fixed-route-input-row > label {
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
+.work-log-page .call-detail-panel label.load-label { color: var(--primary-color); font-weight: 800; }
+.work-log-page .call-detail-panel label.unload-label { color: var(--sunday-color); font-weight: 800; }
 
 .work-log-page .call-inline-field {
   display: grid;
-  grid-template-columns: 68px minmax(0, 1fr) 22px;
+  grid-template-columns: 84px minmax(0, 1fr);
   align-items: center;
   gap: 7px;
   margin-bottom: 8px;
 }
 
 .work-log-page .call-inline-field > label {
-  color: var(--text-color);
-  font-size: var(--fs-2);
-  font-weight: 750;
-}
-
-.work-log-page .call-inline-field > span {
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-  text-align: center;
-}
-
-.work-log-page .call-money-panel #callFare {
-  color: var(--primary-color);
-  font-weight: 800;
-  text-align: right;
-}
-
-.work-log-page .platform-main-row {
-  grid-template-columns: 68px minmax(0, 1fr);
+  padding-left: 4px;
+  word-break: keep-all;
 }
 
 .work-log-page .call-platform-quick-list {
@@ -107,10 +109,8 @@
 .work-log-page .call-receipt-panel > label,
 .work-log-page .call-remarks-panel > label {
   display: block;
-  margin: 0 0 7px 1px;
-  color: var(--text-color);
-  font-size: var(--fs-2);
-  font-weight: 800;
+  margin: 0 0 7px;
+  padding-left: 4px;
 }
 
 .work-log-page .call-receipt-group {
@@ -133,23 +133,28 @@
   align-items: center;
   justify-content: space-between;
   min-height: 40px;
-  margin: 8px 1px;
+  margin: 8px 0;
 }
 
 .work-log-page .call-vat-row > label:first-child {
-  font-size: var(--fs-2);
-  font-weight: 750;
+  padding-left: 4px;
 }
 
 .work-log-page .payment-due-date-box {
   margin: 9px 0 0;
   padding: 10px 0 0;
-  border-top: 1px dashed var(--border-color);
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
 }
 
-.work-log-page .payment-term-guide,
 .work-log-page .billing-settings-note {
-  margin: 6px 0 0;
+  margin: 6px 0 10px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.4;
+}
+
+.work-log-page .payment-term-guide {
+  margin: 14px 0 0;   /* 위 여백만 늘림, 아래는 원래대로 0 */
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   line-height: 1.4;
@@ -173,17 +178,24 @@
 
 /* 가운데 정렬 자체는 TemporalInput의 `centered` prop(공용 .is-centered 모디파이어,
    temporal-input.css) 담당. 여기는 이 화면에만 있는 추가 디테일만(원본 style.css:6621-6660
-   중 콜상세 전용분) — 말줄임표·트리거 gap·아이콘 크기/색·열림 상태 모서리. */
+   중 콜상세 전용분) — 말줄임표·트리거 gap·아이콘 크기/색·열림 상태 모서리.
+   라벨-입력창 간격(margin-top: 6px)은 위 label + * 규칙이 이미 커버함. */
 .work-log-page .app-temporal-trigger {
   gap: 8px;
   overflow: hidden;
 }
 
-.work-log-page .app-temporal-trigger .app-temporal-value {
+.work-log-page .app-temporal-trigger.is-centered .app-temporal-value {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: var(--fs-2);
+  font-weight: 400;
+}
+
+.work-log-page .app-temporal-trigger.has-value .app-temporal-value {
+  color: var(--text-color);
 }
 
 /* 시계/달력 아이콘 삭제(보리 지시 2026-09-14) — expense-form.css의 같은 처리와 동일. */
@@ -195,14 +207,14 @@
   border-radius: 8px 8px 0 0;
 }
 
-/* 화물 톤수(callCargoTonnage) 위아래 스핀 버튼 삭제(보리 지시 2026-09-14). */
-.work-log-page #callCargoTonnage::-webkit-outer-spin-button,
-.work-log-page #callCargoTonnage::-webkit-inner-spin-button {
+/* 일지 화면 숫자칸 위아래 스핀 버튼 삭제(화물 톤수·운행 횟수·파렛트 회수). */
+.work-log-page input[type='number']::-webkit-outer-spin-button,
+.work-log-page input[type='number']::-webkit-inner-spin-button {
   margin: 0;
   -webkit-appearance: none;
 }
 
-.work-log-page #callCargoTonnage {
+.work-log-page input[type='number'] {
   appearance: textfield;
 }
 
@@ -237,6 +249,10 @@
   font-size: var(--fs-2);
 }
 
+.work-log-page .call-detail-panel .input-box::placeholder {
+  color: var(--sub-text-color);
+}
+
 .work-log-page .call-detail-panel .input-with-suffix .input-box {
   padding-right: 34px;
 }
@@ -247,7 +263,8 @@
   max-width: 26px;
   overflow: hidden;
   color: var(--sub-text-color);
-  font-size: var(--fs-floor);
+  font-size: var(--fs-2);
+  font-weight: 700;
   white-space: nowrap;
   pointer-events: none;
 }

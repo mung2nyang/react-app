@@ -133,6 +133,11 @@
   border-bottom-left-radius: 11px;
 }
 
+/* 메인 정산 카드 합계 아래 구분선 — 얇은 실선(합계 위 선은 shared-controls.css) */
+.main-page .summary-expense-first {
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
+}
+
 /* 원본 style.css:364-378 .inline-icon — 전역(스코프 없음) */
 .inline-icon {
   width: 20px;

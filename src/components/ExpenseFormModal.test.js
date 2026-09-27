@@ -93,7 +93,7 @@ test('정비/기타(kind!==fuel): 결제 방식이 segment-control/segment-btn�
   }
 })
 
-test('주유(fuel): 결제 방식 섹션이 없다', async () => {
+test('주유(fuel): 결제 방식 세그먼트가 있다', async () => {
   const { container, root } = mountTarget()
   try {
     await act(async () => {
@@ -106,7 +106,9 @@ test('주유(fuel): 결제 방식 섹션이 없다', async () => {
         onSave: () => {},
       }))
     })
-    assert.equal(container.querySelector('.segment-control'), null, '주유엔 결제 방식이 없어야 한다')
+    const control = container.querySelector('.segment-control')
+    assert.ok(control, '주유에도 결제 방식이 있어야 한다')
+    assert.equal(control.querySelectorAll('.segment-btn').length, 2, '세그먼트 버튼이 2개(카드/현금)여야 한다')
   } finally {
     await act(async () => { root.unmount() })
     container.remove()

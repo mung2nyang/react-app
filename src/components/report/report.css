@@ -248,5 +248,5 @@ body.pdf-export-mode .summary-row {
 
 body.pdf-export-mode .summary-row.total {
   color: #3182ce !important;
-  border-top: 1px dashed #cccccc !important;
+  border-top: 1px solid #cccccc !important;
 }
