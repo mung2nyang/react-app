@@ -1,6 +1,6 @@
 // @ts-check
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
-import { formatPercentInput } from '../../lib/money.js'
+import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
 import CarDriverIncomeFields from './CarDriverIncomeFields.jsx'
 
@@ -113,7 +113,7 @@ export default function CarFormModal({
                       id="newCarSettlementValue"
                       inputMode="numeric"
                       placeholder="0"
-                      value={draft.driverSalaryAmount || ''}
+                      value={formatCurrencyInput(draft.driverSalaryAmount)}
                       onChange={(e) => setDraft({ ...draft, driverSalaryAmount: e.target.value.replace(/\D/g, '') })}
                     />
                   ) : (

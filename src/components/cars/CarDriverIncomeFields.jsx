@@ -61,18 +61,20 @@ export default function CarDriverIncomeFields({ draft, setDraft }) {
       <div className="form-group">
         <label htmlFor="newCarExpenseRate">필요경비율</label>
         <p className="car-settlement-mode-guide">산재보험료를 계산할 때 쓰는 고시 비율입니다. 품목·차종을 고르면 기본값이 채워지고, 직접 고칠 수 있습니다.</p>
-        <AppDropdown
-          label="품목·차종"
-          value=""
-          options={PRESET_OPTIONS}
-          className="app-dropdown-boxed"
-          onChange={(next) => {
-            if (next !== '') setDraft((prev) => ({ ...prev, expenseRate: EXPENSE_RATE_PRESETS[Number(next)].rate }))
-          }}
-        />
-        <div className="car-commission-input car-income-rate">
-          <input id="newCarExpenseRate" inputMode="decimal" placeholder="30.5" value={String(draft.expenseRate ?? '')} onChange={(e) => setDraft((prev) => ({ ...prev, expenseRate: formatPercentInput(e.target.value) }))} />
-          <b>%</b>
+        <div className="car-income-rate-row">
+          <AppDropdown
+            label="품목·차종"
+            value=""
+            options={PRESET_OPTIONS}
+            className="app-dropdown-boxed"
+            onChange={(next) => {
+              if (next !== '') setDraft((prev) => ({ ...prev, expenseRate: EXPENSE_RATE_PRESETS[Number(next)].rate }))
+            }}
+          />
+          <div className="car-commission-input">
+            <input id="newCarExpenseRate" inputMode="decimal" placeholder="30.5" value={String(draft.expenseRate ?? '')} onChange={(e) => setDraft((prev) => ({ ...prev, expenseRate: formatPercentInput(e.target.value) }))} />
+            <b>%</b>
+          </div>
         </div>
       </div>
       <div className="form-group">

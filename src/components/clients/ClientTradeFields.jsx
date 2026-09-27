@@ -37,16 +37,18 @@ export default function ClientTradeFields({ draft, setDraft, hideFixedRoute = fa
             </label>
           </div>
           {draft.fixedRouteLinked && (
-            <div className="form-group">
-              <label htmlFor="clientFixedUnitPrice">고정노선 1회 단가</label>
-              <input
-                id="clientFixedUnitPrice"
-                className="input-box"
-                inputMode="numeric"
-                placeholder="0"
-                value={String(draft.fixedUnitPrice || '')}
-                onChange={(e) => setDraft({ ...draft, fixedUnitPrice: formatCurrencyInput(e.target.value) })}
-              />
+            <div className="form-group client-inline-field">
+              <label htmlFor="clientFixedUnitPrice">1회 단가</label>
+              <span className="car-commission-input">
+                <input
+                  id="clientFixedUnitPrice"
+                  inputMode="numeric"
+                  placeholder="0"
+                  value={String(draft.fixedUnitPrice || '')}
+                  onChange={(e) => setDraft({ ...draft, fixedUnitPrice: formatCurrencyInput(e.target.value) })}
+                />
+                <b>원</b>
+              </span>
             </div>
           )}
         </>
@@ -66,16 +68,18 @@ export default function ClientTradeFields({ draft, setDraft, hideFixedRoute = fa
         </label>
       </div>
       {draft.palletOn && (
-        <div className="form-group">
-          <label htmlFor="clientPalletPrice">파렛트 단가</label>
-          <input
-            id="clientPalletPrice"
-            className="input-box"
-            inputMode="numeric"
-            placeholder="0"
-            value={String(draft.palletPrice || '')}
-            onChange={(e) => setDraft({ ...draft, palletPrice: formatCurrencyInput(e.target.value) })}
-          />
+        <div className="form-group client-inline-field">
+          <label htmlFor="clientPalletPrice">단가</label>
+          <span className="car-commission-input">
+            <input
+              id="clientPalletPrice"
+              inputMode="numeric"
+              placeholder="0"
+              value={String(draft.palletPrice || '')}
+              onChange={(e) => setDraft({ ...draft, palletPrice: formatCurrencyInput(e.target.value) })}
+            />
+            <b>원</b>
+          </span>
         </div>
       )}
       <div className="setting-item">
@@ -93,22 +97,24 @@ export default function ClientTradeFields({ draft, setDraft, hideFixedRoute = fa
         </label>
       </div>
       {draft.commEnabled && (
-        <div className="commission-settings-panel">
-          <div className="commission-inline-row">
-            <button type="button" className={`toggle-btn${draft.commType === 'percent' ? ' active-work' : ''}`} onClick={() => setCommType('percent')}>퍼센트 (%)</button>
-            <button type="button" className={`toggle-btn${draft.commType === 'direct' ? ' active-work' : ''}`} onClick={() => setCommType('direct')}>금액 (원)</button>
+        <div className="car-commission-value client-commission-value">
+          <div className="car-commission-type" role="group" aria-label="수수료 방식">
+            <button type="button" className={draft.commType === 'percent' ? 'active' : ''} aria-pressed={draft.commType === 'percent'} onClick={() => setCommType('percent')}>퍼센트</button>
+            <button type="button" className={draft.commType === 'direct' ? 'active' : ''} aria-pressed={draft.commType === 'direct'} onClick={() => setCommType('direct')}>금액</button>
+          </div>
+          <span className="car-commission-input">
             <input
               id="clientCommValue"
-              className="input-box"
               inputMode={draft.commType === 'direct' ? 'numeric' : 'decimal'}
-              placeholder={draft.commType === 'direct' ? '금액(원) 입력' : '비율(%) 입력'}
+              placeholder="0"
               value={String(draft.commValue || '')}
               onChange={(e) => setDraft({
                 ...draft,
                 commValue: draft.commType === 'direct' ? formatCurrencyInput(e.target.value) : formatPercentInput(e.target.value),
               })}
             />
-          </div>
+            <b>{draft.commType === 'direct' ? '원' : '%'}</b>
+          </span>
         </div>
       )}
     </>

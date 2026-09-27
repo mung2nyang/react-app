@@ -17,12 +17,12 @@ export default function CarDriverConnectPanel({
 }) {
   return (
     <div className="car-driver-connect">
-      <div className="settings-segmented-control maint-fuel-tabs car-driver-connect-tabs" role="tablist">
+      <div className="car-commission-type car-driver-connect-tabs" role="tablist">
         <button
           type="button"
           role="tab"
           aria-selected={tab === 'link'}
-          className={`toggle-btn${tab === 'link' ? ' active-work' : ''}`}
+          className={tab === 'link' ? 'active' : ''}
           onClick={() => onTab('link')}
         >
           기사 연동
@@ -31,7 +31,7 @@ export default function CarDriverConnectPanel({
           type="button"
           role="tab"
           aria-selected={tab === 'log'}
-          className={`toggle-btn${tab === 'log' ? ' active-work' : ''}`}
+          className={tab === 'log' ? 'active' : ''}
           onClick={() => onTab('log')}
         >
           운행 일지

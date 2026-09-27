@@ -33,12 +33,9 @@
   stroke-linejoin: round;
 }
 
-.work-log-page .maint-title-color .maint-fuel-icon,
-.work-log-page .maint-total-color { color: var(--sunday-color); }
-.work-log-page .fuel-title-color .maint-fuel-icon,
-.work-log-page .fuel-total-color { color: var(--primary-color); }
-.work-log-page .misc-title-color .maint-fuel-icon,
-.work-log-page .misc-total-color { color: #d97706; }
+.work-log-page .maint-title-color .maint-fuel-icon { color: var(--sunday-color); }
+.work-log-page .fuel-title-color .maint-fuel-icon { color: var(--primary-color); }
+.work-log-page .misc-title-color .maint-fuel-icon { color: #d97706; }
 
 .work-log-page .maint-fuel-info {
   align-items: flex-end;
@@ -56,13 +53,6 @@
   background: var(--input-bg);
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
-}
-
-.work-log-page .maint-fuel-total {
-  margin-top: 7px;
-  padding-top: 8px;
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
-  font-size: var(--fs-3);
 }
 
 .work-log-page .maint-fuel-select-inline {
@@ -112,18 +102,11 @@
 }
 
 .maint-fuel-head,
-.maint-fuel-info,
-.maint-fuel-total {
+.maint-fuel-info {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-}
-
-.maint-fuel-total {
-  margin-top: 6px;
-  color: var(--primary-color);
-  font-size: var(--fs-3);
 }
 
 .expense-kind-pick {
@@ -131,4 +114,9 @@
   flex-direction: column;
   gap: 8px;
   margin: 8px 0 4px;
+}
+
+/* 지출 요약 상자: 종류별 합계는 흰색, 지출 합계만 파란색(.summary-grand-total) */
+.work-log-page .expense-daily-summary > div:not(.summary-grand-total) {
+  color: var(--text-color);
 }

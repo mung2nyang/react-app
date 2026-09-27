@@ -200,20 +200,14 @@ body.account-flow-active {
   gap: 6px;
   justify-self: center;
   color: var(--primary-color);
-  font-size: var(--fs-4);
+  font-size: var(--fs-6);
   font-weight: 850;
 }
 
 .auth-brand-sm span { font-family: 'Jua', sans-serif; font-weight: 400; letter-spacing: -.5px; }
-.auth-logo-sm { height: 26px; object-fit: contain; }
+.auth-logo-sm { height: 34px; object-fit: contain; }
 
 .auth-heading-box { margin-bottom: 28px; }
-.auth-kicker {
-  color: var(--primary-color);
-  font-size: var(--fs-floor);
-  font-weight: 900;
-  letter-spacing: .15em;
-}
 .auth-heading-box h1 {
   margin: 14px 0 0;
   color: var(--text-color);

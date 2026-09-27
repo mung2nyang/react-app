@@ -1,38 +1,21 @@
 /* 거래처 전용 — side-menu.css에서 분리. ClientListPage 등 거래처 화면이 import.
    `.management-badge` 기본·`.tax-invoice`는 공용이라 management-common.css에 둠. */
 
-/* 거래처 수수료 입력 — 차량용 수수료 입력(car-management.css)과 별개, 원본처럼
-   토글 버튼+입력을 한 줄로 붙인다(ClientTradeFields.jsx). */
-.commission-settings-panel {
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 12px;
-  background: var(--hover-bg);
+/* 거래처 수수료 입력 — 차량 등록 정산(매출제/월급제)과 같은 칩+입력(modal-form.css). */
+.client-commission-value {
+  margin: 0 0 14px;
 }
 
-.commission-inline-row {
-  display: flex;
-  align-items: stretch;
-  gap: 6px;
+/* 한 줄 입력(라벨·단위 입력칸) — 일일운행 한 줄 입력과 같은 배치 */
+.client-modal .client-inline-field {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
 }
 
-.commission-inline-row .toggle-btn {
-  flex: 0 0 auto;
-  min-width: 0;
-  min-height: 38px;
-  padding: 0 10px;
-  font-size: var(--fs-floor);
-}
-
-.commission-inline-row .input-box {
-  flex: 1;
-  width: auto;
-  min-width: 0;
-  min-height: 38px;
-  margin-top: 0;
-  padding: 6px 10px;
-  font-size: var(--fs-floor);
-  text-align: right;
+.client-modal .client-inline-field > label {
+  margin-bottom: 0;
 }
 
 .client-list {
@@ -129,12 +112,13 @@
 .car-option-copy {
   min-width: 0;
   padding-right: 14px;
+  padding-left: 4px;
   text-align: left;
 }
 
 .car-option-copy label {
   color: var(--text-color);
-  font-size: var(--fs-4);
+  font-size: 0.85rem;
   font-weight: 750;
 }
 

@@ -35,7 +35,6 @@ export default function AuthLoginView({
           </div>
         </div>
         <div className="auth-heading-box">
-          <span className="auth-kicker">WELCOME</span>
           <h1>정보를<br />입력해 주세요.</h1>
         </div>
         <div className="auth-form-fields">

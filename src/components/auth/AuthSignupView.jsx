@@ -34,7 +34,6 @@ export default function AuthSignupView({
           </div>
         </div>
         <div className="auth-heading-box">
-          <span className="auth-kicker">WELCOME</span>
           <h1>회원가입</h1>
           <p className="auth-desc-text">
             운행 기록은 클라우드에 안전하게 백업되어 다른 기기에서 로그인해도 그대로 이어집니다. 그래도 만약을 대비해 설정 메뉴의 로컬 백업 기능도 함께 이용해 주세요.

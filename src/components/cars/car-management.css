@@ -11,7 +11,7 @@
 }
 
 .car-settlement-mode-guide {
-  margin: 7px 0 0;
+  margin: 7px 0 12px;
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   line-height: 1.45;
@@ -32,93 +32,16 @@
   line-height: 1.55;
 }
 
-/* 차량 수수료 입력 — side-menu.css에서 이동(CarFormModal 전용). */
-.car-commission-type {
+/* 필요경비율: 품목·차종 드롭다운과 % 입력칸 한 줄(CarDriverIncomeFields 전용). */
+.car-income-rate-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 4px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--border-color) 55%, transparent);
-}
-
-.car-commission-type button {
-  min-height: 44px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--sub-text-color);
-  font: inherit;
-  font-size: var(--fs-floor);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.car-commission-type button span {
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  margin-right: 4px;
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--sub-text-color) 10%, transparent);
-  font-size: var(--fs-floor);
-}
-
-.car-commission-type button.active {
-  background: var(--card-bg);
-  color: var(--primary-color);
-  box-shadow: var(--shadow-sm);
-}
-
-.car-commission-type button.active span {
-  background: color-mix(in srgb, var(--primary-color) 13%, transparent);
-}
-
-.car-commission-value {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 110px;
   align-items: center;
-  gap: 12px;
-  margin-top: 12px;
-  color: var(--text-color);
-  font-size: var(--fs-2);
-  font-weight: 800;
+  gap: 8px;
 }
 
-.car-commission-input {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  min-height: 44px;
-  padding: 0 13px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  background: var(--card-bg);
-}
-
-.car-commission-input input {
-  min-width: 0;
-  width: 100%;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--text-color);
-  font: inherit;
-  font-size: var(--fs-4);
-  font-weight: 800;
-  text-align: right;
-}
-
-.car-commission-input b {
-  min-width: 18px;
-  margin-left: 7px;
-  color: var(--primary-color);
-  font-size: var(--fs-2);
-  text-align: center;
-}
-
-/* 필요경비율: 품목·차종 드롭다운 아래 입력칸과의 간격(CarDriverIncomeFields 전용). */
-.car-commission-input.car-income-rate {
-  margin-top: 8px;
+.car-income-rate-row .app-dropdown-menu {
+  width: max-content;
+  min-width: 100%;
+  max-width: min(340px, calc(100vw - 64px));
 }
