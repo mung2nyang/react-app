@@ -1,26 +1,11 @@
 // @ts-check
 // Step 4 도메인 폴더 이동: cars.js의 순수 계산부. localStorage I/O(loadCars/saveCars)는
-// lib/cars.js에 남아 이 파일을 재수출한다.
-// 240줄, §6 예외: 전부 순수 계산 함수(차량 CRUD + 정산/발행 신원 판정). 후자를 분리하면 14개+ 파일의 import 경로만 늘어나고 가독성 이득 없음.
+// lib/cars.js에 남아 이 파일을 재수출한다. 전부 순수 계산 함수(차량 CRUD + 정산/발행 신원 판정).
+import { driverFieldsFromDraft } from './carDriverFields.js'
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
-
-/**
- * @typedef {Object} CarUpsertDraft
- * @property {string} [number]
- * @property {string} [tonnage]
- * @property {'main'|'sub'} [type]
- * @property {string} [driverName]
- * @property {string} [driverPhone]
- * @property {string} [settlementMode]
- * @property {string} [driverPayMode]
- * @property {string} [driverSalaryAmount]
- * @property {boolean} [commEnabled]
- * @property {string} [commType]
- * @property {string} [commission]
- * @property {boolean} [insuranceOn]
- */
+/** @typedef {import('./carDriverFields.js').CarUpsertDraft} CarUpsertDraft */
 export const SETTLEMENT_MODES = [
   { value: 'company', label: '회사 정산', description: '회사가 거래처에 매출 계산서를 발행하고 기사 계산서를 수취합니다.' },
   { value: 'driver_direct', label: '기사 직접 정산', description: '기사가 거래처에 직접 발행하고 회사는 기사에게 수수료 계산서를 발행합니다.' },
@@ -63,37 +48,6 @@ export function dedupeCarsById(cars) {
 /** @param {string} [mode] */
 export function getSettlementModeMeta(mode) {
   return SETTLEMENT_MODES.find((item) => item.value === mode) || SETTLEMENT_MODES[0]
-}
-
-/**
- * @param {CarUpsertDraft} draft
- * @param {'main'|'sub'} type
- */
-function driverFieldsFromDraft(draft, type) {
-  if (type !== 'sub') {
-    return {
-      driverName: '',
-      driverPhone: '',
-      commEnabled: false,
-      commType: 'percent',
-      commission: '',
-      insuranceOn: false,
-    }
-  }
-  const commType = draft.commType === 'direct' ? 'direct' : 'percent'
-  const driverPayMode = draft.driverPayMode === 'salary' ? 'salary' : 'revenue'
-  const commEnabled = driverPayMode === 'revenue'
-  const driverSalaryAmount = String(draft.driverSalaryAmount || '').replace(/\D/g, '')
-  return {
-    driverName: String(draft.driverName || '').trim(),
-    driverPhone: String(draft.driverPhone || '').trim(),
-    driverPayMode,
-    driverSalaryAmount: driverPayMode === 'salary' ? driverSalaryAmount : '',
-    commEnabled,
-    commType,
-    commission: commEnabled ? String(draft.commission || '').trim() : '',
-    insuranceOn: !!draft.insuranceOn,
-  }
 }
 
 /**

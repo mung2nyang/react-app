@@ -276,8 +276,13 @@ describe('getOwnerMonthlyFinanceDetail — driverExpenses 버킷(Q1)', () => {
 
 describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
   const salaryAmount = 2000000
-  /** 픽스처 김기사(매출제 15%, 산재 ON): 450000×15%−3000 */
-  const revenueShareAmount = 64500
+  // 산재 규칙 재설계(로드맵 4-2): 기사 정산액 전체가 지출이고, 산재보험료는 정산액 기준 월 단위로 따로 계산해 차주 몫만 더한다.
+  /** 픽스처 김기사(매출제 15%): 450000×15% = 67500 — 산재를 빼지 않은 기사 정산액 전체 */
+  const revenueShareAmount = 67500
+  /** 김기사 산재(경비율 30.5%·요율 1.8%, 적용 ON): 월보수액 46913 → 총액 844 → 차주 몫 422 */
+  const kimInsuranceOwner = 422
+  /** 박기사 월급제 2,000,000 산재(적용 꺼짐): 월보수액 1,390,000 → 총액 25,020 전부 차주 몫 */
+  const parkInsuranceOwner = 25020
   const salaryCarNumber = '부산33나1111'
 
   test("scope='owner'에서는 salary가 0으로 제외된다", () => {
@@ -296,8 +301,8 @@ describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
             : car
         )),
       }, FIXTURE_WORK, [])
-      assert.equal(detail.expense.salary.total, salaryAmount + revenueShareAmount, scope)
-      assert.equal(detail.netProfit, withoutSalaryCar.netProfit - salaryAmount, scope)
+      assert.equal(detail.expense.salary.total, salaryAmount + revenueShareAmount + kimInsuranceOwner + parkInsuranceOwner, scope)
+      assert.equal(detail.netProfit, withoutSalaryCar.netProfit - (salaryAmount + parkInsuranceOwner), scope)
     }
   })
 
@@ -310,9 +315,9 @@ describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
           : car
       )),
     }, FIXTURE_WORK, [])
-    assert.equal(detail.expense.salary.total, revenueShareAmount)
-    assert.equal(detail.expense.salary.items.length, 1)
-    assert.equal(detail.expense.salary.items[0].label, '김기사')
+    assert.equal(detail.expense.salary.total, revenueShareAmount + kimInsuranceOwner)
+    assert.equal(detail.expense.salary.items.length, 2)
+    assert.deepEqual(detail.expense.salary.items.map((i) => i.label), ['김기사', '김기사 산재보험(차주 부담)'])
   })
 
   test('급여액이 0 이하면 월급 항목은 제외된다(매출제 정산은 유지)', () => {
@@ -322,15 +327,15 @@ describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
         car.number === salaryCarNumber ? { ...car, driverSalaryAmount: '0' } : car
       )),
     }, FIXTURE_WORK, [])
-    assert.equal(detail.expense.salary.total, revenueShareAmount)
-    assert.ok(detail.expense.salary.items.every((i) => i.label !== '박기사'))
+    assert.equal(detail.expense.salary.total, revenueShareAmount + kimInsuranceOwner)
+    assert.ok(detail.expense.salary.items.every((i) => !i.label.startsWith('박기사')), '월급 0이면 산재 항목도 없다')
   })
 
-  test('salary 항목에 월급제·매출제 기사 label이 각각 들어간다', () => {
+  test('salary 항목에 월급제·매출제 기사 label과 산재 차주 부담 항목이 각각 들어간다', () => {
     const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', FIXTURE_SETTINGS, FIXTURE_WORK, [])
-    assert.equal(detail.expense.salary.items.length, 2)
+    assert.equal(detail.expense.salary.items.length, 4)
     const labels = detail.expense.salary.items.map((i) => i.label).sort()
-    assert.deepEqual(labels, ['김기사', '박기사'])
+    assert.deepEqual(labels, ['김기사', '김기사 산재보험(차주 부담)', '박기사', '박기사 산재보험(차주 부담)'])
   })
 })
 

@@ -2,6 +2,7 @@
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
 import { formatPercentInput } from '../../lib/money.js'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
+import CarDriverIncomeFields from './CarDriverIncomeFields.jsx'
 
 /**
  * @typedef {Object} CarFormDraft
@@ -16,6 +17,10 @@ import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
  * @property {string} commType
  * @property {string} commission
  * @property {boolean} [insuranceOn]
+ * @property {'employee'|'business'} [driverIncomeType]
+ * @property {boolean} [withholdingOn]
+ * @property {string} [expenseRate]
+ * @property {string} [insuranceRate]
  * @property {string} inviteCode
  * @property {string} inviteStartDate
  * @property {string|null} inviteDriverId
@@ -124,21 +129,7 @@ export default function CarFormModal({
                 </span>
               </div>
             </div>
-            <div className="setting-item">
-              <div className="car-option-copy">
-                <label htmlFor="newCarInsuranceOn">산재보험 적용</label>
-                <p>기사차량의 산재보험 정산에 반영합니다.</p>
-              </div>
-              <label className="switch">
-                <input
-                  id="newCarInsuranceOn"
-                  type="checkbox"
-                  checked={!!draft.insuranceOn}
-                  onChange={(e) => setDraft({ ...draft, insuranceOn: e.target.checked })}
-                />
-                <span className="slider"></span>
-              </label>
-            </div>
+            <CarDriverIncomeFields draft={draft} setDraft={setDraft} />
           </>
         )}
         {showConnect ? (

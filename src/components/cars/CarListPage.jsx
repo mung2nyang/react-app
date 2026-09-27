@@ -7,6 +7,7 @@ import PageHeader from '../PageHeader.jsx'
 import CarFormModal from './CarFormModal.jsx'
 import CarListItem from './CarListItem.jsx'
 import { hasMainCar, validateDriverLinkFields } from '../../lib/cars.js'
+import { NEW_DRIVER_INCOME_DRAFT, driverIncomeDraftFromCar } from '../../domain/driverIncomeDeductions.js'
 import { requestVehicleSave } from '../../lib/vehicleMutations.js'
 import { requestDriverDeletion, requestVehicleDeletion } from '../../lib/directMutationActions.js'
 import { getCloudUserId, isCloudSession } from '../../lib/cloudSession.js'
@@ -15,29 +16,13 @@ import { saveInviteAfterVehicle, todayIsoDate } from '../../lib/carInviteFromDra
 import { useOwnerCars, useOwnerDrivers } from '../../store/ownerDataHooks.js'
 import './car-management.css'
 
-/**
- * @typedef {Object} CarFormDraft
- * @property {string} number
- * @property {string} tonnage
- * @property {'main'|'sub'} type
- * @property {string} driverName
- * @property {string} driverPhone
- * @property {string} driverPayMode
- * @property {string} driverSalaryAmount
- * @property {boolean} commEnabled
- * @property {string} commType
- * @property {string} commission
- * @property {boolean} [insuranceOn]
- * @property {string} inviteCode
- * @property {string} inviteStartDate
- * @property {string|null} inviteDriverId
- * @property {'link'|'log'} connectMode
- */
+/** @typedef {import('./CarFormModal.jsx').CarFormDraft} CarFormDraft */
 
 /** @type {CarFormDraft} */
 const emptyDraft = {
   number: '', tonnage: '', type: 'main', driverName: '', driverPhone: '',
   driverPayMode: 'revenue', driverSalaryAmount: '', commEnabled: false, commType: 'percent', commission: '',
+  ...NEW_DRIVER_INCOME_DRAFT,
   inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'log',
 }
 const DELETE_CAR_CONFIRM = '해당 차량을 삭제하시겠습니까? 이 차량으로 기록된 운행 내역도 함께 삭제되며 복구할 수 없습니다.'
@@ -90,7 +75,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       commEnabled: !!car.commEnabled,
       commType: car.commType === 'direct' ? 'direct' : 'percent',
       commission: String(car.commission ?? ''),
-      insuranceOn: !!car.insuranceOn,
+      ...driverIncomeDraftFromCar(car),
       inviteCode: linked?.inviteCode || (car.type === 'sub' && cloud ? generateInviteCode(drivers) : ''),
       inviteStartDate: linked?.startDate || todayIsoDate(),
       inviteDriverId: linked?.id || null,

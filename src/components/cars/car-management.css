@@ -117,3 +117,8 @@
   font-size: var(--fs-2);
   text-align: center;
 }
+
+/* 필요경비율: 품목·차종 드롭다운 아래 입력칸과의 간격(CarDriverIncomeFields 전용). */
+.car-commission-input.car-income-rate {
+  margin-top: 8px;
+}

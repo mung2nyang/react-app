@@ -12,7 +12,7 @@ import {
   getCallDetailCommissionAmount, getCallDetailDurationMinutes, getDriverCarWorkData,
   getMonthlyDriverSalaryExpense, logData,
 } from './financeCore.js'
-import { getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.js'
+import { getMonthlyDriverInsuranceOwnerShare, getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.js'
 import { getReceivableItems } from './financeReceivables.js'
 import { selectExpensesForScope, sweepExpenseItems } from './financeOwnerExpenseSweep.js'
 
@@ -116,8 +116,9 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
 
   const salaryPart = scope !== 'owner' ? getMonthlyDriverSalaryExpense(monthKey, settings, subCarsInScope) : null
   const sharePart = scope !== 'owner' ? getMonthlyDriverRevenueShareExpense(monthKey, settings, subCarsInScope, workDataByLogId) : null
-  const salaryTotal = (salaryPart?.total || 0) + (sharePart?.total || 0)
-  const salaryItems = (salaryPart?.items || []).concat(sharePart?.items || []).sort((a, b) => a.date.localeCompare(b.date))
+  const insurancePart = scope !== 'owner' ? getMonthlyDriverInsuranceOwnerShare(monthKey, settings, subCarsInScope, workDataByLogId) : null
+  const salaryTotal = (salaryPart?.total || 0) + (sharePart?.total || 0) + (insurancePart?.total || 0)
+  const salaryItems = (salaryPart?.items || []).concat(sharePart?.items || [], insurancePart?.items || []).sort((a, b) => a.date.localeCompare(b.date))
 
   const fareItems = Array.from(fareByClient.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => b.amount - a.amount)
   const commissionItems = Array.from(commissionByClient.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => b.amount - a.amount)

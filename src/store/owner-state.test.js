@@ -348,6 +348,65 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     assert.equal(totalStubCalls(), 0)
   })
 
+  // 로드맵 4-2 — 새 차량 필드(기사 유형·원천징수·필요경비율·산재요율)가 저장 화이트리스트(CAR_KEYS)에서 빠지면
+  // 다음 새로고침 때 cars 도메인 전체가 사라진다(과거 subCarSettings 누락 사고와 같은 종류).
+  test('기사 유형·원천징수·필요경비율·산재요율은 서버 raw→hydrate→저장→새로고침 왕복 후에도 유지된다', async () => {
+    const { mergeCarsFromRows } = await import('../lib/hydrateMerge.js')
+    const { readPersistDomain } = await import('./persistDomainRead.js')
+    const { commitBatch } = await import('./app-store.js')
+    const owner = 'hydrate-income-fields'
+    resetStubSupabaseCallCounts()
+    const raw = /** @type {Partial<import('../domain/financeTypes.js').CarLike>} */ ({ driverIncomeType: 'employee', insuranceOn: false, withholdingOn: true, expenseRate: '43.1', insuranceRate: 2 })
+    const merged = mergeCarsFromRows([], [{ id: 911, number: '77사7777', type: 'sub', raw }])
+    assert.equal(merged[0].driverIncomeType, 'employee')
+    assert.equal(merged[0].withholdingOn, true)
+    assert.equal(merged[0].expenseRate, '43.1')
+    assert.equal(merged[0].insuranceRate, 2)
+    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    assert.equal(readPersistDomain('cars', owner).kind, 'value')
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    assert.equal(getState().cars[owner]?.length, 0)
+    initializeOwnerFromPersist(owner)
+    assert.equal(readPersistDomain('cars', owner).kind, 'value')
+    const car = getState().cars[owner]?.[0]
+    assert.equal(car?.driverIncomeType, 'employee')
+    assert.equal(car?.insuranceOn, false)
+    assert.equal(car?.withholdingOn, true)
+    assert.equal(car?.expenseRate, '43.1')
+    assert.equal(car?.insuranceRate, 2)
+    assert.equal(totalStubCalls(), 0)
+  })
+
+  test('서버 raw의 새 필드 값이 이상하면(잘못된 타입) 그 필드만 빠지고 차량·다른 필드는 남는다', async () => {
+    const { mergeCarsFromRows } = await import('../lib/hydrateMerge.js')
+    const { readPersistDomain } = await import('./persistDomainRead.js')
+    const { commitBatch } = await import('./app-store.js')
+    const owner = 'hydrate-income-fields-bad'
+    resetStubSupabaseCallCounts()
+    // 서버가 준 JSON을 흉내 낸다 — 타입이 어긋난 값을 그대로 담기 위해 JSON.parse를 쓴다.
+    const raw = JSON.parse('{"driverIncomeType":"근로자","withholdingOn":"yes","expenseRate":{},"insuranceRate":[],"insuranceOn":true}')
+    const merged = mergeCarsFromRows([], [{ id: 912, number: '88아8888', type: 'sub', raw }])
+    for (const key of ['driverIncomeType', 'withholdingOn', 'expenseRate', 'insuranceRate']) assert.equal(key in merged[0], false, key)
+    assert.equal(merged[0].insuranceOn, true)
+    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    initializeOwnerFromPersist(owner)
+    assert.equal(readPersistDomain('cars', owner).kind, 'value')
+    assert.equal(getState().cars[owner]?.length, 1, '차량 목록이 통째로 사라지면 안 된다')
+    assert.equal(totalStubCalls(), 0)
+  })
+
+  test('저장 검증기는 새 필드의 잘못된 타입을 거부하고 올바른 값은 받아들인다', async () => {
+    const { isPersistedCar } = await import('./persistDomainRecords.js')
+    const base = { id: 'c1', number: '12가3456' }
+    assert.equal(isPersistedCar({ ...base, driverIncomeType: 'business', withholdingOn: false, expenseRate: '30.5', insuranceRate: 1.8 }), true)
+    assert.equal(isPersistedCar({ ...base, driverIncomeType: 'x' }), false)
+    assert.equal(isPersistedCar({ ...base, withholdingOn: 'true' }), false)
+    assert.equal(isPersistedCar({ ...base, expenseRate: {} }), false)
+    assert.equal(isPersistedCar({ ...base, insuranceRate: null }), false)
+    assert.equal(isPersistedCar({ ...base, unknownIncomeField: 1 }), false, '모르는 키는 여전히 거부한다')
+  })
+
   test('hydrate 비용 임베드와 expenses는 initialize 뒤 유실·중복 0건이다', async () => {
     const { mergeWorkDataFromRows } = await import('../lib/hydrateMerge.js')
     const { expenseFromFuelRecord, replaceFuelExpenses } = await import('../domain/fuelRecords.js')

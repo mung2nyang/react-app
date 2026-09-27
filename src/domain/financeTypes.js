@@ -19,7 +19,11 @@
  * @property {boolean} [commEnabled]
  * @property {string} [commType]
  * @property {string|number} [commission]
- * @property {boolean} [insuranceOn]
+ * @property {boolean} [insuranceOn] 산재보험료 기사 몫(50%) 차감 여부(driverIncomeDeductions.js)
+ * @property {'employee'|'business'} [driverIncomeType] 기사 유형: 4대보험 근로자 / 3.3% 사업소득자
+ * @property {boolean} [withholdingOn] 3.3% 사업소득세 원천징수 여부
+ * @property {string|number} [expenseRate] 산재 월보수액 계산용 필요경비율(%)
+ * @property {string|number} [insuranceRate] 산재보험료율(%), 0이면 산재 적용 제외
  * @property {boolean} [logEnabled]
  * @property {boolean} [driverLinkEnabled]
  * @property {boolean} [shareRevenueWithOwner]

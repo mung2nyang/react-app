@@ -40,6 +40,7 @@ const CAR_KEYS = [
   'commission', 'insuranceOn', 'logEnabled', 'driverLinkEnabled', 'shareRevenueWithOwner',
   'archived', 'driverName', 'driverPhone', 'driverLinkId', 'driverPayMode', 'driverSalaryAmount',
   'infoType', 'personalInfo', 'businessInfo',
+  'driverIncomeType', 'withholdingOn', 'expenseRate', 'insuranceRate',
 ]
 const CLIENT_KEYS = [
   'id', 'companyName', 'managerName', 'phone', 'bizNumber', 'paymentTerm', 'paymentTermValue',
@@ -75,9 +76,12 @@ export function isPersistedCar(value) {
   if ('commEnabled' in value && typeof value.commEnabled !== 'boolean') return false
   if ('commType' in value && !isAllowedEnum(value.commType, COMM_TYPES)) return false
   if ('commission' in value && !isStringOrFiniteNumber(value.commission)) return false
-  for (const flag of ['insuranceOn', 'logEnabled', 'driverLinkEnabled', 'shareRevenueWithOwner', 'archived']) {
+  for (const flag of ['insuranceOn', 'withholdingOn', 'logEnabled', 'driverLinkEnabled', 'shareRevenueWithOwner', 'archived']) {
     if (flag in value && typeof value[flag] !== 'boolean') return false
   }
+  if ('driverIncomeType' in value && value.driverIncomeType !== 'employee' && value.driverIncomeType !== 'business') return false
+  if ('expenseRate' in value && !isStringOrFiniteNumber(value.expenseRate)) return false
+  if ('insuranceRate' in value && !isStringOrFiniteNumber(value.insuranceRate)) return false
   if ('driverName' in value && typeof value.driverName !== 'string') return false
   if ('driverPhone' in value && typeof value.driverPhone !== 'string') return false
   if ('driverLinkId' in value && typeof value.driverLinkId !== 'string') return false

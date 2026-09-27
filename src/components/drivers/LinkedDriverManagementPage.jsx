@@ -83,7 +83,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
     if (ctx.notFound) return null
     if (ctx.mode === 'linked') {
       if (!link) return null
-      return getLinkedDriverSettlementDetail(dayData, monthKey, link, carOrEmpty, settings)
+      return { ...getLinkedDriverSettlementDetail(dayData, monthKey, link, carOrEmpty, settings), car: carOrEmpty }
     }
     if (ctx.mode === 'unlinked' && ctx.car) {
       // 미연동은 할당기간 없음 — assignmentStart 빈 값은 isDateWithinAssignment가 전부 포함(link=null과 동일).
@@ -93,7 +93,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
         assignmentStart: '',
         assignmentEnd: '',
       })
-      return getLinkedDriverSettlementDetail(dayData, monthKey, openLink, carOrEmpty, settings)
+      return { ...getLinkedDriverSettlementDetail(dayData, monthKey, openLink, carOrEmpty, settings), car: carOrEmpty }
     }
     return null
   }, [ctx.notFound, ctx.mode, ctx.car, dayData, monthKey, link, carOrEmpty, plate, settings])

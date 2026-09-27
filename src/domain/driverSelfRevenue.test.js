@@ -159,9 +159,11 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     assert.equal(narrow.income.fare.total, 200000, '운송료 표시 라인은 배정기간 필터 안 함')
   })
 
-  test('② settlement == 차주 all 탭 salary (같은 트립·main↔번호판)', () => {
+  // 로드맵 4-2: 차주 손익의 기사 급여는 산재를 빼지 않은 정산액 전체로 바뀌었고, 기사 본인 화면은 다음 슬라이스에서 같은
+  // 새 계산으로 바뀐다. 그 전까지는 건별 산재를 쓰지 않는 조건(insuranceOn 꺼짐)에서만 두 화면의 정산액이 같다.
+  test('② settlement == 차주 all 탭 김기사 급여 항목 (같은 트립·main↔번호판, 산재 꺼짐)', () => {
     const plateWork = FIXTURE_WORK['서울12가3456']
-    const settings = settingsWithCars([REVENUE_CAR])
+    const settings = settingsWithCars([{ ...REVENUE_CAR, insuranceOn: false }])
     const self = getDriverSelfMonthlyDetail(MONTH_KEY, settings, { main: plateWork })
     const ownerAll = getOwnerMonthlyFinanceDetail(
       MONTH_KEY,
@@ -170,9 +172,10 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
       { main: {}, '서울12가3456': plateWork },
       [],
     )
-    assert.equal(self.income.settlement.total, SHARE_NET)
-    assert.equal(ownerAll.expense.salary.total, SHARE_NET)
-    assert.equal(self.income.settlement.total, ownerAll.expense.salary.total)
+    const ownerKim = ownerAll.expense.salary.items.find((item) => item.label === '김기사')
+    assert.equal(self.income.settlement.total, SHARE_GROSS)
+    assert.equal(ownerKim?.amount, SHARE_GROSS)
+    assert.equal(self.income.settlement.total, ownerKim?.amount)
   })
 
   // 2026-09-17 버그 재현·수정 확인: 고정노선(fare 필드 없이 fixedCount만 저장된

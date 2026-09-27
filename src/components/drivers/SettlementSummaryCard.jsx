@@ -2,11 +2,13 @@
 import CalendarDateSelect from '../calendar/CalendarDateSelect.jsx'
 import { getYearOptions } from '../../lib/calendar.js'
 import { formatWon } from '../../lib/money.js'
+import { getDriverSettlementBreakdown } from '../../domain/driverIncomeDeductions.js'
 
 const YEAR_OPTIONS = getYearOptions()
 
 /**
- * @typedef {{ tripCount?: number, totalFare?: number, commissionAmount?: number, insuranceAmount?: number, finalAmount?: number }} SettlementDetail
+ * detail은 getLinkedDriverSettlementDetail 결과에 그 기사차량(car)을 실은 것 — 카드는 car의 산재·원천징수 설정으로 계산한다.
+ * @typedef {{ tripCount?: number, totalFare?: number, commissionAmount?: number, car?: import('../../domain/financeTypes.js').CarLike }} SettlementDetail
  */
 
 /**
@@ -23,6 +25,7 @@ export default function SettlementSummaryCard({
 }) {
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
+  const breakdown = getDriverSettlementBreakdown(detail, detail?.car)
   return (
     <section className="tax-invoice-summary" id="linkedDriverSettlementSummary">
       <div className="date-navigator" style={{ marginBottom: 12 }}>
@@ -48,10 +51,11 @@ export default function SettlementSummaryCard({
         </button>
       </div>
       <div className="summary-title"><span>기사 정산</span><span>{detail?.tripCount || 0}건</span></div>
-      <div className="summary-row"><span>총 운송료</span><span className="summary-value">{formatWon(detail?.totalFare || 0)}</span></div>
-      <div className="summary-row"><span>수수료</span><span className="summary-value">-{formatWon(detail?.commissionAmount || 0)}</span></div>
-      <div className="summary-row"><span>산재보험</span><span className="summary-value">-{formatWon(detail?.insuranceAmount || 0)}</span></div>
-      <div className="summary-row total"><span>최종 정산액</span><span className="summary-value">{formatWon(detail?.finalAmount || 0)}</span></div>
+      <div className="summary-row"><span>총 운송료</span><span className="summary-value">{formatWon(breakdown.totalFare)}</span></div>
+      <div className="summary-row"><span>기사 정산금</span><span className="summary-value">{formatWon(breakdown.settlementAmount)}</span></div>
+      <div className="summary-row"><span>산재보험 (기사 몫)</span><span className="summary-value">-{formatWon(breakdown.insuranceDriverShare)}</span></div>
+      <div className="summary-row"><span>원천징수 (3.3%)</span><span className="summary-value">-{formatWon(breakdown.withholding)}</span></div>
+      <div className="summary-row total"><span>최종 실수령 정산액</span><span className="summary-value">{formatWon(breakdown.driverNet)}</span></div>
     </section>
   )
 }

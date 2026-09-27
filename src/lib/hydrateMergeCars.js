@@ -89,6 +89,11 @@ export function mergeCarsFromRows(localCars, vehicleRows) {
     // 적용되게 한다.
     const insuranceOn = boolOrOmit(raw.insuranceOn)
     if (insuranceOn !== undefined) car.insuranceOn = insuranceOn
+    const withholdingOn = boolOrOmit(raw.withholdingOn)
+    if (withholdingOn !== undefined) car.withholdingOn = withholdingOn
+    if (raw.driverIncomeType === 'employee' || raw.driverIncomeType === 'business') car.driverIncomeType = raw.driverIncomeType
+    if (raw.expenseRate !== undefined && isStringOrFiniteNumber(raw.expenseRate)) car.expenseRate = raw.expenseRate
+    if (raw.insuranceRate !== undefined && isStringOrFiniteNumber(raw.insuranceRate)) car.insuranceRate = raw.insuranceRate
     const logEnabled = boolOrOmit(raw.logEnabled)
     if (logEnabled !== undefined) car.logEnabled = logEnabled
     const driverLinkEnabled = boolOrOmit(raw.driverLinkEnabled)
