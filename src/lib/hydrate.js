@@ -154,7 +154,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
       nextExpenses = mergeExpenseKind({ kind: 'misc', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: miscRes.data || [], mapRow: expenseFromMiscRecord, replace: replaceMiscExpenses })
     }
 
-    const nextDriverExpenses = await fetchOwnerDriverExpenses(nextCars, throwIfAnyHydrateError)
+    const { expenses: ownerExpenses, driverExpenses: nextDriverExpenses } = await fetchOwnerDriverExpenses(nextCars, nextDrivers, nextExpenses, throwIfAnyHydrateError)
 
     const taxInvoicesRes = await supabase.from('tax_invoices').select('*').eq('user_id', userId)
     throwIfAnyHydrateError({ tax_invoices: taxInvoicesRes.error })
@@ -163,7 +163,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     const nextSnapshot = {
       workData: nextWorkData, workLogs: nextWorkLogs, cars: nextCars, clients: nextClients, drivers: nextDrivers,
       profile: nextProfile, settings: nextSettings,
-      expenses: /** @type {import('../domain/expenseTypes.js').ExpenseItem[]} */ (nextExpenses),
+      expenses: /** @type {import('../domain/expenseTypes.js').ExpenseItem[]} */ (ownerExpenses),
       driverExpenses: nextDriverExpenses,
       invoices: nextInvoices,
     }

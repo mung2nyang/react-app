@@ -3,28 +3,23 @@
 // 정비/주유/기타 비용 upsert. 세 함수가 테이블/필드명만 다르고 구조가 동일하지만,
 // 이미 200줄 안에 들어오고("단순히 합치기 위한" 기계적 분할을 피하라는 지시도 있어)
 // 기존 동작을 한 글자도 안 바꾸는 쪽을 택해 그대로 옮겼다.
+// 로드맵 5-A: 차량은 호출부가 planExpenseVehicleTargets로 나눠 넘긴다.
 import { supabase } from '../supabaseClient.js'
 import { buildFuelRecordRow, groupFuelExpensesByDate } from '../domain/fuelRecords.js'
 import { buildMaintenanceRecordRow, groupMaintExpensesByDate } from '../domain/maintenanceRecords.js'
 import { buildMiscExpenseRecordRow, groupMiscExpensesByDate } from '../domain/miscExpenseRecords.js'
 import { upsertDailyLog } from './syncWorkData.js'
-import { getState } from '../store/app-store.js'
 
-/** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../domain/expenseVehicleRouting.js').ExpenseVehicleTarget} ExpenseVehicleTarget */
 
 /**
- * @param {string} ownerKey
- * @param {Array<{ id?: string }>|null|undefined} expenses
- * @param {Record<string, unknown>|null|undefined} workData
- * @returns {{ expenses: Array<ExpenseItem>, workData: Record<string, unknown> }}
+ * 운행기록·항목·정리 날짜를 합친 순회 날짜.
+ * @param {Record<string, unknown>} workData
+ * @param {Record<string, unknown>} byDate
+ * @param {Set<string>} cleanup
  */
-function expenseSyncInputs(ownerKey, expenses, workData) {
-  const logs = getState().workLogs[ownerKey] || {}
-  return {
-    expenses: /** @type {Array<ExpenseItem>} */ (expenses || getState().expenses[ownerKey] || []),
-    workData: workData || logs.main || {},
-  }
+function syncDates(workData, byDate, cleanup) {
+  return new Set([...Object.keys(workData || {}), ...Object.keys(byDate), ...cleanup])
 }
 
 /**
@@ -42,25 +37,21 @@ async function dailyLogIdsByDate(vehicleSupabaseId) {
 
 /**
  * @param {string} userId
- * @param {string} ownerKey
- * @param {Array<CarLike>} cars
- * @param {Array<{ id?: string }>} [expenses]
- * @param {Record<string, unknown>} [workData]
+ * @param {ExpenseVehicleTarget} target
+ * @param {Record<string, unknown>} workData
  */
-export async function syncFuelRecords(userId, ownerKey, cars, expenses, workData) {
-  const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
-  if (!mainCar?.supabaseId) return
-  const vehicleId = mainCar.supabaseId
-  const input = expenseSyncInputs(ownerKey, expenses, workData)
-  const fuelByDate = groupFuelExpensesByDate(input.expenses)
-  const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(fuelByDate)])
+export async function syncFuelRecords(userId, target, workData) {
+  const vehicleId = target.vehicleId
+  const cleanup = new Set(target.cleanupDates)
+  const fuelByDate = groupFuelExpensesByDate(target.expenses)
+  const dates = syncDates(workData, fuelByDate, cleanup)
   const idByDate = await dailyLogIdsByDate(vehicleId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
     const fuelItems = fuelByDate[workDate] || []
-    const record = input.workData[workDate]
-    if (!record && !fuelItems.length) continue
+    const record = workData[workDate]
+    if (!record && !fuelItems.length && !cleanup.has(workDate)) continue
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {
       if (!fuelItems.length) continue
@@ -79,25 +70,21 @@ export async function syncFuelRecords(userId, ownerKey, cars, expenses, workData
 
 /**
  * @param {string} userId
- * @param {string} ownerKey
- * @param {Array<CarLike>} cars
- * @param {Array<{ id?: string }>} [expenses]
- * @param {Record<string, unknown>} [workData]
+ * @param {ExpenseVehicleTarget} target
+ * @param {Record<string, unknown>} workData
  */
-export async function syncMaintenanceRecords(userId, ownerKey, cars, expenses, workData) {
-  const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
-  if (!mainCar?.supabaseId) return
-  const vehicleId = mainCar.supabaseId
-  const input = expenseSyncInputs(ownerKey, expenses, workData)
-  const maintByDate = groupMaintExpensesByDate(input.expenses)
-  const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(maintByDate)])
+export async function syncMaintenanceRecords(userId, target, workData) {
+  const vehicleId = target.vehicleId
+  const cleanup = new Set(target.cleanupDates)
+  const maintByDate = groupMaintExpensesByDate(target.expenses)
+  const dates = syncDates(workData, maintByDate, cleanup)
   const idByDate = await dailyLogIdsByDate(vehicleId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
     const maintItems = maintByDate[workDate] || []
-    const record = input.workData[workDate]
-    if (!record && !maintItems.length) continue
+    const record = workData[workDate]
+    if (!record && !maintItems.length && !cleanup.has(workDate)) continue
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {
       if (!maintItems.length) continue
@@ -116,25 +103,21 @@ export async function syncMaintenanceRecords(userId, ownerKey, cars, expenses, w
 
 /**
  * @param {string} userId
- * @param {string} ownerKey
- * @param {Array<CarLike>} cars
- * @param {Array<{ id?: string }>} [expenses]
- * @param {Record<string, unknown>} [workData]
+ * @param {ExpenseVehicleTarget} target
+ * @param {Record<string, unknown>} workData
  */
-export async function syncMiscExpenseRecords(userId, ownerKey, cars, expenses, workData) {
-  const mainCar = cars.find((car) => car.type === 'main' && car.supabaseId) || cars.find((car) => car.supabaseId)
-  if (!mainCar?.supabaseId) return
-  const vehicleId = mainCar.supabaseId
-  const input = expenseSyncInputs(ownerKey, expenses, workData)
-  const miscByDate = groupMiscExpensesByDate(input.expenses)
-  const dates = new Set([...Object.keys(input.workData || {}), ...Object.keys(miscByDate)])
+export async function syncMiscExpenseRecords(userId, target, workData) {
+  const vehicleId = target.vehicleId
+  const cleanup = new Set(target.cleanupDates)
+  const miscByDate = groupMiscExpensesByDate(target.expenses)
+  const dates = syncDates(workData, miscByDate, cleanup)
   const idByDate = await dailyLogIdsByDate(vehicleId)
 
   for (const workDate of dates) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(workDate)) continue
     const miscItems = miscByDate[workDate] || []
-    const record = input.workData[workDate]
-    if (!record && !miscItems.length) continue
+    const record = workData[workDate]
+    if (!record && !miscItems.length && !cleanup.has(workDate)) continue
     let dailyLogId = idByDate.get(workDate)
     if (!dailyLogId) {
       if (!miscItems.length) continue

@@ -435,3 +435,48 @@ describe('Step 9 슬라이스 A — hydrate가 기사 차량 daily_logs도 logId
     endCloudSession()
   })
 })
+
+describe('로드맵 5-A — 서브차량 정비/주유/기타 불러오기', () => {
+  test('미연동 서브 칸은 차주 목록(id 중복 제거), 연동 서브 칸만 읽기 전용 기사 내역으로 간다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-5a-sub-expenses'
+    const userId = 'user-hydrate-5a'
+    handlers.vehicles = {
+      select: () => ({
+        data: [
+          { id: 501, type: 'main', number: '11가1111', raw: { id: 'c-main' } },
+          { id: 802, type: 'sub', number: '22나2222', raw: { id: 'c-sub' } },
+          { id: 803, type: 'sub', number: '33다3333', raw: { id: 'c-sub-linked' } },
+        ],
+        error: null,
+      }),
+    }
+    handlers.driver_links = {
+      select: () => ({ data: [{ id: 9, vehicle_id: 803, status: 'linked', invite_code: '111111' }], error: null }),
+    }
+    /** @param {string} id @param {string} date @param {string} [plate] */
+    const fuelRow = (id, date, plate) => ({
+      work_date: date, sequence: 0, cost_amount: 1000, raw: { id, date, cost: 1000, ...(plate ? { vehicleNumber: plate } : {}) },
+    })
+    handlers.fuel_records = {
+      select: (filters) => {
+        const vehicleId = filters && typeof filters === 'object' && !Array.isArray(filters) ? String(filters.vehicle_id) : ''
+        if (vehicleId === '501') return { data: [fuelRow('main-1', '2026-08-01'), fuelRow('dup-1', '2026-08-03', '22나2222')], error: null }
+        if (vehicleId === '802') return { data: [fuelRow('dup-1', '2026-08-03'), fuelRow('sub-1', '2026-08-04')], error: null }
+        if (vehicleId === '803') return { data: [fuelRow('drv-1', '2026-08-05')], error: null }
+        return { data: [], error: null }
+      },
+    }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    const owner = /** @type {Array<{ id: string, vehicleNumber?: string }>} */ (getState().expenses[ownerKey] || [])
+    assert.deepEqual(owner.map((item) => item.id).sort(), ['dup-1', 'main-1', 'sub-1'])
+    assert.equal(owner.find((item) => item.id === 'sub-1')?.vehicleNumber, '22나2222')
+    const driverSide = /** @type {Array<{ id: string, vehicleNumber?: string }>} */ (getState().driverExpenses[ownerKey] || [])
+    assert.deepEqual(driverSide.map((item) => item.id), ['drv-1'])
+    assert.equal(driverSide[0].vehicleNumber, '33다3333')
+    endCloudSession()
+  })
+})

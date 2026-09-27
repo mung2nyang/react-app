@@ -5,6 +5,7 @@
 // (loadExpenses는 화면이 useOwnerExpenses store 구독으로 바뀌며 호출부가 0이 돼 삭제했다.)
 import { commitExpenses } from '../store/commitHelpers.js'
 import { dedupeExpensesById } from '../domain/expenses.js'
+import { planExpenseVehicleTargets } from '../domain/expenseVehicleRouting.js'
 import { getState } from '../store/app-store.js'
 import {
   assertSessionStillCurrent,
@@ -27,12 +28,16 @@ export async function saveExpenses(ownerKey, items) {
   const userId = getCloudUserId()
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
   if (blocked) throw new Error(blocked)
-  const cars = getState().cars[ownerKey] || []
-  const workData = (getState().workLogs[ownerKey] || {}).main || {}
+  const targets = planExpenseVehicleTargets(getState().cars[ownerKey], getState().drivers[ownerKey], next)
+  const logs = getState().workLogs[ownerKey] || {}
   const captured = captureSession()
-  await syncFuelRecords(/** @type {string} */ (userId), ownerKey, cars, next, workData)
-  await syncMaintenanceRecords(/** @type {string} */ (userId), ownerKey, cars, next, workData)
-  await syncMiscExpenseRecords(/** @type {string} */ (userId), ownerKey, cars, next, workData)
+  // 서브 칸 먼저·메인 나중 — 중간 실패 시 유실 대신 중복(불러올 때 id로 정리).
+  for (const target of targets) {
+    const workData = logs[target.logId] || {}
+    await syncFuelRecords(/** @type {string} */ (userId), target, workData)
+    await syncMaintenanceRecords(/** @type {string} */ (userId), target, workData)
+    await syncMiscExpenseRecords(/** @type {string} */ (userId), target, workData)
+  }
   assertSessionStillCurrent(captured)
   commitExpenses(ownerKey, next, { syncToCloud: false })
 }

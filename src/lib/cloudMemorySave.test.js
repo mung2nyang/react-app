@@ -8,7 +8,7 @@ mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } }
 
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { setHydration, getState } = await import('../store/app-store.js')
-const { commitCars, commitClients, commitExpenses, commitInvoices, commitProfile } = await import('../store/commitHelpers.js')
+const { commitCars, commitClients, commitDrivers, commitExpenses, commitInvoices, commitProfile } = await import('../store/commitHelpers.js')
 const { saveProfile, EMPTY_PROFILE } = await import('./profile.js')
 const { savePracticeSettings } = await import('./practiceSettings.js')
 const { saveExpenses } = await import('./expenses.js')
@@ -189,6 +189,77 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     await saveExpenses(ownerKey, next)
     assert.ok(countOf('fuel_records', 'insert') >= 1, '소속기사도 fuel_records insert까지 도달해야 한다')
     assert.equal(firstItemId(getState().expenses[ownerKey]), 'fuel-driver-1')
+    endCloudSession()
+  })
+
+  /** @param {unknown} filters @param {string} column */
+  function filterValue(filters, column) {
+    return filters && typeof filters === 'object' && !Array.isArray(filters) ? String(/** @type {Record<string, unknown>} */ (filters)[column]) : ''
+  }
+
+  /**
+   * 로드맵 5-A: 메인 501·서브 802. 메인 칸 2026-08-03에 옛 서브 항목이 있던 상황.
+   * @param {string} ownerKey
+   * @param {Array<import('./outboxTypes.js').DriverRecord>} drivers
+   */
+  function seedSubVehicleSave(ownerKey, drivers) {
+    beginReady(`user-${ownerKey}`, ownerKey)
+    commitCars(ownerKey, [
+      { id: 'car-main', type: 'main', number: '11가1111', supabaseId: 501 },
+      { id: 'car-sub', type: 'sub', number: '22나2222', supabaseId: 802 },
+    ], { syncToCloud: false })
+    commitDrivers(ownerKey, drivers, { syncToCloud: false })
+    /** @type {Array<string>} */
+    const events = []
+    handlers.daily_logs = {
+      select: (filters) => ({
+        data: filterValue(filters, 'vehicle_id') === '501' ? [{ id: 10, work_date: '2026-08-03' }] : [],
+        error: null,
+      }),
+      upsert: (row) => {
+        const vehicleId = row && typeof row === 'object' && !Array.isArray(row) ? String(row.vehicle_id) : ''
+        events.push(`daily_logs.upsert:${vehicleId}`)
+        return { data: { id: vehicleId === '802' ? 20 : 11 }, error: null }
+      },
+    }
+    handlers.fuel_records = {
+      delete: (filters) => { events.push(`fuel.delete:${filterValue(filters, 'daily_log_id')}`); return { data: null, error: null } },
+      insert: (rows) => {
+        const list = Array.isArray(rows) ? rows : []
+        list.forEach((row) => {
+          if (row && typeof row === 'object' && !Array.isArray(row)) events.push(`fuel.insert:${String(row.vehicle_id)}:${String(row.daily_log_id)}`)
+        })
+        return { data: null, error: null }
+      },
+    }
+    handlers.maintenance_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
+    handlers.misc_expense_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
+    return events
+  }
+
+  test('5-A 미연동 서브 표시 항목: 서브차량 칸에 먼저 넣고, 메인 칸 그 날짜는 그다음 비운다', async () => {
+    const ownerKey = 'cms-exp-sub-unlinked'
+    const events = seedSubVehicleSave(ownerKey, [])
+    /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */
+    const next = [{ id: 'fuel-sub-1', kind: 'fuel', date: '2026-08-03', name: '주유', cost: 3000, vehicleNumber: '22나2222' }]
+    await saveExpenses(ownerKey, next)
+    assert.deepEqual(events, [
+      'daily_logs.upsert:802',
+      'fuel.delete:20',
+      'fuel.insert:802:20',
+      'fuel.delete:10',
+    ])
+    assert.equal(firstItemId(getState().expenses[ownerKey]), 'fuel-sub-1')
+    endCloudSession()
+  })
+
+  test('5-A 연동 서브 표시 항목: 지금처럼 메인 칸에 남는다(5-B 전)', async () => {
+    const ownerKey = 'cms-exp-sub-linked'
+    const events = seedSubVehicleSave(ownerKey, [{ id: 'drv-1', status: 'linked', vehicleNumber: '22나2222' }])
+    /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */
+    const next = [{ id: 'fuel-sub-2', kind: 'fuel', date: '2026-08-03', name: '주유', cost: 3000, vehicleNumber: '22나2222' }]
+    await saveExpenses(ownerKey, next)
+    assert.deepEqual(events, ['fuel.delete:10', 'fuel.insert:501:10'])
     endCloudSession()
   })
 
