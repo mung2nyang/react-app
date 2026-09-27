@@ -25,6 +25,13 @@ describe('selectExpensesForScope', () => {
     assert.equal(selectExpensesForScope('driver', OWNER, DRIVER)[0].id, 'd-m')
     assert.equal(selectExpensesForScope('all', OWNER, DRIVER).length, 5)
   })
+
+  test('로드맵 5-A-2: 차주 목록의 서브 표시 항목은 owner에서 빠지고 driver로 간다, all은 전부', () => {
+    const ownerWithSub = [...OWNER, { id: 'o-sub', kind: 'maint', date: '2026-05-12', name: '서브정비', cost: 1, vehicleNumber: '22가2222' }]
+    assert.deepEqual(selectExpensesForScope('owner', ownerWithSub, DRIVER).map((item) => item.id), ['o-m', 'o-f'])
+    assert.deepEqual(selectExpensesForScope('driver', ownerWithSub, DRIVER).map((item) => item.id), ['d-m', 'd-f', 'd-other-month', 'o-sub'])
+    assert.equal(selectExpensesForScope('all', ownerWithSub, DRIVER).length, 6)
+  })
 })
 
 describe('filterDriverExpensesByVehicle', () => {

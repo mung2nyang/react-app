@@ -43,7 +43,7 @@ export default function OwnerRevenueView({ ownerKey }) {
     return buildFinanceSettings(ownerKey)
   }, [ownerKey, cars, practiceSettings, profile, drivers])
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
-  const expenses = useOwnerExpenses(ownerKey)
+  const expensesAll = useOwnerExpenses(ownerKey)
   const driverExpensesAll = useOwnerDriverExpenses(ownerKey)
 
   const subCars = useMemo(
@@ -81,6 +81,10 @@ export default function OwnerRevenueView({ ownerKey }) {
   const driverExpenses = useMemo(
     () => (scopedForDriver ? filterDriverExpensesByVehicle(driverExpensesAll, driverVehicle) : driverExpensesAll),
     [scopedForDriver, driverExpensesAll, driverVehicle],
+  )
+  const expenses = useMemo(
+    () => (scopedForDriver ? filterDriverExpensesByVehicle(expensesAll, driverVehicle) : expensesAll),
+    [scopedForDriver, expensesAll, driverVehicle],
   )
 
   const monthly = useMemo(
