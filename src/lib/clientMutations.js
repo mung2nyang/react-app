@@ -50,6 +50,18 @@ function changedClientIds(previous, next) {
 }
 
 /**
+ * 이번 저장으로 고정노선이 켜짐 → 꺼짐이 된 다른 거래처 id(순서가 바뀌어도 id로 비교).
+ * @param {Array<ClientLike>} previous @param {Array<ClientLike>} next @param {string} savedId
+ * @returns {Array<string>}
+ */
+function unlinkedFixedRouteIds(previous, next, savedId) {
+  const wasLinked = new Set(previous.filter((item) => item.fixedRouteLinked && item.id).map((item) => item.id))
+  return next
+    .filter((item) => item.id !== savedId && wasLinked.has(item.id) && !item.fixedRouteLinked)
+    .map((item) => /** @type {string} */ (item.id))
+}
+
+/**
  * @param {{ ownerKey: string, clients: Array<ClientLike>, draft: ClientDraft, editingId: string|null, userId?: string|null }} params
  */
 export async function requestClientSave({ ownerKey, clients, draft, editingId, userId }) {
@@ -60,9 +72,10 @@ export async function requestClientSave({ ownerKey, clients, draft, editingId, u
   const okToast = editingId ? '거래처를 수정했습니다.' : '거래처를 등록했습니다.'
   const savedFrom = (/** @type {Array<ClientLike>} */ list) => list.find((item) => item.id === result.id) || null
   if (isCloudClientOwner(ownerKey)) {
+    // 1곳 규칙으로 자동 해제된 거래처도 서버에 함께 저장해야 새로고침 때 되살아나지 않는다(로드맵 6).
+    const changedIds = result.id ? [result.id, ...unlinkedFixedRouteIds(clients, result.clients, result.id)] : []
     const out = await saveClientsToCloud({
-      ownerKey, userId, previous: clients, next: result.clients,
-      changedIds: result.id ? [result.id] : [], okToast,
+      ownerKey, userId, previous: clients, next: result.clients, changedIds, okToast,
     })
     return { ...out, saved: out.failed ? null : savedFrom(out.clients) }
   }
