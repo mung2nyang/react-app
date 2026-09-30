@@ -789,7 +789,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     assert.equal(totalSupabaseCalls(), supabaseCallsBefore, '실패한 시도는 Supabase 호출로 이어지면 안 된다')
     assert.equal(errSpy.count(), 1, '디바운스 커밋 실패로 정확히 1번 로깅돼야 한다')
     assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), '실패 UI가 화면에 표시돼야 한다')
-    assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장됨'), false, '성공 문구가 보이면 안 된다')
+    assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장 완료'), false, '성공 문구가 보이면 안 된다')
     assert.match(container.querySelector('.toast-message')?.textContent || '', /자동 저장에 실패/)
     unsubscribe()
 
@@ -1134,8 +1134,8 @@ test('재감사 12차 — persistent quota 실패 후 마운트 중 retry 성공
     shouldFail = false
     await act(async () => { retryPendingDayWrites() })
     await waitDebounceCommit()
-    await waitUntil(() => (container.querySelector('.autosave-status')?.textContent || '').includes('저장됨'), { timeoutMs: 3000 })
-    assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장됨'), '마운트 중 retry 성공은 실패 UI를 저장됨으로 바꿔야 한다')
+    await waitUntil(() => (container.querySelector('.autosave-status')?.textContent || '').includes('저장 완료'), { timeoutMs: 3000 })
+    assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 완료'), '마운트 중 retry 성공은 실패 UI를 저장 완료로 바꿔야 한다')
     assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 8)
     assert.equal(committedRecord(ownerKey, dateKey)?.palletCount, 3)
     assert.equal(pendingDayWriteCount(), 0)

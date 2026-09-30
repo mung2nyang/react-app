@@ -913,7 +913,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     const toastText = container.querySelector('.toast-message')?.textContent || ''
     assert.match(toastText, /네트워크 상태를 확인해 주세요/)
     assert.equal(toastText.includes('저장 공간'), false, '로그인 원격 실패에 quota 문구를 쓰면 안 된다')
-    assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장됨'), false)
+    assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장 완료'), false)
     assert.equal(errSpy.count(), 1)
 
     serverShouldFail = false
