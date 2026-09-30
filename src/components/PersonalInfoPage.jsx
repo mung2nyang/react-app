@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
 import { requestAccountWithdrawal } from '../lib/accountWithdrawal.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
-import { useOwnerProfile } from '../store/ownerDataHooks.js'
+import { useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import ConfirmModal from './ConfirmModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import { usePersonalInfoDraft } from './usePersonalInfoDraft.js'
@@ -13,6 +13,7 @@ import './PersonalInfoPage.css'
 
 const WITHDRAW_MSG_1 = '정말 탈퇴하시겠습니까? 모든 운행 기록, 거래처, 정산 데이터가 영구적으로 삭제되며 복구할 수 없습니다.'
 const WITHDRAW_MSG_2 = '이 작업은 취소할 수 없습니다. 한 번 더 확인해 주세요'
+const WITHDRAW_LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습니다.'
 
 /**
  * @param {Object} props
@@ -26,6 +27,7 @@ const WITHDRAW_MSG_2 = '이 작업은 취소할 수 없습니다. 한 번 더 �
 export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast, onOpenMenu }) {
   const locked = useHydrationLock()
   const profile = useOwnerProfile(ownerKey)
+  const drivers = useOwnerDrivers(ownerKey)
   const sessionName = session?.name && session.name !== '비회원' ? session.name : ''
   const sessionPhone = session?.phone || ''
   const guest = !!session?.guestMode
@@ -36,6 +38,13 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
   const { get, set, flush } = usePersonalInfoDraft({ ownerKey, profile, showToast })
   /** @param {keyof import('../lib/hydrateMergeTypes.js').LocalProfile} field @param {string} value */
   function update(field, value) { set(field, value) }
+
+  // 연동 중(차주: linked 기사 있음, 기사: employed_driver)이면 탈퇴를 막는다 — 서버 delete_own_account도 거절(로드맵 7-A).
+  const linked = session?.accountType === 'employed_driver' || drivers.some((driver) => driver.status === 'linked')
+  function startWithdraw() {
+    if (linked) { showToast?.(WITHDRAW_LINKED_MSG); return }
+    setWithdrawStep('first')
+  }
 
   async function confirmWithdrawFinal() {
     if (withdrawBusy) return
@@ -152,7 +161,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
                 type="button"
                 className="withdraw-link"
                 disabled={withdrawBusy}
-                onClick={() => setWithdrawStep('first')}
+                onClick={startWithdraw}
               >
                 회원 탈퇴
               </button>
