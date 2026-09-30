@@ -11,7 +11,11 @@ import { registerPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
 
 export function useMountedRef() {
   const mountedRef = useRef(true)
-  useEffect(() => () => { mountedRef.current = false }, [])
+  // StrictMode(개발)의 켜기→끄기→다시 켜기에서도 다시 켜지면 열림으로 되돌린다(로드맵 0-3-B).
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
   return mountedRef
 }
 

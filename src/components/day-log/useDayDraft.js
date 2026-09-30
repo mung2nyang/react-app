@@ -57,10 +57,10 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   const draftRef = useRef(state.draft)
   draftRef.current = state.draft
   const timerRef = useRef(/** @type {ReturnType<typeof setTimeout>|null} */ (null))
-  // 마운트 시 딱 한 번 오는 "초기값" 렌더에서는 디바운스를 걸지 않는다 — 그렇지
-  // 않으면 화면을 열기만 해도(아무것도 안 건드려도) 600ms 뒤 store에 같은 값을
-  // 다시 쓰는 불필요한 커밋(+예약된 클라우드 동기화)이 매번 일어난다.
-  const isFirstDraftRef = useRef(true)
+  // 처음 draft 그대로면 디바운스를 걸지 않는다 — 그렇지 않으면 화면을 열기만 해도
+  // 600ms 뒤 같은 값을 다시 쓴다. 표시(한 번 쓰면 끝) 대신 참조 비교라 StrictMode가
+  // 효과를 두 번 돌려도 같은 결과다(로드맵 0-3-B).
+  const initialDraftRef = useRef(state.draft)
   // onCommitted도 navigateRef와 같은 이유로 ref에 담는다 — 매 렌더 새 함수를 넘겨도
   // (부모가 useCallback으로 안 감싸도) commitNow 자체가 다시 만들어지지 않는다.
   const onCommittedRef = useRef(onCommitted)
@@ -147,10 +147,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   // "draft가 또 바뀐" 정상 경로에서는 바로 다음 줄이 새 타이머로 덮어쓰고,
   // commitNow() 자신도 실행 시작할 때 null로 정리한다.
   useEffect(() => {
-    if (isFirstDraftRef.current) {
-      isFirstDraftRef.current = false
-      return undefined
-    }
+    if (state.draft === initialDraftRef.current) return undefined
     draftRevRef.current += 1
     setAutoSaveStatus('pending')
     hasPendingRef.current = true
