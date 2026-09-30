@@ -1,6 +1,6 @@
 -- 7-B: 연동 기사는 "지금 그 차량에 linked"이고 "그 날짜가 자기 연동 기간(linked·disconnected, 같은 차량)" 안일 때만 운행·비용 기록에 접근한다.
 -- 새로 연동한 기사는 이전 기사 기간을 못 보고, 해제된 기사는 차주 차량 기록에 접근 못 한다("내가 쓴 행" 조건 제거). 차주는 "내 차량"으로 무변경.
--- 2026-10-01 Supabase SQL Editor에서 실행·검증함(AI가 사용자 지시로 실행). 멱등(create or replace + drop policy if exists → create policy).
+-- 2026-09-30 Supabase SQL Editor에서 실행·검증함(AI가 사용자 지시로 실행). 멱등(create or replace + drop policy if exists → create policy).
 -- 데이터 변경 없음, 앱 코드 변경 없음. 되돌리기 SQL은 파일 맨 아래 주석.
 
 begin;

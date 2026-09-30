@@ -1,7 +1,7 @@
 -- 5-C: 계정이 삭제돼도 운행·비용 기록은 남기고 "쓴 사람"(user_id)만 비운다.
 -- 연동 기사가 차주 차량에 입력한 하루 기록·콜 상세·정비·유류·기타가 기사 탈퇴 시 CASCADE로 차주 장부에서 함께 지워지던 것을 막는다
 -- (하루 기록 줄이 지워지면 그날 차주 비용·콜 상세까지 연쇄 삭제되던 것 포함). 자기 차량 기록은 vehicles 삭제 연쇄로 지금처럼 지워진다.
--- 2026-10-01 Supabase SQL Editor에서 실행·검증함(AI가 사용자 지시로 실행, 사후검증: 5개 표 모두 ON DELETE SET NULL · user_id nullable YES).
+-- 2026-09-30 Supabase SQL Editor에서 실행·검증함(AI가 사용자 지시로 실행, 사후검증: 5개 표 모두 ON DELETE SET NULL · user_id nullable YES).
 -- 이 파일은 그 기록이다. 멱등이라 다시 실행해도 안전하다(데이터 삭제 없음, 권한 규칙 무변경).
 
 begin;
