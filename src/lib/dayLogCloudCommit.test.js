@@ -144,6 +144,20 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
     endCloudSession()
   })
 
+  test('0-3-A 빈 날 저장: 그날 비용이 있으면 하루 기록 줄을 지우지 않고 빈 기록으로 남긴다(Store에선 빠짐)', async () => {
+    beginLoggedIn('u1', 'dlc-del-keep')
+    withDay('dlc-del-keep', { fixedCount: 0, callDetails: [] })
+    handlers.maintenance_records = { select: () => ({ data: [{ id: 'm-1' }], error: null }) }
+
+    const r = await commitMainDayLogToCloud({ ownerKey: 'dlc-del-keep', logId: 'main', dateKey: DK, previousData: { [DK]: { fixedCount: 0 } }, nextData: {} })
+
+    assert.deepEqual(r, { cloud: true, ok: true, toast: null })
+    assert.equal(countOf('daily_logs', 'delete'), 0, '비용이 묶인 줄을 지우면 서버가 비용까지 함께 지운다')
+    assert.equal(countOf('daily_logs', 'update'), 1)
+    assert.equal(getState().workLogs['dlc-del-keep']?.main?.[DK], undefined)
+    endCloudSession()
+  })
+
   test('세션 전환: upsert await 이후 로그아웃하면 Store 미반영', async () => {
     beginLoggedIn('u1', 'dlc-epoch')
     withDay('dlc-epoch', { fixedCount: 2, callDetails: [] })

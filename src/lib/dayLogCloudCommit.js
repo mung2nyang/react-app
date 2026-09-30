@@ -3,7 +3,7 @@
 // daily_logs(+transport_details)에 직접 1회 쓰고 성공 시에만 Store 반영(Fail-Fast).
 // vehicleSupabaseIdForLog로 main·기사 차량을 고르고, Store는 commitLogWorkData로 logId별 반영.
 // 게스트·미동기화(supabaseId 없음)는 { cloud: false } → 호출부가 로컬 경로를 탄다.
-// 208줄, §6 예외: 단건/복수건 커밋 두 함수가 내부 헬퍼 4개(writeDayKeyToServer 등)를 공유하는 하나의 응집 단위 — 분리하면 헬퍼와 사용처가 갈라짐.
+// §6: 단건/복수건 커밋이 헬퍼 4개(writeDayKeyToServer 등)를 공유하는 응집 단위. 빈 날 서버 삭제 규칙은 dailyLogRemoval.js(0-3-A).
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
 import { supabase } from '../supabaseClient.js'
@@ -18,6 +18,7 @@ import {
 import { StaleSessionError } from './outboxErrors.js'
 import { shouldCommitDayLogToCloud, vehicleSupabaseIdForLog } from './mainDayLogRouting.js'
 import { parseEntityNumber } from './cloudStorage.js'
+import { removeDayLogOnServer } from './dailyLogRemoval.js'
 import { upsertDailyLog } from './syncWorkData.js'
 
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
@@ -71,17 +72,6 @@ async function replaceTransportDetails(userId, vehicleId, dailyLogId, workDate, 
 }
 
 /**
- * 그 날짜 daily_logs + transport_details를 서버에서 삭제한다. 이미 없으면(0행) 성공(멱등).
- * @param {number|string} vehicleId @param {string} workDate
- */
-async function deleteDayLogOnServer(vehicleId, workDate) {
-  const { error: detailError } = await supabase.from('transport_details').delete().eq('vehicle_id', vehicleId).eq('work_date', workDate)
-  if (detailError) throw detailError
-  const { error } = await supabase.from('daily_logs').delete().eq('vehicle_id', vehicleId).eq('work_date', workDate)
-  if (error) throw error
-}
-
-/**
  * @param {string} userId @param {number|string} vehicleId @param {string} ownerKey
  * @param {string} dateKey @param {Record<string, DayRecordLike>} previousData
  * @param {Record<string, DayRecordLike>} nextData @param {SessionCapture} captured
@@ -95,7 +85,7 @@ async function writeDayKeyToServer(userId, vehicleId, ownerKey, dateKey, previou
     await replaceTransportDetails(userId, vehicleId, dailyLogId, dateKey, record, clientIdByName(ownerKey))
     assertSessionStillCurrent(captured)
   } else if (hadBefore) {
-    await deleteDayLogOnServer(vehicleId, dateKey)
+    await removeDayLogOnServer(vehicleId, dateKey)
     assertSessionStillCurrent(captured)
   }
 }
