@@ -5,7 +5,7 @@
 
 /** @typedef {Record<string, string|number>} EqFilters */
 /** @typedef {{ data?: import('../store/atomicPersist.js').JsonValue, error?: { message?: string } | null }} FakeQueryResult */
-/** @typedef {(arg?: EqFilters | import('../store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeHandler */
+/** @typedef {(arg?: EqFilters | import('../store/atomicPersist.js').JsonValue, extra?: EqFilters | import('../store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeHandler */
 /** @typedef {Record<string, Record<string, FakeHandler>>} FakeHandlers */
 /** @typedef {(args?: import('../store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeRpcHandler */
 
@@ -75,12 +75,12 @@ export function createFakeSupabase() {
       const h = handlers[table] || {}
       return {
         select: () => { bump(table, 'select'); return chainable(h.select || (() => ({ data: [], error: null }))) },
-        /** @param {import('../store/atomicPersist.js').JsonValue} row */
-        upsert: (row) => { bump(table, 'upsert'); return chainable(() => (h.upsert ? h.upsert(row) : { data: null, error: null })) },
+        /** @param {import('../store/atomicPersist.js').JsonValue} row @param {import('../store/atomicPersist.js').JsonValue} [options] */
+        upsert: (row, options) => { bump(table, 'upsert'); return chainable(() => (h.upsert ? h.upsert(row, options) : { data: null, error: null })) },
         /** @param {import('../store/atomicPersist.js').JsonValue} row */
         insert: (row) => { bump(table, 'insert'); return chainable(() => (h.insert ? h.insert(row) : { data: null, error: null })) },
         /** @param {import('../store/atomicPersist.js').JsonValue} row */
-        update: (row) => { bump(table, 'update'); return chainable(() => (h.update ? h.update(row) : { data: null, error: null })) },
+        update: (row) => { bump(table, 'update'); return chainable((filters) => (h.update ? h.update(row, filters) : { data: null, error: null })) },
         delete: () => { bump(table, 'delete'); return chainable(h.delete || (() => ({ data: null, error: null }))) },
       }
     },

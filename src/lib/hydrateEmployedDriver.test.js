@@ -100,7 +100,7 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
       select: (filters) => {
         if (filters && typeof filters === 'object' && !Array.isArray(filters)) maintFilters.push(filters)
         return {
-          data: [{ id: 'maint-1', vehicle_id: 'veh-assigned-1', work_date: '2026-05-02', cost_amount: 80000, sequence: 1, raw: { name: '엔진오일' } }],
+          data: [{ id: 'maint-1', vehicle_id: 'veh-assigned-1', work_date: '2026-05-02', cost_amount: 80000, sequence: 1, raw: { name: '엔진오일', vehicleNumber: '12가3456' } }],
           error: null,
         }
       },
@@ -133,6 +133,7 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
     assert.equal(snapshot.expenses.length, 3)
     const kinds = snapshot.expenses.map((e) => e.kind).sort()
     assert.deepEqual(kinds, ['fuel', 'maint', 'misc'])
+    assert.ok(snapshot.expenses.every((e) => e.vehicleNumber === undefined), '5-B-1: 기사 목록에는 차량 표시가 없어야 기사 본인 매출에 포함된다')
 
     assert.equal(countOf('fuel_records', 'select'), 1)
     assert.equal(countOf('maintenance_records', 'select'), 1)

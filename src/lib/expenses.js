@@ -15,6 +15,7 @@ import {
   getCloudUserId,
 } from './cloudSession.js'
 import { syncFuelRecords, syncMaintenanceRecords, syncMiscExpenseRecords } from './syncExpenseRecords.js'
+import { syncExpenseItemsForVehicle } from './syncExpenseItems.js'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
@@ -28,9 +29,20 @@ export async function saveExpenses(ownerKey, items) {
   const userId = getCloudUserId()
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
   if (blocked) throw new Error(blocked)
-  const targets = planExpenseVehicleTargets(getState().cars[ownerKey], getState().drivers[ownerKey], next)
   const logs = getState().workLogs[ownerKey] || {}
   const captured = captureSession()
+  // 연동 기사 세션(ownerKey = 차주 id, boot.js ownerKeyFromSession): 배정 차량 칸을 항목 단위로(로드맵 5-B-1).
+  if (userId !== ownerKey) {
+    const assignedCar = (getState().cars[ownerKey] || []).find((car) => car.supabaseId)
+    const previous = /** @type {Array<ExpenseItem>} */ (getState().expenses[ownerKey] || [])
+    if (assignedCar?.supabaseId) {
+      await syncExpenseItemsForVehicle(/** @type {string} */ (userId), assignedCar.supabaseId, previous, next, logs.main || {})
+    }
+    assertSessionStillCurrent(captured)
+    commitExpenses(ownerKey, next, { syncToCloud: false })
+    return
+  }
+  const targets = planExpenseVehicleTargets(getState().cars[ownerKey], getState().drivers[ownerKey], next)
   // 서브 칸 먼저·메인 나중 — 중간 실패 시 유실 대신 중복(불러올 때 id로 정리).
   for (const target of targets) {
     const workData = logs[target.logId] || {}

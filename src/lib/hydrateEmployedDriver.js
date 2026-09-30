@@ -71,7 +71,8 @@ async function fetchExpensesForAssignedVehicle(vehicleId, throwIfAnyHydrateError
   nextExpenses = mergeExpenseKind({ kind: 'fuel', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: fuelRes.data || [], mapRow: expenseFromFuelRecord, replace: replaceFuelExpenses })
   nextExpenses = mergeExpenseKind({ kind: 'maint', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: maintRes.data || [], mapRow: expenseFromMaintenanceRecord, replace: replaceMaintExpenses })
   nextExpenses = mergeExpenseKind({ kind: 'misc', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: miscRes.data || [], mapRow: expenseFromMiscRecord, replace: replaceMiscExpenses })
-  return /** @type {Array<ExpenseItem>} */ (nextExpenses)
+  // 로드맵 5-B-1: 차주가 넣은 항목의 차량 표시를 떼어 기사 본인 목록·매출에 포함한다.
+  return /** @type {Array<ExpenseItem>} */ (nextExpenses.map(({ vehicleNumber: _vehicleNumber, ...item }) => item))
 }
 
 /**
