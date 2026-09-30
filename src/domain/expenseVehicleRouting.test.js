@@ -43,14 +43,34 @@ describe('planExpenseVehicleTargets — 로드맵 5-A', () => {
     assert.deepEqual(targets[1].cleanupDates, ['2026-08-03'])
   })
 
-  test('연동 서브 표시 항목은 5-B 전까지 메인 칸에 남는다', () => {
+  test('5-B-2: 연동 서브 표시 항목은 그 서브 칸 항목 단위 대상, 메인 칸은 그 날짜를 정리한다', () => {
     const targets = planExpenseVehicleTargets([MAIN, SUB], [{ id: 'd1', status: 'linked', vehicleNumber: '22나2222' }], [
       fuel('s1', '2026-08-03', '22나2222'),
     ])
-    assert.equal(targets.length, 1)
-    assert.equal(targets[0].vehicleId, 501)
+    assert.equal(targets.length, 2)
+    assert.equal(targets[0].vehicleId, 802)
+    assert.equal(targets[0].mode, 'items')
     assert.deepEqual(targets[0].expenses.map((item) => item.id), ['s1'])
-    assert.deepEqual(targets[0].cleanupDates, [])
+    assert.equal(targets[1].vehicleId, 501)
+    assert.equal(targets[1].mode, 'dates')
+    assert.deepEqual(targets[1].expenses, [])
+    assert.deepEqual(targets[1].cleanupDates, ['2026-08-03'])
+  })
+
+  test('5-B-2: 미연동 서브도 남은 항목이 없어도 날짜별 대상에 들어간다(마지막 항목 삭제 반영)', () => {
+    const targets = planExpenseVehicleTargets([MAIN, SUB], [], [])
+    assert.equal(targets.length, 2)
+    assert.equal(targets[0].vehicleId, 802)
+    assert.equal(targets[0].mode, 'dates')
+    assert.deepEqual(targets[0].expenses, [])
+  })
+
+  test('5-B-2: 연동 서브는 남은 항목이 없어도 대상에 들어간다(마지막 항목 삭제 반영)', () => {
+    const targets = planExpenseVehicleTargets([MAIN, SUB], [{ id: 'd1', status: 'linked', vehicleNumber: '22나2222' }], [])
+    assert.equal(targets.length, 2)
+    assert.equal(targets[0].vehicleId, 802)
+    assert.equal(targets[0].mode, 'items')
+    assert.deepEqual(targets[0].expenses, [])
   })
 
   test('서버 id 없는 서브·못 찾는 차량번호는 메인 칸에 남는다', () => {

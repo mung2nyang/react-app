@@ -437,7 +437,7 @@ describe('Step 9 슬라이스 A — hydrate가 기사 차량 daily_logs도 logId
 })
 
 describe('로드맵 5-A — 서브차량 정비/주유/기타 불러오기', () => {
-  test('미연동 서브 칸은 차주 목록(id 중복 제거), 연동 서브 칸만 읽기 전용 기사 내역으로 간다', async () => {
+  test('5-B-2: 미연동·연동 서브 칸 모두 차주 목록(차량 표시·id 중복 제거)으로, 읽기 전용 기사 내역은 비운다', async () => {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
     const ownerKey = 'hydrate-5a-sub-expenses'
@@ -472,11 +472,10 @@ describe('로드맵 5-A — 서브차량 정비/주유/기타 불러오기', () 
     await hydrateFromSupabase(userId, ownerKey)
     assert.equal(getState().hydration.status, 'ready')
     const owner = /** @type {Array<{ id: string, vehicleNumber?: string }>} */ (getState().expenses[ownerKey] || [])
-    assert.deepEqual(owner.map((item) => item.id).sort(), ['dup-1', 'main-1', 'sub-1'])
+    assert.deepEqual(owner.map((item) => item.id).sort(), ['drv-1', 'dup-1', 'main-1', 'sub-1'])
     assert.equal(owner.find((item) => item.id === 'sub-1')?.vehicleNumber, '22나2222')
-    const driverSide = /** @type {Array<{ id: string, vehicleNumber?: string }>} */ (getState().driverExpenses[ownerKey] || [])
-    assert.deepEqual(driverSide.map((item) => item.id), ['drv-1'])
-    assert.equal(driverSide[0].vehicleNumber, '33다3333')
+    assert.equal(owner.find((item) => item.id === 'drv-1')?.vehicleNumber, '33다3333', '연동 서브 칸 기사 항목도 차주 목록에서 고치고 지울 수 있어야 한다')
+    assert.deepEqual(getState().driverExpenses[ownerKey] || [], [])
     endCloudSession()
   })
 })

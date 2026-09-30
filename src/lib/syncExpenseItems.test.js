@@ -52,7 +52,9 @@ beforeEach(() => {
     delete: (filters) => { events.push(`maint.delete:${String(field(filters, 'id'))}`); return { data: null, error: null } },
   }
   handlers.fuel_records = {
-    select: () => ({ data: [], error: null }),
+    select: (filters) => (field(filters, 'vehicle_id') === 'veh-main'
+      ? { data: [{ id: 'srv-main-old', work_date: '2026-09-10', sequence: 0, raw: { id: 'old-f1' } }], error: null }
+      : { data: [], error: null }),
     insert: (row) => {
       events.push(`fuel.insert:${String(field(row, 'daily_log_id'))}:seq=${String(field(row, 'sequence'))}`)
       return { data: null, error: null }
@@ -106,5 +108,19 @@ describe('syncExpenseItemsForVehicle — 로드맵 5-B-1 항목 단위 저장', 
     await syncExpenseItemsForVehicle('driver-1', 'veh-1', [gone], [gone], {})
     assert.deepEqual(events, [])
     assert.equal(countOf('fuel_records', 'insert'), 0)
+  })
+
+  test('5-B-2 옛 항목 옮기기: 안 바뀐 항목이 연동 칸에 없어도 메인 칸에 같은 id가 있으면 넣는다', async () => {
+    /** @type {ExpenseItem} */
+    const old = { id: 'old-f1', kind: 'fuel', date: '2026-09-10', cost: 9000, vehicleNumber: '11가1111' }
+    await syncExpenseItemsForVehicle('owner-1', 'veh-1', [old], [old], {}, 'veh-main')
+    assert.deepEqual(events, ['fuel.insert:dl-1:seq=0'])
+  })
+
+  test('5-B-2 옛 항목 옮기기: 메인 칸에도 없으면 상대가 지운 것이라 되살리지 않는다', async () => {
+    /** @type {ExpenseItem} */
+    const gone = { id: 'drv-f-gone', kind: 'fuel', date: '2026-09-10', cost: 1, vehicleNumber: '11가1111' }
+    await syncExpenseItemsForVehicle('owner-1', 'veh-1', [gone], [gone], {}, 'veh-main')
+    assert.deepEqual(events, [])
   })
 })

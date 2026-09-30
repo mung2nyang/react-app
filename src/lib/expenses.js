@@ -43,12 +43,25 @@ export async function saveExpenses(ownerKey, items) {
     return
   }
   const targets = planExpenseVehicleTargets(getState().cars[ownerKey], getState().drivers[ownerKey], next)
+  const previousAll = /** @type {Array<ExpenseItem>} */ (getState().expenses[ownerKey] || [])
+  const mainVehicleId = targets.find((target) => target.logId === 'main')?.vehicleId ?? null
   // 서브 칸 먼저·메인 나중 — 중간 실패 시 유실 대신 중복(불러올 때 id로 정리).
   for (const target of targets) {
     const workData = logs[target.logId] || {}
-    await syncFuelRecords(/** @type {string} */ (userId), target, workData)
-    await syncMaintenanceRecords(/** @type {string} */ (userId), target, workData)
-    await syncMiscExpenseRecords(/** @type {string} */ (userId), target, workData)
+    if (target.mode === 'items') {
+      // 연동 서브(5-B-2): 기사와 공용 칸이라 항목 단위, 메인 칸의 옛 항목은 옮겨 넣는다.
+      const previous = previousAll.filter((item) => String(item.vehicleNumber || '').trim() === target.logId)
+      await syncExpenseItemsForVehicle(/** @type {string} */ (userId), target.vehicleId, previous, target.expenses, workData, mainVehicleId)
+      continue
+    }
+    // 미연동 서브: 지운 항목의 날짜도 다시 써야 서버에서 사라진다(마지막 항목 삭제 포함).
+    const removedDates = target.logId === 'main' ? [] : previousAll
+      .filter((item) => String(item.vehicleNumber || '').trim() === target.logId && item.date)
+      .map((item) => item.date)
+    const dateTarget = { ...target, cleanupDates: [...target.cleanupDates, ...removedDates] }
+    await syncFuelRecords(/** @type {string} */ (userId), dateTarget, workData)
+    await syncMaintenanceRecords(/** @type {string} */ (userId), dateTarget, workData)
+    await syncMiscExpenseRecords(/** @type {string} */ (userId), dateTarget, workData)
   }
   assertSessionStillCurrent(captured)
   commitExpenses(ownerKey, next, { syncToCloud: false })

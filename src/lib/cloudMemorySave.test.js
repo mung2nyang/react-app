@@ -213,10 +213,10 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     /** @type {Array<string>} */
     const events = []
     handlers.daily_logs = {
-      select: (filters) => ({
-        data: filterValue(filters, 'vehicle_id') === '501' ? [{ id: 10, work_date: '2026-08-03' }] : [],
-        error: null,
-      }),
+      select: (filters) => {
+        if (filterValue(filters, 'work_date') !== 'undefined') return { data: { id: filterValue(filters, 'vehicle_id') === '802' ? 20 : 11 }, error: null }
+        return { data: filterValue(filters, 'vehicle_id') === '501' ? [{ id: 10, work_date: '2026-08-03' }] : [], error: null }
+      },
       upsert: (row) => {
         const vehicleId = row && typeof row === 'object' && !Array.isArray(row) ? String(row.vehicle_id) : ''
         events.push(`daily_logs.upsert:${vehicleId}`)
@@ -226,7 +226,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     handlers.fuel_records = {
       delete: (filters) => { events.push(`fuel.delete:${filterValue(filters, 'daily_log_id')}`); return { data: null, error: null } },
       insert: (rows) => {
-        const list = Array.isArray(rows) ? rows : []
+        const list = Array.isArray(rows) ? rows : [rows]
         list.forEach((row) => {
           if (row && typeof row === 'object' && !Array.isArray(row)) events.push(`fuel.insert:${String(row.vehicle_id)}:${String(row.daily_log_id)}`)
         })
@@ -254,13 +254,26 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     endCloudSession()
   })
 
-  test('5-A 연동 서브 표시 항목: 지금처럼 메인 칸에 남는다(5-B 전)', async () => {
+  test('5-B-2 연동 서브 표시 항목: 그 서브 칸에 항목 단위로 넣고 메인 칸 그 날짜는 정리한다', async () => {
     const ownerKey = 'cms-exp-sub-linked'
     const events = seedSubVehicleSave(ownerKey, [{ id: 'drv-1', status: 'linked', vehicleNumber: '22나2222' }])
     /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */
     const next = [{ id: 'fuel-sub-2', kind: 'fuel', date: '2026-08-03', name: '주유', cost: 3000, vehicleNumber: '22나2222' }]
     await saveExpenses(ownerKey, next)
-    assert.deepEqual(events, ['fuel.delete:10', 'fuel.insert:501:10'])
+    assert.deepEqual(events, ['daily_logs.upsert:802', 'fuel.insert:802:20', 'fuel.delete:10'])
+    endCloudSession()
+  })
+
+  test('5-B-2 미연동 서브의 마지막 항목을 지우면 그 날짜 서브 칸을 비운다(화면 일지에 그 날짜가 없어도)', async () => {
+    const ownerKey = 'cms-exp-sub-last-delete'
+    const events = seedSubVehicleSave(ownerKey, [])
+    commitExpenses(ownerKey, [{ id: 'fuel-sub-last', kind: 'fuel', date: '2026-08-05', name: '주유', cost: 1, vehicleNumber: '22나2222' }], { syncToCloud: false })
+    const baseSelect = handlers.daily_logs.select
+    handlers.daily_logs.select = (filters) => (filterValue(filters, 'vehicle_id') === '802' && filterValue(filters, 'work_date') === 'undefined'
+      ? { data: [{ id: 21, work_date: '2026-08-05' }], error: null }
+      : baseSelect(filters))
+    await saveExpenses(ownerKey, [])
+    assert.ok(events.includes('fuel.delete:21'), `서브 칸 2026-08-05 행이 지워져야 한다: ${events.join(',')}`)
     endCloudSession()
   })
 

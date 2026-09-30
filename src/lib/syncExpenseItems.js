@@ -23,6 +23,7 @@ import { buildMiscExpenseRecordRow, expenseFromMiscRecord } from '../domain/misc
  * @property {Array<ExpenseItem>} next
  * @property {Record<string, unknown>} workData
  * @property {Map<string, string>} idByDate
+ * @property {string|number|null} legacyVehicleId 옛 항목이 잘못 쌓여 있을 수 있는 칸(차주 메인 차량, 5-B-2)
  */
 
 /** @type {Array<KindSpec>} */
@@ -74,13 +75,25 @@ async function ensureDailyLog(ctx, workDate) {
 
 /**
  * @param {KindSpec} spec
+ * @param {string|number} vehicleId
+ * @returns {Promise<Array<ServerRow>>}
+ */
+async function fetchRows(spec, vehicleId) {
+  const { data, error } = await supabase
+    .from(spec.table).select('id, raw, work_date, sequence').eq('vehicle_id', vehicleId).order('sequence', { ascending: true })
+  if (error) throw error
+  return /** @type {Array<ServerRow>} */ (data || [])
+}
+
+/**
+ * @param {KindSpec} spec
  * @param {SyncContext} ctx
  */
 async function syncKind(spec, ctx) {
-  const { data, error } = await supabase
-    .from(spec.table).select('id, raw, work_date, sequence').eq('vehicle_id', ctx.vehicleId).order('sequence', { ascending: true })
-  if (error) throw error
-  const rows = /** @type {Array<ServerRow>} */ (data || [])
+  const rows = await fetchRows(spec, ctx.vehicleId)
+  const legacyIds = ctx.legacyVehicleId != null
+    ? new Set((await fetchRows(spec, ctx.legacyVehicleId)).map((row, index) => spec.mapRow(row, index).id))
+    : new Set()
   /** @type {Map<string, ServerRow>} */
   const serverByItemId = new Map()
   /** @type {Map<string, number>} */
@@ -98,8 +111,8 @@ async function syncKind(spec, ctx) {
     const row = serverByItemId.get(item.id)
     const previous = previousById.get(item.id)
     const unchanged = !!previous && JSON.stringify(previous) === JSON.stringify(item)
-    // 안 바뀐 항목: 서버에 있으면 그대로, 없으면 상대가 지운 것이므로 되살리지 않는다.
-    if (unchanged) continue
+    // 안 바뀐 항목: 서버에 있으면 그대로, 없으면 상대가 지운 것이므로 되살리지 않는다(단 메인 칸 옛 항목은 옮겨 넣는다).
+    if (unchanged && (row || !legacyIds.has(item.id))) continue
     const dailyLogId = await ensureDailyLog(ctx, item.date)
     const rowContext = { dailyLogId, userId: ctx.userId, vehicleId: ctx.vehicleId, workDate: item.date }
     if (!row) {
@@ -131,9 +144,10 @@ async function syncKind(spec, ctx) {
  * @param {Array<ExpenseItem>} previous
  * @param {Array<ExpenseItem>} next
  * @param {Record<string, unknown>} workData
+ * @param {string|number|null} [legacyVehicleId] 옛 항목을 찾을 칸(차주 메인 차량). 기사 쪽은 없음
  */
-export async function syncExpenseItemsForVehicle(userId, vehicleId, previous, next, workData) {
-  const ctx = { userId, vehicleId, previous, next, workData, idByDate: await dailyLogIdsByDate(vehicleId) }
+export async function syncExpenseItemsForVehicle(userId, vehicleId, previous, next, workData, legacyVehicleId = null) {
+  const ctx = { userId, vehicleId, previous, next, workData, legacyVehicleId, idByDate: await dailyLogIdsByDate(vehicleId) }
   for (const spec of KIND_SPECS) {
     await syncKind(spec, ctx)
   }

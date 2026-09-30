@@ -1,13 +1,12 @@
 // @ts-check
-// 차주 hydrate: 서브 차량 fuel/maint/misc(차량번호 태그) → 연동은 driverExpenses, 미연동은 expenses.
-// expenses 배열·저장 경로와 분리(Q3). hydrateEmployedDriver는 이 모듈을 쓰지 않는다.
+// 차주 hydrate: 서브 차량 fuel/maint/misc(차량번호 태그) → 차주 목록(expenses). 연동 서브도 공용 장부(5-B-2).
+// hydrateEmployedDriver는 이 모듈을 쓰지 않는다.
 import { supabase } from '../supabaseClient.js'
 import { mergeExpenseKind } from './hydrateMerge.js'
 import { expenseFromFuelRecord, replaceFuelExpenses } from '../domain/fuelRecords.js'
 import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/maintenanceRecords.js'
 import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpenseRecords.js'
 import { dedupeExpensesById } from '../domain/expenses.js'
-import { isLinkedPlate } from '../domain/expenseVehicleRouting.js'
 
 /** @typedef {import('../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
@@ -41,29 +40,24 @@ async function fetchTaggedExpensesForVehicle(vehicleId, vehicleNumber, throwIfAn
 }
 
 /**
- * 서브 차량 supabaseId로 비용 3종을 모아 vehicleNumber 태그를 붙인다.
- * 로드맵 5-A: 미연동 서브는 차주 목록(expenses)에 id 중복 제거로 합치고, 연동 서브만 읽기 전용.
+ * 서브 차량 supabaseId로 비용 3종을 모아 vehicleNumber 태그를 붙여 차주 목록(expenses)에 id 중복 제거로 합친다.
+ * 로드맵 5-B-2: 연동 서브도 차주·기사 공용 장부라 차주 목록으로(읽기 전용 driverExpenses는 빈 배열).
  * @param {Array<CarLike>} cars
- * @param {Array<DriverRecord>} drivers
+ * @param {Array<DriverRecord>} _drivers 5-B-2부터 연동 여부로 나누지 않음(호출부 hydrate.js 유지용)
  * @param {Array<JsonRecord>} ownerExpenses
  * @param {(labeled: Record<string, SupabaseQueryError>) => void} throwIfAnyHydrateError
  * @returns {Promise<{ expenses: Array<JsonRecord>, driverExpenses: Array<DriverExpenseItem> }>}
  */
-export async function fetchOwnerDriverExpenses(cars, drivers, ownerExpenses, throwIfAnyHydrateError) {
+export async function fetchOwnerDriverExpenses(cars, _drivers, ownerExpenses, throwIfAnyHydrateError) {
   const subCars = (Array.isArray(cars) ? cars : []).filter((car) => {
     if (car?.type !== 'sub' || car.supabaseId == null) return false
     return String(car.number || '').trim() !== ''
   })
   if (!subCars.length) return { expenses: ownerExpenses, driverExpenses: [] }
 
-  const batches = await Promise.all(subCars.map(async (car) => {
+  const batches = await Promise.all(subCars.map((car) => {
     const vehicleNumber = String(car.number || '').trim()
-    const items = await fetchTaggedExpensesForVehicle(/** @type {string|number} */ (car.supabaseId), vehicleNumber, throwIfAnyHydrateError)
-    return { linked: isLinkedPlate(vehicleNumber, drivers), items }
+    return fetchTaggedExpensesForVehicle(/** @type {string|number} */ (car.supabaseId), vehicleNumber, throwIfAnyHydrateError)
   }))
-  const ownerSub = batches.filter((batch) => !batch.linked).flatMap((batch) => batch.items)
-  return {
-    expenses: dedupeExpensesById([...ownerExpenses, ...ownerSub]),
-    driverExpenses: batches.filter((batch) => batch.linked).flatMap((batch) => batch.items),
-  }
+  return { expenses: dedupeExpensesById([...ownerExpenses, ...batches.flat()]), driverExpenses: [] }
 }
