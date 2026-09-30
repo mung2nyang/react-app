@@ -13,7 +13,9 @@ import {
   requestDriverStatusChange,
 } from '../lib/directMutationActions.js'
 import { countByStatus, generateInviteCode, saveDrivers, upsertDriver } from '../lib/drivers.js'
+import { requestDriverUnlinkAction } from '../lib/driverUnlink.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
+import DriverUnlinkControls from './drivers/DriverUnlinkControls.jsx'
 import DriverFormModal from './DriverFormModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import './drivers/driver-connection.css'
@@ -93,6 +95,12 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
     if (result.toast) showToast?.(result.toast)
   }
 
+  /** @param {string} id @param {import('../lib/driverUnlink.js').UnlinkAction} action */
+  async function unlink(id, action) {
+    const result = await requestDriverUnlinkAction({ ownerKey, drivers, driverId: id, action })
+    if (result.toast) showToast?.(result.toast)
+  }
+
   /** @param {string} id */
   async function remove(id) {
     const result = await requestDriverDeletion({ ownerKey, userId: cloudUserId, drivers, driverId: id, cloud })
@@ -150,7 +158,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
                   기사 관리
                 </button>
                 <button type="button" className="driver-card-action-btn" onClick={() => openEdit(driver)}>수정</button>
-                <button type="button" className="driver-card-action-btn danger" onClick={() => remove(driver.id)}>연동 해제</button>
+                <DriverUnlinkControls driver={driver} meId={cloudUserId} counterpartLabel="기사" onAction={(action) => { void unlink(driver.id, action) }} />
               </>
             ) : (
               <>

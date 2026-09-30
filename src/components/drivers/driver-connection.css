@@ -87,8 +87,14 @@
 }
 .driver-card-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 7px;
   margin-top: 10px;
+}
+/* 해제 요청 안내 문구(7-C)는 버튼 위 한 줄 전체 */
+.driver-unlink-status {
+  flex-basis: 100%;
+  order: -1;
 }
 .driver-card-action-btn {
   flex: 1;

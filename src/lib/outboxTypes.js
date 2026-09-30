@@ -20,6 +20,8 @@
  * @property {string} [inviteCode]
  * @property {'pending'|'linked'} [status]
  * @property {number|string} [supabaseId]
+ * @property {string} [unlinkRequestedBy] 연동 해제를 요청한 사람 id(차주 또는 기사, 로드맵 7-C)
+ * @property {string} [unlinkRequestedAt] 해제 요청 시각(ISO) — 3일 지나면 자동 해제
  */
 
 /**

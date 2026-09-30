@@ -10,6 +10,7 @@ import { hasMainCar, validateDriverLinkFields } from '../../lib/cars.js'
 import { NEW_DRIVER_INCOME_DRAFT, driverIncomeDraftFromCar } from '../../domain/driverIncomeDeductions.js'
 import { requestVehicleSave } from '../../lib/vehicleMutations.js'
 import { requestDriverDeletion, requestVehicleDeletion } from '../../lib/directMutationActions.js'
+import { requestDriverUnlinkAction } from '../../lib/driverUnlink.js'
 import { getCloudUserId, isCloudSession } from '../../lib/cloudSession.js'
 import { generateInviteCode } from '../../lib/drivers.js'
 import { saveInviteAfterVehicle, todayIsoDate } from '../../lib/carInviteFromDraft.js'
@@ -26,7 +27,7 @@ const emptyDraft = {
   inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'log',
 }
 const DELETE_CAR_CONFIRM = '해당 차량을 삭제하시겠습니까? 이 차량으로 기록된 운행 내역도 함께 삭제되며 복구할 수 없습니다.'
-const DISCONNECT_CONFIRM = '이 차량의 기사 연동을 해제하시겠습니까? 해제하면 되돌릴 수 없습니다.'
+const DISCONNECT_CONFIRM = '이 차량의 기사 연동을 해제하시겠습니까? 연동 중인 기사에게는 해제 요청이 가고, 기사가 동의하거나 3일이 지나면 해제됩니다.'
 
 /**
  * @param {Object} props
@@ -107,6 +108,14 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
     if (!driverId) {
       setPendingDisconnect(false)
       await commitSave(drivers)
+      return
+    }
+    // 연동 중이면 바로 끊지 않고 해제 요청(로드맵 7-C) — 동의·3일 전까지 연동 유지라 차량은 미연동으로 저장하지 않는다.
+    if (drivers.find((d) => d.id === driverId)?.status === 'linked') {
+      const req = await requestDriverUnlinkAction({ ownerKey, drivers, driverId, action: 'request' })
+      showToast?.(req.toast)
+      setPendingDisconnect(false)
+      if (!req.failed) setModalOpen(false)
       return
     }
     const del = await requestDriverDeletion({

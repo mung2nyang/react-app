@@ -42,7 +42,7 @@
 
 /** @typedef {{ id: string|number, raw?: RawClientBackup|null, company_name?: string, legacy_client_id?: string, is_pinned?: boolean }} ClientRow */
 
-/** @typedef {{ id: string|number, invite_code?: string, vehicle_id?: string|number, assignment_start?: string, assignment_end?: string, status?: string }} DriverLinkRow */
+/** @typedef {{ id: string|number, invite_code?: string, vehicle_id?: string|number, assignment_start?: string, assignment_end?: string, status?: string, unlink_requested_by?: string|null, unlink_requested_at?: string|null }} DriverLinkRow */
 
 /** @typedef {{ work_date: string, raw?: JsonRecord|null, is_off?: boolean, fixed_count?: number }} DailyLogRow */
 /** @typedef {{ work_date: string, raw?: JsonRecord|null }} DetailRow */

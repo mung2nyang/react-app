@@ -29,6 +29,7 @@ import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpens
 import { mergeTaxInvoiceRecords } from '../domain/taxInvoices.js'
 import { buildEmployedDriverSnapshot } from './hydrateEmployedDriver.js'
 import { fetchOwnerDriverExpenses } from './hydrateOwnerDriverExpenses.js'
+import { fetchOwnerDriverLinks } from './driverUnlink.js'
 
 /** @param {string} userId @param {string} ownerKey @param {{ employedDriver?: boolean }} [options] */
 export function hydrateFromSupabase(userId, ownerKey, options = {}) {
@@ -90,7 +91,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('vehicles').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
       supabase.from('clients').select('*').eq('user_id', userId).order('display_order', { ascending: true }),
-      supabase.from('driver_links').select('*').eq('owner_id', userId),
+      fetchOwnerDriverLinks(userId),
     ])
     throwIfAnyHydrateError({
       profiles: profileRes.error, vehicles: vehiclesRes.error, clients: clientsRes.error, driver_links: linksRes.error,
