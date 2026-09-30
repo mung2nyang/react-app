@@ -59,7 +59,7 @@
    bottom/z-index/background가 더 필요 없다. */
 .work-log-page .inline-sheet.is-visible .call-detail-form-actions,
 .work-log-page .inline-sheet.is-visible .inline-expense-form .modal-btns {
-  margin-top: 10px;
+  margin-top: 15px;
 }
 
 /* 고정 하단 네비(약 71px)에 마지막 입력·저장이 가려지지 않게 한다. */

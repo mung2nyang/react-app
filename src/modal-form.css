@@ -34,7 +34,7 @@
 .personal-info-page .input-box,
 .app-settings-page .input-box,
 .report-picker-modal .input-box {
-  text-align: center;
+  text-align: left;
 }
 
 /* 정산·수수료 방식 선택칩 + 단위 입력칸 — 차량 등록(매출제/월급제·기사 유형·기사 연동)과

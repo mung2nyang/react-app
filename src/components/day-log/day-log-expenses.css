@@ -116,6 +116,16 @@
   margin: 8px 0 4px;
 }
 
+/* 일지 안 정비/주유/기타 입력 시트의 취소·저장 — 콜 상세 시트 버튼과 같은 글자 크기 */
+.work-log-page .inline-expense-form .modal-btn {
+  font-size: var(--fs-2);
+}
+
+/* 결제 방식 줄과 너무 붙지 않게 — day-log.css의 공용 여백보다 넓게 */
+.work-log-page .inline-sheet.is-visible .inline-expense-form.expense-form-content .modal-btns {
+  margin-top: 30px;
+}
+
 /* 지출 요약 상자: 종류별 합계는 흰색, 지출 합계만 파란색(.summary-grand-total) */
 .work-log-page .expense-daily-summary > div:not(.summary-grand-total) {
   color: var(--text-color);

@@ -164,7 +164,6 @@ export default function ExpenseFormModal({
           </div>
         </div>
 
-        <p className="car-type-hint">정비·기타는 항목명 또는 비용만 있어도 저장됩니다.</p>
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
           <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>
