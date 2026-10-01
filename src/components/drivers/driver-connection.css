@@ -137,3 +137,12 @@
 .driver-code-row .input-box {
   flex: 1;
 }
+
+/* 기사 개인정보 "소속 연결" 카드(7-C-2) 안내 글씨 — 개인정보 카드 설명줄(PersonalInfoPage.css)과 같은 모양 */
+.employer-link-card .car-sub-text {
+  margin: 4px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.3;
+  text-align: left;
+}

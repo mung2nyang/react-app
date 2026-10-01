@@ -10,7 +10,7 @@ import { isPersistedFuelList, isPersistedMaintList, isPersistedMiscList } from '
 const DAY_RECORD_KEYS = [
   'isOff', 'fixedCount', 'palletCount', 'callDetails', 'fixedRouteCounts',
   'fare', 'fixedFare', 'totalFare', 'count', 'dailyDistance',
-  'fuelItems', 'maintItems', 'miscItems',
+  'fuelItems', 'maintItems', 'miscItems', 'assignedVehicleNumber',
 ]
 
 /** @param {JsonValue} value @returns {value is number} */
@@ -38,6 +38,7 @@ export function isPersistedDayRecord(value) {
   if ('fare' in value && !isValidCurrencyAmount(value.fare)) return false
   if ('fixedFare' in value && !isValidCurrencyAmount(value.fixedFare)) return false
   if ('totalFare' in value && !isValidCurrencyAmount(value.totalFare)) return false
+  if ('assignedVehicleNumber' in value && typeof value.assignedVehicleNumber !== 'string') return false
   if ('fixedRouteCounts' in value) {
     if (!isPlainObject(value.fixedRouteCounts)) return false
     for (const count of Object.values(value.fixedRouteCounts)) {

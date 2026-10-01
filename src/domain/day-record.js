@@ -158,10 +158,10 @@ export function saveDayRecord(data, dateKey, { isOff = false, fixedCount = 0, ca
     fixedRouteCounts: fixedRouteCounts !== undefined ? fixedRouteCounts : prev.fixedRouteCounts,
   })
   // palletCount도 파렛트 섹션이 꺼져 있으면 0으로 정규화(fixedCount와 같은 규칙,
-  // "빈 날" 판정에도 반영).
+  // "빈 날" 판정에도 반영). 배정차량 값이 있는 날(7-D 복사분)은 비워도 지우지 않는다.
   const pallets = off ? 0 : Math.max(0, parseInt(String(palletCount !== undefined ? palletCount : prev.palletCount), 10) || 0)
 
-  if (!off && count === 0 && pallets === 0 && details.length === 0) {
+  if (!off && count === 0 && pallets === 0 && details.length === 0 && !prev.assignedVehicleNumber) {
     delete next[dateKey]
   } else {
     const restPrev = { ...prev }

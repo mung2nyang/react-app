@@ -96,6 +96,7 @@ test('요청 없음: 연동 정보 + [해제 요청] → 요청 후 "차주 동�
   const view = await renderCard()
   try {
     assert.ok(view.container.textContent?.includes('소속 연결'))
+    assert.ok(view.container.querySelector('section.employer-link-card'), '카드 글씨 모양용 클래스(7-D-2)')
     assert.ok(view.container.textContent?.includes('배정 차량 11가1111'))
     assert.deepEqual(labels(view.container), ['해제 요청'])
     await click(view.container, '해제 요청')

@@ -46,6 +46,6 @@
 
 /** @typedef {{ work_date: string, raw?: JsonRecord|null, is_off?: boolean, fixed_count?: number }} DailyLogRow */
 /** @typedef {{ work_date: string, raw?: JsonRecord|null }} DetailRow */
-/** @typedef {{ isOff: boolean, fixedCount: number, callDetails: Array<JsonRecord>, fuelItems?: Array<JsonRecord>, maintItems?: Array<JsonRecord>, miscItems?: Array<JsonRecord> }} MergedDayRecord */
+/** @typedef {{ isOff: boolean, fixedCount: number, callDetails: Array<JsonRecord>, fuelItems?: Array<JsonRecord>, maintItems?: Array<JsonRecord>, miscItems?: Array<JsonRecord>, assignedVehicleNumber?: string }} MergedDayRecord */
 
 export {}
