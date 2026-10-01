@@ -45,7 +45,7 @@ export async function saveProfile(ownerKey, profile) {
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
   if (blocked) throw new Error(blocked)
   const captured = captureSession()
-  await upsertProfileOnSupabase(/** @type {string} */ (userId), next, readOwnerSettings(ownerKey))
+  await upsertProfileOnSupabase(/** @type {string} */ (userId), next, readOwnerSettings(ownerKey), { ownFieldsOnly: userId !== ownerKey })
   assertSessionStillCurrent(captured)
   return commitProfile(ownerKey, next, { syncToCloud: false })
 }

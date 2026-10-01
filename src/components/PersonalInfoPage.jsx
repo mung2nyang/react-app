@@ -73,37 +73,37 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">01</span>
-            <div><h3>사업자 정보</h3><p>내역서에 표시되는 업체 정보</p></div>
+            <div><h3>사업자 정보</h3><p>{employed ? '차주가 입력한 정보입니다 (수정 불가)' : '내역서에 표시되는 업체 정보'}</p></div>
           </div>
           <div className="form-group">
             <label htmlFor="bizName">사업자명 (상호)</label>
-            <input id="bizName" className="input-box" placeholder="사업자명을 입력하세요" value={get('bizName')} onChange={(e) => update('bizName', e.target.value)} />
+            <input id="bizName" className="input-box" disabled={employed} placeholder="사업자명을 입력하세요" value={get('bizName')} onChange={(e) => update('bizName', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="bizRepresentative">대표자명</label>
-            <input id="bizRepresentative" className="input-box" placeholder="대표자명을 입력하세요" value={get('bizRepresentative')} onChange={(e) => update('bizRepresentative', e.target.value)} />
+            <input id="bizRepresentative" className="input-box" disabled={employed} placeholder="대표자명을 입력하세요" value={get('bizRepresentative')} onChange={(e) => update('bizRepresentative', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="bizNumber">사업자 번호</label>
-            <input id="bizNumber" className="input-box" placeholder="사업자 번호를 입력하세요" value={get('bizNumber')} onChange={(e) => update('bizNumber', e.target.value)} />
+            <input id="bizNumber" className="input-box" disabled={employed} placeholder="사업자 번호를 입력하세요" value={get('bizNumber')} onChange={(e) => update('bizNumber', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="bizAddress">사업장 주소</label>
-            <input id="bizAddress" className="input-box" placeholder="사업장 주소를 입력하세요" value={get('bizAddress')} onChange={(e) => update('bizAddress', e.target.value)} />
+            <input id="bizAddress" className="input-box" disabled={employed} placeholder="사업장 주소를 입력하세요" value={get('bizAddress')} onChange={(e) => update('bizAddress', e.target.value)} />
           </div>
           <div className="personal-inline-fields">
             <div className="form-group">
               <label htmlFor="bizType">업태</label>
-              <input id="bizType" className="input-box" placeholder="예: 운수업" value={get('bizType')} onChange={(e) => update('bizType', e.target.value)} />
+              <input id="bizType" className="input-box" disabled={employed} placeholder="예: 운수업" value={get('bizType')} onChange={(e) => update('bizType', e.target.value)} />
             </div>
             <div className="form-group">
               <label htmlFor="bizItem">종목</label>
-              <input id="bizItem" className="input-box" placeholder="예: 화물운송" value={get('bizItem')} onChange={(e) => update('bizItem', e.target.value)} />
+              <input id="bizItem" className="input-box" disabled={employed} placeholder="예: 화물운송" value={get('bizItem')} onChange={(e) => update('bizItem', e.target.value)} />
             </div>
           </div>
           <div className="form-group">
             <label htmlFor="bizEmail">세금계산서 이메일</label>
-            <input id="bizEmail" type="email" className="input-box" placeholder="이메일을 입력하세요" value={get('bizEmail')} onChange={(e) => update('bizEmail', e.target.value)} />
+            <input id="bizEmail" type="email" className="input-box" disabled={employed} placeholder="이메일을 입력하세요" value={get('bizEmail')} onChange={(e) => update('bizEmail', e.target.value)} />
           </div>
         </section>
 
@@ -125,19 +125,19 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">03</span>
-            <div><h3>정산 계좌</h3><p>운송료를 입금받을 계좌</p></div>
+            <div><h3>정산 계좌</h3><p>{employed ? '차주가 입력한 정보입니다 (수정 불가)' : '운송료를 입금받을 계좌'}</p></div>
           </div>
           <div className="form-group">
             <label htmlFor="bankName">입금 은행</label>
-            <input id="bankName" className="input-box" placeholder="예: OO은행" value={get('bankName')} onChange={(e) => update('bankName', e.target.value)} />
+            <input id="bankName" className="input-box" disabled={employed} placeholder="예: OO은행" value={get('bankName')} onChange={(e) => update('bankName', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="accountNumber">계좌번호</label>
-            <input id="accountNumber" className="input-box" inputMode="numeric" placeholder="계좌번호 입력" value={get('accountNumber')} onChange={(e) => update('accountNumber', e.target.value)} />
+            <input id="accountNumber" className="input-box" disabled={employed} inputMode="numeric" placeholder="계좌번호 입력" value={get('accountNumber')} onChange={(e) => update('accountNumber', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="accountHolder">예금주 (계좌 명의)</label>
-            <input id="accountHolder" className="input-box" placeholder="예금주명을 입력하세요" value={get('accountHolder')} onChange={(e) => update('accountHolder', e.target.value)} />
+            <input id="accountHolder" className="input-box" disabled={employed} placeholder="예금주명을 입력하세요" value={get('accountHolder')} onChange={(e) => update('accountHolder', e.target.value)} />
           </div>
         </section>
 

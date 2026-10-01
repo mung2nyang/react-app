@@ -13,7 +13,7 @@ import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpens
 import { normalizeSettings } from '../domain/practiceSettings.js'
 import {
   fetchAssignedVehicleSummary,
-  fetchLinkedOwnerProfileSettings,
+  fetchLinkedOwnerBusinessInfo,
 } from './driverLinkRpc.js'
 import { carFromAssignedSummary } from './hydrateEmployedDriverCar.js'
 import { mergeClientsFromRows, mergeDriversFromRows, mergeExpenseKind } from './hydrateMerge.js'
@@ -88,34 +88,34 @@ export async function buildEmployedDriverSnapshot({
 }) {
   // 배정 차량을 먼저 알아야 거래처를 scopedToVehicleNumber로 좁힐 수 있다 —
   // 예전엔 Promise.all로 동시 조회해서 차주 거래처 전체를 내려받았음.
-  const [ownerProfile, vehicleRows, linksRes, selfProfileRes] = await Promise.all([
-    fetchLinkedOwnerProfileSettings(ownerKey),
+  const [ownerInfo, vehicleRows, linksRes, selfProfileRes] = await Promise.all([
+    fetchLinkedOwnerBusinessInfo(ownerKey),
     fetchAssignedVehicleSummary(),
     supabase.from('driver_links').select('*').eq('driver_id', userId).eq('status', 'linked'),
-    supabase.from('profiles').select('name, phone').eq('id', userId).maybeSingle(),
+    supabase.from('profiles').select('name, phone, settings').eq('id', userId).maybeSingle(),
   ])
   throwIfAnyHydrateError({
     driver_links: linksRes.error,
     profiles_self: selfProfileRes.error,
   })
 
-  /** @type {Record<string, unknown>} */
-  const settingsJson = (ownerProfile?.settings && typeof ownerProfile.settings === 'object'
-    && !Array.isArray(ownerProfile.settings))
-    ? /** @type {Record<string, unknown>} */ (ownerProfile.settings)
-    : {}
-  const themeRaw = settingsJson.theme
-  const nextSettings = normalizeSettings({
-    ...settingsJson,
-    theme: (themeRaw === 'dark' || themeRaw === 'light') ? themeRaw : 'light',
-  })
-  // 기사 본인 개인정보(이름/연락처)는 연동된 차주 것이 아니라 기사 자신의
-  // profiles 행을 쓴다 — 원본 driver-link.js:1066과 동일(기사 개인정보는
-  // 연동으로 손대지 않음, 차주 이름은 별도로만 취급).
+  // 9-B-0(docs/sot.md §0 "연동 기사 앱의 개인정보·설정"): 설정은 기사 자기 것, 개인정보 이름·연락처는 기사 본인,
+  // 사업자 정보·정산 계좌는 차주가 입력한 값(화면에선 보기만, 저장 때 기사 행에 안 씀).
+  const selfSettings = selfProfileRes.data?.settings
+  const nextSettings = normalizeSettings(selfSettings && typeof selfSettings === 'object' && !Array.isArray(selfSettings) ? selfSettings : {})
   const nextProfile = {
     name: selfProfileRes.data?.name || '',
     phone: selfProfileRes.data?.phone || '',
-    bizName: ownerProfile?.business_name || '',
+    bizName: ownerInfo?.business_name || '',
+    bizRepresentative: ownerInfo?.business_representative || '',
+    bizNumber: ownerInfo?.business_number || '',
+    bizAddress: ownerInfo?.business_address || '',
+    bizType: ownerInfo?.business_type || '',
+    bizItem: ownerInfo?.business_item || '',
+    bizEmail: ownerInfo?.business_email || '',
+    bankName: ownerInfo?.bank_name || '',
+    accountNumber: ownerInfo?.account_number || '',
+    accountHolder: ownerInfo?.account_holder || '',
   }
   /** @type {Array<LocalCar>} */
   const nextCars = (vehicleRows || []).map((row) => carFromAssignedSummary(row))

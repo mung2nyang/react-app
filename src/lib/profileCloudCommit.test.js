@@ -71,3 +71,16 @@ test('서버 값이 비면 로컬 값을 유지한다(기존 다른 칸과 같�
   assert.equal(merged.bizRepresentative, '로컬대표')
   assert.equal(merged.accountHolder, '로컬예금')
 })
+
+test('9-B-0 연동 기사(본인 칸만): 사업자·계좌 칸은 보내지 않고 이름·연락처·설정만 보낸다', async () => {
+  captured.length = 0
+  await upsertProfileOnSupabase('driver-1', FULL, { timeOn: true }, { ownFieldsOnly: true })
+  const { row } = captured[0]
+  assert.equal(row.name, '김성명')
+  assert.equal(row.phone, '010-1111-2222')
+  assert.deepEqual(row.settings, { timeOn: true })
+  for (const key of ['business_name', 'business_number', 'business_address', 'business_type', 'business_item', 'business_email',
+    'business_representative', 'bank_name', 'account_number', 'account_holder']) {
+    assert.equal(key in row, false, `${key}는 보내면 안 된다(서버 행 그대로)`)
+  }
+})

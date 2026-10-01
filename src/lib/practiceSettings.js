@@ -32,7 +32,7 @@ export async function savePracticeSettings(ownerKey, patch) {
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
   if (blocked) throw new Error(blocked)
   const captured = captureSession()
-  await upsertProfileOnSupabase(/** @type {string} */ (userId), readOwnerProfile(ownerKey), next)
+  await upsertProfileOnSupabase(/** @type {string} */ (userId), readOwnerProfile(ownerKey), next, { ownFieldsOnly: userId !== ownerKey })
   assertSessionStillCurrent(captured)
   return commitSettings(ownerKey, next, { syncToCloud: false })
 }

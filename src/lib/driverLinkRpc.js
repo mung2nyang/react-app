@@ -120,11 +120,12 @@ export async function fetchAssignedVehicleSummary() {
 }
 
 /**
+ * 연동 기사 앱 개인정보의 "사업자 정보·정산 계좌"에 보여 줄 차주 값(9-B-0, 0015 — 지금 연동 중인 기사 본인만 조회).
  * @param {string} ownerId
- * @returns {Promise<{ name?: string, business_name?: string, settings?: object|null }|null>}
+ * @returns {Promise<{ name?: string|null, business_name?: string|null, business_representative?: string|null, business_number?: string|null, business_address?: string|null, business_type?: string|null, business_item?: string|null, business_email?: string|null, bank_name?: string|null, account_number?: string|null, account_holder?: string|null }|null>}
  */
-export async function fetchLinkedOwnerProfileSettings(ownerId) {
-  const { data, error } = await supabase.rpc('get_linked_owner_profile_settings', {
+export async function fetchLinkedOwnerBusinessInfo(ownerId) {
+  const { data, error } = await supabase.rpc('get_linked_owner_business_info', {
     p_owner_id: ownerId,
   })
   if (error) throw error

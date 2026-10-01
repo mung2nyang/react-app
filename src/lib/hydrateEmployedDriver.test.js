@@ -51,6 +51,12 @@ describe('remapEmployedDriverWorkLogs', () => {
   })
 })
 
+const OWNER_INFO = {
+  name: '차주대표', business_name: '차주상사', business_representative: '김차주', business_number: '123-45-67890',
+  business_address: '서울시 1', business_type: '운수업', business_item: '화물', business_email: 'owner@a.kr',
+  bank_name: '차주은행', account_number: '111-222', account_holder: '김차주',
+}
+
 describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅샷 조회', () => {
   test('정상 조회: 배정차량 1대, 비용 3종 각 1건씩 → snapshot.expenses 3건 확인', async () => {
     resetHandlers()
@@ -63,8 +69,8 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
     const miscFilters = []
 
     handlers.rpc = {
-      get_linked_owner_profile_settings: () => ({
-        data: { name: '차주대표', business_name: '차주상사', settings: {} },
+      get_linked_owner_business_info: () => ({
+        data: OWNER_INFO,
         error: null,
       }),
       get_assigned_vehicle_summary: () => ({
@@ -148,15 +154,15 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
     handlers.rpc = {
-      get_linked_owner_profile_settings: () => ({
-        data: { name: '차주대표', business_name: '차주상사', settings: {} },
+      get_linked_owner_business_info: () => ({
+        data: OWNER_INFO,
         error: null,
       }),
       get_assigned_vehicle_summary: () => ({ data: [], error: null }),
     }
     handlers.driver_links = { select: () => ({ data: [], error: null }) }
     handlers.profiles = {
-      select: () => ({ data: { name: '기사본인', phone: '010-9999-8888' }, error: null }),
+      select: () => ({ data: { name: '기사본인', phone: '010-9999-8888', settings: { timeOn: true, theme: 'dark', paymentOn: false } }, error: null }),
     }
     handlers.clients = { select: () => ({ data: [], error: null }) }
     handlers.daily_logs = { select: () => ({ data: [], error: null }) }
@@ -175,16 +181,25 @@ describe('buildEmployedDriverSnapshot — 소속기사 hydrate 비용 및 스냅
 
     assert.equal(snapshot.profile.name, '기사본인')
     assert.equal(snapshot.profile.phone, '010-9999-8888')
-    // 사업자명(상호)은 소속 차주 사업자 정보를 쓰는 게 맞다(계산서용) — 이건 그대로.
-    assert.equal(snapshot.profile.bizName, '차주상사')
+    // 9-B-0: 사업자 정보 7칸·정산 계좌 3칸은 차주가 입력한 값(docs/sot.md §0).
+    assert.deepEqual(
+      [snapshot.profile.bizName, snapshot.profile.bizRepresentative, snapshot.profile.bizNumber, snapshot.profile.bizAddress,
+        snapshot.profile.bizType, snapshot.profile.bizItem, snapshot.profile.bizEmail,
+        snapshot.profile.bankName, snapshot.profile.accountNumber, snapshot.profile.accountHolder],
+      ['차주상사', '김차주', '123-45-67890', '서울시 1', '운수업', '화물', 'owner@a.kr', '차주은행', '111-222', '김차주'],
+    )
+    // 9-B-0: 설정은 차주 것이 아니라 기사 자기 프로필 설정.
+    assert.equal(snapshot.settings.timeOn, true)
+    assert.equal(snapshot.settings.theme, 'dark')
+    assert.equal(snapshot.settings.paymentOn, false)
   })
 
   test('배정 0대: 배정 차량이 없으면 비용 3종 조회를 하지 않고 expenses는 빈 배열이다', async () => {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
     handlers.rpc = {
-      get_linked_owner_profile_settings: () => ({
-        data: { name: '차주대표', business_name: '차주상사', settings: {} },
+      get_linked_owner_business_info: () => ({
+        data: OWNER_INFO,
         error: null,
       }),
       get_assigned_vehicle_summary: () => ({
