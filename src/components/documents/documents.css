@@ -1,0 +1,106 @@
+/* 서류 발급(9-C-1, 피그마 "서류 발급"): 서류 종류 탭·날짜 구간 탭·머리 칸·일상점검표 표. 새 클래스만. */
+.doc-tabs,
+.doc-range-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.doc-tab,
+.doc-range-tab {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.doc-range-tab {
+  min-height: 36px;
+  padding: 6px 4px;
+}
+
+.doc-tab.active,
+.doc-range-tab.active {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.doc-sheet-head,
+.doc-sheet-table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  background: var(--card-bg);
+  color: var(--text-color);
+  font-size: var(--fs-floor);
+  table-layout: fixed;
+}
+
+.doc-sheet-head th,
+.doc-sheet-head td,
+.doc-sheet-table th,
+.doc-sheet-table td {
+  padding: 7px 4px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+  word-break: keep-all;
+}
+
+.doc-sheet-head th,
+.doc-sheet-table thead th {
+  background: var(--input-bg);
+  font-weight: 800;
+}
+
+.doc-sheet-table .doc-sheet-item {
+  width: 44%;
+  text-align: left;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.doc-sheet-table thead .doc-sheet-item {
+  text-align: center;
+}
+
+.doc-mark {
+  font-weight: 800;
+}
+
+.doc-mark.bad {
+  color: var(--sunday-color);
+}
+
+.doc-sheet-message {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--card-bg);
+  font-size: var(--fs-floor);
+}
+
+.doc-retry-btn {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: #fff;
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  cursor: pointer;
+}

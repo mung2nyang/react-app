@@ -195,7 +195,7 @@ export default function SideMenu({
             <h3 className="side-menu-section-title">서류</h3>
             <button type="button" className="dropdown-item" onClick={() => pick('report')}>
               <DocIcon />
-              운송비 내역서
+              서류 발급
             </button>
             <button type="button" className="dropdown-item" onClick={() => pick('invoices')}>
               <InvoiceIcon />

@@ -50,3 +50,38 @@ export async function saveDailyInspection({ vehicleId, workDate, items, actionNo
   assertSessionStillCurrent(captured)
   if (error) throw error
 }
+
+/**
+ * 서류 발급 한 달 표(9-C-1): 그 차량·그 달 점검표를 날짜별 항목으로 한 번에 읽음.
+ * @param {string|number} vehicleId
+ * @param {number} year
+ * @param {number} month 0부터
+ * @returns {Promise<Record<string, InspectionItems>>}
+ */
+export async function fetchMonthDailyInspections(vehicleId, year, month) {
+  const first = `${year}-${String(month + 1).padStart(2, '0')}-01`
+  const last = `${year}-${String(month + 1).padStart(2, '0')}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, '0')}`
+  const { data, error } = await supabase
+    .from('daily_inspections')
+    .select('work_date, items')
+    .eq('vehicle_id', vehicleId)
+    .gte('work_date', first)
+    .lte('work_date', last)
+  if (error) throw error
+  /** @type {Record<string, InspectionItems>} */
+  const byDate = {}
+  for (const row of Array.isArray(data) ? data : []) {
+    if (row && typeof row.work_date === 'string') byDate[row.work_date] = sanitizeInspectionItems(row.items)
+  }
+  return byDate
+}
+
+/**
+ * 탭 숨김 판단(9-C-1, 로드맵 9번 ⑨): 그 차량 점검표가 1장이라도 있는지.
+ * @param {string|number} vehicleId
+ */
+export async function hasAnyDailyInspection(vehicleId) {
+  const { data, error } = await supabase.from('daily_inspections').select('id').eq('vehicle_id', vehicleId).limit(1)
+  if (error) throw error
+  return Array.isArray(data) && data.length > 0
+}

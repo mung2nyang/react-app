@@ -1,8 +1,7 @@
 // @ts-check
-// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도, 250줄)
+// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도). 달 이동은 documents/MonthNavigator.jsx(9-C-1)
 import { useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
 import { formatWon } from '../lib/money.js'
 import {
   buildDetailReportFileName,
@@ -14,14 +13,12 @@ import {
 import { buildDetailReport, detailReportClientOptions } from '../lib/reportDetail.js'
 import { buildMonthReport } from '../lib/reportSummary.js'
 import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../store/ownerDataHooks.js'
-import CalendarDateSelect from './calendar/CalendarDateSelect.jsx'
+import MonthNavigator from './documents/MonthNavigator.jsx'
 import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'
 import ReportShareModal from './ReportShareModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import './report/report.css'
-
-const YEAR_OPTIONS = getYearOptions()
 
 /**
  * @param {Object} props
@@ -30,8 +27,9 @@ const YEAR_OPTIONS = getYearOptions()
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
+ * @param {import('react').ReactNode} [props.tabs] 서류 발급 탭 줄(9-C-1) — 머리 아래에 끼움
  */
-export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBack, showToast, onOpenMenu }) {
+export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBack, showToast, onOpenMenu, tabs }) {
   const { logId: rawLogId } = useParams()
   const logKey = (logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)) || 'main'
   const [viewDate, setViewDate] = useState(() => new Date())
@@ -163,33 +161,11 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
 
   return (
     <div className="page report-page-wrap">
-      <PageHeader title="운송비 내역서" onBack={handleHeaderBack} onOpenMenu={onOpenMenu} />
+      <PageHeader title="서류 발급" onBack={handleHeaderBack} onOpenMenu={onOpenMenu} />
+      {tabs}
 
       <div className="report-top-card">
-        <div className="maint-fuel-nav">
-          <div className="date-navigator">
-            <button type="button" className="arrow-btn" title="이전 달" onClick={() => setViewDate((d) => shiftMonth(d, -1))}>
-              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-            </button>
-            <div className="date-select-group">
-              <CalendarDateSelect
-                label="년도 선택"
-                value={year}
-                options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y}년` }))}
-                onChange={(next) => setViewDate(setYearMonth(viewDate, Number(next), month))}
-              />
-              <CalendarDateSelect
-                label="월 선택"
-                value={month}
-                options={Array.from({ length: 12 }, (_, m) => ({ value: String(m), label: `${m + 1}월` }))}
-                onChange={(next) => setViewDate(setYearMonth(viewDate, year, Number(next)))}
-              />
-            </div>
-            <button type="button" className="arrow-btn" title="다음 달" onClick={() => setViewDate((d) => shiftMonth(d, 1))}>
-              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </button>
-          </div>
-        </div>
+        <MonthNavigator viewDate={viewDate} onChange={setViewDate} />
 
         <div className="report-pdf-actions">
           <button type="button" className="theme-toggle-btn" onClick={openDetailPicker}>세부 내역서</button>

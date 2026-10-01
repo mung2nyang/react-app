@@ -20,6 +20,10 @@ export function chainable(getResult) {
     /** @param {string} column @param {string|number} value */
     eq: (column, value) => { filters[column] = value; return api },
     neq: () => api,
+    /** @param {string} column @param {string|number} value */
+    gte: (column, value) => { filters[column + '>='] = value; return api },
+    /** @param {string} column @param {string|number} value */
+    lte: (column, value) => { filters[column + '<='] = value; return api },
     in: () => api,
     order: () => api,
     limit: () => api,
