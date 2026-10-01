@@ -174,7 +174,7 @@ export default function ExpenseFormModal({
   if (inline) return form
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       {form}
     </div>
   )

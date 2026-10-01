@@ -15,7 +15,7 @@ import './tax-invoice/tax-invoice.css'
  */
 export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, onCancel, onSave }) {
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay">
       <div className="modal-content client-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">{flowMeta.label} 계산서</div>
         <div className="form-group">

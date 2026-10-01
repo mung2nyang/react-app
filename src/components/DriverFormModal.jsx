@@ -42,7 +42,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
   }
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay">
       <div className="modal-content client-modal driver-form-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">{editingId ? '초대 수정' : '기사 초대'}</div>
         <div className="form-group">

@@ -20,7 +20,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
   const termValueLabel = draft.paymentTerm === 'after_days' ? '며칠 후' : '날짜'
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay">
       <div className="modal-content client-modal" onClick={(e) => e.stopPropagation()}>
         <div className="client-modal-header">
           <div className="modal-title">{editingId ? '거래처 수정' : '거래처 등록'}</div>

@@ -72,7 +72,7 @@ export default function CarFormModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={onCancel}>
+    <div className="modal-overlay">
       <div className="modal-content car-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">
           {editingId ? (isSub ? '기사 정보 수정' : '차량 수정') : (isSub ? '기사 등록' : '차량 등록')}
