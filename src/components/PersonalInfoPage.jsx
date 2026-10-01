@@ -5,6 +5,7 @@ import { requestAccountWithdrawal } from '../lib/accountWithdrawal.js'
 import { useHydrationLock } from '../app/useHydrationLock.js'
 import { useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import ConfirmModal from './ConfirmModal.jsx'
+import EmployerLinkCard from './drivers/EmployerLinkCard.jsx'
 import PageHeader from './PageHeader.jsx'
 import { usePersonalInfoDraft } from './usePersonalInfoDraft.js'
 import './PersonalInfoPage.css'
@@ -23,8 +24,9 @@ const WITHDRAW_LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습�
  * @param {() => void} [props.onGoAuth]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
+ * @param {(next: import('../lib/outboxTypes.js').AppSession) => void} [props.onUnlinked] 기사가 연동 해제를 확정했을 때(7-C-2)
  */
-export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast, onOpenMenu }) {
+export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast, onOpenMenu, onUnlinked }) {
   const locked = useHydrationLock()
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
@@ -40,7 +42,8 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
   function update(field, value) { set(field, value) }
 
   // 연동 중(차주: linked 기사 있음, 기사: employed_driver)이면 탈퇴를 막는다 — 서버 delete_own_account도 거절(로드맵 7-A).
-  const linked = session?.accountType === 'employed_driver' || drivers.some((driver) => driver.status === 'linked')
+  const employed = session?.accountType === 'employed_driver'
+  const linked = employed || drivers.some((driver) => driver.status === 'linked')
   function startWithdraw() {
     if (linked) { showToast?.(WITHDRAW_LINKED_MSG); return }
     setWithdrawStep('first')
@@ -138,9 +141,10 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           </div>
         </section>
 
+        {employed && <EmployerLinkCard ownerKey={ownerKey} session={session} showToast={showToast} onUnlinked={onUnlinked} />}
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
-            <span className="personal-card-icon">04</span>
+            <span className="personal-card-icon">{employed ? '05' : '04'}</span>
             <div><h3>계정</h3><p>로그인 상태와 계정 연결 관리</p></div>
           </div>
           {guest ? (

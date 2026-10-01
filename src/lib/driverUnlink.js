@@ -27,13 +27,22 @@ export function unlinkAutoDateLabel(requestedAt) {
   return `${due.getMonth() + 1}월 ${due.getDate()}일`
 }
 
+/** 내 연동 중 요청 후 3일 지난 해제 요청을 서버가 해제한다. 실패해도 앱 시작·불러오기는 막지 않는다. */
+export async function settleExpiredDriverUnlinks() {
+  try {
+    const settled = await supabase.rpc('settle_expired_driver_unlinks')
+    if (settled.error) console.error('[settleExpiredDriverUnlinks] 기한 지난 해제 요청 처리 실패:', settled.error)
+  } catch (error) {
+    console.error('[settleExpiredDriverUnlinks] 기한 지난 해제 요청 처리 실패:', error)
+  }
+}
+
 /**
- * 차주 불러오기용: 기한(3일) 지난 해제 요청을 먼저 처리한 뒤 연동 목록을 읽는다. 처리 실패는 불러오기를 막지 않는다.
+ * 차주 불러오기용: 기한(3일) 지난 해제 요청을 먼저 처리한 뒤 연동 목록을 읽는다.
  * @param {string} userId
  */
 export async function fetchOwnerDriverLinks(userId) {
-  const settled = await supabase.rpc('settle_expired_driver_unlinks')
-  if (settled.error) console.error('[fetchOwnerDriverLinks] 기한 지난 해제 요청 처리 실패:', settled.error)
+  await settleExpiredDriverUnlinks()
   return supabase.from('driver_links').select('*').eq('owner_id', userId)
 }
 

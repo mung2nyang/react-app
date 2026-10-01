@@ -6,6 +6,7 @@ import { supabase } from '../supabaseClient.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
 import { singleFlight } from '../lib/singleFlight.js'
 import { fetchLinkedDriverLink } from '../lib/driverLinkRpc.js'
+import { settleExpiredDriverUnlinks } from '../lib/driverUnlink.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 
@@ -40,6 +41,8 @@ async function fetchAccountProfile(userId) {
  */
 export async function buildCloudAppSession(userId, overrides = {}) {
   const profile = await fetchAccountProfile(userId)
+  // 로드맵 7-C-2: 3일 지난 해제 요청을 먼저 처리해야 기사가 열 때도 해제된 상태로 시작한다.
+  await settleExpiredDriverUnlinks()
   const link = await fetchLinkedDriverLink(userId)
   const linkedOwnerId = link?.owner_id ? String(link.owner_id) : null
   return {
