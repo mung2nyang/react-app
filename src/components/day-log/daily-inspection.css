@@ -1,0 +1,196 @@
+/* 로드맵 9-B-2: 일지 안내 줄 + 일상점검표 모달(피그마 1·2·3번 — 모달 너비 360·모서리 18·안쪽 여백 15, 다크 배경 #1e1e1e = --card-bg). 새 클래스만. */
+.daily-inspection-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  color: var(--text-color);
+  font-size: var(--fs-floor);
+  text-align: left;
+}
+
+.di-notice-btn {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: #fff;
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.daily-inspection-modal {
+  width: min(92vw, 360px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background: var(--card-bg);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
+  color: var(--text-color);
+  text-align: left;
+}
+
+.di-header {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.di-title {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: var(--fs-4);
+  font-weight: 800;
+  text-align: center;
+}
+
+.di-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--sub-text-color);
+  cursor: pointer;
+}
+
+.di-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.di-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.di-section-head h3 {
+  flex: 1;
+  margin: 0;
+  font-size: var(--fs-3);
+  font-weight: 800;
+}
+
+.di-badge {
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--primary-color);
+  font-size: var(--fs-floor);
+  font-weight: 700;
+}
+
+.di-all-good,
+.di-choice {
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.di-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.di-label {
+  flex: 1;
+  font-size: var(--fs-floor);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.di-choices {
+  display: flex;
+  flex-shrink: 0;
+  gap: 6px;
+}
+
+.di-choice.good.is-selected {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.di-choice.bad.is-selected {
+  border-color: var(--sunday-color);
+  color: var(--sunday-color);
+}
+
+.di-result {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: var(--fs-floor);
+  font-weight: 700;
+}
+
+.di-result.bad {
+  background: var(--sunday-color);
+}
+
+.di-sign {
+  margin: 12px 0 10px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.4;
+}
+
+.di-note-label {
+  margin-bottom: 6px;
+  font-size: var(--fs-3);
+  font-weight: 800;
+}
+
+.di-note {
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+  text-align: left;
+}
+
+.di-note-view {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--input-bg);
+  font-size: var(--fs-floor);
+  white-space: pre-wrap;
+}
+
+.daily-inspection-modal .modal-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}

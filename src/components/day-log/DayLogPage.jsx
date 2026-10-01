@@ -27,6 +27,7 @@ import PalletSection from './PalletSection.jsx'
 import CallDetailList from './CallDetailList.jsx'
 import CallDetailForm from './CallDetailForm.jsx'
 import DayLogExpenses from './DayLogExpenses.jsx'
+import DailyInspectionNotice from './DailyInspectionNotice.jsx'
 import MessageTemplateSheet from './MessageTemplateSheet.jsx'
 import InlineSheet from './InlineSheet.jsx'
 import PageHeader from '../PageHeader.jsx'
@@ -163,6 +164,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
             <PalletSection visible={palletVisible} palletCount={draft.palletCount} isOff={draft.isOff} onChange={(count) => patchDraft({ palletCount: Math.max(0, parseInt(String(count), 10) || 0) })} />
           </div>
         )}
+        <DailyInspectionNotice ownerKey={ownerKey} logId={logId} dateKey={dateKey} month={month} day={day} enabled={!!settings.dailyInspectionOn} isOff={draft.isOff} showToast={showToast} />
 
         {/* callDetail OFF여도 기존 callDetails 카드는 보여 준다 — 추가 진입만 canAdd로 막는다. */}
         {showCallDetailList && (
