@@ -7,11 +7,13 @@ import { buildFinanceSettings, loadWorkDataByLogId } from './ownerFinance.js'
 import { getReceivableItems } from './finance.js'
 import { readJsonKey } from '../store/persist.js'
 import { commitDismissedNotifications } from '../store/commitHelpers.js'
-import { readOwnerDrivers } from '../store/ownerDataHooks.js'
+import { readOwnerDrivers, readOwnerSettings } from '../store/ownerDataHooks.js'
 import { getLastBackupAt } from './guestBackup.js'
 import { isCloudSession } from './cloudSession.js'
 
 /** @typedef {import('../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
+
+export const DAILY_INSPECTION_NOTICE_ID = 'daily-inspection-required'
 
 /** @param {string} ownerKey */
 function loadDismissed(ownerKey) {
@@ -35,7 +37,7 @@ export function dismissNotification(ownerKey, id) {
  */
 export function collectNotifications(ownerKey = 'guest', session = null) {
   const dismissed = loadDismissed(ownerKey)
-  /** @type {Array<{ id: string, page: string, title: string, body: string }>} */
+  /** @type {Array<{ id: string, page: string, title: string, body: string, actionLabel?: string, dismissLabel?: string }>} */
   const items = []
   const settings = buildFinanceSettings(ownerKey)
   const workDataByLogId = loadWorkDataByLogId(ownerKey)
@@ -88,6 +90,18 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
         body: '달력에서 오늘 날짜를 눌러 횟수나 휴무를 남겨 주세요.',
       })
     }
+  }
+
+  // 9-B-1: 로그인 계정에서 내 메인 차량 일상점검표가 꺼져 있으면 의무화 안내([바로 사용하기]·[다시 보지 않기]).
+  if (ownerKey !== 'guest' && !readOwnerSettings(ownerKey).dailyInspectionOn && !dismissed.has(DAILY_INSPECTION_NOTICE_ID)) {
+    items.push({
+      id: DAILY_INSPECTION_NOTICE_ID,
+      page: 'settings',
+      title: '일상점검표가 의무화되었습니다',
+      body: '관련 법령에 따라 출발 전 일상점검표 작성이 의무화되었습니다. 안전한 운행을 위해 아래 버튼을 눌러 기능을 켜주세요.',
+      actionLabel: '바로 사용하기',
+      dismissLabel: '다시 보지 않기',
+    })
   }
 
   // 게스트 세션 전용: 데이터 백업 권장 알림 (14일 이상 경과 또는 미백업)

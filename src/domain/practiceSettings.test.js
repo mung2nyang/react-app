@@ -115,6 +115,7 @@ describe('§16 슬라이스 C — 서브차량별 설정(subCarSettings)', () =>
       platformOn: false,
       distanceOn: false,
       cargoTonnageOn: false,
+      dailyInspectionOn: false,
     })
   })
 

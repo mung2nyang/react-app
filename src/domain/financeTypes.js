@@ -89,6 +89,7 @@
  * @property {boolean} [platformOn]
  * @property {boolean} [distanceOn]
  * @property {boolean} [cargoTonnageOn]
+ * @property {boolean} [dailyInspectionOn] 일상점검표 사용(9-B-1, 메인 차량 — 기사차량은 subCarSettings)
  * @property {boolean} [fixedRouteOn]
  * @property {Array<{ id: string, loadLoc: string, unloadLoc: string }>} [fixedRoutePresets]
  * @property {boolean} [runCountToggle]
@@ -109,6 +110,7 @@
  * @property {boolean} platformOn
  * @property {boolean} distanceOn
  * @property {boolean} cargoTonnageOn
+ * @property {boolean} [dailyInspectionOn] 일상점검표 사용(9-B-1)
  */
 
 export {}

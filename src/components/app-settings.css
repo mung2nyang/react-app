@@ -197,3 +197,10 @@
   border-radius: 2px;
   background: var(--border-color);
 }
+
+/* 9-B-1: "일상점검표 사용"은 세부 입력 카드 맨 위 한 줄 + 아래 구분선(피그마 앱 설정) */
+.daily-inspection-switch {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}

@@ -126,6 +126,11 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
         </section>
 
         <section className="setting-section">
+          {ownerKey !== 'guest' && (
+            <div className="daily-inspection-switch">
+              <SwitchRow id="dailyInspectionToggle" label="일상점검표 사용" checked={!!activeSettings.dailyInspectionOn} onChange={(checked) => patchActive({ dailyInspectionOn: checked })} />
+            </div>
+          )}
           <SwitchRow
             id="callDetailToggle"
             label="운행 일지 세부 입력"

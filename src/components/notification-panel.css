@@ -84,3 +84,20 @@
   color: var(--sub-text-color);
   font-size: var(--fs-2);
 }
+
+/* 9-B-1: 바로 실행 버튼이 있는 알림만 버튼 2개를 글 아래 한 줄로(오른쪽 정렬) */
+.notification-card.has-action {
+  flex-wrap: wrap;
+}
+
+.notification-card-actions {
+  display: flex;
+  flex-basis: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.notification-card-actions .notification-action-primary {
+  color: var(--primary-color);
+  font-weight: 800;
+}

@@ -13,14 +13,14 @@ import { DRIVER_INVOICE_BASES, DRIVER_SETTLEMENT_MODES, isAllowedEnum } from './
 
 const DRIVER_LINK_KEYS = ['id', 'vehicleNumber', 'assignmentStart', 'assignmentEnd', 'status']
 const ROUTE_PRESET_KEYS = ['id', 'loadLoc', 'unloadLoc']
-const SUB_CAR_SETTINGS_KEYS = ['inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn']
+const SUB_CAR_SETTINGS_KEYS = ['inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'dailyInspectionOn']
 const SETTINGS_KEYS = [
   'cars', 'clients', 'driverLinks', 'paymentOn', 'subPaymentOn', 'fixedOn', 'subFixedOn',
   'defaultDriverSettlementMode', 'driverInvoiceBasis', 'unitPrice', 'bizName', 'bizNumber',
   'bizRepresentative', 'userName', 'bizAddress', 'bizType', 'bizItem', 'bizEmail', 'theme',
   'inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn',
   'fixedRoutePresets', 'runCountToggle', 'runCountPresets', 'subFixedRouteOn', 'subFixedRoutePresets',
-  'subRunCountToggle', 'subRunCountPresets', 'pinnedLocations', 'subCarSettings',
+  'subRunCountToggle', 'subRunCountPresets', 'pinnedLocations', 'subCarSettings', 'dailyInspectionOn',
 ]
 /** lib/profile.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
 const PROFILE_KEYS = [
@@ -51,7 +51,7 @@ function isRoutePreset(value) {
 function isPersistedSubCarSettings(value) {
   if (!isPlainObject(value) || !hasOnlyKeys(value, SUB_CAR_SETTINGS_KEYS)) return false
   if ('inputMode' in value && value.inputMode !== 'count' && value.inputMode !== 'fare') return false
-  for (const flag of ['callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn']) {
+  for (const flag of ['callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'dailyInspectionOn']) {
     if (flag in value && typeof value[flag] !== 'boolean') return false
   }
   return true
@@ -63,7 +63,7 @@ export function isPersistedSettings(value) {
   if ('theme' in value && value.theme !== 'light' && value.theme !== 'dark') return false
   if ('inputMode' in value && value.inputMode !== 'count' && value.inputMode !== 'fare') return false
   if ('unitPrice' in value && !isStringOrFiniteNumber(value.unitPrice)) return false
-  for (const flag of ['paymentOn', 'subPaymentOn', 'fixedOn', 'subFixedOn', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn', 'runCountToggle', 'subFixedRouteOn', 'subRunCountToggle']) {
+  for (const flag of ['paymentOn', 'subPaymentOn', 'fixedOn', 'subFixedOn', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn', 'runCountToggle', 'subFixedRouteOn', 'subRunCountToggle', 'dailyInspectionOn']) {
     if (flag in value && typeof value[flag] !== 'boolean') return false
   }
   if ('defaultDriverSettlementMode' in value && !isAllowedEnum(value.defaultDriverSettlementMode, DRIVER_SETTLEMENT_MODES)) return false

@@ -10,7 +10,8 @@ import NotificationPanel from '../components/NotificationPanel.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
 import { todayWorkLogSelection } from '../lib/calendar.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
-import { useOwnerCars, useOwnerDrivers } from '../store/ownerDataHooks.js'
+import { savePracticeSettings } from '../lib/practiceSettings.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import AppShellRoutes from './AppShellRoutes.jsx'
 import { withFromLogState } from './fromLogNavigation.js'
@@ -74,6 +75,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const [notifTick, setNotifTick] = useState(0)
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
+  const settings = useOwnerSettings(ownerKey)
   const isOwnerSession = !session?.linkedOwnerId
   const subLogItems = useMemo(
     () => buildSubLogMenuItems(cars, drivers, isOwnerSession),
@@ -89,7 +91,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
       }))
   }, [drivers, isOwnerSession])
 
-  const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick, drivers])
+  const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick, drivers, settings])
   const bumpNotifTick = () => setNotifTick((n) => n + 1)
 
   const activeNav = location.pathname === '/app'
@@ -171,6 +173,11 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
         onDismiss={(/** @type {string} */ id) => {
           dismissNotification(ownerKey, id)
           bumpNotifTick()
+        }}
+        onAction={() => {
+          savePracticeSettings(ownerKey, { dailyInspectionOn: true })
+            .then(() => showToast?.('일상점검표를 켰습니다.'))
+            .catch(() => showToast?.('저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'))
         }}
       />
     </div>
