@@ -11,6 +11,7 @@ const INVOICE_KEYS = [
   'clientRepresentative', 'clientAddress', 'clientBizType', 'clientBizItem', 'clientEmail',
   'issueDate', 'itemName', 'remark', 'updatedAt', 'issuedAt', 'partyKey', 'partyType', 'logId',
   'count', 'supplierBiz', 'supplierKey',
+  // 옛 기사 매입 계산서 칸(2026-10-02 삭제) — 옛 저장분 읽기용으로만 받아 줌.
   'grossAmount', 'commissionAmount', 'insuranceAmount', 'netAmount',
 ]
 const SUPPLIER_BIZ_KEYS = ['sameAsOwner', 'name', 'bizNumber', 'representative', 'address', 'bizType', 'bizItem', 'email']

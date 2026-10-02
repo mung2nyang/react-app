@@ -68,6 +68,8 @@ test('계산서를 커밋하면 세금계산서 발급 목록이 리마운트 �
     await act(async () => {
       root.render(React.createElement(TaxInvoicePage, { ownerKey, onBack: () => {} }))
     })
+    assert.equal(!!container.querySelector('.tax-invoice-top-card .settings-segmented-control'), false, '계산서 종류 탭 줄 없음(2026-10-02)')
+    assert.equal(/기사 매입|수수료 발행/.test(container.textContent || ''), false)
     const issuedTab = [...container.querySelectorAll('button')].find((el) => el.textContent.includes('발급 완료'))
     assert.ok(issuedTab, '발급 완료 탭이 있어야 한다')
     await act(async () => { issuedTab.click() })

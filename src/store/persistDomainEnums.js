@@ -13,6 +13,7 @@ export const DRIVER_PAY_MODES = /** @type {const} */ (['revenue', 'salary'])
 export const DRIVER_SETTLEMENT_MODES = /** @type {const} */ ([
   'company', 'driver_direct', 'employee', 'none',
 ])
+// 옛 저장분 읽기용(2026-10-02 기사 매입·수수료 발행 삭제): 받아 주기만 하고 화면·계산은 매출만 씀 — 빼면 옛 값 1건에 묶음 전체가 거부됨.
 export const DRIVER_INVOICE_BASES = /** @type {const} */ (['net', 'gross'])
 export const INVOICE_FLOWS = /** @type {const} */ (['sales', 'purchase', 'commission'])
 export const INVOICE_STATUSES = /** @type {const} */ (['draft', 'issued'])

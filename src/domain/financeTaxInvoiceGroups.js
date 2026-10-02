@@ -1,11 +1,9 @@
 // @ts-check
-// finance.js를 쪼갠 조각. 세금계산서 "원천 그룹" 계산(매출/매입/수수료 소스 그룹,
+// finance.js를 쪼갠 조각. 세금계산서 "원천 그룹" 계산(거래처 매출 소스 그룹,
 // 기사 정산 상세·거래처별 재그룹)만 담는다 — 레코드 조립(id/발급 상태 등)은
 // financeTaxInvoiceEntries.js로 뺐다. cars.js의 getVehicleSupplierIdentity는 아직
 // 타입이 없어 반환 모양을 SupplierIdentity로 명시적으로 좁힌다.
-// §6 예외(204줄, ~250 한도 내) — 2026-09-17 고정노선 정산액 버그 수정으로 초과,
-// flattenLinkedDriverTrips/getLinkedDriverSettlementDetail이 같은 흐름이라 분할 안 함.
-import { getEffectiveDriverSettlementMode, getShortCarNum, getVehicleSupplierIdentity } from './cars.js'
+import { getEffectiveDriverSettlementMode, getVehicleSupplierIdentity } from './cars.js'
 import { computeFixedRouteFare, getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
 import { isDateWithinAssignment } from './drivers.js'
 import { parseCurrencyValue } from './money.js'
@@ -18,106 +16,75 @@ import { calculateDriverVehicleCommission, getDriverCarWorkData, getMonthlyDrive
 /** @typedef {{ key?: string, biz?: import('./financeTypes.js').SupplierBiz, carLabel?: string, carNumber?: string }} SupplierIdentity */
 /** @typedef {{ type: 'call'|'fixed', dateKey: string, client: string, loadLoc: string, unloadLoc: string, fare: number, vatExempt: boolean, platform?: string, distanceKm?: string|number, cargoTonnage?: string|number, paymentDueDate?: string, remarks?: string, fixedCount?: number }} DriverTrip */
 
-/** @param {string} monthKey @param {'sales'|'purchase'|'commission'} [flow] @param {FinanceSettings} [settings] @param {WorkDataByLogId} [workDataByLogId] */
+/** 거래처 매출 계산서 원천 그룹(메인 + 기사차량 운행분). 계산서 종류는 매출뿐(기사 매입·수수료 발행 삭제, 2026-10-02) — flow는 저장 id 호환용. @param {string} monthKey @param {'sales'} [flow] @param {FinanceSettings} [settings] @param {WorkDataByLogId} [workDataByLogId] */
 export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {}, workDataByLogId = {}) {
   const cars = settings.cars || []
-  if (flow === 'sales') {
-    /** @type {Record<string, { partyKey: string, clientName: string, partyType: string, count: number, supplyAmount: number, taxAmount: number, supplierKey?: string, supplierBiz?: import('./financeTypes.js').SupplierBiz, vehicleLabel?: string, vehicleNumbers: Set<string> }>} */
-    const grouped = {}
-    /** @type {Array<{ logId: string, car: CarLike|null, data: Record<string, import('./day-record.js').DayRecordLike> }>} */
-    const sources = [{ logId: 'main', car: null, data: logData(workDataByLogId, 'main') }]
-    cars.filter((car) => car.type === 'sub').forEach((car) => {
-      const mode = getEffectiveDriverSettlementMode(car, settings)
-      if (mode === 'company' || mode === 'employee') sources.push({ logId: car.number, car, data: getDriverCarWorkData(car, workDataByLogId) })
-    })
-    /** @param {string} clientName @param {SupplierIdentity} supplier @param {string} vehicleKey */
-    const getOrCreateGroup = (clientName, supplier, vehicleKey) => {
-      const groupKey = `${clientName}__${vehicleKey}`
-      if (!grouped[groupKey]) {
-        grouped[groupKey] = {
-          partyKey: groupKey,
-          clientName,
-          partyType: 'client',
-          count: 0,
-          supplyAmount: 0,
-          taxAmount: 0,
-          supplierKey: supplier.key,
-          supplierBiz: supplier.biz,
-          vehicleLabel: supplier.carLabel,
-          vehicleNumbers: new Set(),
-        }
+  if (flow !== 'sales') return []
+  /** @type {Record<string, { partyKey: string, clientName: string, partyType: string, count: number, supplyAmount: number, taxAmount: number, supplierKey?: string, supplierBiz?: import('./financeTypes.js').SupplierBiz, vehicleLabel?: string, vehicleNumbers: Set<string> }>} */
+  const grouped = {}
+  /** @type {Array<{ logId: string, car: CarLike|null, data: Record<string, import('./day-record.js').DayRecordLike> }>} */
+  const sources = [{ logId: 'main', car: null, data: logData(workDataByLogId, 'main') }]
+  cars.filter((car) => car.type === 'sub').forEach((car) => {
+    const mode = getEffectiveDriverSettlementMode(car, settings)
+    if (mode === 'company' || mode === 'employee') sources.push({ logId: car.number, car, data: getDriverCarWorkData(car, workDataByLogId) })
+  })
+  /** @param {string} clientName @param {SupplierIdentity} supplier @param {string} vehicleKey */
+  const getOrCreateGroup = (clientName, supplier, vehicleKey) => {
+    const groupKey = `${clientName}__${vehicleKey}`
+    if (!grouped[groupKey]) {
+      grouped[groupKey] = {
+        partyKey: groupKey,
+        clientName,
+        partyType: 'client',
+        count: 0,
+        supplyAmount: 0,
+        taxAmount: 0,
+        supplierKey: supplier.key,
+        supplierBiz: supplier.biz,
+        vehicleLabel: supplier.carLabel,
+        vehicleNumbers: new Set(),
       }
-      return grouped[groupKey]
     }
-
-    sources.forEach((source) => {
-      // 소스(차량)별 스코프 고정노선 우선, 없으면 차주 것 fallback(getFixedRouteClient).
-      const fixedRouteClientForInvoice = getFixedRouteClient(settings, source.logId)
-      const fixedClientName = fixedRouteClientForInvoice?.companyName || ''
-      const fixedUnitPrice = parseCurrencyValue(fixedRouteClientForInvoice?.fixedUnitPrice)
-      const supplier = /** @type {SupplierIdentity} */ (getVehicleSupplierIdentity(source.car, settings))
-      Object.entries(source.data || {}).forEach(([dateKey, record]) => {
-        ;(record?.callDetails || []).forEach((detail) => {
-          const workDate = detail.workDate || dateKey
-          const clientName = (detail.client || '').trim()
-          const supplyAmount = parseCurrencyValue(detail.fare)
-          if (!workDate.startsWith(monthKey) || !clientName || supplyAmount <= 0) return
-          const group = getOrCreateGroup(clientName, supplier, source.logId)
-          group.count += 1
-          group.supplyAmount += supplyAmount
-          group.taxAmount += detail.vatExempt ? 0 : Math.round(supplyAmount * 0.1)
-          if (supplier.carNumber) group.vehicleNumbers.add(supplier.carNumber)
-        })
-
-        const fixedCount = parseInt(String(record?.fixedCount), 10) || 0
-        if (fixedCount > 0 && fixedClientName && dateKey.startsWith(monthKey)) {
-          const supplyAmount = fixedCount * fixedUnitPrice
-          if (supplyAmount > 0) {
-            const group = getOrCreateGroup(fixedClientName, supplier, source.logId)
-            group.count += fixedCount
-            group.supplyAmount += supplyAmount
-            group.taxAmount += Math.round(supplyAmount * 0.1)
-            if (supplier.carNumber) group.vehicleNumbers.add(supplier.carNumber)
-          }
-        }
-      })
-    })
-    return Object.values(grouped).map((group) => ({
-      ...group,
-      vehicleNumbers: Array.from(group.vehicleNumbers),
-      totalAmount: group.supplyAmount + group.taxAmount,
-    }))
+    return grouped[groupKey]
   }
 
-  return cars.filter((car) => car.type === 'sub').flatMap((car) => {
-    const mode = getEffectiveDriverSettlementMode(car, settings)
-    if ((flow === 'purchase' && mode !== 'company') || (flow === 'commission' && mode !== 'driver_direct')) return []
-    const link = (settings.driverLinks || []).find((item) => item.id === car.driverLinkId || item.vehicleNumber === car.number)
-    const totals = getMonthlyDriverTotals(getDriverCarWorkData(car, workDataByLogId), monthKey, link, settings)
-    if (totals.grossAmount <= 0) return []
-    const commissionAmount = calculateDriverVehicleCommission(car, totals.grossAmount, totals.count)
-    const insuranceAmount = car.insuranceOn ? totals.insuranceAmount : 0
-    const netAmount = Math.max(0, totals.grossAmount - commissionAmount - insuranceAmount)
-    const supplyAmount = flow === 'purchase'
-      ? (settings.driverInvoiceBasis === 'gross' ? totals.grossAmount : netAmount)
-      : commissionAmount
-    if (supplyAmount <= 0) return []
-    const taxAmount = Math.round(supplyAmount * 0.1)
-    return [{
-      partyKey: car.number,
-      clientName: car.driverName || car.personalInfo?.driverName || getShortCarNum(car.number),
-      partyType: 'driver',
-      carNumber: car.number,
-      count: totals.count,
-      grossAmount: totals.grossAmount,
-      commissionAmount,
-      insuranceAmount,
-      netAmount,
-      supplyAmount,
-      taxAmount,
-      totalAmount: supplyAmount + taxAmount,
-    }]
+  sources.forEach((source) => {
+    // 소스(차량)별 스코프 고정노선 우선, 없으면 차주 것 fallback(getFixedRouteClient).
+    const fixedRouteClientForInvoice = getFixedRouteClient(settings, source.logId)
+    const fixedClientName = fixedRouteClientForInvoice?.companyName || ''
+    const fixedUnitPrice = parseCurrencyValue(fixedRouteClientForInvoice?.fixedUnitPrice)
+    const supplier = /** @type {SupplierIdentity} */ (getVehicleSupplierIdentity(source.car, settings))
+    Object.entries(source.data || {}).forEach(([dateKey, record]) => {
+      ;(record?.callDetails || []).forEach((detail) => {
+        const workDate = detail.workDate || dateKey
+        const clientName = (detail.client || '').trim()
+        const supplyAmount = parseCurrencyValue(detail.fare)
+        if (!workDate.startsWith(monthKey) || !clientName || supplyAmount <= 0) return
+        const group = getOrCreateGroup(clientName, supplier, source.logId)
+        group.count += 1
+        group.supplyAmount += supplyAmount
+        group.taxAmount += detail.vatExempt ? 0 : Math.round(supplyAmount * 0.1)
+        if (supplier.carNumber) group.vehicleNumbers.add(supplier.carNumber)
+      })
+
+      const fixedCount = parseInt(String(record?.fixedCount), 10) || 0
+      if (fixedCount > 0 && fixedClientName && dateKey.startsWith(monthKey)) {
+        const supplyAmount = fixedCount * fixedUnitPrice
+        if (supplyAmount > 0) {
+          const group = getOrCreateGroup(fixedClientName, supplier, source.logId)
+          group.count += fixedCount
+          group.supplyAmount += supplyAmount
+          group.taxAmount += Math.round(supplyAmount * 0.1)
+          if (supplier.carNumber) group.vehicleNumbers.add(supplier.carNumber)
+        }
+      }
+    })
   })
+  return Object.values(grouped).map((group) => ({
+    ...group,
+    vehicleNumbers: Array.from(group.vehicleNumbers),
+    totalAmount: group.supplyAmount + group.taxAmount,
+  }))
 }
 
 // 고정노선(fixedCount)은 그날 기록에 금액이 없어 단가×횟수로 계산해야

@@ -1,11 +1,7 @@
 // @ts-check
 // 재감사 2차(FAIL 지적) — finance.js를 200줄 이하로 실제로 쪼갠 조각. 세금계산서
-// "레코드" 조립(흐름별 라벨, id, 당사자 정보, 저장된 발급 상태와의 병합)만 담는다 —
-// 원천 그룹 계산 자체는 financeTaxInvoiceGroups.js.
-// 재감사 3차(FAIL 지적 4번) — @ts-check 적용. getTaxInvoiceSourceGroups의 반환은
-// 매출(거래처)/매입·수수료(기사) 두 모양이 섞여 있어(financeTaxInvoiceGroups.js
-// 참고), 여기서는 그 합집합을 느슨하게(전부 optional) 적는다 — any/unknown 대신
-// 실제로 읽는 필드만 나열한다.
+// "레코드" 조립(라벨, id, 당사자 정보, 저장된 발급 상태와의 병합)만 담는다 —
+// 원천 그룹 계산 자체는 financeTaxInvoiceGroups.js. 계산서 종류는 거래처 매출뿐(기사 매입·수수료 발행 삭제, 2026-10-02).
 import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
@@ -45,18 +41,12 @@ import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
  *   clientRepresentative?: string, clientAddress?: string, clientBizType?: string, clientBizItem?: string,
  *   clientEmail?: string, issueDate?: string, itemName?: string, remark?: string, updatedAt?: string,
  *   issuedAt?: string, partyKey?: string, partyType?: string, supplierKey?: string,
- *   grossAmount?: number, commissionAmount?: number, insuranceAmount?: number, netAmount?: number,
  *   supplierBiz?: import('./financeTypes.js').SupplierBiz }} InvoiceLike
  */
 
-/** @param {'sales'|'purchase'|'commission'} [flow] */
-export function getTaxInvoiceFlowMeta(flow = 'sales') {
-  const flows = {
-    sales: { label: '매출 발행', partyHeading: '공급받는 자', itemName: '화물운송료', completeLabel: '발급 완료' },
-    purchase: { label: '기사 매입', partyHeading: '공급자', itemName: '화물운송 용역', completeLabel: '수취 완료' },
-    commission: { label: '수수료 발행', partyHeading: '공급받는 자', itemName: '운송 중개 수수료', completeLabel: '발급 완료' },
-  }
-  return flows[flow] || flows.sales
+/** 매출 계산서 이름표(라벨·당사자 제목·품목·완료 이름). */
+export function getTaxInvoiceFlowMeta() {
+  return { label: '매출 발행', partyHeading: '공급받는 자', itemName: '화물운송료', completeLabel: '발급 완료' }
 }
 
 /**
@@ -73,44 +63,31 @@ export function getTaxInvoiceRecordId(monthKey, partyKey, flow = 'sales') {
  * @param {FinanceSettings} [settings]
  */
 export function getTaxInvoicePartyInfo(group, settings = {}) {
-  if (group.partyType === 'client') {
-    // .find(...)의 결과(ClientLike|undefined)에 optional chaining만 쓴다 — `|| {}`로
-    // 빈 객체 리터럴 타입과 합쳐지는 순간 실제 필드에 접근할 수 없게 되는(TS2339)
-    // 함정을 피한다.
-    const client = (settings.clients || []).find((item) => item.companyName === group.clientName)
-    return {
-      clientBizNumber: client?.bizNumber || '',
-      clientRepresentative: client?.taxRepresentative || client?.managerName || '',
-      clientAddress: client?.taxAddress || '',
-      clientBizType: client?.taxBizType || '',
-      clientBizItem: client?.taxBizItem || '',
-      clientEmail: client?.taxEmail || '',
-    }
-  }
-  const car = (settings.cars || []).find((item) => item.number === group.carNumber)
-  const info = car?.personalInfo || {}
+  // .find(...)의 결과(ClientLike|undefined)에 optional chaining만 쓴다 — `|| {}`로
+  // 빈 객체 리터럴 타입과 합쳐지는 순간 실제 필드에 접근할 수 없게 되는(TS2339)
+  // 함정을 피한다.
+  const client = (settings.clients || []).find((item) => item.companyName === group.clientName)
   return {
-    clientBizNumber: info.bizNumber || '',
-    clientRepresentative: info.name || car?.driverName || '',
-    clientAddress: info.address || '',
-    clientBizType: info.bizType || '',
-    clientBizItem: info.bizItem || '',
-    clientEmail: info.email || '',
-    carNumber: car?.number,
+    clientBizNumber: client?.bizNumber || '',
+    clientRepresentative: client?.taxRepresentative || client?.managerName || '',
+    clientAddress: client?.taxAddress || '',
+    clientBizType: client?.taxBizType || '',
+    clientBizItem: client?.taxBizItem || '',
+    clientEmail: client?.taxEmail || '',
   }
 }
 
 /**
  * @param {TaxInvoiceGroup} group
  * @param {string} monthKey
- * @param {'sales'|'purchase'|'commission'} [flow]
+ * @param {'sales'} [flow]
  * @param {Array<TaxInvoiceRecord>} [records]
  * @param {FinanceSettings} [settings]
  */
 export function buildTaxInvoiceEntry(group, monthKey, flow = 'sales', records = [], settings = {}) {
   const id = getTaxInvoiceRecordId(monthKey, group.partyKey, flow)
   const saved = (records || []).find((item) => item.id === id) || {}
-  const meta = getTaxInvoiceFlowMeta(flow)
+  const meta = getTaxInvoiceFlowMeta()
   return {
     ...getTaxInvoicePartyInfo(group, settings),
     itemName: meta.itemName,
@@ -144,7 +121,7 @@ export function getTaxInvoiceSupplierBiz(item, settings = {}) {
 
 /**
  * @param {string} monthKey
- * @param {'sales'|'purchase'|'commission'} flow
+ * @param {'sales'} flow
  * @param {FinanceSettings} settings
  * @param {WorkDataByLogId} workDataByLogId
  * @param {Array<TaxInvoiceRecord>} [records]

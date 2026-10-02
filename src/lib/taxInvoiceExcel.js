@@ -10,7 +10,7 @@ import { buildTaxInvoiceWorkbook } from './taxInvoiceExcelBuilder.js'
  * @param {InvoiceLike} item
  */
 export function buildTaxInvoiceExcelFileName(monthKey, item) {
-  const label = getTaxInvoiceFlowMeta(/** @type {'sales'|'purchase'|'commission'} */ (item.flow || 'sales')).label
+  const label = getTaxInvoiceFlowMeta().label
   return `${monthKey}_${item.clientName || ''}_${label}_계산서.xlsx`.replace(/[\\/:*?"<>|]/g, '_')
 }
 

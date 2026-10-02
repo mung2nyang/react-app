@@ -76,7 +76,6 @@ export function normalizeSettings(raw = {}) {
     subFixedRoutePresets: normalizeFixedRoutePresets(raw.subFixedRoutePresets),
     subRunCountToggle: asBool(raw.subRunCountToggle, defaults.subRunCountToggle),
     subRunCountPresets: normalizeRunCountPresets(raw.subRunCountPresets),
-    driverInvoiceBasis: raw.driverInvoiceBasis === 'gross' ? 'gross' : 'net',
     pinnedLocations: normalizePinnedLocations(raw.pinnedLocations),
     subCarSettings: normalizeSubCarSettingsMap(raw.subCarSettings, asBool(raw.subFixedOn, fixedOn)),
   }

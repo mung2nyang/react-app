@@ -53,7 +53,7 @@ export function lastDayOfMonth(monthKey) {
 
 /**
  * @param {string} monthKey
- * @param {'sales'|'purchase'|'commission'} flow
+ * @param {'sales'} flow
  * @param {FinanceSettings} settings
  * @param {WorkDataByLogId} workDataByLogId
  * @param {Array<TaxInvoiceRecord>} [records]

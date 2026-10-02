@@ -67,6 +67,7 @@ export function isPersistedSettings(value) {
     if (flag in value && typeof value[flag] !== 'boolean') return false
   }
   if ('defaultDriverSettlementMode' in value && !isAllowedEnum(value.defaultDriverSettlementMode, DRIVER_SETTLEMENT_MODES)) return false
+  // driverInvoiceBasis: 옛 기사 매입 계산서 기준(2026-10-02 삭제) — 옛 저장분 읽기용.
   if ('driverInvoiceBasis' in value && !isAllowedEnum(value.driverInvoiceBasis, DRIVER_INVOICE_BASES)) return false
   for (const text of ['bizName', 'bizNumber', 'bizRepresentative', 'userName', 'bizAddress', 'bizType', 'bizItem', 'bizEmail']) {
     if (text in value && typeof value[text] !== 'string') return false

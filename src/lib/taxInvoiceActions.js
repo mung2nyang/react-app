@@ -76,6 +76,5 @@ export function changeTaxInvoiceStatus({ item, status, settings, records, persis
     status,
     issuedAt: status === 'issued' ? new Date().toISOString() : '',
   }))
-  const flowKey = item.flow === 'purchase' || item.flow === 'commission' ? item.flow : 'sales'
-  showToast?.(status === 'issued' ? `${getTaxInvoiceFlowMeta(flowKey).completeLabel}로 표시했습니다.` : '처리 전 상태로 되돌렸습니다.')
+  showToast?.(status === 'issued' ? `${getTaxInvoiceFlowMeta().completeLabel}로 표시했습니다.` : '처리 전 상태로 되돌렸습니다.')
 }

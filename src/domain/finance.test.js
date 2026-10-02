@@ -134,10 +134,8 @@ describe('같은 운행 픽스처 — 확정 금액', () => {
         { supplyAmount: 200000, taxAmount: 20000, totalAmount: 220000, count: 1 },
         { supplyAmount: 250000, taxAmount: 25000, totalAmount: 275000, count: 1 },
       ],
-      purchase: [{ supplyAmount: 379500, taxAmount: 37950, totalAmount: 417450, count: 2 }],
-      commission: [{ supplyAmount: 20000, taxAmount: 2000, totalAmount: 22000, count: 1 }],
     }
-    for (const flow of ['sales', 'purchase', 'commission']) {
+    for (const flow of /** @type {const} */ (['sales'])) {
       const ours = getTaxInvoiceSourceGroups(MONTH_KEY, flow, FIXTURE_SETTINGS, FIXTURE_WORK)
       assert.equal(ours.length, expected[flow].length, flow)
       ours.forEach((group, index) => {

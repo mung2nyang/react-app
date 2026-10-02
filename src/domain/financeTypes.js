@@ -72,7 +72,6 @@
  * @property {boolean} [fixedOn]
  * @property {boolean} [subFixedOn]
  * @property {string} [defaultDriverSettlementMode]
- * @property {string} [driverInvoiceBasis]
  * @property {number|string} [unitPrice]
  * @property {string} [bizName]
  * @property {string} [bizNumber]

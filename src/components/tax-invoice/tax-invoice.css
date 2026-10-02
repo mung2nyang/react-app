@@ -97,11 +97,8 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* 위 카드는 달 이동만(계산서 종류 탭 삭제, 2026-10-02). */
 .tax-invoice-top-card .maint-fuel-nav {
-  margin-bottom: 14px;
-}
-
-.tax-invoice-top-card .maint-fuel-tabs {
   margin-bottom: 0;
 }
 

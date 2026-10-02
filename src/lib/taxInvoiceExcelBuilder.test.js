@@ -82,20 +82,13 @@ describe('buildTaxInvoiceWorkbook', () => {
     assert.equal(sheet2.getCell('C4').value, '차량사업자')
   })
 
-  test('공급받는자(거래처) 사업자번호·상호가 일치하고 매입이면 supplier/buyer가 뒤바뀐다', () => {
+  test('공급자 = 차주, 공급받는자 = 거래처(매출 계산서만 — 기사 매입 뒤바꿈 삭제, 2026-10-02)', () => {
     const salesBook = buildTaxInvoiceWorkbook(ExcelJS, salesItem, settings, profile, '2026-05')
     const salesSheet = sheetOf(salesBook, '세금계산서')
+    assert.equal(salesSheet.getCell('C3').value, '123-45-67890')
+    assert.equal(salesSheet.getCell('C4').value, '차주회사')
     assert.equal(salesSheet.getCell('H3').value, '111-22-33333')
     assert.equal(salesSheet.getCell('H4').value, '한진/물류')
-
-    /** @type {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} */
-    const purchaseItem = { ...salesItem, flow: 'purchase', id: 'purchase|2026-05|c1' }
-    const purchaseBook = buildTaxInvoiceWorkbook(ExcelJS, purchaseItem, settings, profile, '2026-05')
-    const purchaseSheet = sheetOf(purchaseBook, '세금계산서')
-    assert.equal(purchaseSheet.getCell('C3').value, '111-22-33333')
-    assert.equal(purchaseSheet.getCell('C4').value, '한진/물류')
-    assert.equal(purchaseSheet.getCell('H3').value, '123-45-67890')
-    assert.equal(purchaseSheet.getCell('H4').value, '차주회사')
   })
 
   test('입력자료 시트 2행이 헤더 순서로 실제 값을 담는다', () => {

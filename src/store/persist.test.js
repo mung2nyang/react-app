@@ -196,6 +196,11 @@ describe('readPersistDomain — 빈 항목과 잘못된 내부 필드는 schema'
     assert.equal(readPersistDomain('settings', OWNER).kind, 'schema')
     writeJsonKey('invoices', OWNER, [{ id: 'i1', flow: 'bogus' }])
     assert.equal(readPersistDomain('invoices', OWNER).kind, 'schema')
+    // 옛 기사 매입·수수료 계산서·기준 값(2026-10-02 삭제)은 옛 저장분 읽기용으로 계속 받아 줌 — 묶음 전체 거부 방지.
+    writeJsonKey('invoices', OWNER, [{ id: 'purchase|2026-09|11가1111', flow: 'purchase', partyType: 'driver', grossAmount: 1000 }, { id: 'c1', flow: 'commission' }])
+    assert.equal(readPersistDomain('invoices', OWNER).kind, 'value')
+    writeJsonKey('settings', OWNER, { driverInvoiceBasis: 'gross' })
+    assert.equal(readPersistDomain('settings', OWNER).kind, 'value')
     writeJsonKey('invoices', OWNER, [{ id: 'i1', status: 'bogus' }])
     assert.equal(readPersistDomain('invoices', OWNER).kind, 'schema')
     writeJsonKey('clients', OWNER, [{ id: 'c1', companyName: '한진', isPinned: 'yes' }])

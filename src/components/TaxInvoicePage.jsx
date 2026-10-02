@@ -1,7 +1,7 @@
 // @ts-check
-// 세금계산서 화면 조립 + 엑셀 저장 핸들러. 205줄 — 응집도 우선 §6 ~250 허용.
+// 세금계산서 화면 조립 + 엑셀 저장 핸들러. 거래처 매출 계산서만(기사 매입·수수료 발행 삭제, 2026-10-02).
 import { useMemo, useState } from 'react'
-import { getTaxInvoiceFlowMeta, getTaxInvoiceSourceGroups } from '../lib/finance.js'
+import { getTaxInvoiceFlowMeta } from '../lib/finance.js'
 import { lastDayOfMonth, listMonthInvoices, saveInvoices, invoiceCanIssue } from '../lib/invoices.js'
 import { formatWon } from '../lib/money.js'
 import { buildFinanceSettings } from '../lib/ownerFinance.js'
@@ -41,7 +41,6 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
   const records = useOwnerInvoices(ownerKey)
   const [viewDate, setViewDate] = useState(() => new Date())
   const [tab, setTab] = useState(/** @type {'draft'|'issued'} */ ('draft'))
-  const [flow, setFlow] = useState(/** @type {'sales'|'purchase'|'commission'} */ ('sales'))
   const [modalItem, setModalItem] = useState(/** @type {InvoiceLike|null} */ (null))
 
   const year = viewDate.getFullYear()
@@ -56,20 +55,15 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
     return buildFinanceSettings(ownerKey)
   }, [ownerKey, clients, cars, practiceSettings, profile, drivers])
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
-  const flowMeta = getTaxInvoiceFlowMeta(flow)
+  const flowMeta = getTaxInvoiceFlowMeta()
   const listed = useMemo(
-    () => listMonthInvoices(monthKey, flow, settings, workDataByLogId, records),
-    [monthKey, flow, settings, workDataByLogId, records],
+    () => listMonthInvoices(monthKey, 'sales', settings, workDataByLogId, records),
+    [monthKey, settings, workDataByLogId, records],
   )
   /** @type {Array<InvoiceLike>} */
   const entries = /** @type {Array<InvoiceLike>} */ (tab === 'issued' ? listed.issuedEntries : listed.draftEntries)
   const supplyTotal = entries.reduce((sum, item) => sum + Number(item.supplyAmount || 0), 0)
   const taxTotal = entries.reduce((sum, item) => sum + Number(item.taxAmount || 0), 0)
-  const flowCounts = useMemo(() => ({
-    sales: getTaxInvoiceSourceGroups(monthKey, 'sales', settings, workDataByLogId).length,
-    purchase: getTaxInvoiceSourceGroups(monthKey, 'purchase', settings, workDataByLogId).length,
-    commission: getTaxInvoiceSourceGroups(monthKey, 'commission', settings, workDataByLogId).length,
-  }), [monthKey, settings, workDataByLogId])
   const issuerReady = settings.bizName && settings.bizNumber && settings.userName && settings.bizType && settings.bizItem
 
   /** @param {Array<InvoiceLike>} next */
@@ -131,40 +125,24 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
     }
   }
 
-  const emptyDraft = flow === 'sales'
-    ? '계산서 발행 대상 거래처의 운행내역이 없습니다.'
-    : flow === 'purchase'
-      ? '회사 매입 방식으로 설정된 기사의 운행내역이 없습니다.'
-      : '기사 직접발행 방식으로 설정된 수수료 내역이 없습니다.'
-
   return (
     <div className="page tax-invoice-page">
       <PageHeader title="세금계산서" onBack={onBack} onOpenMenu={onOpenMenu} />
 
-      <TaxInvoiceToolbar
-        viewDate={viewDate}
-        setViewDate={setViewDate}
-        flow={flow}
-        onFlow={(id) => { setFlow(id); setTab('draft') }}
-        flowCounts={flowCounts}
-      />
+      <TaxInvoiceToolbar viewDate={viewDate} setViewDate={setViewDate} />
 
       <div className={`tax-invoice-guide${issuerReady ? ' ready' : ''}`}>
         {!issuerReady && <p className="tax-invoice-guide-title">회사 사업자 정보가 필요합니다.</p>}
         <p className="tax-invoice-guide-desc">
-          {flow === 'purchase'
-            ? (issuerReady
-              ? `기사에게 받을 매입 계산서 · ${settings.driverInvoiceBasis === 'gross' ? '총 운송료' : '수수료·산재보험 차감 후 기사 정산액'} 기준`
-              : '마이페이지 → 개인정보에서 계산서를 받을 회사의 사업자 정보를 입력해 주세요.')
-            : (issuerReady
-              ? `${settings.bizName} · ${settings.bizNumber} · ${flowMeta.label}`
-              : '마이페이지 → 개인정보에서 계산서를 발행할 회사의 사업자 정보를 입력해 주세요.')}
+          {issuerReady
+            ? `${settings.bizName} · ${settings.bizNumber} · ${flowMeta.label}`
+            : '마이페이지 → 개인정보에서 계산서를 발행할 회사의 사업자 정보를 입력해 주세요.'}
         </p>
       </div>
 
       <div className="tax-invoice-subtabs">
         <button type="button" className={`tax-invoice-subtab${tab === 'draft' ? ' active' : ''}`} onClick={() => setTab('draft')}>
-          {flow === 'purchase' ? '수취 전' : '작성 전'} <span className="tab-count-badge">{listed.draftEntries.length}</span>
+          작성 전 <span className="tab-count-badge">{listed.draftEntries.length}</span>
         </button>
         <button type="button" className={`tax-invoice-subtab${tab === 'issued' ? ' active' : ''}`} onClick={() => setTab('issued')}>
           {flowMeta.completeLabel} <span className="tab-count-badge">{listed.issuedEntries.length}</span>
@@ -184,8 +162,7 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
       <TaxInvoiceEntryList
         entries={entries}
         tab={tab}
-        flow={flow}
-        emptyDraft={emptyDraft}
+        emptyDraft="계산서 발행 대상 거래처의 운행내역이 없습니다."
         flowMeta={flowMeta}
         onOpenDraft={openDraft}
         onExportExcel={exportExcel}

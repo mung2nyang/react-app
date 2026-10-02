@@ -32,10 +32,11 @@ export function buildTaxInvoiceWorkbook(ExcelJS, item, settings, profile, monthK
     bizItem: item.clientBizItem || '',
     email: item.clientEmail || '',
   }
-  const supplier = item.flow === 'purchase' ? otherParty : companyParty
-  const buyer = item.flow === 'purchase' ? companyParty : otherParty
+  // 매출 계산서만(2026-10-02): 공급자 = 차주(또는 그 차량 사업자), 공급받는 자 = 거래처.
+  const supplier = companyParty
+  const buyer = otherParty
   const issueDate = item.issueDate || `${monthKey}-01`
-  const flowMeta = getTaxInvoiceFlowMeta(/** @type {'sales'|'purchase'|'commission'} */ (item.flow || 'sales'))
+  const flowMeta = getTaxInvoiceFlowMeta()
 
   const workbook = new ExcelJS.Workbook()
   workbook.creator = settings.bizName || '운행일지'

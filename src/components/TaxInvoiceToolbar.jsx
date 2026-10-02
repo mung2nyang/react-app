@@ -1,22 +1,17 @@
 // @ts-check
+// 세금계산서 위 카드: 달 이동만(계산서 종류 탭은 매출뿐이라 삭제, 2026-10-02).
 import CalendarDateSelect from './calendar/CalendarDateSelect.jsx'
 import { getYearOptions, setYearMonth, shiftMonth } from '../lib/calendar.js'
-import { getTaxInvoiceFlowMeta } from '../lib/finance.js'
 import './tax-invoice/tax-invoice.css'
 
 const YEAR_OPTIONS = getYearOptions()
-/** @type {Array<'sales'|'purchase'|'commission'>} */
-const FLOWS = ['sales', 'purchase', 'commission']
 
 /**
  * @param {Object} props
  * @param {Date} props.viewDate
  * @param {(next: Date|((d: Date) => Date)) => void} props.setViewDate
- * @param {'sales'|'purchase'|'commission'} props.flow
- * @param {(flow: 'sales'|'purchase'|'commission') => void} props.onFlow
- * @param {Record<'sales'|'purchase'|'commission', number>} props.flowCounts
  */
-export default function TaxInvoiceToolbar({ viewDate, setViewDate, flow, onFlow, flowCounts }) {
+export default function TaxInvoiceToolbar({ viewDate, setViewDate }) {
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   return (
@@ -44,18 +39,6 @@ export default function TaxInvoiceToolbar({ viewDate, setViewDate, flow, onFlow,
             <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </button>
         </div>
-      </div>
-      <div className="settings-segmented-control maint-fuel-tabs">
-        {FLOWS.map((id) => (
-          <button
-            key={id}
-            type="button"
-            className={`toggle-btn${flow === id ? ' active-work' : ''}`}
-            onClick={() => onFlow(id)}
-          >
-            {getTaxInvoiceFlowMeta(id).label} <span className="tab-count-badge">{flowCounts[id]}</span>
-          </button>
-        ))}
       </div>
     </div>
   )
