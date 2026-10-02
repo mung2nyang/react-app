@@ -201,6 +201,11 @@ describe('readPersistDomain — 빈 항목과 잘못된 내부 필드는 schema'
     assert.equal(readPersistDomain('invoices', OWNER).kind, 'value')
     writeJsonKey('settings', OWNER, { driverInvoiceBasis: 'gross' })
     assert.equal(readPersistDomain('settings', OWNER).kind, 'value')
+    // 옛 "계산서 처리 방식" 값(2026-10-02 삭제)도 옛 저장분 읽기용으로 받아 줌 — 차량 목록·설정 전체 거부 방지.
+    writeJsonKey('cars', OWNER, [{ number: '11가1111', settlementMode: 'driver_direct' }])
+    assert.equal(readPersistDomain('cars', OWNER).kind, 'value')
+    writeJsonKey('settings', OWNER, { defaultDriverSettlementMode: 'employee' })
+    assert.equal(readPersistDomain('settings', OWNER).kind, 'value')
     writeJsonKey('invoices', OWNER, [{ id: 'i1', status: 'bogus' }])
     assert.equal(readPersistDomain('invoices', OWNER).kind, 'schema')
     writeJsonKey('clients', OWNER, [{ id: 'c1', companyName: '한진', isPinned: 'yes' }])

@@ -177,7 +177,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     initializeOwnerFromPersist(owner)
     assert.equal(getState().cars[owner]?.[0]?.number, '11가1111')
     assert.equal(getState().cars[owner]?.[0]?.supabaseId, 501)
-    assert.equal(getState().cars[owner]?.[0]?.settlementMode, 'default')
+    assert.equal(Object.hasOwn(getState().cars[owner]?.[0] ?? {}, 'settlementMode'), false)
   })
 
   // Step 7 후속 재감사 — 위 최소 row(raw:{})는 `...raw` 스프레드가 있던 예전 코드에서도
@@ -220,21 +220,21 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     assert.equal(totalStubCalls(), 0)
   })
 
-  test('raw.settlementMode가 bogus면 정규화돼 initialize가 성공하지만, 검증기에 bogus를 직접 넣으면 여전히 schema 실패다', async () => {
+  test('raw.settlementMode가 bogus여도 안 읽혀 initialize가 성공하지만, 검증기에 bogus를 직접 넣으면 여전히 schema 실패다', async () => {
     const { mergeCarsFromRows } = await import('../lib/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
     const owner = 'hydrate-bogus-enum'
     resetStubSupabaseCallCounts()
-    const merged = mergeCarsFromRows([], [{ id: 701, number: '33다3333', type: 'main', raw: { settlementMode: 'bogus' } }])
-    // producer는 persist 불가 값을 canonical 기본값으로 정규화한다(검증기를 느슨하게
-    // 만드는 게 아니라 producer가 스키마를 맞춘다).
-    assert.equal(merged[0].settlementMode, 'default')
+    const merged = mergeCarsFromRows([], [{ id: 701, number: '33다3333', type: 'main', raw: JSON.parse('{"settlementMode":"bogus"}') }])
+    // producer는 옛 settlementMode 값을 아예 읽지 않는다(검증기를 느슨하게 만드는 게 아니라
+    // producer가 스키마를 맞춘다).
+    assert.equal('settlementMode' in merged[0], false)
     replaceOwnerState(owner, { cars: merged }, { sync: false })
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
     commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
     initializeOwnerFromPersist(owner)
-    assert.equal(getState().cars[owner]?.[0]?.settlementMode, 'default')
+    assert.equal(Object.hasOwn(getState().cars[owner]?.[0] ?? {}, 'settlementMode'), false)
     assert.equal(totalStubCalls(), 0)
 
     // 검증기(isPersistedCar) 자체는 그대로다 — 'bogus'가 직접 저장돼 있으면 여전히

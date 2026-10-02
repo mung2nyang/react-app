@@ -15,7 +15,6 @@
  * @property {string} number
  * @property {string} [tonnage]
  * @property {'main'|'sub'} [type]
- * @property {string} [settlementMode]
  * @property {boolean} [commEnabled]
  * @property {string} [commType]
  * @property {string|number} [commission]
@@ -71,7 +70,6 @@
  * @property {boolean} [subPaymentOn]
  * @property {boolean} [fixedOn]
  * @property {boolean} [subFixedOn]
- * @property {string} [defaultDriverSettlementMode]
  * @property {number|string} [unitPrice]
  * @property {string} [bizName]
  * @property {string} [bizNumber]

@@ -87,7 +87,6 @@ export function buildVehicleRow(userId, car, index) {
     comm_enabled: !!car.commEnabled,
     comm_type: car.commType || null,
     comm_value: car.commission != null ? String(car.commission) : null,
-    settlement_mode: car.settlementMode || null,
     driver_pay_mode: car.driverPayMode || null,
     driver_salary_amount: car.driverPayMode === 'salary' && salaryDigits ? Number(salaryDigits) : null,
     driver_link_id: car.driverLinkId || null,

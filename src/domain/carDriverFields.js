@@ -9,7 +9,6 @@ import { driverIncomeFieldsFromDraft } from './driverIncomeDeductions.js'
  * @property {'main'|'sub'} [type]
  * @property {string} [driverName]
  * @property {string} [driverPhone]
- * @property {string} [settlementMode]
  * @property {string} [driverPayMode]
  * @property {string} [driverSalaryAmount]
  * @property {boolean} [commEnabled]

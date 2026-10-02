@@ -22,7 +22,6 @@ export const FIXTURE_SETTINGS = {
   subPaymentOn: true,
   fixedOn: true,
   subFixedOn: true,
-  defaultDriverSettlementMode: 'company',
   bizName: '보리운수',
   bizNumber: '123-45-67890',
   userName: '차주',
@@ -44,7 +43,6 @@ export const FIXTURE_SETTINGS = {
     {
       type: 'sub',
       number: '서울12가3456',
-      settlementMode: 'company',
       commEnabled: true,
       commType: 'percent',
       commission: '15',
@@ -55,7 +53,6 @@ export const FIXTURE_SETTINGS = {
     {
       type: 'sub',
       number: '부산33나1111',
-      settlementMode: 'driver_direct',
       shareRevenueWithOwner: true,
       commEnabled: true,
       commType: 'direct',

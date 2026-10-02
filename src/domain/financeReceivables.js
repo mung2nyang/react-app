@@ -5,7 +5,7 @@
 // 소스를 모은다 — 오너 손익 상세(financeOwnerDetail.js)의 unpaidItems 계산도 이
 // 파일의 getReceivableItems를 그대로 가져다 쓴다(중복 구현 없음).
 // 재감사 3차(FAIL 지적 4번) — @ts-check 적용.
-import { getEffectiveDriverSettlementMode, getShortCarNum } from './cars.js'
+import { getShortCarNum } from './cars.js'
 import { resolveCallDetailId } from './callDetailIds.js'
 import { parseCurrencyValue } from './money.js'
 import { getDetailPaymentSummary, getDriverCarWorkData, logData } from './financeCore.js'
@@ -46,10 +46,7 @@ export function getReceivableItems(settings = {}, workDataByLogId = {}) {
   }
   if (settings.subPaymentOn) {
     cars.filter((car) => car.type === 'sub').forEach((car) => {
-      const mode = getEffectiveDriverSettlementMode(car, settings)
-      if (mode === 'company' || mode === 'employee') {
-        sources.push({ logId: car.number, logLabel: getShortCarNum(car.number), data: getDriverCarWorkData(car, workDataByLogId) })
-      }
+      sources.push({ logId: car.number, logLabel: getShortCarNum(car.number), data: getDriverCarWorkData(car, workDataByLogId) })
     })
   }
 

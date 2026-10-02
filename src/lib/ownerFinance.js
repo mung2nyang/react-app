@@ -115,7 +115,6 @@ export function buildFinanceSettings(ownerKey = 'guest') {
     fixedOn: practice.fixedOn,
     subFixedOn: practice.subFixedOn,
     unitPrice: resolveFixedUnitPrice({ clients }),
-    defaultDriverSettlementMode: 'company',
     bizName: profile.bizName,
     bizNumber: profile.bizNumber,
     bizRepresentative: profile.bizRepresentative,

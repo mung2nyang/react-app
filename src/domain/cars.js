@@ -6,12 +6,6 @@ import { driverFieldsFromDraft } from './carDriverFields.js'
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('./carDriverFields.js').CarUpsertDraft} CarUpsertDraft */
-export const SETTLEMENT_MODES = [
-  { value: 'company', label: '회사 정산', description: '회사가 거래처에 매출 계산서를 발행하고 기사 계산서를 수취합니다.' },
-  { value: 'driver_direct', label: '기사 직접 정산', description: '기사가 거래처에 직접 발행하고 회사는 기사에게 수수료 계산서를 발행합니다.' },
-  { value: 'employee', label: '직원 기사', description: '회사가 거래처에 발행하며 기사 계산서는 만들지 않습니다.' },
-  { value: 'none', label: '계산서 미사용', description: '이 기사차량 운행분은 계산서 자동 생성에서 제외합니다.' },
-]
 
 /** @param {Array<CarLike>|null|undefined} cars */
 export function hasMainCar(cars) {
@@ -43,11 +37,6 @@ export function dedupeCarsById(cars) {
     }
   })
   return next
-}
-
-/** @param {string} [mode] */
-export function getSettlementModeMeta(mode) {
-  return SETTLEMENT_MODES.find((item) => item.value === mode) || SETTLEMENT_MODES[0]
 }
 
 /**
@@ -129,12 +118,6 @@ export function getShortCarNum(carNum) {
   if (!carNum || carNum === 'main') return carNum || ''
   const match = carNum.match(/\d{4}$/)
   return match ? match[0] : carNum
-}
-
-/** @param {CarLike|null|undefined} car @param {FinanceSettings} [settings] */
-export function getEffectiveDriverSettlementMode(car, settings = {}) {
-  const selected = car?.settlementMode || 'default'
-  return selected === 'default' ? (settings.defaultDriverSettlementMode || 'company') : selected
 }
 
 /** @param {CarLike|null|undefined} car @param {FinanceSettings} [settings] */

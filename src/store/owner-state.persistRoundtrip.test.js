@@ -105,7 +105,7 @@ test('계산서 draft/issued는 persist 왕복 후 supabaseId가 남는다', () 
   commitInvoices(owner, withIssued, { syncToCloud: false })
   commitCars(owner, [{
     id: 'car-1', number: '11가1111', type: 'main', supabaseId: 501,
-    settlementMode: 'default', commType: 'percent',
+    commType: 'percent',
   }], { syncToCloud: false })
   assert.equal(readPersistDomain('invoices', owner).kind, 'value')
   assert.equal(readPersistDomain('cars', owner).kind, 'value')

@@ -3,7 +3,7 @@
 // 기사 정산 상세·거래처별 재그룹)만 담는다 — 레코드 조립(id/발급 상태 등)은
 // financeTaxInvoiceEntries.js로 뺐다. cars.js의 getVehicleSupplierIdentity는 아직
 // 타입이 없어 반환 모양을 SupplierIdentity로 명시적으로 좁힌다.
-import { getEffectiveDriverSettlementMode, getVehicleSupplierIdentity } from './cars.js'
+import { getVehicleSupplierIdentity } from './cars.js'
 import { computeFixedRouteFare, getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
 import { isDateWithinAssignment } from './drivers.js'
 import { parseCurrencyValue } from './money.js'
@@ -26,8 +26,7 @@ export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {
   /** @type {Array<{ logId: string, car: CarLike|null, data: Record<string, import('./day-record.js').DayRecordLike> }>} */
   const sources = [{ logId: 'main', car: null, data: logData(workDataByLogId, 'main') }]
   cars.filter((car) => car.type === 'sub').forEach((car) => {
-    const mode = getEffectiveDriverSettlementMode(car, settings)
-    if (mode === 'company' || mode === 'employee') sources.push({ logId: car.number, car, data: getDriverCarWorkData(car, workDataByLogId) })
+    sources.push({ logId: car.number, car, data: getDriverCarWorkData(car, workDataByLogId) })
   })
   /** @param {string} clientName @param {SupplierIdentity} supplier @param {string} vehicleKey */
   const getOrCreateGroup = (clientName, supplier, vehicleKey) => {

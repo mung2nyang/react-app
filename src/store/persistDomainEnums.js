@@ -1,6 +1,7 @@
 // @ts-check
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
+// 옛 저장분 읽기용(2026-10-02 "계산서 처리 방식" 삭제): 받아 주기만 하고 화면·계산은 안 씀 — 빼면 옛 값 1건에 목록·설정 전체가 거부됨.
 export const CAR_SETTLEMENT_MODES = /** @type {const} */ ([
   'default', 'company', 'driver_direct', 'employee', 'none',
 ])

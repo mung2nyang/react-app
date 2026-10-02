@@ -123,7 +123,6 @@ describe('클라우드 행 매핑 — 원본 supabase-sync와 같은 필드', ()
       commEnabled: true,
       commType: 'percent',
       commission: '15',
-      settlementMode: 'company',
     }, 1)
     assert.equal(row.user_id, 'user-1')
     assert.equal(row.legacy_log_id, '서울12가3456')
@@ -133,7 +132,7 @@ describe('클라우드 행 매핑 — 원본 supabase-sync와 같은 필드', ()
     assert.equal(row.comm_enabled, true)
     assert.equal(row.comm_type, 'percent')
     assert.equal(row.comm_value, '15')
-    assert.equal(row.settlement_mode, 'company')
+    assert.equal('settlement_mode' in row, false)
     assert.equal(row.driver_name, '김기사')
     assert.equal(row.raw.driverPhone, '010-1234-5678')
     assert.equal(row.raw.number, '서울12가3456')

@@ -37,11 +37,13 @@ function groupSnapshot(items) {
 describe('미수금 — 운행 픽스처 확정 금액', () => {
   test('거래처+월 묶음 금액과 미수 행', () => {
     const ours = getReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK)
-    assert.equal(ours.length, 6)
+    assert.equal(ours.length, 7)
     same(groupSnapshot(ours), [
       { client: '대한', monthKey: '2026-04', total: 999999, count: 1 },
       { client: '한진', monthKey: '2026-05', total: 130000, count: 4 },
       { client: '대한', monthKey: '2026-05', total: 200000, count: 1 },
+      // 기사차량 부산33나1111 운행분도 늘 포함(옛 "기사 직접 정산" 거름 삭제, 2026-10-02)
+      { client: '직접', monthKey: '2026-05', total: 80000, count: 1 },
     ])
     same(
       ours.map((item) => [item.client, item.workDate, item.remainingAmount, item.paymentDueDate]),
@@ -52,6 +54,7 @@ describe('미수금 — 운행 픽스처 확정 금액', () => {
         ['한진', '2026-05-10', 10000, ''],
         ['대한', '2026-05-12', 200000, ''],
         ['대한', '2026-04-01', 999999, ''],
+        ['직접', '2026-05-20', 80000, ''],
       ],
     )
   })
@@ -104,6 +107,7 @@ describe('세금계산서 — 거래처 집계 확정 금액', () => {
       { clientName: '한진', supplyAmount: 630000, taxAmount: 63000, count: 5, recordId: 'sales|2026-05|한진__main' },
       { clientName: '대한', supplyAmount: 200000, taxAmount: 20000, count: 1, recordId: 'sales|2026-05|대한__서울12가3456' },
       { clientName: '한진', supplyAmount: 250000, taxAmount: 25000, count: 1, recordId: 'sales|2026-05|한진__서울12가3456' },
+      { clientName: '직접', supplyAmount: 80000, taxAmount: 8000, count: 1, recordId: 'sales|2026-05|직접__부산33나1111' },
     ]
     assert.equal(ours.length, expected.length)
     ours.forEach((group, index) => {
@@ -124,8 +128,8 @@ describe('세금계산서 — 거래처 집계 확정 금액', () => {
 
   test('작성 전 목록 금액이 그룹 합계와 같다', () => {
     const { draftEntries } = listTaxInvoiceEntries(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK, [])
-    // 630,000 + 200,000 + 250,000
-    assert.equal(draftEntries.reduce((sum, item) => sum + item.supplyAmount, 0), 1080000)
+    // 630,000 + 200,000 + 250,000 + 80,000
+    assert.equal(draftEntries.reduce((sum, item) => sum + item.supplyAmount, 0), 1160000)
     const groups = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK)
     const entry = buildTaxInvoiceEntry(groups[0], MONTH_KEY, 'sales', [], FIXTURE_SETTINGS)
     assert.equal(entry.supplyAmount, 630000)

@@ -2,7 +2,6 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { calculatePaymentDueDate } from './clients.js'
 import { isDateWithinAssignment } from './drivers.js'
-import { getEffectiveDriverSettlementMode } from './cars.js'
 import {
   calculateDriverVehicleCommission,
   getCallDetailCommissionAmount,
@@ -64,21 +63,6 @@ describe('기본 계산 규칙', () => {
       same(getDetailPaymentSummary(detail), expected)
     }
   })
-
-  test('getEffectiveDriverSettlementMode', () => {
-    // [차량, 설정, 기대값] — 차량이 default면 설정 기본값, 둘 다 없으면 company
-    const cases = [
-      [{ settlementMode: 'driver_direct' }, { defaultDriverSettlementMode: 'employee' }, 'driver_direct'],
-      [{ settlementMode: 'default' }, { defaultDriverSettlementMode: 'employee' }, 'employee'],
-      [{ settlementMode: 'default' }, {}, 'company'],
-      [{}, { defaultDriverSettlementMode: 'none' }, 'none'],
-      [null, { defaultDriverSettlementMode: 'employee' }, 'employee'],
-      [undefined, {}, 'company'],
-    ]
-    for (const [car, settings, expected] of cases) {
-      assert.equal(getEffectiveDriverSettlementMode(car, settings), expected, JSON.stringify([car, settings]))
-    }
-  })
 })
 
 describe('같은 운행 픽스처 — 확정 금액', () => {
@@ -133,6 +117,8 @@ describe('같은 운행 픽스처 — 확정 금액', () => {
         { supplyAmount: 630000, taxAmount: 63000, totalAmount: 693000, count: 5 },
         { supplyAmount: 200000, taxAmount: 20000, totalAmount: 220000, count: 1 },
         { supplyAmount: 250000, taxAmount: 25000, totalAmount: 275000, count: 1 },
+        // 부산33나1111(옛 "기사 직접 정산" 시험값)도 기사차량 운행분이라 늘 포함(2026-10-02 계산서 처리 방식 삭제)
+        { supplyAmount: 80000, taxAmount: 8000, totalAmount: 88000, count: 1 },
       ],
     }
     for (const flow of /** @type {const} */ (['sales'])) {
@@ -149,7 +135,7 @@ describe('같은 운행 픽스처 — 확정 금액', () => {
 
   test('미수금 잔액', () => {
     const ours = getReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK)
-    assert.deepEqual(ours.map((item) => item.remainingAmount), [100000, 0, 20000, 10000, 200000, 999999])
+    assert.deepEqual(ours.map((item) => item.remainingAmount), [100000, 0, 20000, 10000, 200000, 999999, 80000])
     // 기준일 2026-08-25에 입금 예정일이 지난 미수 건수(옛 "숫자 비교표" 테스트에서 옮겨 옴)
     assert.equal(getOverdueReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK, new Date('2026-08-25')).length, 1)
   })

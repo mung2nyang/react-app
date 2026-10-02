@@ -66,7 +66,8 @@ export function isPersistedSettings(value) {
   for (const flag of ['paymentOn', 'subPaymentOn', 'fixedOn', 'subFixedOn', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn', 'runCountToggle', 'subFixedRouteOn', 'subRunCountToggle', 'dailyInspectionOn']) {
     if (flag in value && typeof value[flag] !== 'boolean') return false
   }
-  if ('defaultDriverSettlementMode' in value && !isAllowedEnum(value.defaultDriverSettlementMode, DRIVER_SETTLEMENT_MODES)) return false
+  // defaultDriverSettlementMode: 옛 "계산서 처리 방식" 기본값(2026-10-02 삭제) — 옛 저장분 읽기용.
+  if ('defaultDriverSettlementMode' in value &&!isAllowedEnum(value.defaultDriverSettlementMode, DRIVER_SETTLEMENT_MODES)) return false
   // driverInvoiceBasis: 옛 기사 매입 계산서 기준(2026-10-02 삭제) — 옛 저장분 읽기용.
   if ('driverInvoiceBasis' in value && !isAllowedEnum(value.driverInvoiceBasis, DRIVER_INVOICE_BASES)) return false
   for (const text of ['bizName', 'bizNumber', 'bizRepresentative', 'userName', 'bizAddress', 'bizType', 'bizItem', 'bizEmail']) {

@@ -6,7 +6,7 @@ import { driverIncomeFieldsFromDraft } from '../domain/driverIncomeDeductions.js
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
 
 /**
- * @param {{ id: string, number?: string, type?: string, tonnage?: string, settlement_mode?: string|null, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null, insurance_on?: boolean|null, driver_income_type?: string|null, withholding_on?: boolean|null, expense_rate?: string|null, insurance_rate?: string|null }} row
+ * @param {{ id: string, number?: string, type?: string, tonnage?: string, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null, insurance_on?: boolean|null, driver_income_type?: string|null, withholding_on?: boolean|null, expense_rate?: string|null, insurance_rate?: string|null }} row
  * @returns {LocalCar}
  */
 export function carFromAssignedSummary(row) {
@@ -16,7 +16,6 @@ export function carFromAssignedSummary(row) {
     type: row.type === 'main' ? 'main' : 'sub',
     tonnage: row.tonnage || '',
     supabaseId: row.id,
-    settlementMode: row.settlement_mode || 'default',
     driverPayMode: row.driver_pay_mode || 'revenue',
     driverSalaryAmount: row.driver_salary_amount ?? '',
     commEnabled: !!row.comm_enabled,

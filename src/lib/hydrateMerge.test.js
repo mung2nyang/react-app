@@ -204,9 +204,9 @@ describe('mergeCarsFromRows', () => {
     assert.equal(merged[1].id, 'unsynced')
   })
 
-  test('최소 서버 row는 settlementMode/commType을 문자열 기본값으로 정규화한다', () => {
+  test('최소 서버 row는 commType을 기본값으로 정규화하고 옛 settlementMode는 안 읽는다', () => {
     const merged = mergeCarsFromRows([], [{ id: 501, number: '11가1111', type: 'main', raw: {} }])
-    assert.equal(merged[0].settlementMode, 'default')
+    assert.equal('settlementMode' in merged[0], false)
     assert.equal(merged[0].commType, 'percent')
     assert.equal(merged[0].supabaseId, 501)
   })

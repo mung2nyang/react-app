@@ -72,7 +72,8 @@ export function isPersistedCar(value) {
   if ('supabaseId' in value && !isStringOrFiniteNumber(value.supabaseId)) return false
   if ('tonnage' in value && typeof value.tonnage !== 'string') return false
   if ('type' in value && value.type !== 'main' && value.type !== 'sub') return false
-  if ('settlementMode' in value && !isAllowedEnum(value.settlementMode, CAR_SETTLEMENT_MODES)) return false
+  // settlementMode: 옛 "계산서 처리 방식"(2026-10-02 삭제) — 옛 저장분 읽기용.
+  if ('settlementMode' in value &&!isAllowedEnum(value.settlementMode, CAR_SETTLEMENT_MODES)) return false
   if ('commEnabled' in value && typeof value.commEnabled !== 'boolean') return false
   if ('commType' in value && !isAllowedEnum(value.commType, COMM_TYPES)) return false
   if ('commission' in value && !isStringOrFiniteNumber(value.commission)) return false

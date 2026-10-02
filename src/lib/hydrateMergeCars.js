@@ -1,6 +1,6 @@
 // @ts-check
 import { dedupeCarsById } from '../domain/cars.js'
-import { CAR_SETTLEMENT_MODES, COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, isAllowedEnum } from '../store/persistDomainEnums.js'
+import { COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, isAllowedEnum } from '../store/persistDomainEnums.js'
 import {
   BUSINESS_INFO_KEYS, PERSONAL_INFO_KEYS, isPlainObject, isStringOrFiniteNumber, isStringRecord,
 } from '../store/persistDomainRecords.js'
@@ -75,7 +75,6 @@ export function mergeCarsFromRows(localCars, vehicleRows) {
       driverName: stringOrEmpty(row.driver_name ?? raw.driverName),
       driverPhone: stringOrEmpty(raw.driverPhone),
       driverLinkId: stringOrEmpty(raw.driverLinkId),
-      settlementMode: enumOrDefault(row.settlement_mode ?? raw.settlementMode, CAR_SETTLEMENT_MODES, 'default'),
       driverPayMode: enumOrDefault(row.driver_pay_mode ?? raw.driverPayMode, DRIVER_PAY_MODES, 'revenue'),
       driverSalaryAmount: numericOrEmpty(row.driver_salary_amount ?? raw.driverSalaryAmount),
       commEnabled: boolOrFalse(row.comm_enabled ?? raw.commEnabled),
