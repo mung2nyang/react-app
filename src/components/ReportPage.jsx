@@ -1,5 +1,5 @@
 // @ts-check
-// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도). 달 이동은 documents/MonthNavigator.jsx(9-C-1)
+// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도). 달 이동은 documents/MonthNavigator.jsx(9-C-1), 보는 달은 서류 발급이 줌(9-C-2)
 import { useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { formatWon } from '../lib/money.js'
@@ -27,12 +27,13 @@ import './report/report.css'
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
- * @param {import('react').ReactNode} [props.tabs] 서류 발급 탭 줄(9-C-1) — 머리 아래에 끼움
+ * @param {import('react').ReactNode} [props.tabs] 서류 발급 탭 줄 — 위 카드 달 이동 아래에 끼움
+ * @param {Date} props.viewDate
+ * @param {(next: Date) => void} props.onChangeMonth
  */
-export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBack, showToast, onOpenMenu, tabs }) {
+export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBack, showToast, onOpenMenu, tabs, viewDate, onChangeMonth }) {
   const { logId: rawLogId } = useParams()
   const logKey = (logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)) || 'main'
-  const [viewDate, setViewDate] = useState(() => new Date())
   const [savingPdf, setSavingPdf] = useState(false)
   const [savingImage, setSavingImage] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -139,14 +140,6 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
     }
   }
 
-  function handleHeaderBack() {
-    if (viewMode === 'detail') {
-      setViewMode('summary')
-      return
-    }
-    onBack?.()
-  }
-
   function openDetailPicker() {
     setPickerValue(clientFilter)
     setPickerOpen(true)
@@ -161,21 +154,14 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
 
   return (
     <div className="page report-page-wrap">
-      <PageHeader title="서류 발급" onBack={handleHeaderBack} onOpenMenu={onOpenMenu} />
-      {tabs}
+      <PageHeader title="서류 발급" onBack={onBack} onOpenMenu={onOpenMenu} />
 
       <div className="report-top-card">
-        <MonthNavigator viewDate={viewDate} onChange={setViewDate} />
-
-        <div className="report-pdf-actions">
-          <button type="button" className="theme-toggle-btn" onClick={openDetailPicker}>세부 내역서</button>
-          <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={handleDownloadPdf}>
-            {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
-          </button>
-          <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={handleDownloadImage}>
-            {savingImage ? '이미지 저장 중…' : '이미지 저장'}
-          </button>
-          <button type="button" className="theme-toggle-btn" onClick={() => setShareOpen(true)}>공유</button>
+        <MonthNavigator viewDate={viewDate} onChange={onChangeMonth} />
+        {tabs}
+        <div className="doc-scope-tabs" role="tablist" aria-label="내역 범위">
+          <button type="button" role="tab" aria-selected={viewMode === 'summary'} className={`doc-scope-tab${viewMode === 'summary' ? ' active' : ''}`} onClick={() => setViewMode('summary')}>전체</button>
+          <button type="button" role="tab" aria-selected={viewMode === 'detail'} className={`doc-scope-tab${viewMode === 'detail' ? ' active' : ''}`} onClick={openDetailPicker}>세부내역(거래처선택)</button>
         </div>
       </div>
 
@@ -199,6 +185,18 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
             isExporting={savingPdf || savingImage}
           />
         )}
+      </div>
+
+      <div className="doc-action-card">
+        <div className="report-pdf-actions">
+          <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={handleDownloadPdf}>
+            {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
+          </button>
+          <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={handleDownloadImage}>
+            {savingImage ? '이미지 저장 중…' : '이미지 저장'}
+          </button>
+          <button type="button" className="theme-toggle-btn" onClick={() => setShareOpen(true)}>공유</button>
+        </div>
       </div>
 
       <ReportClientPickerModal

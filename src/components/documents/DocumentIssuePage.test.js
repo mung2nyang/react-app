@@ -137,3 +137,31 @@ test('연동 기사 앱처럼 메인 종류 차량이 없으면 첫 차량(배�
     await view.cleanup()
   }
 })
+
+test('서류 탭 줄은 위 카드 안 달 이동 아래, 점검표 탭에서 옮긴 달을 운송비 내역서 탭도 그대로', async () => {
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  const view = await render()
+  try {
+    const card = view.container.querySelector('.report-top-card')
+    assert.ok(card?.querySelector('.maint-fuel-nav + .doc-tabs'), '달 이동 바로 아래 서류 탭 줄')
+    const prev = new Date()
+    prev.setDate(1)
+    prev.setMonth(prev.getMonth() - 1)
+    const prevLabel = `${prev.getFullYear()}년${prev.getMonth() + 1}월`
+    const navText = () => (view.container.querySelector('.report-top-card .maint-fuel-nav')?.textContent || '').replace(/\s/g, '')
+    const prevBtn = view.container.querySelector('.report-top-card button[title="이전 달"]')
+    assert.ok(prevBtn instanceof window.HTMLButtonElement)
+    await act(async () => { prevBtn.click() })
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
+    assert.ok(navText().includes(prevLabel), navText())
+
+    const reportTab = [...view.container.querySelectorAll('.doc-tab')].find((el) => el.textContent === '운송비 내역서')
+    assert.ok(reportTab instanceof window.HTMLButtonElement)
+    await act(async () => { reportTab.click() })
+    assert.ok(view.container.querySelector('#reportContentToExport'))
+    assert.ok(navText().includes(prevLabel), `운송비 내역서도 같은 달: ${navText()}`)
+    assert.ok(view.container.querySelector('.report-top-card .maint-fuel-nav + .doc-tabs'), '운송비 내역서 탭도 카드 안')
+  } finally {
+    await view.cleanup()
+  }
+})

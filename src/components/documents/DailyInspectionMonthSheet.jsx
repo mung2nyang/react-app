@@ -1,5 +1,5 @@
 // @ts-check
-// 서류 발급 [일상점검표] 탭(9-C-1, 피그마 "서류 발급" 1번): 달 이동 + 8일 구간 탭 + 머리 칸 + 외관·상태·기타 표(O/X/미, 오늘 이후 빈칸).
+// 서류 발급 [일상점검표] 탭(9-C-1, 피그마 "서류 발급" 1번): 달 이동(위 화면이 줌) + 서류 탭 + 8일 구간 탭 + 머리 칸 + 외관·상태·기타 표(O/X/미, 오늘 이후 빈칸).
 // 그 달 점검표는 서버에서 한 번에 읽고(보기만), 휴무는 그 차량 일지에서 읽는다.
 import { useEffect, useMemo, useState } from 'react'
 import { DAILY_INSPECTION_SECTIONS } from '../../domain/dailyInspectionItems.js'
@@ -13,9 +13,8 @@ import MonthNavigator from './MonthNavigator.jsx'
 
 /** @typedef {import('../../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
 
-/** @param {{ ownerKey: string, logKey: string }} props */
-export default function DailyInspectionMonthSheet({ ownerKey, logKey }) {
-  const [viewDate, setViewDate] = useState(() => new Date())
+/** @param {{ ownerKey: string, logKey: string, viewDate: Date, onChangeMonth: (next: Date) => void, tabs?: import('react').ReactNode }} props */
+export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, onChangeMonth, tabs }) {
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const [rangeIndex, setRangeIndex] = useState(() => initialRangeIndex(year, month, new Date()))
@@ -47,7 +46,7 @@ export default function DailyInspectionMonthSheet({ ownerKey, logKey }) {
 
   /** @param {Date} next */
   function changeMonth(next) {
-    setViewDate(next)
+    onChangeMonth(next)
     setRangeIndex(initialRangeIndex(next.getFullYear(), next.getMonth(), new Date()))
   }
 
@@ -55,6 +54,7 @@ export default function DailyInspectionMonthSheet({ ownerKey, logKey }) {
     <div className="doc-inspection-sheet">
       <div className="report-top-card">
         <MonthNavigator viewDate={viewDate} onChange={changeMonth} />
+        {tabs}
         <div className="doc-range-tabs" role="tablist" aria-label="날짜 구간">
           {RANGE_LABELS.map((label, index) => (
             <button key={label} type="button" role="tab" aria-selected={rangeIndex === index} className={`doc-range-tab${rangeIndex === index ? ' active' : ''}`} onClick={() => setRangeIndex(index)}>
