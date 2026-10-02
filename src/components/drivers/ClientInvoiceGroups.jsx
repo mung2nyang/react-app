@@ -20,19 +20,16 @@ import { formatWon } from '../../lib/money.js'
  * @param {{ groups: Array<InvoiceGroup>, unassignedCount: number }} props.invoice
  */
 export default function ClientInvoiceGroups({ invoice }) {
+  // 거래처별 카드는 바깥 묶음 카드 없이 화면에 바로 놓는다(빈 달 안내만 카드 하나).
   return (
-    <section className="driver-list-section" style={{ marginTop: 18 }}>
-      <div className="driver-section-heading">
-        <div>
-          <h3>거래처 세금계산서</h3>
-          <p>이 기사가 실제로 운송한 거래처별 매출입니다.</p>
-        </div>
-      </div>
+    <>
       {!invoice.groups.length ? (
-        <div className="linked-driver-empty">
-          선택한 달에 거래처가 연결된 운송 기록이 없습니다.
-          {invoice.unassignedCount ? ` (거래처 미지정 운행 ${invoice.unassignedCount}건)` : ''}
-        </div>
+        <section className="driver-list-section">
+          <div className="linked-driver-empty">
+            선택한 달에 거래처가 연결된 운송 기록이 없습니다.
+            {invoice.unassignedCount ? ` (거래처 미지정 운행 ${invoice.unassignedCount}건)` : ''}
+          </div>
+        </section>
       ) : (
         <>
           {invoice.unassignedCount > 0 && (
@@ -68,6 +65,6 @@ export default function ClientInvoiceGroups({ invoice }) {
           })}
         </>
       )}
-    </section>
+    </>
   )
 }

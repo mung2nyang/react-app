@@ -117,6 +117,14 @@
   margin-bottom: 0;
 }
 
+/* 서류 탭 줄과 작은 탭 줄 사이 가로줄(매출 화면과 같은 12px 위아래 여백) */
+.report-top-card .doc-tabs + .doc-scope-tabs,
+.report-top-card .doc-tabs + .doc-range-tabs {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
 .doc-action-card {
   margin-top: 12px;
   padding: 12px;

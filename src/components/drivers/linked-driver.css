@@ -6,9 +6,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 14px;
+  padding: 18px;
   border: 1px solid var(--border-color);
-  border-radius: 17px;
+  border-radius: 24px;
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
 }
@@ -61,7 +61,7 @@
   font-size: var(--fs-3);
   font-weight: 900;
 }
-.linked-driver-chip-row { display: flex; gap: 8px; margin: 12px 0 18px; }
+.linked-driver-chip-row { display: flex; gap: 8px; margin: 12px 0; }
 .linked-driver-profile-actions { display: flex; align-items: center; gap: 8px; }
 .linked-driver-chip {
   flex: 1;
@@ -126,11 +126,12 @@
   font-weight: 700;
 }
 .linked-driver-invoice-card {
-  margin-bottom: 10px;
-  padding: 12px;
+  margin-bottom: 12px;
+  padding: 18px;
   border: 1px solid var(--border-color);
-  border-radius: 14px;
+  border-radius: 24px;
   background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
 }
 .linked-driver-invoice-money {
   display: flex;
@@ -142,11 +143,12 @@
 }
 .linked-driver-invoice-money strong {
   margin-left: auto;
+  text-align: right;
   color: var(--text-color);
   font-size: var(--fs-2);
 }
 .linked-driver-invoice-money strong small {
-  display: block;
+  margin-right: 6px;
   font-size: var(--fs-floor);
   font-weight: 700;
   color: var(--sub-text-color);
@@ -161,16 +163,16 @@
 
 /* 원본 style.css 2153·6954행 — 이관 시 누락된 배경카드 복원(§15 슬라이스 A) */
 .driver-list-section {
-  margin-top: 10px;
-  padding: 14px;
+  margin-top: 12px;
+  padding: 18px;
   border: 1px solid var(--border-color);
-  border-radius: 17px;
+  border-radius: 24px;
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
 }
 .tax-invoice-summary {
   width: 100%;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   padding: 18px;
   border: 1px solid var(--border-color);
   border-radius: 24px;

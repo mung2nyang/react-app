@@ -139,16 +139,15 @@ export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMont
             {flowMeta.completeLabel} <span className="tab-count-badge">{listed.issuedEntries.length}</span>
           </button>
         </div>
+        {issuerReady && <p className="tax-invoice-issuer-line">{`${settings.bizName} · ${settings.bizNumber} · ${flowMeta.label}`}</p>}
       </div>
 
-      <div className={`tax-invoice-guide${issuerReady ? ' ready' : ''}`}>
-        {!issuerReady && <p className="tax-invoice-guide-title">회사 사업자 정보가 필요합니다.</p>}
-        <p className="tax-invoice-guide-desc">
-          {issuerReady
-            ? `${settings.bizName} · ${settings.bizNumber} · ${flowMeta.label}`
-            : '마이페이지 → 개인정보에서 계산서를 발행할 회사의 사업자 정보를 입력해 주세요.'}
-        </p>
-      </div>
+      {!issuerReady && (
+        <div className="tax-invoice-guide">
+          <p className="tax-invoice-guide-title">회사 사업자 정보가 필요합니다.</p>
+          <p className="tax-invoice-guide-desc">마이페이지 → 개인정보에서 계산서를 발행할 회사의 사업자 정보를 입력해 주세요.</p>
+        </div>
+      )}
 
       <div className="summary-card">
         <div className="summary-title">

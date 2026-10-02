@@ -181,9 +181,6 @@ export default function SideMenu({
               <ChartIcon />
               미수금/정산 관리
             </button>
-          </section>
-          <section className="side-menu-section document-section">
-            <h3 className="side-menu-section-title">서류</h3>
             <button type="button" className="dropdown-item" onClick={() => pick('report')}>
               <DocIcon />
               서류 발급

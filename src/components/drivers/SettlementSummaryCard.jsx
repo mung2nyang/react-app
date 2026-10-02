@@ -7,6 +7,14 @@ import { getDriverSettlementBreakdown } from '../../domain/driverIncomeDeduction
 const YEAR_OPTIONS = getYearOptions()
 
 /**
+ * 공제 금액 — 0원이면 빼기 기호 없이
+ * @param {number} amount
+ */
+function deductionWon(amount) {
+  return `${Number(amount) > 0 ? '-' : ''}${formatWon(amount)}`
+}
+
+/**
  * detail은 getLinkedDriverSettlementDetail 결과에 그 기사차량(car)을 실은 것 — 카드는 car의 산재·원천징수 설정으로 계산한다.
  * @typedef {{ tripCount?: number, totalFare?: number, commissionAmount?: number, car?: import('../../domain/financeTypes.js').CarLike }} SettlementDetail
  */
@@ -53,8 +61,8 @@ export default function SettlementSummaryCard({
       <div className="summary-title"><span>기사 정산</span><span>{detail?.tripCount || 0}건</span></div>
       <div className="summary-row"><span>총 운송료</span><span className="summary-value">{formatWon(breakdown.totalFare)}</span></div>
       <div className="summary-row"><span>기사 정산금</span><span className="summary-value">{formatWon(breakdown.settlementAmount)}</span></div>
-      <div className="summary-row"><span>산재보험 (기사 몫)</span><span className="summary-value">-{formatWon(breakdown.insuranceDriverShare)}</span></div>
-      <div className="summary-row"><span>원천징수 (3.3%)</span><span className="summary-value">-{formatWon(breakdown.withholding)}</span></div>
+      <div className="summary-row"><span>산재보험 (기사 몫)</span><span className="summary-value">{deductionWon(breakdown.insuranceDriverShare)}</span></div>
+      <div className="summary-row"><span>원천징수 (3.3%)</span><span className="summary-value">{deductionWon(breakdown.withholding)}</span></div>
       <div className="summary-row total"><span>최종 실수령 정산액</span><span className="summary-value">{formatWon(breakdown.driverNet)}</span></div>
     </section>
   )

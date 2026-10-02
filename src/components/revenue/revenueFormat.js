@@ -12,7 +12,8 @@ export function monthKeyOf(year, monthIndex) {
 
 /** @param {number} amount */
 export function won(amount) {
-  return `${(Number.isNaN(Number(amount)) ? 0 : Number(amount)).toLocaleString('ko-KR')}원`
+  // NaN·-0은 0으로 (0을 부호 반전하면 "-0원"으로 보이는 것 방지)
+  return `${(Number(amount) || 0).toLocaleString('ko-KR')}원`
 }
 
 /** @param {string} [date] */

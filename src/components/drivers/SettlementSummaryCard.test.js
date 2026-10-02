@@ -52,8 +52,8 @@ test('월급제 4대보험 근로자(둘 다 OFF): 월급 그대로, 기사 공�
   const view = await render({ tripCount: 1, totalFare: 500000, commissionAmount: 0, car })
   try {
     assert.equal(view.rows['기사 정산금'], '2,000,000원')
-    assert.equal(view.rows['산재보험 (기사 몫)'], '-0원')
-    assert.equal(view.rows['원천징수 (3.3%)'], '-0원')
+    assert.equal(view.rows['산재보험 (기사 몫)'], '0원')
+    assert.equal(view.rows['원천징수 (3.3%)'], '0원')
     assert.equal(view.rows['최종 실수령 정산액'], '2,000,000원')
   } finally { await view.cleanup() }
 })

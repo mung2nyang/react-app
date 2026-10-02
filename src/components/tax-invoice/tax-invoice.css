@@ -50,8 +50,11 @@
   margin: 0;
 }
 
-.tax-invoice-guide.ready {
-  color: var(--text-color);
+/* 서류 발급 위 카드 안, [작성 전][발급 완료] 아래 발행 회사 한 줄 */
+.tax-invoice-issuer-line {
+  margin: 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
 }
 
 .tax-invoice-amount-box {

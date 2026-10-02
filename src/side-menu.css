@@ -85,12 +85,10 @@
 
 .management-section .side-menu-section-title::before { background: #68d391; }
 .business-section .side-menu-section-title::before { background: #63b3ed; }
-.document-section .side-menu-section-title::before { background: #f6ad55; }
 .settings-section .side-menu-section-title::before { background: #b794f4; }
 
 .business-section { order: 1; }
 .management-section { order: 2; }
-.document-section { order: 3; }
 .settings-section { order: 4; }
 
 .side-menu .dropdown-item {
