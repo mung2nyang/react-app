@@ -53,7 +53,7 @@ describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
       startDate: '2026-06-10',
       endDate: '2026-05-01',
     }, null, [{ type: 'sub', number: '서울12가3456' }])
-    assert.equal(result.error, '할당 종료일은 시작일 이후로 선택해 주세요.')
+    assert.equal(result.error, '계약 종료일은 시작일 이후로 선택해 주세요.')
   })
 })
 

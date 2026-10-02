@@ -115,7 +115,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
         <div className="driver-section-heading">
           <div>
             <h3>기사 연결 현황</h3>
-            <p>연동 상태와 차량 할당 기간을 관리합니다.</p>
+            <p>연동 상태와 차량 계약기간을 관리합니다.</p>
           </div>
         </div>
         <div className="driver-summary-counts">
@@ -143,7 +143,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
               <strong>{driver.vehicleNumber || '차량 미지정'}</strong>
             </div>
             <div>
-              <span>할당 기간</span>
+              <span>계약기간</span>
               <strong>{driver.startDate || '-'}{driver.endDate ? ` ~ ${driver.endDate}` : ' ~ 계속'}</strong>
             </div>
           </div>

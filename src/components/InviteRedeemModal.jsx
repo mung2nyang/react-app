@@ -42,7 +42,7 @@ export default function InviteRedeemModal({ session, showToast, onClose, onLinke
   return (
     <div className="modal-overlay">
       <div className="modal-content client-modal invite-redeem-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-title">차주 연동</div>
+        <div className="modal-title">초대코드 입력</div>
         <p className="invite-redeem-note">
           차주에게 전달받은 초대코드를 입력해 주세요.<br />
           연동이 완료되면 기사님이 입력한 운행·매출 내역이 차주에게 공유됩니다.

@@ -153,7 +153,7 @@ export default function SideMenu({
             </button>
             <button type="button" className="dropdown-item" onClick={() => pick('expenses')}>
               <FuelIcon />
-              정비/주유/기타
+              차량 유지비
             </button>
             {linkedDriverItems.map((item) => (
               <button

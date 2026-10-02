@@ -80,11 +80,11 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">
-            <label htmlFor="drvStart">할당 시작일</label>
+            <label htmlFor="drvStart">계약 시작일</label>
             <TemporalInput type="date" id="drvStart" value={draft.startDate || ''} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
           </div>
           <div className="form-group">
-            <label htmlFor="drvEnd">할당 종료일</label>
+            <label htmlFor="drvEnd">계약 종료일</label>
             <TemporalInput type="date" id="drvEnd" value={draft.endDate || ''} onChange={(e) => setDraft({ ...draft, endDate: e.target.value })} />
           </div>
         </div>

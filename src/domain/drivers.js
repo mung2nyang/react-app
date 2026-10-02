@@ -59,7 +59,7 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
     if (!startDate) return { error: '기사 이름, 할당 차량, 시작일을 입력해 주세요.', items }
   }
   if (endDate && startDate && endDate < startDate) {
-    return { error: '할당 종료일은 시작일 이후로 선택해 주세요.', items }
+    return { error: '계약 종료일은 시작일 이후로 선택해 주세요.', items }
   }
 
   const list = [...(items || [])]

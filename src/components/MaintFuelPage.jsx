@@ -76,8 +76,8 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
   const total = monthTotal(scopedItems, kind, year, month)
   const kindLabel = KINDS.find((item) => item.value === kind)?.label || '정비'
   const title = !logId || logId === 'main'
-    ? '정비/주유/기타'
-    : `${resolveDriverOrPlateLabel(logId, drivers, cars)} 정비/주유/기타`
+    ? '차량 유지비'
+    : `${resolveDriverOrPlateLabel(logId, drivers, cars)} 차량 유지비`
 
   /** @param {Array<ExpenseItem>} next @returns {Promise<boolean>} */
   async function persist(next) {

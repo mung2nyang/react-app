@@ -1,4 +1,4 @@
-// "초대코드로 차주 연동"은 전체 화면이 아니라 마이페이지 위 팝업으로 열린다(주소 이동 없음).
+// 마이페이지 "초대코드 입력"은 전체 화면이 아니라 마이페이지 위 팝업으로 열린다(주소 이동 없음).
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -32,7 +32,7 @@ async function type(el, value) {
   })
 }
 
-test('초대코드로 차주 연동 버튼을 누르면 팝업이 뜨고, 4자 미만이면 연동하기가 막히며, 취소로 닫힌다', async () => {
+test('초대코드 입력 버튼을 누르면 팝업이 뜨고, 4자 미만이면 연동하기가 막히며, 취소로 닫힌다', async () => {
   const opened = []
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -48,7 +48,7 @@ test('초대코드로 차주 연동 버튼을 누르면 팝업이 뜨고, 4자 �
     })
     assert.equal(container.querySelector('.invite-redeem-modal'), null, '처음에는 팝업이 없다')
 
-    const entry = [...container.querySelectorAll('.mypage-notice-link')].find((el) => el.textContent.includes('초대코드로 차주 연동'))
+    const entry = [...container.querySelectorAll('.mypage-notice-link')].find((el) => el.textContent.includes('초대코드 입력'))
     await click(entry)
     assert.ok(container.querySelector('.invite-redeem-modal'), '팝업이 열린다')
     assert.deepEqual(opened, [], '다른 화면으로 이동하지 않는다')

@@ -55,7 +55,7 @@ const SHORTCUTS = [
   },
   {
     page: 'expenses',
-    title: '정비/주유/기타',
+    title: '차량 유지비',
     hint: '월별 비용과 내역',
     icon: (
       <svg viewBox="0 0 25 25">
@@ -164,7 +164,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, on
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M19 8v6M16 11h6"></path>
             </svg>
-            <span>초대코드로 차주 연동</span>
+            <span>초대코드 입력</span>
           </button>
         )}
         <button type="button" className="mypage-notice-link" onClick={() => onOpen('message-settings')}>

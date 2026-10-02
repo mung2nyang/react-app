@@ -25,7 +25,7 @@ export default function DayLogExpenses({ dayExpenses, expenseForm, callFormOpen,
   return (
     <div className="modal-section maint-section">
       <div className="modal-section-title">
-        <span>차량 정비/주유/기타</span>
+        <span>차량 유지비</span>
         <button type="button" className="compact-add-btn" onClick={onKindPick}>+ 추가</button>
       </div>
       <ExpenseGroups dayExpenses={dayExpenses} onEdit={onEdit} onDelete={expenseForm.remove} />
