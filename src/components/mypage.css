@@ -161,6 +161,7 @@
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   line-height: 1.35;
+  word-break: keep-all;
 }
 
 .mypage-notice-area {

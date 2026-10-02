@@ -4,7 +4,7 @@
    (account-flow의 죽은 값 0 1px 2px …06은 버림). */
 
 :root {
-  --fs-floor: 0.72rem;
+  --fs-floor: 0.75rem;
   --fs-2: 0.78rem;
   --fs-3: 0.85rem;
   --fs-4: 0.92rem;

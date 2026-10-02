@@ -17,7 +17,7 @@
 .car-biz-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .car-biz-toggle > div { min-width: 0; text-align: left; }
 .car-biz-toggle > div > label { color: var(--text-color); font-size: var(--fs-4); font-weight: 750; }
-.car-biz-toggle p { margin: 4px 0 0; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; }
+.car-biz-toggle p { margin: 4px 0 0; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; word-break: keep-all; }
 .car-biz-owner-line { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--input-bg); color: var(--sub-text-color); font-size: var(--fs-floor); }
 .car-biz-owner-line { text-align: left; }
 .car-biz-owner-line span { display: block; }
