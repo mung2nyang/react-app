@@ -14,7 +14,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: ReportPage } = await import('./ReportPage.jsx')
-const { default: TaxInvoicePage } = await import('./TaxInvoicePage.jsx')
+const { default: TaxInvoiceTab } = await import('./documents/TaxInvoiceTab.jsx')
 const { commitClients, commitInvoices, commitWorkData } = await import('../store/commitHelpers.js')
 
 test('일지를 커밋하면 운송비 내역서가 리마운트 없이 합계를 갱신한다', async () => {
@@ -66,9 +66,9 @@ test('계산서를 커밋하면 세금계산서 발급 목록이 리마운트 �
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(TaxInvoicePage, { ownerKey, onBack: () => {} }))
+      root.render(React.createElement(TaxInvoiceTab, { ownerKey, logKey: 'main', viewDate: new Date(), onChangeMonth: () => {} }))
     })
-    assert.equal(!!container.querySelector('.tax-invoice-top-card .settings-segmented-control'), false, '계산서 종류 탭 줄 없음(2026-10-02)')
+    assert.equal(!!container.querySelector('.report-top-card .settings-segmented-control'), false, '계산서 종류 탭 줄 없음(2026-10-02)')
     assert.equal(/기사 매입|수수료 발행/.test(container.textContent || ''), false)
     const issuedTab = [...container.querySelectorAll('button')].find((el) => el.textContent.includes('발급 완료'))
     assert.ok(issuedTab, '발급 완료 탭이 있어야 한다')
@@ -76,7 +76,8 @@ test('계산서를 커밋하면 세금계산서 발급 목록이 리마운트 �
 
     await act(async () => {
       commitInvoices(ownerKey, [{
-        id: `sales|${monthKey}|sot-client`,
+        id: `sales|${monthKey}|sot-client__main`,
+        partyKey: 'sot-client__main',
         flow: 'sales',
         monthKey,
         status: 'issued',

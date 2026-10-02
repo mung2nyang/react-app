@@ -16,8 +16,9 @@ import { calculateDriverVehicleCommission, getDriverCarWorkData, getMonthlyDrive
 /** @typedef {{ key?: string, biz?: import('./financeTypes.js').SupplierBiz, carLabel?: string, carNumber?: string }} SupplierIdentity */
 /** @typedef {{ type: 'call'|'fixed', dateKey: string, client: string, loadLoc: string, unloadLoc: string, fare: number, vatExempt: boolean, platform?: string, distanceKm?: string|number, cargoTonnage?: string|number, paymentDueDate?: string, remarks?: string, fixedCount?: number }} DriverTrip */
 
-/** 거래처 매출 계산서 원천 그룹(메인 + 기사차량 운행분). 계산서 종류는 매출뿐(기사 매입·수수료 발행 삭제, 2026-10-02) — flow는 저장 id 호환용. @param {string} monthKey @param {'sales'} [flow] @param {FinanceSettings} [settings] @param {WorkDataByLogId} [workDataByLogId] */
-export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {}, workDataByLogId = {}) {
+/** 거래처 매출 계산서 원천 그룹(메인 + 기사차량 운행분). 계산서 종류는 매출뿐(기사 매입·수수료 발행 삭제, 2026-10-02) — flow는 저장 id 호환용. logKey('main'|차량번호)를 넘기면 그 차량 운행분만(서류 발급 차량별, 세금계산서 정리 ②).
+ * @param {string} monthKey @param {'sales'} [flow] @param {FinanceSettings} [settings] @param {WorkDataByLogId} [workDataByLogId] @param {string} [logKey] */
+export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {}, workDataByLogId = {}, logKey) {
   const cars = settings.cars || []
   if (flow !== 'sales') return []
   /** @type {Record<string, { partyKey: string, clientName: string, partyType: string, count: number, supplyAmount: number, taxAmount: number, supplierKey?: string, supplierBiz?: import('./financeTypes.js').SupplierBiz, vehicleLabel?: string, vehicleNumbers: Set<string> }>} */
@@ -48,7 +49,7 @@ export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {
     return grouped[groupKey]
   }
 
-  sources.forEach((source) => {
+  sources.filter((source) => !logKey || source.logId === logKey).forEach((source) => {
     // 소스(차량)별 스코프 고정노선 우선, 없으면 차주 것 fallback(getFixedRouteClient).
     const fixedRouteClientForInvoice = getFixedRouteClient(settings, source.logId)
     const fixedClientName = fixedRouteClientForInvoice?.companyName || ''

@@ -138,3 +138,15 @@ describe('입금 예정일', () => {
     assert.equal(calculatePaymentDueDate('2026-05-10', 'next_month_end', ''), '2026-06-30')
   })
 })
+
+test('세금계산서 정리 ②: logKey를 넘기면 그 차량 묶음만, 안 넘기면 전체 그대로', () => {
+  const all = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK)
+  const keys = [...new Set(all.map((group) => group.partyKey.split('__').pop() || ''))]
+  assert.ok(keys.length >= 2, '시험값에 메인·기사차량 묶음이 둘 다 있음')
+  const byVehicle = keys.flatMap((key) => {
+    const groups = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK, key)
+    assert.ok(groups.every((group) => group.partyKey.endsWith(`__${key}`)), key)
+    return groups
+  })
+  assert.deepEqual(byVehicle.map((group) => group.partyKey).sort(), all.map((group) => group.partyKey).sort())
+})

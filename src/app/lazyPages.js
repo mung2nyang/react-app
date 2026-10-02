@@ -10,7 +10,6 @@ export const AppSettingsPage = lazy(() => import('../components/AppSettingsPage.
 export const MaintFuelPage = lazy(() => import('../components/MaintFuelPage.jsx'))
 export const ReceivablesPage = lazy(() => import('../components/ReceivablesPage.jsx'))
 export const DocumentIssuePage = lazy(() => import('../components/documents/DocumentIssuePage.jsx'))
-export const TaxInvoicePage = lazy(() => import('../components/TaxInvoicePage.jsx'))
 export const DriverConnectionPage = lazy(() => import('../components/DriverConnectionPage.jsx'))
 export const LinkedDriverManagementPage = lazy(() => import('../components/drivers/LinkedDriverManagementPage.jsx'))
 export const LinkedDriverClientsPage = lazy(() => import('../components/drivers/LinkedDriverClientsPage.jsx'))

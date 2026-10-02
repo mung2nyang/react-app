@@ -1,6 +1,6 @@
 // @ts-check
 // AppShell 라우트 트리만 분리(200줄). 셸 크롬(탭/메뉴/알림)은 AppShell.jsx에 남긴다.
-import { Route, Routes, useSearchParams } from 'react-router-dom'
+import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
 import ComingSoonRoute from './ComingSoonRoute.jsx'
 import MainPageRoute from './MainPageRoute.jsx'
 import {
@@ -17,7 +17,6 @@ import {
   ReceivablesPage,
   DocumentIssuePage,
   RevenuePage,
-  TaxInvoicePage,
   CustomerCenterPage,
   NoticePage,
   MessageSettingsPage,
@@ -69,7 +68,7 @@ export default function AppShellRoutes({
       <Route path="logs/:logId/manage" element={<LinkedDriverManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="logs/:logId/clients" element={<LinkedDriverClientsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="logs/:logId/expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
-      <Route path="logs/:logId/report" element={<DocumentIssuePage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
+      <Route path="logs/:logId/report" element={<DocumentIssuePage ownerKey={ownerKey} isEmployedDriver={session?.accountType === 'employed_driver'} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="logs/:logId/settings" element={<AppSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="logs/:logId/day/:date" element={mainPage()} />
       <Route path="logs/:logId" element={mainPage()} />
@@ -89,8 +88,8 @@ export default function AppShellRoutes({
       <Route path="me/settings" element={<AppSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="receivables/*" element={<ReceivablesPage ownerKey={ownerKey} showToast={showToast} onWorkChanged={bumpNotifTick} onBack={() => { navigate(backTarget); bumpNotifTick() }} onOpenMenu={onOpenMenu} />} />
-      <Route path="report" element={<DocumentIssuePage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
-      <Route path="tax" element={<TaxInvoicePage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
+      <Route path="report" element={<DocumentIssuePage ownerKey={ownerKey} isEmployedDriver={session?.accountType === 'employed_driver'} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
+      <Route path="tax" element={<Navigate to="/app/report" replace />} />
       <Route path="drivers/:linkId/clients" element={<LinkedDriverClientsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="drivers/:linkId" element={<LinkedDriverManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="drivers" element={<DriverConnectionPage ownerKey={ownerKey} session={session} showToast={showToast} navigate={navigate} onBack={() => { navigate('/app/me'); bumpNotifTick() }} />} />

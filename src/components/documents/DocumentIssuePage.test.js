@@ -1,4 +1,4 @@
-// 로드맵 9-C-1·9-D — 서류 발급: 탭 보임/숨김(스위치·저장분), 처음 탭 [일상점검표], 표 칸(O/X/미/빈칸)·머리 칸, [운송비 내역서] 탭은 기존 화면.
+// 로드맵 9-C-1·9-D·세금계산서 정리 ② — 서류 발급(아래 9-C·9-D 테스트는 연동 기사 앱 화면 = 세금계산서 탭 없음으로 그림): 탭 보임/숨김(스위치·저장분), 처음 탭 [일상점검표], 표 칸(O/X/미/빈칸)·머리 칸, [운송비 내역서] 탭은 기존 화면.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -28,7 +28,7 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
 const { default: DocumentIssuePage } = await import('./DocumentIssuePage.jsx')
-const { commitCars, commitProfile, commitSettings, commitWorkData } = await import('../../store/commitHelpers.js')
+const { commitCars, commitInvoices, commitLogWorkData, commitProfile, commitSettings, commitWorkData } = await import('../../store/commitHelpers.js')
 const { normalizeSettings } = await import('../../domain/practiceSettings.js')
 const { EMPTY_PROFILE } = await import('../../lib/profile.js')
 const { allGoodItems } = await import('../../domain/dailyInspectionItems.js')
@@ -42,16 +42,20 @@ beforeEach(() => {
   commitCars(OWNER, [{ id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' }], { syncToCloud: false })
   commitProfile(OWNER, { ...EMPTY_PROFILE, name: '김운행', bizRepresentative: '김대표' }, { syncToCloud: false })
   commitWorkData(OWNER, {}, { syncToCloud: false })
+  commitInvoices(OWNER, [], { syncToCloud: false })
 })
 
-async function render() {
+/** @param {{ path?: string, owner?: boolean }} [opts] owner = 차주(세금계산서 탭 있음), 기본은 연동 기사 앱 */
+async function render({ path = '/report', owner = false } = {}) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(MemoryRouter, { initialEntries: ['/report'] },
+    const page = React.createElement(DocumentIssuePage, { ownerKey: OWNER, onBack: () => {}, isEmployedDriver: !owner })
+    root.render(React.createElement(MemoryRouter, { initialEntries: [path] },
       React.createElement(Routes, null,
-        React.createElement(Route, { path: '/report', element: React.createElement(DocumentIssuePage, { ownerKey: OWNER, onBack: () => {} }) }))))
+        React.createElement(Route, { path: '/report', element: page }),
+        React.createElement(Route, { path: '/logs/:logId/report', element: page }))))
   })
   await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
   return { container, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
@@ -61,7 +65,7 @@ test('스위치 꺼짐 + 저장분 없음 → 탭 줄 없이 운송비 내역서
   commitSettings(OWNER, normalizeSettings({}), { syncToCloud: false })
   const view = await render()
   try {
-    assert.equal(view.container.querySelector('.doc-tabs'), null)
+    assert.equal(!!view.container.querySelector('.doc-tabs'), false)
     assert.ok(view.container.querySelector('#reportContentToExport'), '운송비 내역서 내용')
     assert.equal(view.container.querySelector('.settings-title')?.textContent, '서류 발급')
   } finally {
@@ -216,5 +220,78 @@ test('9-D 그 달 점검표를 읽기 전이면 내보내기 버튼 잠김', asy
   } finally {
     pendingFetch = null
     await view.cleanup()
+  }
+})
+
+test('세금계산서 정리 ② 차주: 탭 [세금계산서][운송비 내역서][일상점검표], 처음 [세금계산서], 위 카드에 [작성 전][발급 완료]', async () => {
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  const view = await render({ owner: true })
+  try {
+    assert.deepEqual([...view.container.querySelectorAll('.doc-tab')].map((el) => el.textContent), ['세금계산서', '운송비 내역서', '일상점검표'])
+    assert.equal(view.container.querySelector('.doc-tab.active')?.textContent, '세금계산서')
+    const scope = [...view.container.querySelectorAll('.report-top-card .doc-scope-tab')].map((el) => el.textContent?.replace(/\d+$/, '').trim())
+    assert.deepEqual(scope, ['작성 전', '발급 완료'])
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('세금계산서 정리 ② 연동 기사 본인 앱엔 세금계산서 탭 없음(스위치 꺼짐이면 탭 줄도 없음)', async () => {
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  const on = await render()
+  try {
+    assert.deepEqual([...on.container.querySelectorAll('.doc-tab')].map((el) => el.textContent), ['운송비 내역서', '일상점검표'])
+  } finally {
+    await on.cleanup()
+  }
+  commitSettings(OWNER, normalizeSettings({}), { syncToCloud: false })
+  const off = await render()
+  try {
+    assert.equal(!!off.container.querySelector('.doc-tabs'), false)
+    assert.equal((off.container.textContent || '').includes('세금계산서'), false)
+  } finally {
+    await off.cleanup()
+  }
+})
+
+test('세금계산서 정리 ② 차량별: 메인 서류 발급 = 메인 차량 계산서만, 기사차량 서류 발급 = 그 차량 것만(저장된 발급 완료분 포함)', async () => {
+  commitSettings(OWNER, normalizeSettings({}), { syncToCloud: false })
+  commitCars(OWNER, [
+    { id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' },
+    { id: 'c-sub', type: 'sub', number: '22가2222', supabaseId: 'veh-sub' },
+  ], { syncToCloud: false })
+  const today = todayKey()
+  const monthKey = today.slice(0, 7)
+  commitWorkData(OWNER, { [today]: { callDetails: [{ client: '메인거래처', fare: '100000' }] } }, { syncToCloud: false })
+  commitLogWorkData(OWNER, '22가2222', { [today]: { callDetails: [{ client: '기사거래처', fare: '50000' }] } })
+  commitInvoices(OWNER, [
+    { id: `sales|${monthKey}|옛발급__22가2222`, flow: 'sales', monthKey, status: 'issued', partyKey: '옛발급__22가2222', clientName: '옛발급', supplyAmount: 1000, taxAmount: 100 },
+  ], { syncToCloud: false })
+  const cardsText = (/** @type {Element} */ root) => [...root.querySelectorAll('.tax-invoice-entry-card')].map((el) => el.textContent || '').join('|')
+  /** @param {Element} root */
+  const issuedTab = (root) => [...root.querySelectorAll('.doc-scope-tab')].find((el) => (el.textContent || '').startsWith('발급 완료'))
+
+  const main = await render({ owner: true })
+  try {
+    assert.ok(cardsText(main.container).includes('메인거래처'))
+    assert.equal(cardsText(main.container).includes('기사거래처'), false)
+    const tab = issuedTab(main.container)
+    assert.ok(tab instanceof window.HTMLButtonElement)
+    await act(async () => { tab.click() })
+    assert.equal(cardsText(main.container).includes('옛발급'), false, '다른 차량 발급 완료분 안 나옴')
+  } finally {
+    await main.cleanup()
+  }
+
+  const sub = await render({ owner: true, path: '/logs/22가2222/report' })
+  try {
+    assert.ok(cardsText(sub.container).includes('기사거래처'))
+    assert.equal(cardsText(sub.container).includes('메인거래처'), false)
+    const tab = issuedTab(sub.container)
+    assert.ok(tab instanceof window.HTMLButtonElement)
+    await act(async () => { tab.click() })
+    assert.ok(cardsText(sub.container).includes('옛발급'), '그 차량 발급 완료분은 나옴')
+  } finally {
+    await sub.cleanup()
   }
 })

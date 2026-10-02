@@ -28,6 +28,7 @@ import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
  * @property {string} [flow]
  * @property {string} [monthKey]
  * @property {string} [status]
+ * @property {string} [partyKey]
  */
 
 /**
@@ -125,11 +126,13 @@ export function getTaxInvoiceSupplierBiz(item, settings = {}) {
  * @param {FinanceSettings} settings
  * @param {WorkDataByLogId} workDataByLogId
  * @param {Array<TaxInvoiceRecord>} [records]
+ * @param {string} [logKey] 넘기면 그 차량 것만 — 저장된 발급 완료분은 partyKey(거래처__차량)로 거름
  */
-export function listTaxInvoiceEntries(monthKey, flow, settings, workDataByLogId, records = []) {
-  const sourceEntries = getTaxInvoiceSourceGroups(monthKey, flow, settings, workDataByLogId)
+export function listTaxInvoiceEntries(monthKey, flow, settings, workDataByLogId, records = [], logKey) {
+  const sourceEntries = getTaxInvoiceSourceGroups(monthKey, flow, settings, workDataByLogId, logKey)
     .map((group) => buildTaxInvoiceEntry(group, monthKey, flow, records, settings))
-  const storedIssued = (records || []).filter((item) => item.flow === flow && item.monthKey === monthKey && item.status === 'issued')
+  const storedIssued = (records || []).filter((item) => item.flow === flow && item.monthKey === monthKey && item.status === 'issued'
+    && (!logKey || String(item.partyKey || '').endsWith(`__${logKey}`)))
   const issuedById = new Map(storedIssued.map((item) => [item.id, item]))
   sourceEntries.forEach((item) => {
     if (item.status === 'issued') issuedById.set(item.id, item)

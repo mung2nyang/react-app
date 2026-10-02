@@ -57,10 +57,11 @@ export function lastDayOfMonth(monthKey) {
  * @param {FinanceSettings} settings
  * @param {WorkDataByLogId} workDataByLogId
  * @param {Array<TaxInvoiceRecord>} [records]
+ * @param {string} [logKey] 서류 발급 차량별(없으면 전체)
  * @returns {ReturnType<typeof listTaxInvoiceEntries>}
  */
-export function listMonthInvoices(monthKey, flow, settings, workDataByLogId, records) {
-  return listTaxInvoiceEntries(monthKey, flow, settings, workDataByLogId, records)
+export function listMonthInvoices(monthKey, flow, settings, workDataByLogId, records, logKey) {
+  return listTaxInvoiceEntries(monthKey, flow, settings, workDataByLogId, records, logKey)
 }
 
 /**

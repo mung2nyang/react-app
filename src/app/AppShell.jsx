@@ -29,7 +29,7 @@ const PAGE_PATH = {
   expenses: 'expenses',
   receivables: 'receivables',
   report: 'report',
-  invoices: 'tax',
+  invoices: 'report', // 세금계산서는 서류 발급 첫 탭(세금계산서 정리 ②)
   drivers: 'drivers',
   revenue: 'revenue',
   profile: 'me/profile',

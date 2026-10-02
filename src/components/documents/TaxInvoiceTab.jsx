@@ -1,12 +1,13 @@
 // @ts-check
-// 세금계산서 화면 조립 + 엑셀 저장 핸들러. 거래처 매출 계산서만(기사 매입·수수료 발행 삭제, 2026-10-02).
+// 서류 발급 [세금계산서] 탭(세금계산서 정리 ②, 옛 TaxInvoicePage 몸통): 거래처 매출 계산서를 그 차량(logKey) 것만 + 엑셀 저장.
+// 달은 서류 발급이 주고, 위 카드 = 달 이동 → 서류 탭 줄 → [작성 전][발급 완료].
 import { useMemo, useState } from 'react'
-import { getTaxInvoiceFlowMeta } from '../lib/finance.js'
-import { lastDayOfMonth, listMonthInvoices, saveInvoices, invoiceCanIssue } from '../lib/invoices.js'
-import { formatWon } from '../lib/money.js'
-import { buildFinanceSettings } from '../lib/ownerFinance.js'
-import { changeTaxInvoiceStatus, saveTaxInvoiceDraft } from '../lib/taxInvoiceActions.js'
-import { exportTaxInvoiceExcel } from '../lib/taxInvoiceExcel.js'
+import { getTaxInvoiceFlowMeta } from '../../lib/finance.js'
+import { lastDayOfMonth, listMonthInvoices, saveInvoices, invoiceCanIssue } from '../../lib/invoices.js'
+import { formatWon } from '../../lib/money.js'
+import { buildFinanceSettings } from '../../lib/ownerFinance.js'
+import { changeTaxInvoiceStatus, saveTaxInvoiceDraft } from '../../lib/taxInvoiceActions.js'
+import { exportTaxInvoiceExcel } from '../../lib/taxInvoiceExcel.js'
 import {
   readOwnerInvoices,
   useOwnerCars,
@@ -16,30 +17,30 @@ import {
   useOwnerProfile,
   useOwnerSettings,
   useOwnerWorkDataByLogId,
-} from '../store/ownerDataHooks.js'
-import TaxInvoiceDraftModal from './TaxInvoiceDraftModal.jsx'
-import TaxInvoiceEntryList from './TaxInvoiceEntryList.jsx'
-import TaxInvoiceToolbar from './TaxInvoiceToolbar.jsx'
-import PageHeader from './PageHeader.jsx'
-import './tax-invoice/tax-invoice.css'
+} from '../../store/ownerDataHooks.js'
+import TaxInvoiceDraftModal from '../TaxInvoiceDraftModal.jsx'
+import TaxInvoiceEntryList from '../TaxInvoiceEntryList.jsx'
+import MonthNavigator from './MonthNavigator.jsx'
+import '../tax-invoice/tax-invoice.css'
 
-/** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
- * @param {() => void} [props.onBack]
+ * @param {string} props.ownerKey
+ * @param {string} props.logKey 'main' 또는 차량번호
+ * @param {Date} props.viewDate
+ * @param {(next: Date) => void} props.onChangeMonth
+ * @param {import('react').ReactNode} [props.tabs]
  * @param {(message: string) => void} [props.showToast]
- * @param {(() => void)} [props.onOpenMenu]
  */
-export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
+export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMonth, tabs, showToast }) {
   const clients = useOwnerClients(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const practiceSettings = useOwnerSettings(ownerKey)
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
   const records = useOwnerInvoices(ownerKey)
-  const [viewDate, setViewDate] = useState(() => new Date())
   const [tab, setTab] = useState(/** @type {'draft'|'issued'} */ ('draft'))
   const [modalItem, setModalItem] = useState(/** @type {InvoiceLike|null} */ (null))
 
@@ -57,8 +58,8 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const flowMeta = getTaxInvoiceFlowMeta()
   const listed = useMemo(
-    () => listMonthInvoices(monthKey, 'sales', settings, workDataByLogId, records),
-    [monthKey, settings, workDataByLogId, records],
+    () => listMonthInvoices(monthKey, 'sales', settings, workDataByLogId, records, logKey),
+    [monthKey, settings, workDataByLogId, records, logKey],
   )
   /** @type {Array<InvoiceLike>} */
   const entries = /** @type {Array<InvoiceLike>} */ (tab === 'issued' ? listed.issuedEntries : listed.draftEntries)
@@ -126,10 +127,19 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
   }
 
   return (
-    <div className="page tax-invoice-page">
-      <PageHeader title="세금계산서" onBack={onBack} onOpenMenu={onOpenMenu} />
-
-      <TaxInvoiceToolbar viewDate={viewDate} setViewDate={setViewDate} />
+    <div className="tax-invoice-tab">
+      <div className="report-top-card">
+        <MonthNavigator viewDate={viewDate} onChange={onChangeMonth} />
+        {tabs}
+        <div className="doc-scope-tabs" role="tablist" aria-label="계산서 상태">
+          <button type="button" role="tab" aria-selected={tab === 'draft'} className={`doc-scope-tab${tab === 'draft' ? ' active' : ''}`} onClick={() => setTab('draft')}>
+            작성 전 <span className="tab-count-badge">{listed.draftEntries.length}</span>
+          </button>
+          <button type="button" role="tab" aria-selected={tab === 'issued'} className={`doc-scope-tab${tab === 'issued' ? ' active' : ''}`} onClick={() => setTab('issued')}>
+            {flowMeta.completeLabel} <span className="tab-count-badge">{listed.issuedEntries.length}</span>
+          </button>
+        </div>
+      </div>
 
       <div className={`tax-invoice-guide${issuerReady ? ' ready' : ''}`}>
         {!issuerReady && <p className="tax-invoice-guide-title">회사 사업자 정보가 필요합니다.</p>}
@@ -138,15 +148,6 @@ export default function TaxInvoicePage({ ownerKey = 'guest', onBack, showToast, 
             ? `${settings.bizName} · ${settings.bizNumber} · ${flowMeta.label}`
             : '마이페이지 → 개인정보에서 계산서를 발행할 회사의 사업자 정보를 입력해 주세요.'}
         </p>
-      </div>
-
-      <div className="tax-invoice-subtabs">
-        <button type="button" className={`tax-invoice-subtab${tab === 'draft' ? ' active' : ''}`} onClick={() => setTab('draft')}>
-          작성 전 <span className="tab-count-badge">{listed.draftEntries.length}</span>
-        </button>
-        <button type="button" className={`tax-invoice-subtab${tab === 'issued' ? ' active' : ''}`} onClick={() => setTab('issued')}>
-          {flowMeta.completeLabel} <span className="tab-count-badge">{listed.issuedEntries.length}</span>
-        </button>
       </div>
 
       <div className="summary-card">
