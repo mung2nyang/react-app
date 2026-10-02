@@ -1,4 +1,4 @@
-// 로드맵 9-C-1 — 서류 발급: 탭 보임/숨김(스위치·저장분), 처음 탭 [일상점검표], 표 칸(O/X/미/빈칸)·머리 칸, [운송비 내역서] 탭은 기존 화면.
+// 로드맵 9-C-1·9-D — 서류 발급: 탭 보임/숨김(스위치·저장분), 처음 탭 [일상점검표], 표 칸(O/X/미/빈칸)·머리 칸, [운송비 내역서] 탭은 기존 화면.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -10,12 +10,14 @@ import assert from 'node:assert/strict'
 import { beforeEach, mock, test } from 'node:test'
 
 let hasAny = false
-/** @type {Record<string, Record<string, 'good'|'bad'>>} */
+/** @type {Record<string, { items: Record<string, 'good'|'bad'>, actionNote: string, inspectorName: string }>} */
 let monthRecords = {}
+/** @type {Promise<typeof monthRecords>|null} */
+let pendingFetch = null
 mock.module('../../lib/dailyInspections.js', {
   namedExports: {
     hasAnyDailyInspection: async () => hasAny,
-    fetchMonthDailyInspections: async () => monthRecords,
+    fetchMonthDailyInspections: async () => (pendingFetch ? pendingFetch : monthRecords),
   },
 })
 
@@ -81,7 +83,7 @@ test('스위치 꺼짐이어도 서버에 점검표가 있으면 탭이 보임',
 test('스위치 켜짐 → 처음 탭 [일상점검표]: 머리 칸·오늘 칸 O/X, 휴무 미 → [운송비 내역서] 탭 전환', async () => {
   commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
   const today = todayKey()
-  monthRecords = { [today]: { ...allGoodItems(), tires: 'bad' } }
+  monthRecords = { [today]: { items: { ...allGoodItems(), tires: 'bad' }, actionNote: '', inspectorName: '기사' } }
   const view = await render()
   try {
     const active = view.container.querySelector('.doc-tab.active')
@@ -113,7 +115,7 @@ test('휴무 날은 저장분이 있어도 미', async () => {
   commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
   const today = todayKey()
   commitWorkData(OWNER, { [today]: { isOff: true } }, { syncToCloud: false })
-  monthRecords = { [today]: allGoodItems() }
+  monthRecords = { [today]: { items: allGoodItems(), actionNote: '', inspectorName: '기사' } }
   const view = await render()
   try {
     const table = view.container.querySelector('.doc-sheet-table')
@@ -162,6 +164,57 @@ test('서류 탭 줄은 위 카드 안 달 이동 아래, 점검표 탭에서 �
     assert.ok(navText().includes(prevLabel), `운송비 내역서도 같은 달: ${navText()}`)
     assert.ok(view.container.querySelector('.report-top-card .maint-fuel-nav + .doc-tabs'), '운송비 내역서 탭도 카드 안')
   } finally {
+    await view.cleanup()
+  }
+})
+
+test('9-D 점검표 탭 아래 버튼 3개·안내 문구, 화면 밖 법정 서식 = 그 달 끝날까지 칸·○/×/미·점검자 이름·조치 기록', async () => {
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  const today = todayKey()
+  const year = Number(today.slice(0, 4))
+  const month = Number(today.slice(5, 7)) - 1
+  const lastDay = new Date(year, month + 1, 0).getDate()
+  const firstKey = today.slice(0, 8) + '01'
+  monthRecords = { [today]: { items: { ...allGoodItems(), tires: 'bad' }, actionNote: '타이어 교체', inspectorName: '김점검' } }
+  if (firstKey !== today) monthRecords[firstKey] = { items: allGoodItems(), actionNote: '', inspectorName: '박점검' }
+  const view = await render()
+  try {
+    const buttons = [...view.container.querySelectorAll('.doc-action-card button')]
+    assert.deepEqual(buttons.map((el) => el.textContent), ['PDF 다운로드', '이미지 저장', '공유'])
+    assert.ok(buttons.every((el) => el instanceof window.HTMLButtonElement && !el.disabled), '읽은 뒤엔 버튼 풀림')
+    assert.ok(view.container.querySelector('.doc-export-notice')?.textContent?.includes('법정 서식'))
+
+    const form = view.container.querySelector('.legal-form-offscreen .legal-form')
+    assert.ok(form, '화면 밖 서식')
+    const dayHeads = [...form.querySelectorAll('.legal-form-table thead tr:nth-child(2) th')].map((th) => Number(th.textContent))
+    assert.equal(dayHeads.length, lastDay)
+    assert.ok(dayHeads.includes(21), '21일 포함')
+    const day = Number(today.slice(8))
+    const rows = [...form.querySelectorAll('.legal-form-table tbody tr')]
+    const cellOf = (/** @type {Element|undefined} */ row) => [...(row?.querySelectorAll('td') || [])][day - 1]?.textContent
+    assert.equal(cellOf(rows.find((tr) => tr.textContent?.includes('타이어'))), '×')
+    assert.equal(cellOf(rows[0]), '○')
+    assert.equal(cellOf(rows.find((tr) => tr.textContent?.includes('점검자 확인'))), '김점검')
+    if (day < lastDay) assert.equal([...rows[0].querySelectorAll('td')][day]?.textContent, '', '앞날 빈칸')
+    assert.ok(form.querySelector('.legal-form-notes')?.textContent?.includes(`${day}일 타이어 교체`))
+    const head = form.querySelector('.legal-form-head')?.textContent || ''
+    assert.ok(head.includes('김대표') && head.includes('12가3456') && head.includes('김운행'), head)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('9-D 그 달 점검표를 읽기 전이면 내보내기 버튼 잠김', async () => {
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  pendingFetch = new Promise(() => {})
+  const view = await render()
+  try {
+    const buttons = [...view.container.querySelectorAll('.doc-action-card button')]
+    assert.equal(buttons.length, 3)
+    assert.ok(buttons.every((el) => el instanceof window.HTMLButtonElement && el.disabled))
+    assert.equal(view.container.querySelector('.legal-form-offscreen'), null)
+  } finally {
+    pendingFetch = null
     await view.cleanup()
   }
 })

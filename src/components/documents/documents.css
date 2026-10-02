@@ -126,3 +126,13 @@
 .doc-action-card .report-pdf-actions {
   margin: 0;
 }
+
+/* 9-D: 일상점검표 내보내기 안내 문구(법정 서식 표는 legal-form.css). */
+.doc-export-notice {
+  margin: 8px 4px 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.45;
+  text-align: center;
+  word-break: keep-all;
+}

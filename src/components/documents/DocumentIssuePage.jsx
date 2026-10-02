@@ -56,7 +56,7 @@ export default function DocumentIssuePage({ ownerKey = 'guest', onBack, showToas
   return (
     <div className="page report-page-wrap">
       <PageHeader title="서류 발급" onBack={onBack} onOpenMenu={onOpenMenu} />
-      <DailyInspectionMonthSheet ownerKey={ownerKey} logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} />
+      <DailyInspectionMonthSheet ownerKey={ownerKey} logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} showToast={showToast} />
     </div>
   )
 }

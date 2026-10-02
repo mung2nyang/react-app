@@ -1,6 +1,6 @@
 // @ts-check
 // 서류 발급 [일상점검표] 탭(9-C-1, 피그마 "서류 발급" 1번): 달 이동(위 화면이 줌) + 서류 탭 + 8일 구간 탭 + 머리 칸 + 외관·상태·기타 표(O/X/미, 오늘 이후 빈칸).
-// 그 달 점검표는 서버에서 한 번에 읽고(보기만), 휴무는 그 차량 일지에서 읽는다.
+// 그 달 점검표는 서버에서 한 번에 읽고(보기만), 휴무는 그 차량 일지에서 읽는다. 표 아래 내보내기(법정 서식, 9-D).
 import { useEffect, useMemo, useState } from 'react'
 import { DAILY_INSPECTION_SECTIONS } from '../../domain/dailyInspectionItems.js'
 import { RANGE_LABELS, dateKeyOf, initialRangeIndex, inspectionMark, rangeDays } from '../../domain/dailyInspectionMonth.js'
@@ -9,16 +9,17 @@ import { fetchMonthDailyInspections } from '../../lib/dailyInspections.js'
 import { vehicleSupabaseIdForLog } from '../../lib/mainDayLogRouting.js'
 import { useOwnerCars, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
 import { useOwnerProfile } from '../../store/ownerProfileDriversHooks.js'
+import DailyInspectionExportBar from './DailyInspectionExportBar.jsx'
 import MonthNavigator from './MonthNavigator.jsx'
 
-/** @typedef {import('../../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
+/** @typedef {import('../../domain/dailyInspectionMonth.js').MonthInspection} MonthInspection */
 
-/** @param {{ ownerKey: string, logKey: string, viewDate: Date, onChangeMonth: (next: Date) => void, tabs?: import('react').ReactNode }} props */
-export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, onChangeMonth, tabs }) {
+/** @param {{ ownerKey: string, logKey: string, viewDate: Date, onChangeMonth: (next: Date) => void, tabs?: import('react').ReactNode, showToast?: (message: string) => void }} props */
+export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, onChangeMonth, tabs, showToast }) {
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const [rangeIndex, setRangeIndex] = useState(() => initialRangeIndex(year, month, new Date()))
-  const [load, setLoad] = useState(/** @type {{ status: 'loading'|'ready'|'error', byDate: Record<string, InspectionItems> }} */ ({ status: 'loading', byDate: {} }))
+  const [load, setLoad] = useState(/** @type {{ status: 'loading'|'ready'|'error', byDate: Record<string, MonthInspection> }} */ ({ status: 'loading', byDate: {} }))
   const [reloadTick, setReloadTick] = useState(0)
   const cars = useOwnerCars(ownerKey)
   const profile = useOwnerProfile(ownerKey)
@@ -43,6 +44,11 @@ export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, 
   const today = todayKey()
 
   if (vehicleId == null) return null
+  const head = {
+    bizName: profile.bizRepresentative || '',
+    driverName: String(car?.driverName || profile.name || '').trim(),
+    carNumber: car?.number || '',
+  }
 
   /** @param {Date} next */
   function changeMonth(next) {
@@ -67,11 +73,11 @@ export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, 
       <table className="doc-sheet-head">
         <tbody>
           <tr>
-            <th>운송사업자명</th><td>{profile.bizRepresentative || '-'}</td>
-            <th>운수종사자명</th><td>{String(car?.driverName || profile.name || '').trim() || '-'}</td>
+            <th>운송사업자명</th><td>{head.bizName || '-'}</td>
+            <th>운수종사자명</th><td>{head.driverName || '-'}</td>
           </tr>
           <tr>
-            <th>차량번호</th><td colSpan={3}>{car?.number || '-'}</td>
+            <th>차량번호</th><td colSpan={3}>{head.carNumber || '-'}</td>
           </tr>
         </tbody>
       </table>
@@ -98,7 +104,7 @@ export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, 
                 {days.map((day) => {
                   const dateKey = dateKeyOf(year, month, day)
                   const record = workData[dateKey]
-                  const mark = inspectionMark({ dateKey, todayKey: today, isOff: !!record?.isOff, items: load.byDate[dateKey], itemKey: item.key })
+                  const mark = inspectionMark({ dateKey, todayKey: today, isOff: !!record?.isOff, items: load.byDate[dateKey]?.items, itemKey: item.key })
                   return <td key={day} className={`doc-mark${mark === 'X' ? ' bad' : ''}`}>{mark}</td>
                 })}
               </tr>
@@ -106,6 +112,12 @@ export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, 
           </tbody>
         </table>
       ))}
+
+      <DailyInspectionExportBar
+        form={{ year, month, head, byDate: load.byDate, workData, todayKey: today }}
+        ready={load.status === 'ready'}
+        showToast={showToast}
+      />
     </div>
   )
 }

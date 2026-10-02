@@ -22,10 +22,15 @@ export async function fetchDailyInspection(vehicleId, workDate) {
     .maybeSingle()
   if (error) throw error
   if (!data || typeof data !== 'object') return null
+  return toDailyInspection(data)
+}
+
+/** @param {{ items?: unknown, action_note?: unknown, inspector_name?: unknown }} row @returns {DailyInspection} */
+function toDailyInspection(row) {
   return {
-    items: sanitizeInspectionItems(data.items),
-    actionNote: typeof data.action_note === 'string' ? data.action_note : '',
-    inspectorName: typeof data.inspector_name === 'string' ? data.inspector_name : '',
+    items: sanitizeInspectionItems(row.items),
+    actionNote: typeof row.action_note === 'string' ? row.action_note : '',
+    inspectorName: typeof row.inspector_name === 'string' ? row.inspector_name : '',
   }
 }
 
@@ -52,26 +57,26 @@ export async function saveDailyInspection({ vehicleId, workDate, items, actionNo
 }
 
 /**
- * 서류 발급 한 달 표(9-C-1): 그 차량·그 달 점검표를 날짜별 항목으로 한 번에 읽음.
+ * 서류 발급 한 달 표(9-C-1): 그 차량·그 달 점검표를 날짜별로 한 번에 읽음(9-D: 법정 서식용 점검자·조치 기록 포함).
  * @param {string|number} vehicleId
  * @param {number} year
  * @param {number} month 0부터
- * @returns {Promise<Record<string, InspectionItems>>}
+ * @returns {Promise<Record<string, DailyInspection>>}
  */
 export async function fetchMonthDailyInspections(vehicleId, year, month) {
   const first = `${year}-${String(month + 1).padStart(2, '0')}-01`
   const last = `${year}-${String(month + 1).padStart(2, '0')}-${String(new Date(year, month + 1, 0).getDate()).padStart(2, '0')}`
   const { data, error } = await supabase
     .from('daily_inspections')
-    .select('work_date, items')
+    .select('work_date, items, action_note, inspector_name')
     .eq('vehicle_id', vehicleId)
     .gte('work_date', first)
     .lte('work_date', last)
   if (error) throw error
-  /** @type {Record<string, InspectionItems>} */
+  /** @type {Record<string, DailyInspection>} */
   const byDate = {}
   for (const row of Array.isArray(data) ? data : []) {
-    if (row && typeof row.work_date === 'string') byDate[row.work_date] = sanitizeInspectionItems(row.items)
+    if (row && typeof row.work_date === 'string') byDate[row.work_date] = toDailyInspection(row)
   }
   return byDate
 }

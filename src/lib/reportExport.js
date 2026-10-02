@@ -2,12 +2,14 @@
 
 /**
  * @param {HTMLElement} element
+ * @param {'portrait'|'landscape'} [orientation] 넘기면 그 방향 A4 너비로 그림(9-D 법정 서식 = 가로)
  * @returns {Promise<HTMLCanvasElement>}
  */
-async function renderReportCanvas(element) {
+async function renderReportCanvas(element, orientation) {
   const mod = await import('html2pdf.js')
   const html2pdf = mod.default
   const worker = html2pdf().set({
+    ...(orientation ? { jsPDF: { unit: 'mm', format: 'a4', orientation } } : {}),
     html2canvas: {
       scale: 2,
       useCORS: true,
@@ -35,10 +37,11 @@ function canvasToPngBlob(canvas) {
 /**
  * @param {HTMLElement} element
  * @param {string} baseName 확장자 없는 파일명
+ * @param {{ orientation?: 'portrait'|'landscape' }} [options]
  * @returns {Promise<File>}
  */
-export async function createReportImageFile(element, baseName) {
-  const canvas = await renderReportCanvas(element)
+export async function createReportImageFile(element, baseName, { orientation } = {}) {
+  const canvas = await renderReportCanvas(element, orientation)
   const blob = await canvasToPngBlob(canvas)
   return new File([blob], `${baseName}.png`, { type: 'image/png' })
 }
@@ -46,9 +49,10 @@ export async function createReportImageFile(element, baseName) {
 /**
  * @param {HTMLElement} element
  * @param {string} baseName
+ * @param {{ orientation?: 'portrait'|'landscape' }} [options] 안 넘기면 세로(일상점검표 법정 서식은 가로, 9-D)
  * @returns {Promise<File>}
  */
-export async function createReportPdfFile(element, baseName) {
+export async function createReportPdfFile(element, baseName, { orientation = 'portrait' } = {}) {
   const mod = await import('html2pdf.js')
   const html2pdf = mod.default
   /** @type {Parameters<InstanceType<(typeof html2pdf)['Worker']>['set']>[0]} */
@@ -56,7 +60,7 @@ export async function createReportPdfFile(element, baseName) {
     margin: [12, 10, 12, 10],
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    jsPDF: { unit: 'mm', format: 'a4', orientation },
   }
   const blob = /** @type {Blob} */ (await html2pdf().set(opt).from(element).outputPdf('blob'))
   return new File([blob], `${baseName}.pdf`, { type: 'application/pdf' })
