@@ -8,7 +8,6 @@ import {
   CarManagementPage,
   ClientManagementPage,
   DriverConnectionPage,
-  InviteRedeemPage,
   LinkedDriverClientsPage,
   LinkedDriverManagementPage,
   MaintFuelPage,
@@ -85,7 +84,7 @@ export default function AppShellRoutes({
           )
         }
       />
-      <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} onOpen={(/** @type {string} */ page, /** @type {string | undefined} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} onOpenMenu={onOpenMenu} />} />
+      <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} showToast={showToast} onLinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); navigate('/app') }} onOpen={(/** @type {string} */ page, /** @type {string | undefined} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} onOpenMenu={onOpenMenu} />} />
       <Route path="me/profile" element={<PersonalInfoPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(backTarget)} onGoAuth={onGoAuth} onOpenMenu={onOpenMenu} onUnlinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); navigate('/app') }} />} />
       <Route path="me/settings" element={<AppSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
@@ -95,7 +94,6 @@ export default function AppShellRoutes({
       <Route path="drivers/:linkId/clients" element={<LinkedDriverClientsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="drivers/:linkId" element={<LinkedDriverManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="drivers" element={<DriverConnectionPage ownerKey={ownerKey} session={session} showToast={showToast} navigate={navigate} onBack={() => { navigate('/app/me'); bumpNotifTick() }} />} />
-      <Route path="me/invite" element={<InviteRedeemPage session={session} showToast={showToast} onBack={() => navigate('/app/me')} onLinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); navigate('/app') }} />} />
       <Route path="revenue" element={<RevenuePage ownerKey={ownerKey} session={session ?? undefined} onBack={() => navigate('/app')} onOpenMenu={onOpenMenu} />} />
       <Route path="support" element={<CustomerCenterPage session={session} showToast={showToast} onGoAuth={onGoAuth} onBack={() => navigate('/app')} onOpenMenu={onOpenMenu} />} />
       <Route path="notice" element={<NoticePage onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />

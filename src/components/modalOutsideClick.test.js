@@ -1,4 +1,4 @@
-// 로드맵 8 — 입력 칸이 있는 창 5곳은 바깥(회색 영역)을 눌러도 안 닫히고 취소 버튼으로만 닫힌다. 입력 없는 확인 창은 바깥 클릭으로 닫힌다(대조).
+// 로드맵 8 — 입력 칸이 있는 창 6곳은 바깥(회색 영역)을 눌러도 안 닫히고 취소 버튼으로만 닫힌다. 입력 없는 확인 창은 바깥 클릭으로 닫힌다(대조).
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -20,6 +20,7 @@ const { default: ExpenseFormModal } = await import('./ExpenseFormModal.jsx')
 const { default: DriverFormModal } = await import('./DriverFormModal.jsx')
 const { default: TaxInvoiceDraftModal } = await import('./TaxInvoiceDraftModal.jsx')
 const { default: ConfirmModal } = await import('./ConfirmModal.jsx')
+const { default: InviteRedeemModal } = await import('./InviteRedeemModal.jsx')
 
 /** @type {import('./cars/CarFormModal.jsx').CarFormDraft} */
 const CAR_DRAFT = {
@@ -39,6 +40,7 @@ const INPUT_MODALS = [
   { name: '거래처', element: (close) => React.createElement(ClientFormModal, { draft: { companyName: '한빛물류' }, setDraft: () => {}, editingId: null, onCancel: close, onSave: () => {} }) },
   { name: '정비·주유·기타', element: (close) => React.createElement(ExpenseFormModal, { draft: { kind: 'maint', date: '2026-10-01' }, kindLabel: '정비', onChange: () => {}, onClose: close, onSave: () => {} }) },
   { name: '기사 초대', element: (close) => React.createElement(DriverFormModal, { draft: { name: '기사', phone: '', inviteCode: '123456', vehicleNumber: '', startDate: '', endDate: '' }, setDraft: () => {}, editingId: null, drivers: [], assignableCars: [], onCancel: close, onSave: () => {} }) },
+  { name: '차주 연동', element: (close) => React.createElement(InviteRedeemModal, { session: null, onClose: close, onLinked: () => {} }) },
   { name: '세금계산서 작성', element: (close) => React.createElement(TaxInvoiceDraftModal, { modalItem: { id: 'inv-1', clientName: '한빛물류' }, flowMeta: { label: '매출 발행', partyHeading: '공급받는 자' }, onChange: () => {}, onCancel: close, onSave: () => {} }) },
 ]
 

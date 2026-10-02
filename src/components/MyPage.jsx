@@ -1,6 +1,8 @@
 // @ts-check
+import { useState } from 'react'
 import { useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import { isCloudSession } from '../lib/cloudSession.js'
+import InviteRedeemModal from './InviteRedeemModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import './mypage.css'
 
@@ -92,8 +94,11 @@ const SHORTCUTS = [
  * @param {(page: string, label?: string) => void} props.onOpen
  * @param {() => void} props.onBack
  * @param {(() => void)} [props.onOpenMenu]
+ * @param {(message: string) => void} [props.showToast]
+ * @param {(session: AppSession) => void} [props.onLinked]
  */
-export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, onOpenMenu }) {
+export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, onOpenMenu, showToast, onLinked }) {
+  const [inviteOpen, setInviteOpen] = useState(false)
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
   const employed = session?.accountType === 'employed_driver'
@@ -153,7 +158,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, on
           </button>
         )}
         {cloud && !employed && (
-          <button type="button" className="mypage-notice-link" onClick={() => onOpen('invite')}>
+          <button type="button" className="mypage-notice-link" onClick={() => setInviteOpen(true)}>
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
@@ -176,6 +181,14 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, on
           <span>공지사항</span>
         </button>
       </div>
+      {inviteOpen && (
+        <InviteRedeemModal
+          session={session ?? null}
+          showToast={showToast}
+          onClose={() => setInviteOpen(false)}
+          onLinked={(next) => onLinked?.(next)}
+        />
+      )}
     </div>
   )
 }

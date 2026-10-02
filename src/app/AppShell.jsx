@@ -31,7 +31,6 @@ const PAGE_PATH = {
   report: 'report',
   invoices: 'tax',
   drivers: 'drivers',
-  invite: 'me/invite',
   revenue: 'revenue',
   profile: 'me/profile',
   settings: 'me/settings',

@@ -1,0 +1,8 @@
+/* 기사 초대코드 입력 팝업(InviteRedeemModal 전용) — 마이페이지 "초대코드로 차주 연동"에서 연다. */
+.invite-redeem-note {
+  margin: 0 0 14px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  line-height: 1.5;
+  text-align: left;
+}
