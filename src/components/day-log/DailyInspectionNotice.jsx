@@ -67,12 +67,12 @@ export default function DailyInspectionNotice({ ownerKey, logId, dateKey, month,
         {load.status === 'error' ? (
           <>
             <span>일상점검표를 불러오지 못했습니다.</span>
-            <button type="button" className="di-notice-btn" onClick={() => setReloadTick((n) => n + 1)}>다시 시도</button>
+            <button type="button" className="di-notice-btn retry" onClick={() => setReloadTick((n) => n + 1)}>다시 시도</button>
           </>
         ) : load.record ? (
           <>
             <span>{month}월 {day}일 일상점검표 작성이 완료 되었습니다.</span>
-            <button type="button" className="di-notice-btn" onClick={() => setModalOpen(true)}>보기</button>
+            <button type="button" className="di-notice-btn view" onClick={() => setModalOpen(true)}>보기</button>
           </>
         ) : (
           <>

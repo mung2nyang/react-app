@@ -23,6 +23,7 @@
   flex-direction: column;
   gap: 3px;
   min-width: 0;
+  text-align: left;
 }
 .linked-driver-profile-card strong { color: var(--text-color); font-size: var(--fs-3); }
 .linked-driver-profile-card small { color: var(--sub-text-color); font-size: var(--fs-floor); }

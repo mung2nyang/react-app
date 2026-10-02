@@ -4,6 +4,12 @@ import './tax-invoice/tax-invoice.css'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
+/** 상대방 세무정보 6칸이 전부 채워졌는지 — [작성하기]/[수정하기] 구분용. */
+function hasFullPartyInfo(/** @type {InvoiceLike} */ item) {
+  return [item.clientBizNumber, item.clientRepresentative, item.clientAddress, item.clientBizType, item.clientBizItem, item.clientEmail]
+    .every((value) => String(value || '').trim() !== '')
+}
+
 /**
  * @param {Object} props
  * @param {Array<InvoiceLike>} props.entries
@@ -54,7 +60,7 @@ export default function TaxInvoiceEntryList({
       </div>
       <div className="tax-invoice-entry-actions">
         <button type="button" className="tax-invoice-action-btn" onClick={() => onOpenDraft(item)}>
-          {item.status === 'issued' ? '내용 보기' : (flow === 'purchase' ? '내용 입력' : '작성하기')}
+          {item.status === 'issued' ? '내용 보기' : (hasFullPartyInfo(item) ? '수정하기' : (flow === 'purchase' ? '내용 입력' : '작성하기'))}
         </button>
         <button type="button" className="tax-invoice-action-btn" onClick={() => onExportExcel?.(item)}>엑셀 저장</button>
         {item.status === 'issued'

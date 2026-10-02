@@ -41,6 +41,8 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
     window.location.href = result.href
   }
 
+  const linked = drivers.find((d) => d.id === editingId)?.status === 'linked'
+
   return (
     <div className="modal-overlay">
       <div className="modal-content client-modal driver-form-modal" onClick={(e) => e.stopPropagation()}>
@@ -56,10 +58,16 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         <div className="form-group">
           <label htmlFor="drvCode">초대 코드</label>
           <div className="driver-code-row">
-            <input id="drvCode" className="input-box" inputMode="numeric" maxLength={6} value={draft.inviteCode} onChange={(e) => setDraft({ ...draft, inviteCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} />
-            <button type="button" className="theme-toggle-btn" onClick={() => setDraft({ ...draft, inviteCode: generateInviteCode(drivers) })}>코드 생성</button>
-            <button type="button" className="theme-toggle-btn" onClick={sendInviteSms}>문자 발송</button>
+            <input id="drvCode" className="input-box" inputMode="numeric" maxLength={6} disabled={linked} value={draft.inviteCode} onChange={(e) => setDraft({ ...draft, inviteCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} />
+            <button type="button" className="theme-toggle-btn" disabled={linked} onClick={() => setDraft({ ...draft, inviteCode: generateInviteCode(drivers) })}>코드 생성</button>
+            <button type="button" className="theme-toggle-btn" disabled={linked} onClick={sendInviteSms}>문자 발송</button>
           </div>
+          {linked && (
+            <p className="driver-invite-note">
+              초대코드는 1회만 사용할 수 있습니다.<br />
+              기존 연동을 해제하고 다시 연결할 경우, 새 코드를 발급해 주세요.
+            </p>
+          )}
         </div>
         <div className="form-group">
           <label htmlFor="drvCar">할당 차량</label>

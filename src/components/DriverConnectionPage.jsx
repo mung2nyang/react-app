@@ -133,8 +133,9 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
               {driver.status === 'linked' ? '연동 중' : '초대 대기'}
             </span>
           </div>
-          <div className="car-sub-text">초대코드 {driver.inviteCode}</div>
-          <div className="car-sub-text">{driver.phone}</div>
+          <div className="car-sub-text">
+            {[driver.phone, driver.status !== 'linked' && `초대코드 ${driver.inviteCode}`].filter(Boolean).join(' · ')}
+          </div>
 
           <div className="driver-assignment-grid">
             <div>

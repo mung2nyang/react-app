@@ -81,32 +81,26 @@ export default function CarBusinessInfoSection({ ownerKey, car, cars, profile, s
         </label>
       </div>
       {form.sameAsOwner ? (
-        <>
-          <p className="car-biz-owner-line">
-            {ownerLine || '마이페이지 개인정보에 사업자정보를 먼저 입력해 주세요.'}
-          </p>
-          <p className="car-biz-owner-line">
-            {ownerAccountLine || '마이페이지 개인정보에 정산 계좌를 먼저 입력해 주세요.'}
-          </p>
-        </>
+        <p className="car-biz-owner-line">
+          <span>{ownerLine || '마이페이지 개인정보에 사업자정보를 먼저 입력해 주세요.'}</span>
+          <span>{ownerAccountLine || '마이페이지 개인정보에 정산 계좌를 먼저 입력해 주세요.'}</span>
+        </p>
       ) : (
         <>
           <div className="personal-inline-fields">
-            <Field id="carBizName" label="상호" {...bind('name')} />
-            <Field id="carBizNumber" label="사업자등록번호" inputMode="numeric" {...bind('bizNumber')} />
+            <Field id="carBizName" label="사업자명 (상호)" {...bind('name')} />
+            <Field id="carBizRepresentative" label="대표자명" {...bind('representative')} />
           </div>
-          <div className="personal-inline-fields">
-            <Field id="carBizRepresentative" label="대표자" {...bind('representative')} />
-            <Field id="carBizEmail" label="이메일" {...bind('email')} />
-          </div>
+          <Field id="carBizNumber" label="사업자 번호" inputMode="numeric" {...bind('bizNumber')} />
           <Field id="carBizAddress" label="사업장 주소" {...bind('address')} />
           <div className="personal-inline-fields">
             <Field id="carBizType" label="업태" {...bind('bizType')} />
             <Field id="carBizItem" label="종목" {...bind('bizItem')} />
           </div>
+          <Field id="carBizEmail" label="세금계산서 이메일" {...bind('email')} />
           <div className="personal-inline-fields">
-            <Field id="carBankName" label="은행" {...bind('bank')} />
-            <Field id="carAccountHolder" label="예금주" {...bind('accountHolder')} />
+            <Field id="carBankName" label="입금 은행" {...bind('bank')} />
+            <Field id="carAccountHolder" label="예금주 (계좌 명의)" {...bind('accountHolder')} />
           </div>
           <Field id="carAccountNumber" label="계좌번호" inputMode="numeric" {...bind('account')} />
         </>

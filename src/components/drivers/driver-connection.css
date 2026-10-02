@@ -65,6 +65,17 @@
 }
 .driver-connection-card .car-sub-text {
   margin-top: 4px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  text-align: left;
+}
+.driver-code-row .theme-toggle-btn:disabled { opacity: 0.45; cursor: default; }
+.driver-invite-note {
+  margin: 4px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.4;
+  text-align: left;
 }
 .driver-assignment-grid {
   display: grid;
