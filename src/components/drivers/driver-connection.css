@@ -122,7 +122,7 @@
   cursor: pointer;
 }
 .driver-card-action-btn.primary {
-  background: var(--primary-color);
+  background: var(--primary-fill);
   color: #fff;
 }
 .driver-card-action-btn.danger {

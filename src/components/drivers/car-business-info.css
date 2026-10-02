@@ -25,9 +25,9 @@
 .car-biz-save {
   min-height: 44px;
   margin: 0;
-  border: 1px solid var(--primary-color);
+  border: 1px solid var(--primary-fill);
   border-radius: 12px;
-  background: var(--primary-color);
+  background: var(--primary-fill);
   color: #ffffff;
   font: inherit;
   font-size: var(--fs-floor);

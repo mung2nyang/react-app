@@ -81,8 +81,8 @@ body.account-flow-active {
 }
 
 .auth-primary-btn {
-  border: 1px solid var(--primary-color);
-  background: var(--primary-color);
+  border: 1px solid var(--primary-fill);
+  background: var(--primary-fill);
   color: #fff;
 }
 
@@ -114,8 +114,8 @@ body.account-flow-active {
 }
 
 .auth-primary-btn.save-action-loading:disabled {
-  border-color: var(--primary-color);
-  background: var(--primary-color);
+  border-color: var(--primary-fill);
+  background: var(--primary-fill);
 }
 
 @keyframes save-action-spin {
@@ -423,7 +423,7 @@ body.account-flow-active {
   min-height: 56px;
   border: none;
   border-radius: 18px;
-  background: var(--primary-color);
+  background: var(--primary-fill);
   color: #fff;
   font: inherit;
   font-size: var(--fs-5);
@@ -504,7 +504,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   cursor: pointer;
   min-height: 44px;
 }
-.modal-btn.confirm { background: var(--primary-color); color: #fff; }
+.modal-btn.confirm { background: var(--primary-fill); color: #fff; }
 .modal-btn.cancel { background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); }
 
 .toast-message {
@@ -535,7 +535,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   padding: 0 16px;
   border: 0;
   border-radius: 12px;
-  background: var(--primary-color);
+  background: var(--primary-fill);
   color: #fff;
   font: inherit;
   font-weight: 700;

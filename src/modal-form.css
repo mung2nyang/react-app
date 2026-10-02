@@ -72,7 +72,7 @@
 }
 
 .car-commission-type button.active {
-  background: var(--primary-color);
+  background: var(--primary-fill);
   color: #fff;
 }
 

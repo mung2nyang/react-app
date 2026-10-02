@@ -17,7 +17,8 @@
   --card-bg: #ffffff;
   --border-color: #e2e8f0;
   --input-bg: #f8fafc;
-  --primary-color: #3182ce;
+  --primary-color: #2b6cb0;
+  --primary-fill: #2b6cb0; /* 흰 글씨를 얹는 파란 바탕(라이트·다크 공통, 대비 5.42:1) */
   --saturday-color: #3182ce;
   --sunday-color: #e53e3e;
   --today-bg: #edf2f7;

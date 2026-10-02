@@ -134,8 +134,8 @@
 }
 
 .revenue-scope-tab.active {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+  background-color: var(--primary-fill);
+  border-color: var(--primary-fill);
   color: #ffffff;
 }
 
