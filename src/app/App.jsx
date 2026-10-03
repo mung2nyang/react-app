@@ -3,6 +3,8 @@
 // 자리. 세션·부트·토스트 상태만 여기 남기고, 화면별 로직은 AuthRoute/AppShell로 옮겼다.
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../components/OnboardingPage.jsx'
+import WelcomeProfileView from '../components/auth/WelcomeProfileView.jsx'
+import { ensureProfileRow } from '../supabaseClient.js'
 import ForgotPasswordModal from '../components/ForgotPasswordModal.jsx'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
@@ -101,6 +103,36 @@ export default function App() {
                 navigate('/onboarding')
               }}
             />
+          )}
+        />
+
+        <Route
+          path="/welcome"
+          element={(
+            <RequireSession session={session} booting={booting}>
+              <div className="container account-flow-container">
+                <WelcomeProfileView
+                  initialName={session?.name || ''}
+                  onSubmit={async ({ name, phone }) => {
+                    if (!session?.userId) return false
+                    const { error } = await ensureProfileRow(session.userId, 'owner_driver', name, phone)
+                    if (error) {
+                      showToast('정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+                      return false
+                    }
+                    // 가입과 같이 다시 불러와 Store 프로필을 채운다 — 안 하면 첫 설정 저장이 빈 전화번호로 행을 덮어씀.
+                    try {
+                      await hydrateFromSupabase(session.userId, ownerKeyFromSession(session))
+                    } catch (hydrateError) {
+                      console.error(hydrateError)
+                    }
+                    setSession({ ...session, name, phone })
+                    navigate('/onboarding', { replace: true })
+                    return true
+                  }}
+                />
+              </div>
+            </RequireSession>
           )}
         />
 

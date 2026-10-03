@@ -34,6 +34,20 @@ async function fetchAccountProfile(userId) {
 }
 
 /**
+ * 구글 첫 로그인처럼 내 profiles 행이 아직 없는지. 조회가 실패하면 false(지금처럼 홈으로).
+ * @param {string} userId
+ */
+export async function isProfileRowMissing(userId) {
+  try {
+    const { data, error } = await supabase.from('profiles').select('id').eq('id', userId).maybeSingle()
+    return !error && !data
+  } catch (error) {
+    console.warn('[boot] profiles 행 확인 실패, 홈으로 진행합니다.', error)
+    return false
+  }
+}
+
+/**
  * 프로필 + driver_links linked 행으로 AppSession을 만든다.
  * @param {string} userId
  * @param {{ name?: string, phone?: string }} [overrides]
@@ -67,7 +81,8 @@ export function ownerKeyFromSession(session) {
 }
 
 /**
- * @returns {Promise<{ session: AppSession, hydrateError: boolean } | null>}
+ * needsProfile: 내 profiles 행이 없어 홈 대신 기본 정보 화면(/welcome)으로 보내야 함.
+ * @returns {Promise<{ session: AppSession, hydrateError: boolean, needsProfile: boolean } | null>}
  */
 export function restoreSessionOnBoot() {
   return singleFlight('boot:restoreSession', performRestoreSessionOnBoot)
@@ -92,12 +107,13 @@ async function performRestoreSessionOnBoot() {
   if (!session.name) session.name = authUser.user_metadata?.name || ''
   if (!session.phone) session.phone = authUser.phone || ''
 
+  const needsProfile = await isProfileRowMissing(userId)
   const ownerKey = ownerKeyFromSession(session)
   try {
     await hydrateFromSupabase(userId, ownerKey, { employedDriver: !!session.linkedOwnerId })
-    return { session, hydrateError: false }
+    return { session, hydrateError: false, needsProfile }
   } catch (error) {
     console.error('[boot] hydrate 실패, 로컬 데이터로 계속합니다.', error)
-    return { session, hydrateError: true }
+    return { session, hydrateError: true, needsProfile }
   }
 }

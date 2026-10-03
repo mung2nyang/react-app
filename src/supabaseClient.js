@@ -61,11 +61,15 @@ export async function signUpWithPhone(phone, password) {
 
 /**
  * 구글 화면으로 갔다가 앱의 /auth로 돌아온다 — 돌아온 뒤 로그인은 부트 복원(boot.js)이 이어받는다.
+ * prompt: select_account — 브라우저가 기억한 계정으로 바로 넘어가지 않고 매번 계정을 고르게 한다.
  */
 export async function signInWithGoogle() {
   return supabase.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: `${window.location.origin}${routerBasename()}/auth` },
+    options: {
+      redirectTo: `${window.location.origin}${routerBasename()}/auth`,
+      queryParams: { prompt: 'select_account' },
+    },
   })
 }
 
@@ -83,4 +87,5 @@ export async function ensureProfileRow(userId, accountType, name, phone) {
     phone: phone || null,
   })
   if (error) console.error('profiles 생성 실패:', error)
+  return { error }
 }

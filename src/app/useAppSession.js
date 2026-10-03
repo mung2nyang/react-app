@@ -31,7 +31,7 @@ export function useAppSession() {
   const ownerKey = ownerKeyFromSession(session)
   const practiceSettings = useOwnerSettings(ownerKey)
   const cars = useOwnerCars(ownerKey)
-  const inAccountFlow = location.pathname.startsWith('/auth') || location.pathname === '/onboarding'
+  const inAccountFlow = location.pathname.startsWith('/auth') || location.pathname === '/onboarding' || location.pathname === '/welcome'
 
   /** @param {string} message */
   function showToast(message) {
@@ -69,7 +69,11 @@ export function useAppSession() {
       if (restored) {
         clearGuestModePersisted()
         const message = restored.hydrateError ? '로그인은 유지됐지만 클라우드 데이터를 일부 못 불러왔습니다.' : undefined
-        if (isAlreadyInAppOnBoot(homePathRef.current)) {
+        if (restored.needsProfile) {
+          // 구글 첫 로그인: 이름·전화번호부터 받는다(구글 로그인 G-2).
+          setSession(restored.session)
+          navigateRef.current('/welcome', { replace: true })
+        } else if (isAlreadyInAppOnBoot(homePathRef.current)) {
           setSession(restored.session)
           if (message) setToast(message)
         } else {
