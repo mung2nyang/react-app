@@ -82,6 +82,28 @@ export async function fetchMonthDailyInspections(vehicleId, year, month) {
 }
 
 /**
+ * 데이터 다운로드(B-1): 내 차량들의 점검표 전체를 차량 id → 날짜별로 한 번에 읽음.
+ * @param {Array<string|number>} vehicleIds
+ * @returns {Promise<Record<string, Record<string, DailyInspection>>>}
+ */
+export async function fetchVehiclesDailyInspections(vehicleIds) {
+  /** @type {Record<string, Record<string, DailyInspection>>} */
+  const byVehicle = {}
+  if (!vehicleIds.length) return byVehicle
+  const { data, error } = await supabase
+    .from('daily_inspections')
+    .select('vehicle_id, work_date, items, action_note, inspector_name')
+    .in('vehicle_id', vehicleIds)
+  if (error) throw error
+  for (const row of Array.isArray(data) ? data : []) {
+    if (!row || row.vehicle_id == null || typeof row.work_date !== 'string') continue
+    const key = String(row.vehicle_id)
+    byVehicle[key] = { ...(byVehicle[key] || {}), [row.work_date]: toDailyInspection(row) }
+  }
+  return byVehicle
+}
+
+/**
  * 탭 숨김 판단(9-C-1, 로드맵 9번 ⑨): 그 차량 점검표가 1장이라도 있는지.
  * @param {string|number} vehicleId
  */

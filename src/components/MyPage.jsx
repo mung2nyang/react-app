@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import { isCloudSession } from '../lib/cloudSession.js'
 import InviteRedeemModal from './InviteRedeemModal.jsx'
+import DataDownloadModal from './DataDownloadModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import './mypage.css'
 
@@ -88,11 +89,13 @@ const SHORTCUTS = [
  */
 export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, onOpenMenu, showToast, onLinked }) {
   const [inviteOpen, setInviteOpen] = useState(false)
+  const [downloadOpen, setDownloadOpen] = useState(false)
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
   const employed = session?.accountType === 'employed_driver'
   const isOwner = !employed && drivers.length > 0
   const cloud = isCloudSession(session)
+  const canDownload = cloud && !employed // 데이터 다운로드: 차주·개인 회원만(기사 기록은 차주 장부, 비회원은 앱 설정 백업)
   const displayName = profile.name || (session?.name && session.name !== '비회원' ? session.name : '') || (employed ? '기사' : '대표자')
 
   return (
@@ -163,7 +166,13 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, on
           </svg>
           <span>문자 문구 설정</span>
         </button>
-        <button type="button" className="mypage-notice-link mypage-notice-entry" onClick={() => onOpen('notice')}>
+        {canDownload && (
+          <button type="button" className="mypage-notice-link mypage-notice-entry" onClick={() => setDownloadOpen(true)}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>데이터 다운로드</span>
+          </button>
+        )}
+        <button type="button" className={`mypage-notice-link${canDownload ? '' : ' mypage-notice-entry'}`} onClick={() => onOpen('notice')}>
           <svg viewBox="0 0 18 17" aria-hidden="true">
             <path style={{ fill: 'var(--primary-color)', stroke: 'none' }} d="M17.6304 0.161581C17.5111 0.0771192 17.373 0.0237774 17.2283 0.0063085C17.0836 -0.0111604 16.9369 0.00778618 16.8012 0.0614601L5.23686 4.54867H1.8027C0.811217 4.54867 0 5.36784 0 6.36904V10.0098C0 11.011 0.811217 11.8302 1.8027 11.8302H5.23686L6.13821 12.1851L5.71457 13.4594C5.41713 14.3696 5.8678 15.3708 6.75113 15.7257L9.58137 16.8726C9.7977 16.9545 10.023 17 10.2484 17C10.5098 17 10.7712 16.9454 11.0055 16.8271C11.4562 16.6177 11.7987 16.2263 11.9519 15.753L12.3305 14.5971L16.7742 16.3265C16.8823 16.3629 16.9905 16.3902 17.0986 16.3902C17.2789 16.3902 17.4592 16.3356 17.6124 16.2263C17.8558 16.0534 18 15.7713 18 15.48V0.907932C18 0.607571 17.8558 0.325414 17.6124 0.161581H17.6304ZM1.79369 6.36904H4.49775V10.0098H1.79369V6.36904ZM10.2574 15.1796L7.42714 14.0328L7.82374 12.8314L10.663 13.9327L10.2574 15.1705V15.1796ZM16.2153 14.1511L6.30045 10.301V6.08688L16.2153 2.2368V14.1511Z"></path>
           </svg>
@@ -178,6 +187,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, on
           onLinked={(next) => onLinked?.(next)}
         />
       )}
+      {downloadOpen && <DataDownloadModal ownerKey={ownerKey} showToast={showToast} onClose={() => setDownloadOpen(false)} />}
     </div>
   )
 }
