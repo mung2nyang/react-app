@@ -1,19 +1,33 @@
 // @ts-check
-// Step 3 라우터 셸: `/auth` 라우트. 부트 중에는 AuthPage 대신 로딩 문구만 보여줘
+// Step 3 라우터 셸: `/auth` 라우트. 부트 중에는 AuthPage 대신 로딩 표시만 보여줘
 // 로그인 세션이 있는데도 잠깐 첫 화면이 번쩍이는 것을 막는다(App.jsx의 옛 booting 게이트).
+// 10-L: 세션이 이미 있으면(홈 이동은 BrowserRouter가 startTransition으로 늦게 처리) 넘어갈 때까지 로딩 표시 유지.
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import AuthPage from '../components/AuthPage.jsx'
 import LoadingScreen from '../components/LoadingScreen.jsx'
+
+/** 세션이 있는데 이만큼 지나도 다른 화면으로 안 넘어가면(주소창에 /auth 직접 입력 등) 홈으로. */
+export const AUTH_WITH_SESSION_REDIRECT_MS = 1500
 
 /**
  * @param {Object} props
  * @param {boolean} props.booting
+ * @param {import('../lib/outboxTypes.js').AppSession|null} [props.session]
  * @param {(message: string) => void} props.showToast
  * @param {() => void} [props.onGuest]
  */
-export default function AuthRoute({ booting, showToast, onGuest }) {
-  if (booting) {
-    return <LoadingScreen />
-  }
+export default function AuthRoute({ booting, session = null, showToast, onGuest }) {
+  const navigate = useNavigate()
+  const signedIn = !booting && !!session
+
+  useEffect(() => {
+    if (!signedIn) return undefined
+    const timer = setTimeout(() => navigate('/app', { replace: true }), AUTH_WITH_SESSION_REDIRECT_MS)
+    return () => clearTimeout(timer)
+  }, [signedIn, navigate])
+
+  if (booting || session) return <LoadingScreen />
 
   return (
     <div className="container account-flow-container">

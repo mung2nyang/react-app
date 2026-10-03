@@ -53,6 +53,7 @@ export default function App() {
           element={(
             <AuthRoute
               booting={booting}
+              session={session}
               showToast={showToast}
               onGuest={() => {
                 endCloudSession()
