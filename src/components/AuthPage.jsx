@@ -3,6 +3,7 @@ import { useState } from 'react'
 import {
   ensureProfileRow,
   getSupabaseAuthErrorMessage,
+  signInWithGoogle,
   signInWithPhone,
   signUpWithPhone,
 } from '../supabaseClient.js'
@@ -109,12 +110,30 @@ export default function AuthPage({ onGuest, onLogin, onSignup, onForgotPassword,
     }
   }
 
+  // 성공하면 브라우저가 구글 화면으로 넘어가므로 바쁨 표시를 풀지 않는다.
+  async function handleGoogle() {
+    if (busy) return
+    setBusy(true)
+    try {
+      const { error } = await signInWithGoogle()
+      if (error) {
+        showToast(getSupabaseAuthErrorMessage(error))
+        setBusy(false)
+      }
+    } catch (error) {
+      showToast(getSupabaseAuthErrorMessage(error instanceof Error ? error : null))
+      setBusy(false)
+    }
+  }
+
   if (view === 'intro') {
     return (
       <AuthIntroView
         onGuest={onGuest}
         onLogin={openLogin}
         onSignup={openSignup}
+        onGoogle={() => { void handleGoogle() }}
+        busy={busy}
       />
     )
   }

@@ -8,8 +8,10 @@ const BANNER = assetPath('/images/banner_image.png')
  * @param {() => void} [props.onGuest]
  * @param {() => void} props.onLogin
  * @param {() => void} props.onSignup
+ * @param {() => void} [props.onGoogle]
+ * @param {boolean} [props.busy]
  */
-export default function AuthIntroView({ onGuest, onLogin, onSignup }) {
+export default function AuthIntroView({ onGuest, onLogin, onSignup, onGoogle, busy = false }) {
   return (
     <div className="account-flow-page">
       <div className="auth-view auth-intro-view">
@@ -22,6 +24,7 @@ export default function AuthIntroView({ onGuest, onLogin, onSignup }) {
           <div className="auth-btn-stack">
             <button type="button" className="auth-primary-btn" onClick={onLogin}>로그인</button>
             <button type="button" className="auth-secondary-btn" onClick={onSignup}>회원가입</button>
+            <button type="button" className="auth-secondary-btn" disabled={busy} onClick={onGoogle}>Google로 계속하기</button>
           </div>
           <button type="button" className="auth-guest-btn" onClick={onGuest}>비회원으로 시작하기</button>
         </div>

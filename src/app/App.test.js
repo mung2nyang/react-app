@@ -36,6 +36,7 @@ mock.module('../supabaseClient.js', {
     // 쓰므로 실제로 호출되지 않는다 — 존재만 하면 된다.
     signInWithPhone: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
     signUpWithPhone: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
+    signInWithGoogle: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
     ensureProfileRow: async () => {},
   },
 })

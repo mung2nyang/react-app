@@ -1,5 +1,6 @@
 // @ts-check
 import { createClient } from '@supabase/supabase-js'
+import { routerBasename } from './app/routerBasename.js'
 
 // 원래 앱 supabase-config.js와 같은 공개 주소/키입니다.
 // (브라우저에 보여도 되는 공개 키. 비밀 열쇠가 아닙니다.)
@@ -55,6 +56,16 @@ export async function signUpWithPhone(phone, password) {
   return supabase.auth.signUp({
     email: phoneToFakeEmail(phone),
     password,
+  })
+}
+
+/**
+ * 구글 화면으로 갔다가 앱의 /auth로 돌아온다 — 돌아온 뒤 로그인은 부트 복원(boot.js)이 이어받는다.
+ */
+export async function signInWithGoogle() {
+  return supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: `${window.location.origin}${routerBasename()}/auth` },
   })
 }
 
