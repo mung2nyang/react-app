@@ -36,18 +36,13 @@
   height: 58px;
 }
 
-.side-menu .menu-banner-light,
-.side-menu .menu-banner-dark {
+.side-menu .menu-banner {
   position: relative;
   top: 3px;
   left: -10px;
   height: 56px;
   object-fit: contain;
 }
-
-.menu-banner-dark { display: none; }
-[data-theme="dark"] .menu-banner-light { display: none; }
-[data-theme="dark"] .menu-banner-dark { display: block; }
 
 .side-menu-sections {
   display: flex;

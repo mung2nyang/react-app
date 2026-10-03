@@ -106,6 +106,7 @@ export default function SideMenu({
   subLogItems = [], onOpenSubLog,
 }) {
   if (!open) return null
+  const banner = document.documentElement.getAttribute('data-theme') === 'dark' ? BANNER_DARK : BANNER_LIGHT // 테마 배너 하나만(숨긴 그림도 내려받음, 10-A)
 
   /** @param {string} page @param {string} [title] */
   function pick(page, title) {
@@ -131,8 +132,7 @@ export default function SideMenu({
       <aside className="side-menu open" aria-label="메뉴">
         <div className="side-menu-header">
           <div className="menu-banner-wrap">
-            <img src={BANNER_LIGHT} alt="운행 일지" className="menu-banner-light" />
-            <img src={BANNER_DARK} alt="운행 일지" className="menu-banner-dark" />
+            <img src={banner} alt="운행 일지" className="menu-banner" />
           </div>
         </div>
         <div className="side-menu-sections">
