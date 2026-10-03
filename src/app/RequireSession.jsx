@@ -9,6 +9,7 @@
 import { Navigate } from 'react-router-dom'
 import { resolveSessionGate } from './sessionGate.js'
 import { isGuestModePersisted } from './guestSessionPersist.js'
+import LoadingScreen from '../components/LoadingScreen.jsx'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 
@@ -20,7 +21,7 @@ import { isGuestModePersisted } from './guestSessionPersist.js'
  */
 export default function RequireSession({ session, booting, children }) {
   const gate = resolveSessionGate({ booting, session: session ?? null, guestModePersisted: isGuestModePersisted() })
-  if (gate === 'loading') return <div className="page">불러오는 중...</div>
+  if (gate === 'loading') return <LoadingScreen />
   if (gate === 'redirect') return <Navigate to="/auth" replace />
   return children
 }

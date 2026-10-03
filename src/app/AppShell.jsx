@@ -5,6 +5,7 @@
 import { Suspense, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav.jsx'
+import LoadingScreen from '../components/LoadingScreen.jsx'
 import SideMenu from '../components/SideMenu.jsx'
 import NotificationPanel from '../components/NotificationPanel.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
@@ -131,7 +132,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   return (
     <div className="container main-app-container">
       <HydrationRetryBanner showToast={showToast} />
-      <Suspense fallback={<div className="page">불러오는 중...</div>}>
+      <Suspense fallback={<LoadingScreen inline />}>
         <AppShellRoutes
           ownerKey={ownerKey}
           session={session}

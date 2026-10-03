@@ -101,8 +101,9 @@ export function useAppSession() {
   }, [ownerKey])
 
   useEffect(() => {
+    if (booting) return // 부트 중엔 세션을 몰라 비회원(라이트) 설정이라 덮지 않는다(10-L)
     applyTheme(practiceSettings.theme)
-  }, [practiceSettings.theme, location.pathname])
+  }, [booting, practiceSettings.theme, location.pathname])
 
   useEffect(() => {
     if (!toast) return undefined

@@ -253,9 +253,9 @@ test('재감사 4번 — 로그인 세션 복원 상태로 /app?y=2026&m=6을 �
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
 
-    // booting이 끝나면(= "불러오는 중..." 안내가 사라지면) 부트 복원이 이미
+    // booting이 끝나면(= 로딩 표시 .boot-loading이 사라지면) 부트 복원이 이미
     // goHome()을 부를지 말지 결정한 뒤다.
-    await waitUntil(() => !container.textContent.includes('불러오는 중'))
+    await waitUntil(() => !container.querySelector('.boot-loading'))
     await act(async () => { await wait(50) })
 
     assert.equal(window.location.pathname, '/app', '로그인 상태에서도 /app 경로에 있어야 한다')
@@ -311,7 +311,7 @@ test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 work
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
     await waitUntil(() => window.location.pathname === '/app')
-    await waitUntil(() => !container.textContent.includes('불러오는 중'))
+    await waitUntil(() => !container.querySelector('.boot-loading'))
     await act(async () => { await wait(50) }) // 부트 초기화(initializeOwnerFromPersist)가 끝날 시간을 준다.
 
     // 마운트가 끝난 "뒤"에 store에 B를 외부에서 커밋한다 — 예전 아키텍처
