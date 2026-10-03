@@ -22,7 +22,6 @@ import {
 export function useAppSession() {
   const [session, setSession] = useState(/** @type {AppSession|null} */ (null))
   const [toast, setToast] = useState('')
-  const [forgotOpen, setForgotOpen] = useState(false)
   const [booting, setBooting] = useState(true)
 
   const navigate = useNavigate()
@@ -129,8 +128,6 @@ export function useAppSession() {
     setSession,
     toast,
     showToast,
-    forgotOpen,
-    setForgotOpen,
     booting,
     ownerKey,
     cars,

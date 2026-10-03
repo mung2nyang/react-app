@@ -17,11 +17,8 @@ mock.module('../supabaseClient.js', {
   namedExports: {
     supabase: fakeSupabase,
     /** @param {string} phone */
-    phoneToFakeEmail: (phone) => `${phone}@runlog-user.com`,
     /** @param {{ message?: string } | null | undefined} error */
     getSupabaseAuthErrorMessage: (error) => error?.message || '',
-    signInWithPhone: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
-    signUpWithPhone: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
     signInWithGoogle: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
     ensureProfileRow: async () => {},
   },

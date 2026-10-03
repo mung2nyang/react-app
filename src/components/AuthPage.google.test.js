@@ -1,4 +1,4 @@
-// 구글 로그인 G-1 — 첫 화면 [Google로 계속하기]: 누르면 구글 로그인 함수를 한 번 부르고, 실패하면 토스트 + 버튼 다시 누를 수 있음.
+// 구글 로그인 G-1·G-3 — 첫 화면은 [Google로 시작하기]·[비회원으로 시작하기]만: 누르면 구글 로그인 함수를 한 번 부르고, 실패하면 토스트 + 버튼 다시 누를 수 있음.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -18,8 +18,6 @@ mock.module('../supabaseClient.js', {
     ensureProfileRow: async () => {},
     getSupabaseAuthErrorMessage: (/** @type {{ message?: string } | null} */ error) => error?.message || '오류',
     signInWithGoogle: async () => { googleCalls += 1; return googleResult },
-    signInWithPhone: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
-    signUpWithPhone: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
   },
 })
 
@@ -36,19 +34,19 @@ async function render() {
   const root = createRoot(container)
   await act(async () => {
     root.render(React.createElement(AuthPage, {
-      onLogin: () => {}, onSignup: () => {}, showToast: (/** @type {string} */ m) => { toasts.push(m) },
+      onGuest: () => {}, showToast: (/** @type {string} */ m) => { toasts.push(m) },
     }))
   })
-  const button = [...container.querySelectorAll('button')].find((b) => b.textContent === 'Google로 계속하기')
-  return { toasts, button, async cleanup() { await act(async () => { root.unmount() }); container.remove() } }
+  const button = [...container.querySelectorAll('button')].find((b) => b.textContent === 'Google로 시작하기')
+  return { toasts, button, labels: [...container.querySelectorAll('button')].map((b) => b.textContent), async cleanup() { await act(async () => { root.unmount() }); container.remove() } }
 }
 
-test('첫 화면에 [Google로 계속하기]가 있고 누르면 구글 로그인 함수를 한 번 부른다(성공 시 버튼은 잠긴 채 구글 화면으로)', async () => {
+test('첫 화면에 [Google로 시작하기]가 있고 누르면 구글 로그인 함수를 한 번 부른다(성공 시 버튼은 잠긴 채 구글 화면으로)', async () => {
   googleCalls = 0
   googleResult = { error: null }
   const view = await render()
   try {
-    assert.ok(view.button, 'Google로 계속하기 버튼')
+    assert.ok(view.button, 'Google로 시작하기 버튼')
     await act(async () => { view.button?.click() })
     assert.equal(googleCalls, 1)
     assert.equal(view.button?.disabled, true)
@@ -65,5 +63,12 @@ test('구글 로그인 시작이 실패하면 토스트를 띄우고 버튼을 �
     assert.equal(googleCalls, 1)
     assert.deepEqual(view.toasts, ['구글 로그인을 시작하지 못했습니다'])
     assert.equal(view.button?.disabled, false)
+  } finally { await view.cleanup() }
+})
+
+test('첫 화면엔 구글·비회원 버튼만 있다(전화번호 로그인·회원가입 없음, G-3)', async () => {
+  const view = await render()
+  try {
+    assert.deepEqual(view.labels, ['Google로 시작하기', '비회원으로 시작하기'])
   } finally { await view.cleanup() }
 })

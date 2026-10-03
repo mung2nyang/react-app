@@ -29,13 +29,10 @@ fakeSupabase.auth.getSession = async () => ({
 mock.module('../supabaseClient.js', {
   namedExports: {
     supabase: fakeSupabase,
-    phoneToFakeEmail: (phone) => `${phone}@runlog-user.com`,
     getSupabaseAuthErrorMessage: (error) => error?.message || '',
     // AuthPage.jsx가 정적으로 import하지만(모든 라우트가 한 <Routes> 트리에
     // 선언돼 있어 이 모듈 자체는 항상 로드된다) 이 테스트는 인증 화면을 안
     // 쓰므로 실제로 호출되지 않는다 — 존재만 하면 된다.
-    signInWithPhone: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
-    signUpWithPhone: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
     signInWithGoogle: async () => ({ error: new Error('테스트에서 호출되면 안 됨') }),
     ensureProfileRow: async () => {},
   },

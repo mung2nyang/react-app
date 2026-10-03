@@ -5,20 +5,15 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../components/OnboardingPage.jsx'
 import WelcomeProfileView from '../components/auth/WelcomeProfileView.jsx'
 import { ensureProfileRow } from '../supabaseClient.js'
-import ForgotPasswordModal from '../components/ForgotPasswordModal.jsx'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
-import { buildCloudAppSession, ownerKeyFromSession } from './boot.js'
+import { ownerKeyFromSession } from './boot.js'
 import { AccountFlowBodyClass, PendingWriteRetryBridge, SyncFlushBridge } from './providers.jsx'
 import AuthRoute from './AuthRoute.jsx'
 import AppShell from './AppShell.jsx'
 import RequireSession from './RequireSession.jsx'
 import { applyOnboardingWizard } from '../lib/onboardingFinish.js'
-import {
-  clearGuestModePersisted,
-  GUEST_APP_SESSION,
-  setGuestModePersisted,
-} from './guestSessionPersist.js'
+import { GUEST_APP_SESSION, setGuestModePersisted } from './guestSessionPersist.js'
 import { useAppSession } from './useAppSession.js'
 import '../variables.css'
 import '../account-flow.css'
@@ -38,8 +33,6 @@ export default function App() {
     setSession,
     toast,
     showToast,
-    forgotOpen,
-    setForgotOpen,
     booting,
     ownerKey,
     cars,
@@ -61,7 +54,6 @@ export default function App() {
             <AuthRoute
               booting={booting}
               showToast={showToast}
-              onForgotPassword={() => setForgotOpen(true)}
               onGuest={() => {
                 endCloudSession()
                 setGuestModePersisted(true)
@@ -69,38 +61,6 @@ export default function App() {
                   GUEST_APP_SESSION,
                   '비회원 모드로 시작합니다. 언제든 마이페이지에서 로그인할 수 있어요.',
                 )
-              }}
-              onLogin={async (/** @type {AppSession} */ user) => {
-                clearGuestModePersisted()
-                /** @type {AppSession} */
-                let next = { ...user, guestMode: false }
-                if (user?.userId) {
-                  next = await buildCloudAppSession(user.userId, {
-                    name: user.name,
-                    phone: user.phone,
-                  })
-                  try {
-                    await hydrateFromSupabase(user.userId, ownerKeyFromSession(next), {
-                      employedDriver: !!next.linkedOwnerId,
-                    })
-                  } catch (error) {
-                    console.error(error)
-                    showToast('로그인은 됐지만 클라우드 데이터를 일부 못 불러왔습니다.')
-                  }
-                }
-                goHome(next)
-              }}
-              onSignup={async (/** @type {AppSession} */ user) => {
-                clearGuestModePersisted()
-                if (user?.userId) {
-                  try {
-                    await hydrateFromSupabase(user.userId, user.userId)
-                  } catch (error) {
-                    console.error(error)
-                  }
-                }
-                setSession({ ...user, guestMode: false })
-                navigate('/onboarding')
               }}
             />
           )}
@@ -177,7 +137,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
 
-      {forgotOpen && <ForgotPasswordModal onClose={() => setForgotOpen(false)} />}
 
       {toast && <div className="toast-message" role="status">{toast}</div>}
     </>
