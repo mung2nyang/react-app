@@ -8,6 +8,7 @@
 /** @typedef {import('./outboxTypes.js').DriverLinkRow} DriverLinkRow */
 import { supabase } from '../supabaseClient.js'
 import { assertCloudWriteReady } from './cloudSession.js'
+import { normalizeInviteCode } from '../domain/drivers.js'
 
 /**
  * upsert_driver_link_idempotent RPC 1회. 같은 p_idempotency_key면 서버가 기존 행을
@@ -84,11 +85,12 @@ export async function redeemDriverInviteCode(inviteCode) {
     throw new Error('로그인이 필요합니다.')
   }
   const { data, error } = await supabase.rpc('redeem_driver_invite_code', {
-    p_invite_code: String(inviteCode || '').trim(),
+    p_invite_code: normalizeInviteCode(inviteCode),
   })
   if (error) throw new Error(error.message || '초대코드 연동에 실패했습니다.')
   const row = /** @type {DriverLinkRow|undefined} */ (Array.isArray(data) ? data[0] : data)
-  if (!row) throw new Error('서버가 연동 결과를 돌려주지 않았습니다.')
+  // 0019: 틀리거나 만료된 코드는 실패 횟수를 남기려고 오류 대신 빈 결과로 온다.
+  if (!row) throw new Error('초대코드가 맞지 않거나 기한(7일)이 지났습니다. 차주에게 새 코드를 요청해 주세요.')
   return row
 }
 

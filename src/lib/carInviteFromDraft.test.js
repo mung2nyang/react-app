@@ -8,7 +8,7 @@ const baseDraft = {
   number: '12가3456',
   driverName: '',
   driverPhone: '',
-  inviteCode: '123456',
+  inviteCode: 'A2B3C4D5E6',
   inviteStartDate: '2026-09-07',
   inviteDriverId: null,
 }
@@ -17,7 +17,7 @@ test('todayIsoDate returns YYYY-MM-DD', () => {
   assert.match(todayIsoDate(), /^\d{4}-\d{2}-\d{2}$/)
 })
 
-test('inviteCode가 6자리 숫자가 아니면(누락/무효) skipInvite 없이도 스킵된다', async () => {
+test('inviteCode가 비어 있으면 skipInvite 없이도 스킵된다', async () => {
   const result = await saveInviteAfterVehicle({
     cloud: true,
     ownerKey: 'owner-1',
@@ -85,4 +85,17 @@ test('skipInvite:true라도 cloud가 아니면(기존 규칙) 어차피 null', a
     skipInvite: true,
   })
   assert.equal(result, null)
+})
+
+test('10-S-2: 예전 6자리 새 코드는 조용히 건너뛰지 않고 [코드 생성] 안내를 돌려준다', async () => {
+  const result = await saveInviteAfterVehicle({
+    cloud: true,
+    ownerKey: 'owner-1',
+    userId: 'user-1',
+    drivers: [],
+    cars: [],
+    saved: { id: 'car-1', number: '12가3456' },
+    inviteDraft: { ...baseDraft, driverName: '박기사', driverPhone: '010-3333-4444', inviteCode: '123456' },
+  })
+  assert.equal(result, '[코드 생성]으로 초대 코드를 만들어 주세요.')
 })

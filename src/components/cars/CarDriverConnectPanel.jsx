@@ -1,6 +1,6 @@
 // @ts-check
 /** @typedef {import('../../lib/outboxTypes.js').DriverRecord} DriverRecord */
-import { generateInviteCode } from '../../lib/drivers.js'
+import { formatInviteCode, generateInviteCode } from '../../lib/drivers.js'
 import '../drivers/driver-connection.css'
 
 /**
@@ -51,10 +51,8 @@ export default function CarDriverConnectPanel({
               <input
                 id="carInviteCode"
                 className="input-box"
-                inputMode="numeric"
-                maxLength={6}
-                value={inviteCode}
-                onChange={(e) => onInviteCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                readOnly
+                value={formatInviteCode(inviteCode)}
               />
               <button
                 type="button"

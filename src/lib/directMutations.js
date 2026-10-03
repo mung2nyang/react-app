@@ -160,7 +160,7 @@ export async function upsertDriverLinkOnSupabase({ supabaseId, vehicleId, invite
     if (!error) return data
     if (error.code === '23505') {
       lastError = error
-      code = String(Math.floor(100000 + Math.random() * 900000))
+      code = (await import('../domain/drivers.js')).generateInviteCode()
       continue
     }
     throw error

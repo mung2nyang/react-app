@@ -7,12 +7,12 @@ import { deleteClientFromSupabase, deleteVehicleFromSupabase } from '../lib/dire
 // 2026-09-01 보리 지시: 기사 할당 "기간 겹침" 계산 차단(findOverlappingDriverLink 등)은
 // 요구한 적 없는 코드라 제거했다. 남긴 규칙은 "같은 차량번호는 한 기사에게만"(기간 무관).
 describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
-  const base = { name: '박기사', phone: '010-3333-4444', inviteCode: '222222', vehicleNumber: '서울12가3456', startDate: '2026-05-20', endDate: '' }
+  const base = { name: '박기사', phone: '010-3333-4444', inviteCode: 'B2C3D4E5F6', vehicleNumber: '서울12가3456', startDate: '2026-05-20', endDate: '' }
   const cars = [{ type: 'sub', number: '서울12가3456' }]
 
   test('같은 차량이 이미 다른 기사에게 있으면 기간과 무관하게 거절한다', () => {
     const items = [
-      { id: 'a', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '2026-05-31', status: 'pending' },
+      { id: 'a', name: '김기사', phone: '010-1111-2222', inviteCode: 'A2A3A4A5A6', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '2026-05-31', status: 'pending' },
     ]
     // 기존 할당(5/1~5/31)과 겹치지 않는 6월 기간이어도 같은 차량이면 거절.
     const result = upsertDriver(items, { ...base, startDate: '2026-07-01', endDate: '2026-07-31' }, null, cars)
@@ -21,7 +21,7 @@ describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
 
   test('연결 해제된(disconnected) 기사가 쓰던 차량은 다시 할당할 수 있다', () => {
     const items = [
-      { id: 'a', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'disconnected' },
+      { id: 'a', name: '김기사', phone: '010-1111-2222', inviteCode: 'A2A3A4A5A6', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'disconnected' },
     ]
     const result = upsertDriver(items, base, null, cars)
     assert.equal(result.error, undefined)
@@ -36,7 +36,7 @@ describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
     const result = upsertDriver([], {
       name: '박기사',
       phone: '010-3333-4444',
-      inviteCode: '222222',
+      inviteCode: 'B2C3D4E5F6',
       vehicleNumber: '서울00가0000',
       startDate: '2026-05-01',
       endDate: '',
@@ -48,7 +48,7 @@ describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
     const result = upsertDriver([], {
       name: '박기사',
       phone: '010-3333-4444',
-      inviteCode: '222222',
+      inviteCode: 'B2C3D4E5F6',
       vehicleNumber: '서울12가3456',
       startDate: '2026-06-10',
       endDate: '2026-05-01',
@@ -65,12 +65,12 @@ describe('기사 할당 — 한 기사(전화번호)는 차량 1대에만 배정
 
   test('같은 전화번호가 이미 다른 차량에 활성 배정 중이면 새 차량 배정을 거절한다', () => {
     const items = [
-      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'pending' },
+      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: 'A2A3A4A5A6', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'pending' },
     ]
     const result = upsertDriver(items, {
       name: '김기사',
       phone: '01011112222',
-      inviteCode: '222222',
+      inviteCode: 'B2C3D4E5F6',
       vehicleNumber: '경기78나9012',
       startDate: '2026-05-10',
       endDate: '',
@@ -80,12 +80,12 @@ describe('기사 할당 — 한 기사(전화번호)는 차량 1대에만 배정
 
   test('기존 배정이 연결 해제된(disconnected) 상태면 새 차량 배정을 허용한다', () => {
     const items = [
-      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'disconnected' },
+      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: 'A2A3A4A5A6', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'disconnected' },
     ]
     const result = upsertDriver(items, {
       name: '김기사',
       phone: '010-1111-2222',
-      inviteCode: '222222',
+      inviteCode: 'B2C3D4E5F6',
       vehicleNumber: '경기78나9012',
       startDate: '2026-05-10',
       endDate: '',
@@ -96,12 +96,12 @@ describe('기사 할당 — 한 기사(전화번호)는 차량 1대에만 배정
 
   test('같은 기사가 같은 배정 건의 차량을 바꾸는 수정(editingId 있음)은 허용한다', () => {
     const items = [
-      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: '111111', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'pending' },
+      { id: 'd1', name: '김기사', phone: '010-1111-2222', inviteCode: 'A2A3A4A5A6', vehicleNumber: '서울12가3456', startDate: '2026-05-01', endDate: '', status: 'pending' },
     ]
     const result = upsertDriver(items, {
       name: '김기사',
       phone: '010-1111-2222',
-      inviteCode: '111111',
+      inviteCode: 'A2A3A4A5A6',
       vehicleNumber: '경기78나9012',
       startDate: '2026-05-01',
       endDate: '',

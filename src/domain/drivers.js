@@ -9,6 +9,21 @@
 /** @typedef {{ number?: string, type?: string }} CarRef */
 /** @typedef {Pick<DriverRecord, 'name'|'phone'|'inviteCode'|'vehicleNumber'|'startDate'|'endDate'> & { assignmentStart?: string, assignmentEnd?: string }} DriverDraft */
 
+// 10-S-2: 헷갈리는 0·O·1·I·L을 뺀 31종 10자리. 서버(0019)도 같은 형식만 받는다.
+const INVITE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ'
+export const INVITE_CODE_PATTERN = /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{10}$/
+
+/** @param {unknown} value */
+export function normalizeInviteCode(value) {
+  return String(value || '').toUpperCase().replace(/[^0-9A-Z]/g, '')
+}
+
+/** @param {string|null|undefined} code */
+export function formatInviteCode(code) {
+  const value = code || ''
+  return INVITE_CODE_PATTERN.test(value) ? `${value.slice(0, 5)}-${value.slice(5)}` : value
+}
+
 /**
  * @param {Array<{ inviteCode?: string }>|null|undefined} [items]
  */
@@ -16,7 +31,13 @@ export function generateInviteCode(items = []) {
   const used = new Set((items || []).map((item) => item.inviteCode))
   let code = ''
   do {
-    code = String(Math.floor(100000 + Math.random() * 900000))
+    code = ''
+    while (code.length < 10) {
+      // 248 이상은 버려 31로 나눈 나머지가 고르게 나오게 한다.
+      for (const byte of globalThis.crypto.getRandomValues(new Uint8Array(16))) {
+        if (byte < 248 && code.length < 10) code += INVITE_ALPHABET[byte % 31]
+      }
+    }
   } while (used.has(code))
   return code
 }
@@ -42,14 +63,19 @@ export function countByStatus(items) {
 export function upsertDriver(items, draft, editingId = null, cars = []) {
   const name = String(draft.name || '').trim()
   const phone = String(draft.phone || '').trim()
-  const inviteCode = String(draft.inviteCode || '').replace(/\D/g, '')
+  const inviteCode = normalizeInviteCode(draft.inviteCode)
   const vehicleNumber = String(draft.vehicleNumber || '').trim()
   const startDate = String(draft.startDate || draft.assignmentStart || '').trim()
   const endDate = String(draft.endDate || draft.assignmentEnd || '').trim()
 
   if (!name) return { error: '기사 이름을 입력해 주세요.', items }
   if (phone.replace(/\D/g, '').length < 10) return { error: '전화번호를 입력해 주세요.', items }
-  if (!/^\d{6}$/.test(inviteCode)) return { error: '초대 코드 6자리를 입력해 주세요.', items }
+  // 예전 6자리 코드는 바꾸지 않고 다시 저장할 때만 허용(연동된 기사 계약 수정 등).
+  const keptCode = Boolean(inviteCode) && Boolean(editingId)
+    && (items || []).some((item) => item.id === editingId && item.inviteCode === inviteCode)
+  if (!INVITE_CODE_PATTERN.test(inviteCode) && !keptCode) {
+    return { error: '[코드 생성]으로 초대 코드를 만들어 주세요.', items }
+  }
 
   if (vehicleNumber) {
     const targetCar = (cars || []).find((car) => car.number === vehicleNumber)

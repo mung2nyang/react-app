@@ -2,7 +2,7 @@
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('./outboxTypes.js').CarRecord} CarRecord */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
-import { upsertDriver } from './drivers.js'
+import { normalizeInviteCode, upsertDriver } from './drivers.js'
 import { requestDriverInviteSave } from './requestDriverInviteSave.js'
 
 /**
@@ -42,8 +42,8 @@ export async function saveInviteAfterVehicle({
   cloud, ownerKey, userId, drivers, cars, saved, inviteDraft, skipInvite = false,
 }) {
   if (!cloud || inviteDraft.type !== 'sub' || skipInvite) return null
-  const code = String(inviteDraft.inviteCode || '').replace(/\D/g, '')
-  if (!/^\d{6}$/.test(code)) return null
+  const code = normalizeInviteCode(inviteDraft.inviteCode)
+  if (!code) return null
   const vehicleNumber = saved?.number || inviteDraft.number
   if (!vehicleNumber) return null
   const startDate = inviteDraft.inviteStartDate || todayIsoDate()

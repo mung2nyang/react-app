@@ -2,7 +2,7 @@
 // Step 0-4 감사 보완 4차: DriverConnectionPage.jsx(214줄, 200줄 제한 위반)에서 초대
 // 폼 모달만 분리했다. 로직은 한 글자도 안 바꿨다.
 import { buildDriverInviteSmsHref } from '../lib/driverInviteSms.js'
-import { generateInviteCode } from '../lib/drivers.js'
+import { formatInviteCode, generateInviteCode } from '../lib/drivers.js'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
 import TemporalInput from './shared/TemporalInput.jsx'
 import './drivers/driver-connection.css'
@@ -58,7 +58,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         <div className="form-group">
           <label htmlFor="drvCode">초대 코드</label>
           <div className="driver-code-row">
-            <input id="drvCode" className="input-box" inputMode="numeric" maxLength={6} disabled={linked} value={draft.inviteCode} onChange={(e) => setDraft({ ...draft, inviteCode: e.target.value.replace(/\D/g, '').slice(0, 6) })} />
+            <input id="drvCode" className="input-box" readOnly disabled={linked} value={formatInviteCode(draft.inviteCode)} />
             <button type="button" className="theme-toggle-btn" disabled={linked} onClick={() => setDraft({ ...draft, inviteCode: generateInviteCode(drivers) })}>코드 생성</button>
             <button type="button" className="theme-toggle-btn" disabled={linked} onClick={sendInviteSms}>문자 발송</button>
           </div>
