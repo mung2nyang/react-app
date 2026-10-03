@@ -1,11 +1,16 @@
 # 자동 검증 관문(CI): push/PR 마다 GitHub가 직접 테스트·타입검사·빌드를 돌린다.
 # 결과는 저장소 상단의 초록 ✓ / 빨강 ✗ 로 표시된다. 코드를 읽지 않아도 ✗만 보면 된다.
+# main 에서는 검증이 초록일 때만 같은 빌드를 GitHub Pages 에 배포한다.
+# 배포 주소: https://mung2nyang.github.io/react-app/
 name: CI
 
 on:
   push:
   pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
@@ -40,3 +45,35 @@ jobs:
       - name: 빌드 (npm run build)
         if: ${{ !cancelled() }}
         run: npm run build
+
+      # 배포용 준비는 앞 단계가 모두 성공한 main 에서만.
+      - name: 깊은 주소 새로고침용 404.html
+        if: ${{ success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+        run: cp dist/index.html dist/404.html
+
+      - name: 배포할 빌드 올리기
+        if: ${{ success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: react-app/dist
+
+  deploy:
+    needs: verify
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+
+      - name: GitHub Pages 배포
+        id: deployment
+        uses: actions/deploy-pages@v4
