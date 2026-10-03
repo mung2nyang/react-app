@@ -164,7 +164,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
             ) : (
               <>
                 <button type="button" className="driver-card-action-btn" onClick={() => openEdit(driver)}>초대 수정</button>
-                <button type="button" className="driver-card-action-btn primary" onClick={() => changeStatus(driver.id, 'linked')}>연동 완료</button>
+                {!cloud && <button type="button" className="driver-card-action-btn primary" onClick={() => changeStatus(driver.id, 'linked')}>연동 완료</button>}
                 <button type="button" className="driver-card-action-btn danger" onClick={() => remove(driver.id)}>초대 취소</button>
               </>
             )}
