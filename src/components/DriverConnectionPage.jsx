@@ -12,7 +12,7 @@ import {
   requestDriverInviteSave,
   requestDriverStatusChange,
 } from '../lib/directMutationActions.js'
-import { countByStatus, generateInviteCode, saveDrivers, upsertDriver } from '../lib/drivers.js'
+import { countByStatus, formatInviteCode, generateInviteCode, saveDrivers, upsertDriver } from '../lib/drivers.js'
 import { requestDriverUnlinkAction } from '../lib/driverUnlink.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import DriverUnlinkControls from './drivers/DriverUnlinkControls.jsx'
@@ -134,7 +134,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
             </span>
           </div>
           <div className="car-sub-text">
-            {[driver.phone, driver.status !== 'linked' && `초대코드 ${driver.inviteCode}`].filter(Boolean).join(' · ')}
+            {[driver.phone, driver.status !== 'linked' && `초대코드 ${formatInviteCode(driver.inviteCode)}`].filter(Boolean).join(' · ')}
           </div>
 
           <div className="driver-assignment-grid">
