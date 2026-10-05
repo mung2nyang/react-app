@@ -82,8 +82,14 @@ export default function CarBusinessInfoSection({ ownerKey, car, cars, profile, s
       </div>
       {form.sameAsOwner ? (
         <p className="car-biz-owner-line">
-          <span>{ownerLine || '마이페이지 개인정보에 사업자정보를 먼저 입력해 주세요.'}</span>
-          <span>{ownerAccountLine || '마이페이지 개인정보에 정산 계좌를 먼저 입력해 주세요.'}</span>
+          {!ownerLine && !ownerAccountLine ? (
+            <span>마이페이지 → 개인정보에서 사업자 정보 · 정산 계좌를 등록해 주세요.</span>
+          ) : (
+            <>
+              <span>{ownerLine || '마이페이지 → 개인정보에서 사업자 정보를 등록해 주세요.'}</span>
+              <span>{ownerAccountLine || '마이페이지 → 개인정보에서 정산 계좌를 등록해 주세요.'}</span>
+            </>
+          )}
         </p>
       ) : (
         <>

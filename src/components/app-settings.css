@@ -63,31 +63,13 @@
   font-weight: 750;
   text-align: center;
   appearance: textfield;
+  -webkit-touch-callout: none;
 }
 
 .run-count-preset-chip::-webkit-inner-spin-button,
 .run-count-preset-chip::-webkit-outer-spin-button {
   margin: 0;
   appearance: none;
-}
-
-.run-count-preset-chip-remove {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  background: var(--card-bg);
-  color: var(--sub-text-color);
-  font-size: 11px;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
 }
 
 .run-count-preset-add-chip {

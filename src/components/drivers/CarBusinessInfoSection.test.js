@@ -91,9 +91,25 @@ test('차주 사업자·계좌 정보가 비어 있으면 안내 문구', async 
   commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }], { syncToCloud: false })
   const { container, cleanup } = await mount(owner, {}, [])
   try {
-    assert.ok((container.textContent ?? '').includes('마이페이지 개인정보에 사업자정보를 먼저 입력해 주세요.'))
-    assert.ok((container.textContent ?? '').includes('마이페이지 개인정보에 정산 계좌를 먼저 입력해 주세요.'))
+    assert.ok((container.textContent ?? '').includes('마이페이지 → 개인정보에서 사업자 정보 · 정산 계좌를 등록해 주세요.'))
   } finally { await cleanup() }
+})
+
+test('차주 사업자·계좌 중 하나만 있으면 빠진 쪽만 안내', async () => {
+  const owner = 'biz-section-partial'
+  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }], { syncToCloud: false })
+  const accountOnly = await mount(owner, { bankName: '차주은행', accountNumber: '000-111', accountHolder: '차주명의' }, [])
+  try {
+    const text = accountOnly.container.textContent ?? ''
+    assert.ok(text.includes('마이페이지 → 개인정보에서 사업자 정보를 등록해 주세요.'))
+    assert.ok(text.includes('차주은행 · 000-111 · 차주명의'))
+  } finally { await accountOnly.cleanup() }
+  const bizOnly = await mount(owner, { bizName: '차주상사', bizNumber: '111-22-33333' }, [])
+  try {
+    const text = bizOnly.container.textContent ?? ''
+    assert.ok(text.includes('차주상사 · 111-22-33333'))
+    assert.ok(text.includes('마이페이지 → 개인정보에서 정산 계좌를 등록해 주세요.'))
+  } finally { await bizOnly.cleanup() }
 })
 
 test('끄고 입력 후 저장하면 Store에 반영·"저장했습니다." 토스트, 다시 열면 값이 채워진다', async () => {

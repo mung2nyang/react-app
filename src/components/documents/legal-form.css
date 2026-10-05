@@ -34,6 +34,8 @@
   border-collapse: collapse;
   table-layout: fixed;
   color: #000000;
+  /* 바깥 테두리만 굵게(겹침 표에선 굵은 선이 칸 선을 이김). */
+  border: 1.5px solid #000000;
 }
 
 .legal-form-head {
@@ -44,7 +46,7 @@
 .legal-form-head td,
 .legal-form-table th,
 .legal-form-table td {
-  border: 1px solid #000000;
+  border: 0.75px solid #000000;
   padding: 3px 2px;
   font-size: 11px;
   font-weight: 400;

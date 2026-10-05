@@ -144,8 +144,8 @@ export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMont
 
       {!issuerReady && (
         <div className="tax-invoice-guide">
-          <p className="tax-invoice-guide-title">회사 사업자 정보가 필요합니다.</p>
-          <p className="tax-invoice-guide-desc">마이페이지 → 개인정보에서 계산서를 발행할 회사의 사업자 정보를 입력해 주세요.</p>
+          <p className="tax-invoice-guide-title">세금계산서를 발급받으려면 사업자 정보 입력이 필요합니다.</p>
+          <p className="tax-invoice-guide-desc">마이페이지 → 개인정보에서 사업자 정보를 등록해 주세요.</p>
         </div>
       )}
 
