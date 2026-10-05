@@ -3,17 +3,20 @@
 import SwitchRow from './SwitchRow.jsx'
 import RoutePresetEditor from './RoutePresetEditor.jsx'
 import RunCountChips from './RunCountChips.jsx'
+import FixedRouteClientLink from './FixedRouteClientLink.jsx'
 
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 
 /**
  * @param {Object} props
  * @param {'main'|'sub'} props.scope
+ * @param {string} props.ownerKey
+ * @param {string} props.clientScopeKey 고정노선 거래처 스코프(docs/sot.md §4-4e)
  * @param {FinanceSettings} props.settings
  * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
  * @param {(message: string) => void} [props.showToast]
  */
-export default function FixedRouteBlock({ scope, settings, onPatch, showToast }) {
+export default function FixedRouteBlock({ scope, ownerKey, clientScopeKey, settings, onPatch, showToast }) {
   const isSub = scope === 'sub'
   const fixedOn = isSub ? settings.subFixedOn : settings.fixedOn
   const routeOn = isSub ? settings.subFixedRouteOn : settings.fixedRouteOn
@@ -29,6 +32,7 @@ export default function FixedRouteBlock({ scope, settings, onPatch, showToast })
       />
       {fixedOn && (
         <div className="tree-line-group">
+          <FixedRouteClientLink ownerKey={ownerKey} scopeKey={clientScopeKey} showToast={showToast} />
           <SwitchRow
             id={isSub ? 'subFixedRouteToggle' : 'fixedRouteToggle'}
             label="상하차지 사용"

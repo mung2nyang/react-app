@@ -37,11 +37,12 @@ const MOON_ICON = (
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
+ * @param {import('../lib/outboxTypes.js').AppSession|null} [props.session]
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
+export default function AppSettingsPage({ ownerKey = 'guest', session = null, onBack, showToast, onOpenMenu }) {
   const locked = useHydrationLock()
   const settings = useOwnerSettings(ownerKey)
   const { logId: rawLogId } = useParams()
@@ -51,6 +52,8 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
   const carLabel = logId ? resolveDriverOrPlateLabel(logId, drivers, cars) : ''
   const carSettings = logId ? (settings.subCarSettings?.[logId] || defaultCarSettings()) : defaultCarSettings()
   const fixedOn = logId ? !!settings.subFixedOn : !!settings.fixedOn
+  // 고정노선 거래처 스코프: 서브차량 = logId, 연동기사 본인 = 배정 차량(MainPageRoute와 같은 규칙), 차주 메인 = 없음.
+  const clientScopeKey = logId || (session?.linkedOwnerId ? (cars[0]?.number || 'main') : '')
 
   /**
    * @param {Partial<FinanceSettings>} nextPatch
@@ -162,7 +165,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
         </section>
 
         <section className="setting-section">
-          <FixedRouteBlock scope={logId ? 'sub' : 'main'} settings={settings} onPatch={patch} showToast={showToast} />
+          <FixedRouteBlock scope={logId ? 'sub' : 'main'} ownerKey={ownerKey} clientScopeKey={clientScopeKey} settings={settings} onPatch={patch} showToast={showToast} />
         </section>
 
         {!logId && ownerKey === 'guest' && <AppSettingsBackupSection showToast={showToast} />}

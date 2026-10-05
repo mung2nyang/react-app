@@ -5,9 +5,9 @@ import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
  * @param {Object} props
  * @param {import('../../domain/clientTypes.js').ClientDraft} props.draft
  * @param {import('react').Dispatch<import('react').SetStateAction<import('../../domain/clientTypes.js').ClientDraft>>} props.setDraft
- * @param {boolean} [props.hideFixedRoute]
  */
-export default function ClientTradeFields({ draft, setDraft, hideFixedRoute = false }) {
+// 고정노선 연동·파렛트 단가는 앱 설정 "거래처 연결"(FixedRouteClientLink)로 옮겼다 — 저장된 값은 draft로 보존된다.
+export default function ClientTradeFields({ draft, setDraft }) {
   /** @param {'percent'|'direct'} nextType */
   function setCommType(nextType) {
     setDraft({
@@ -19,69 +19,6 @@ export default function ClientTradeFields({ draft, setDraft, hideFixedRoute = fa
 
   return (
     <>
-      {!hideFixedRoute && (
-        <>
-          <div className="setting-item">
-            <div className="car-option-copy">
-              <label htmlFor="clientFixedRouteToggle">고정노선 연동</label>
-              <p>계정에서 한 곳만 연결할 수 있습니다. 다른 거래처는 저장 시 자동으로 해제됩니다.</p>
-            </div>
-            <label className="switch">
-              <input
-                id="clientFixedRouteToggle"
-                type="checkbox"
-                checked={!!draft.fixedRouteLinked}
-                onChange={(e) => setDraft({ ...draft, fixedRouteLinked: e.target.checked })}
-              />
-              <span className="slider"></span>
-            </label>
-          </div>
-          {draft.fixedRouteLinked && (
-            <div className="form-group client-inline-field">
-              <label htmlFor="clientFixedUnitPrice">1회 단가</label>
-              <span className="car-commission-input">
-                <input
-                  id="clientFixedUnitPrice"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={String(draft.fixedUnitPrice || '')}
-                  onChange={(e) => setDraft({ ...draft, fixedUnitPrice: formatCurrencyInput(e.target.value) })}
-                />
-                <b>원</b>
-              </span>
-            </div>
-          )}
-        </>
-      )}
-      <div className="setting-item">
-        <div className="car-option-copy">
-          <label htmlFor="clientPalletToggle">파렛트 단가</label>
-        </div>
-        <label className="switch">
-          <input
-            id="clientPalletToggle"
-            type="checkbox"
-            checked={!!draft.palletOn}
-            onChange={(e) => setDraft({ ...draft, palletOn: e.target.checked })}
-          />
-          <span className="slider"></span>
-        </label>
-      </div>
-      {draft.palletOn && (
-        <div className="form-group client-inline-field">
-          <label htmlFor="clientPalletPrice">단가</label>
-          <span className="car-commission-input">
-            <input
-              id="clientPalletPrice"
-              inputMode="numeric"
-              placeholder="0"
-              value={String(draft.palletPrice || '')}
-              onChange={(e) => setDraft({ ...draft, palletPrice: formatCurrencyInput(e.target.value) })}
-            />
-            <b>원</b>
-          </span>
-        </div>
-      )}
       <div className="setting-item">
         <div className="car-option-copy">
           <label htmlFor="clientCommToggle">수수료 적용</label>

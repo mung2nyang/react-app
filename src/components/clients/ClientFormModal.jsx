@@ -15,9 +15,8 @@ import './client-management.css'
  * @param {string|null} props.editingId
  * @param {() => void} props.onCancel
  * @param {() => void} props.onSave
- * @param {boolean} [props.hideFixedRoute]
  */
-export default function ClientFormModal({ draft, setDraft, editingId, onCancel, onSave, hideFixedRoute = false }) {
+export default function ClientFormModal({ draft, setDraft, editingId, onCancel, onSave }) {
   const termValueLabel = draft.paymentTerm === 'after_days' ? '며칠 후' : '날짜'
 
   return (
@@ -86,7 +85,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
             <input id="clientPaymentTermValue" className="input-box" inputMode="numeric" placeholder="숫자 입력" value={String(draft.paymentTermValue || '')} onChange={(e) => setDraft({ ...draft, paymentTermValue: e.target.value.replace(/\D/g, '') })} />
           </div>
         )}
-        <ClientTradeFields draft={draft} setDraft={setDraft} hideFixedRoute={hideFixedRoute} />
+        <ClientTradeFields draft={draft} setDraft={setDraft} />
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
           <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>

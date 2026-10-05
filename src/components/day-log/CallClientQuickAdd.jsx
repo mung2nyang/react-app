@@ -64,7 +64,6 @@ export default function CallClientQuickAdd({ ownerKey, clients, logId = 'main', 
           editingId={null}
           onCancel={() => setModalOpen(false)}
           onSave={save}
-          hideFixedRoute={!!scopeKey}
         />
       )}
     </>

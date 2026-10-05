@@ -180,35 +180,36 @@ async function renderApp() {
   return { container, root }
 }
 
-test('거래처 폼에서 고정노선 두 곳을 켜면 최종 1곳이고 id가 유지된다', async () => {
+test('앱 설정 거래처 연결로 다른 거래처를 연결하면 최종 1곳이고 id가 유지된다', async () => {
   const ownerKey = 'user-boot-nav'
-  mirrorServerFromStore(ownerKey)
   commitClients(ownerKey, [
     { id: 'c-a', companyName: '에이', supabaseId: 'sb-a', fixedRouteLinked: true, fixedUnitPrice: '100000' },
+    { id: 'c-b', companyName: '비', supabaseId: 'sb-b' },
   ], { syncToCloud: false })
-  window.history.pushState({}, '', '/app/clients')
+  mirrorServerFromStore(ownerKey)
+  const originalProfiles = handlers.profiles.select
+  handlers.profiles.select = () => ({ data: { id: 'user-boot-nav', name: '테스트 사용자', settings: { fixedOn: true } }, error: null })
+  window.history.pushState({}, '', '/app/me/settings')
   const { container, root } = await renderApp()
-  await waitUntil(() => !!findButtonByText(container, '+ 추가'))
-  await act(async () => { findButtonByText(container, '+ 추가')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => !!container.querySelector('#clientCompanyName'))
-  await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '비') })
-  await act(async () => {
-    container.querySelector('#clientFixedRouteToggle')?.dispatchEvent(new window.Event('click', { bubbles: true }))
-  })
-  const toggle = container.querySelector('#clientFixedRouteToggle')
-  assert.ok(toggle instanceof window.HTMLInputElement)
-  if (!toggle.checked) {
-    await act(async () => { toggle.click() })
+  try {
+    await waitUntil(() => !!container.querySelector('.fixed-route-client-open'))
+    await act(async () => { container.querySelector('.fixed-route-client-open')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    await act(async () => { document.querySelector('.fixed-route-client-modal .app-dropdown-trigger')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    const option = [...document.querySelectorAll('.fixed-route-client-modal [role="option"]')].find((el) => el.textContent?.trim() === '비')
+    assert.ok(option instanceof window.HTMLElement, '비 옵션')
+    await act(async () => { option.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    await act(async () => { setNativeInputValue(requireHtmlInput(document, '#fixedRouteClientPrice'), '200000') })
+    await act(async () => { document.querySelector('.fixed-route-client-modal .modal-btn.confirm')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.id === 'c-b' && item.fixedRouteLinked))
+    const list = getState().clients[ownerKey]
+    assert.equal(list.filter((item) => item.fixedRouteLinked).length, 1)
+    assert.equal(list.find((item) => item.id === 'c-a')?.fixedRouteLinked, false)
+    assert.equal(list.find((item) => item.id === 'c-a')?.supabaseId, 'sb-a')
+    assert.equal(list.find((item) => item.id === 'c-b')?.supabaseId, 'sb-b')
+  } finally {
+    handlers.profiles.select = originalProfiles
+    await unmountTracked(root)
   }
-  await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientFixedUnitPrice'), '200000') })
-  await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-  await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '비'))
-  const list = getState().clients[ownerKey]
-  assert.equal(list.filter((item) => item.fixedRouteLinked).length, 1)
-  assert.equal(list.find((item) => item.id === 'c-a')?.fixedRouteLinked, false)
-  assert.equal(list.find((item) => item.id === 'c-a')?.supabaseId, 'sb-a')
-  assert.equal(list.find((item) => item.companyName === '비')?.fixedRouteLinked, true)
-  await unmountTracked(root)
 })
 
 test('핀/비핀 교차 드래그는 순서를 저장하지 않는다', async () => {

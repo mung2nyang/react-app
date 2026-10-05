@@ -188,3 +188,13 @@
 .settings-calendar-copy { min-width: 0; }
 .settings-calendar-copy label { font-size: var(--fs-4); font-weight: 600; }
 .settings-row-guide { margin: 4px 0 0; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.5; text-align: left; }
+
+/* 고정 노선 거래처 연결 줄(FixedRouteClientLink) — 요약 + 버튼, 입력은 팝업(FixedRouteClientModal) */
+.setting-item.fixed-route-client-setting { flex-direction: column; align-items: stretch; gap: 0; }
+.fixed-route-client-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fixed-route-client-left { min-width: 0; }
+.fixed-route-client-summary-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: var(--fs-2); }
+.fixed-route-client-summary-copy span, .fixed-route-client-hint { margin: 0; line-height: 1.45; color: var(--sub-text-color); font-size: var(--fs-floor); }
+.fixed-route-client-open { flex-shrink: 0; min-height: 40px; padding: 0 14px; border: 1px solid var(--primary-color); border-radius: 10px; background: transparent; color: var(--primary-color); font: inherit; font-weight: 750; cursor: pointer; }
+.fixed-route-client-unlink { margin-top: 14px; padding: 0; border: 0; background: none; color: var(--sunday-color); font: inherit; font-size: var(--fs-floor); text-decoration: underline; cursor: pointer; }
+.fixed-route-client-modal .car-commission-input { margin-bottom: 4px; }

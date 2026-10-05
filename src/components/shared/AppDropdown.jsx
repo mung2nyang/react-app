@@ -12,15 +12,17 @@ import './app-dropdown.css'
  * @param {Array<{ value: string, label: string }>} props.options
  * @param {(next: string) => void} props.onChange
  * @param {string} [props.className]
+ * @param {string} [props.placeholder] 값과 맞는 항목이 없을 때 버튼에 보일 글자(없으면 첫 항목)
  */
-export default function AppDropdown({ label, value, options, onChange, className = '' }) {
+export default function AppDropdown({ label, value, options, onChange, className = '', placeholder }) {
   const listId = useId()
   const rootRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const listRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const [open, setOpen] = useState(false)
-  const selectedIndex = Math.max(0, options.findIndex((item) => String(item.value) === String(value)))
+  const matchedIndex = options.findIndex((item) => String(item.value) === String(value))
+  const selectedIndex = Math.max(0, matchedIndex)
   const [activeIndex, setActiveIndex] = useState(selectedIndex)
-  const selected = options[selectedIndex] || options[0]
+  const selected = matchedIndex < 0 && placeholder !== undefined ? null : (options[selectedIndex] || options[0])
   const rootClass = ['app-dropdown', className, open ? 'open' : ''].filter(Boolean).join(' ')
 
   useEffect(() => {
@@ -97,7 +99,7 @@ export default function AppDropdown({ label, value, options, onChange, className
           }
         }}
       >
-        <span className="app-dropdown-value">{selected ? selected.label : ''}</span>
+        <span className="app-dropdown-value">{selected ? selected.label : (placeholder || '')}</span>
         <span className="app-dropdown-chevron" aria-hidden="true" />
       </button>
       <div

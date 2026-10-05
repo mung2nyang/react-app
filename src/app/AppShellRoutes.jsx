@@ -69,7 +69,7 @@ export default function AppShellRoutes({
       <Route path="logs/:logId/clients" element={<LinkedDriverClientsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="logs/:logId/expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="logs/:logId/report" element={<DocumentIssuePage ownerKey={ownerKey} isEmployedDriver={session?.accountType === 'employed_driver'} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
-      <Route path="logs/:logId/settings" element={<AppSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
+      <Route path="logs/:logId/settings" element={<AppSettingsPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="logs/:logId/day/:date" element={mainPage()} />
       <Route path="logs/:logId" element={mainPage()} />
       <Route path="cars" element={<CarManagementPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
@@ -85,7 +85,7 @@ export default function AppShellRoutes({
       />
       <Route path="me" element={<MyPage session={session ?? undefined} ownerKey={ownerKey} showToast={showToast} onLinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); navigate('/app') }} onOpen={(/** @type {string} */ page, /** @type {string | undefined} */ title) => goToPage(page, title, 'mypage')} onBack={() => navigate('/app')} onOpenMenu={onOpenMenu} />} />
       <Route path="me/profile" element={<PersonalInfoPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(backTarget)} onGoAuth={onGoAuth} onOpenMenu={onOpenMenu} onUnlinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); navigate('/app') }} />} />
-      <Route path="me/settings" element={<AppSettingsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
+      <Route path="me/settings" element={<AppSettingsPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="receivables/*" element={<ReceivablesPage ownerKey={ownerKey} showToast={showToast} onWorkChanged={bumpNotifTick} onBack={() => { navigate(backTarget); bumpNotifTick() }} onOpenMenu={onOpenMenu} />} />
       <Route path="report" element={<DocumentIssuePage ownerKey={ownerKey} isEmployedDriver={session?.accountType === 'employed_driver'} showToast={showToast} onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
