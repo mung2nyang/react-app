@@ -41,7 +41,7 @@ async function render(session, booting) {
 
 /** @param {HTMLElement} container */
 function hasLoginButton(container) {
-  return [...container.querySelectorAll('button')].some((b) => b.textContent === 'Google로 시작하기')
+  return [...container.querySelectorAll('button')].some((b) => b.textContent === 'Google 계정으로 로그인')
 }
 
 test('세션 없음 + 부트 끝: 로그인 첫 화면', async () => {

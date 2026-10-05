@@ -51,7 +51,7 @@ body.account-flow-active {
 }
 
 .auth-logo-img { width: 39px; height: 30px; object-fit: contain; }
-.auth-logo-text { color: var(--primary-color); font-family: 'Jua', sans-serif; font-weight: 400; letter-spacing: -.5px; }
+.auth-logo-text { color: #fff; font-family: 'Jua', sans-serif; font-weight: 400; letter-spacing: -.5px; }
 
 .auth-intro-bottom {
   display: flex;
@@ -68,6 +68,28 @@ body.account-flow-active {
 }
 
 .auth-btn-stack { display: grid; gap: 12px; }
+
+/* 구글 로그인 버튼 — 로그인 화면은 늘 어두워서 구글 규칙의 어두운 테마 색 사용 */
+.auth-google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  border: 1px solid #8e918f;
+  border-radius: 18px;
+  background: #131314;
+  color: #e3e3e3;
+  font: inherit;
+  font-size: var(--fs-5);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-google-btn:disabled { opacity: 0.6; cursor: default; }
+
+.auth-google-logo { width: 22px; height: 22px; flex-shrink: 0; }
 
 .auth-primary-btn,
 .auth-secondary-btn {
@@ -199,7 +221,7 @@ body.account-flow-active {
   align-items: center;
   gap: 6px;
   justify-self: center;
-  color: var(--primary-color);
+  color: #fff;
   font-size: var(--fs-6);
   font-weight: 850;
 }
@@ -344,7 +366,7 @@ body.account-flow-active {
   color: var(--primary-color);
 }
 .onboarding-logo-img { height: 38px; object-fit: contain; }
-.onboarding-logo-text { color: var(--primary-color); font-size: var(--fs-6); font-family: 'Jua', sans-serif; font-weight: 400; letter-spacing: -.5px; }
+.onboarding-logo-text { color: #fff; font-size: var(--fs-6); font-family: 'Jua', sans-serif; font-weight: 400; letter-spacing: -.5px; }
 
 .onboarding-heading h1 {
   margin: 0 0 14px;
