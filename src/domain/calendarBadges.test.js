@@ -8,14 +8,15 @@ import { saveDayRecord } from './day-record.js'
 const dateKey = '2026-05-10'
 const clients = [{ id: 'c1', companyName: '한진' }]
 
-// Step 5(달력 홈 재작성): 달력 셀 fare 모드 뱃지용 짧은 금액 표기 — 바닐라 script.js의
-// formatFareShort와 동일한 규칙(만원 이상은 "N만", 미만은 "N원")을 검증한다.
+// 달력 셀 뱃지용 짧은 금액 표기 — 만원 이상은 천 원 단위까지 "35.2만", 미만은 "N원".
 describe('formatFareShort — 달력 셀 fare 뱃지 표기', () => {
-  test('10000 이상은 만 단위로 반올림해서 "N만"', () => {
+  test('10000 이상은 천 원 단위까지 "N.N만"(백 원 이하 버림, 딱 떨어지면 "N만")', () => {
     assert.equal(formatFareShort(150000), '15만')
     assert.equal(formatFareShort(10000), '1만')
-    assert.equal(formatFareShort(154999), '15만')
-    assert.equal(formatFareShort(155000), '16만') // Math.round 경계
+    assert.equal(formatFareShort(352000), '35.2만')
+    assert.equal(formatFareShort(352900), '35.2만', '반올림하지 않음')
+    assert.equal(formatFareShort(154999), '15.4만')
+    assert.equal(formatFareShort(1234000), '123.4만')
   })
 
   test('10000 미만은 "N원"(천 단위 콤마)', () => {

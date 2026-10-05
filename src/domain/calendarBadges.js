@@ -29,14 +29,19 @@ import { parseCurrencyValue } from './money.js'
 /** @typedef {import('./dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
 /**
- * 달력 셀 fare 뱃지용 짧은 금액 표기. 바닐라 script.js의 formatFareShort(만원
- * 단위는 "N만", 그보다 작으면 "N원")를 그대로 옮긴다.
+ * 달력 셀 뱃지용 짧은 금액 표기. 만원 이상은 천 원 단위까지 "35.2만"(백 원 이하 버림,
+ * 딱 떨어지면 "35만"), 그보다 작으면 "N원".
  * @param {number} amount
  * @returns {string}
  */
 export function formatFareShort(amount) {
   const n = Math.max(0, Number(amount) || 0)
-  if (n >= 10000) return `${Math.round(n / 10000)}만`
+  if (n >= 10000) {
+    const thousands = Math.floor(n / 1000)
+    const man = Math.floor(thousands / 10)
+    const rest = thousands % 10
+    return rest ? `${man}.${rest}만` : `${man}만`
+  }
   return `${n.toLocaleString('ko-KR')}원`
 }
 

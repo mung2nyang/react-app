@@ -86,9 +86,9 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
       )}
 
       <fieldset disabled={locked} style={{ border: 0, margin: 0, padding: 0 }}>
-        {!logId && (
-          <section className="setting-section settings-theme-card">
-            <div className="setting-item">
+        <section className="setting-section settings-theme-card">
+          {!logId && (
+            <div className="setting-item settings-theme-row">
               <label>테마 선택</label>
               <button
                 type="button"
@@ -99,13 +99,16 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
                 <span>{isDark ? '다크 모드' : '라이트 모드'}</span>
               </button>
             </div>
-          </section>
-        )}
-
-        <section className="setting-section">
-          <h3>운행 일지 설정</h3>
-          <div className="setting-item">
-            <label>달력 일일 표시 방식</label>
+          )}
+          <div className="setting-item settings-calendar-row">
+            <div className="settings-calendar-copy">
+              <label>달력 일일 표시 방식</label>
+              <p className="settings-row-guide">
+                달력에 하루 운행 횟수 또는 운송료를 표시합니다.<br />
+                금액은 만 원 단위로 요약되어 표시됩니다.<br />
+                (예: 111,000원 → 11.1만 / 115,500원 → 11.5만)
+              </p>
+            </div>
             <div className="segment-control">
               <button
                 type="button"
