@@ -5,21 +5,21 @@ import CardActionButtons from '../shared/CardActionButtons.jsx'
 /**
  * @param {Object} props
  * @param {import('../../domain/clientTypes.js').ClientLike} props.client
- * @param {boolean} props.dragging
- * @param {() => void} props.onDragStart
- * @param {(event: { preventDefault: () => void }) => void} props.onDragOver
- * @param {() => void} props.onDrop
- * @param {() => void} props.onDragEnd
+ * @param {boolean} [props.dragging]
+ * @param {() => void} [props.onDragStart] 없으면 끌어서 순서 바꾸기 꺼짐(기사 거래처)
+ * @param {(event: { preventDefault: () => void }) => void} [props.onDragOver]
+ * @param {() => void} [props.onDrop]
+ * @param {() => void} [props.onDragEnd]
  * @param {() => void} props.onEdit
  * @param {() => void} props.onDelete
  */
 export default function ClientListItem({
-  client, dragging, onDragStart, onDragOver, onDrop, onDragEnd, onEdit, onDelete,
+  client, dragging = false, onDragStart, onDragOver, onDrop, onDragEnd, onEdit, onDelete,
 }) {
   return (
     <div
       className={`management-list-card client-list-card${dragging ? ' client-dragging' : ''}`}
-      draggable
+      draggable={!!onDragStart}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}

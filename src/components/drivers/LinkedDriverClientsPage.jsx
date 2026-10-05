@@ -17,7 +17,7 @@ import {
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../PageHeader.jsx'
 import '../clients/client-management.css'
-import CardActionButtons from '../shared/CardActionButtons.jsx'
+import ClientListItem from '../clients/ClientListItem.jsx'
 import './linked-driver.css'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
@@ -144,26 +144,12 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
           <div className="empty-state">등록된 거래처가 없습니다.</div>
         ) : (
           scopedClients.map((client) => (
-            <div key={client.id} className="management-list-card client-list-card">
-              <div className="management-card-inner">
-                <div className="client-card-copy">
-                  <div className="client-card-title">
-                    <strong>{client.companyName}</strong>
-                    {client.managerName && <span>{client.managerName} 담당</span>}
-                  </div>
-                  <div className="car-sub-text">
-                    <span>사업자 {client.bizNumber || '-'}</span>
-                    <span>연락처 {client.phone || '-'}</span>
-                  </div>
-                </div>
-                <div className="car-action-btns">
-                  <CardActionButtons
-                    onEdit={() => openEdit(client)}
-                    onDelete={() => setPendingDelete(client)}
-                  />
-                </div>
-              </div>
-            </div>
+            <ClientListItem
+              key={client.id}
+              client={client}
+              onEdit={() => openEdit(client)}
+              onDelete={() => setPendingDelete(client)}
+            />
           ))
         )}
       </div>

@@ -102,11 +102,15 @@ export default function AppSettingsPage({ ownerKey = 'guest', onBack, showToast,
           )}
           <div className="setting-item settings-calendar-row">
             <div className="settings-calendar-copy">
-              <label>달력 일일 표시 방식</label>
+              <label>달력 일일 표시</label>
               <p className="settings-row-guide">
-                달력에 하루 운행 횟수 또는 운송료를 표시합니다.<br />
-                금액은 만 원 단위로 요약되어 표시됩니다.<br />
-                (예: 111,000원 → 11.1만 / 115,500원 → 11.5만)
+                달력에 하루 운행 횟수 또는 운송료를 표시합니다.
+                {activeSettings.inputMode === 'fare' && (
+                  <>
+                    <br />금액은 만 원 단위로 요약되어 표시됩니다.
+                    <br />(예: 111,000원 → 11.1만 / 115,500원 → 11.5만)
+                  </>
+                )}
               </p>
             </div>
             <div className="segment-control">

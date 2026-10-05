@@ -37,7 +37,7 @@ async function render(session) {
 test('차주·개인 회원: 가로줄 바로 아래(공지사항 위)에 데이터 다운로드, 누르면 확인 창', async () => {
   const view = await render({ userId: 'u-1', name: '차주', accountType: 'owner_driver' })
   try {
-    assert.deepEqual(view.labels.slice(-2), ['데이터 다운로드', '공지사항'])
+    assert.deepEqual(view.labels.slice(-3), ['데이터 다운로드', '공지사항', '고객센터'])
     assert.equal(view.entry, '데이터 다운로드', '가로줄은 데이터 다운로드 위에 있다')
     await act(async () => { view.download?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
     assert.ok(view.container.textContent.includes('지금까지 입력한 운행·정산·차량 기록 전체를 내 기기로 다운로드합니다.'))
