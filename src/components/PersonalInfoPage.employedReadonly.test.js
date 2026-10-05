@@ -42,7 +42,7 @@ test('연동 기사: 사업자 정보 7칸·정산 계좌 3칸은 잠기고 안�
   try {
     for (const id of OWNER_FIELDS) assert.equal(view.disabled(id), true, `${id}는 잠겨야 한다`)
     for (const id of SELF_FIELDS) assert.equal(view.disabled(id), false, `${id}는 기사가 고칠 수 있어야 한다`)
-    assert.equal(view.text.split('차주가 입력한 정보입니다 (수정 불가)').length - 1, 2, '사업자 정보·정산 계좌 두 카드에 안내')
+    assert.equal(view.text.split('차주가 입력한 정보입니다 (수정 불가)').length - 1, 1, '정산 계좌를 포함한 사업자 정보 카드에 안내 1번')
   } finally {
     await view.cleanup()
   }

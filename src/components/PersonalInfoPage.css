@@ -64,3 +64,10 @@
   opacity: 0.4;
   cursor: default;
 }
+
+/* 1번 카드 안 사업자 정보 / 정산 계좌 사이 얇은 구분선 */
+.personal-info-page .personal-divider {
+  margin: 14px 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+}

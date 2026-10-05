@@ -119,3 +119,25 @@
   background-color: var(--hover-bg);
   color: var(--text-color);
 }
+
+/* 사업자번호 검증번호 불일치 안내(개인정보·기사 관리·거래처·세금계산서 공용) */
+.biz-number-hint {
+  margin: 4px 0 0;
+  color: var(--sunday-color);
+  font-size: var(--fs-floor);
+  text-align: left;
+}
+
+/* 숫자 칸 오른쪽 끝 고정 단위(차량 톤수 등) */
+.unit-input { position: relative; }
+.unit-input > input { padding-right: 34px; }
+.unit-input-suffix {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  font-weight: 700;
+  pointer-events: none;
+}

@@ -2,6 +2,8 @@
 // 기사 관리 화면 하단 카드 — 기사차량별 사업자정보(세금계산서 공급자)·정산 계좌 입력(이관 감사 11-5·11-6).
 import { useState } from 'react'
 import { carToBusinessForm } from '../../domain/carBusinessInfo.js'
+import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../domain/formatPhone.js'
+import BizNumberHint from '../shared/BizNumberHint.jsx'
 import { requestCarBusinessInfoSave } from '../../lib/vehicleMutations.js'
 import { getCloudUserId } from '../../lib/cloudSession.js'
 import './car-business-info.css'
@@ -15,8 +17,10 @@ import './car-business-info.css'
  * @param {string} props.value
  * @param {(value: string) => void} props.onChange
  * @param {string} [props.inputMode]
+ * @param {string} [props.placeholder]
+ * @param {import('react').ReactNode} [props.hint]
  */
-function Field({ id, label, value, onChange, inputMode }) {
+function Field({ id, label, value, onChange, inputMode, placeholder, hint }) {
   return (
     <div className="form-group">
       <label htmlFor={id}>{label}</label>
@@ -24,9 +28,11 @@ function Field({ id, label, value, onChange, inputMode }) {
         id={id}
         className="input-box"
         inputMode={/** @type {'text'|'numeric'|undefined} */ (inputMode)}
+        placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
+      {hint}
     </div>
   )
 }
@@ -97,7 +103,7 @@ export default function CarBusinessInfoSection({ ownerKey, car, cars, profile, s
             <Field id="carBizName" label="사업자명 (상호)" {...bind('name')} />
             <Field id="carBizRepresentative" label="대표자명" {...bind('representative')} />
           </div>
-          <Field id="carBizNumber" label="사업자 번호" inputMode="numeric" {...bind('bizNumber')} />
+          <Field id="carBizNumber" label="사업자 번호" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(form.bizNumber)} onChange={(value) => set('bizNumber', formatBizNumber(value))} hint={<BizNumberHint value={form.bizNumber} />} />
           <Field id="carBizAddress" label="사업장 주소" {...bind('address')} />
           <div className="personal-inline-fields">
             <Field id="carBizType" label="업태" {...bind('bizType')} />

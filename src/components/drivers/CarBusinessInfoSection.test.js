@@ -122,7 +122,7 @@ test('끄고 입력 후 저장하면 Store에 반영·"저장했습니다." 토�
     await act(async () => { input(first.container, '#carBizSameAsOwner').click() })
     await act(async () => {
       typeInto(input(first.container, '#carBizName'), '한빛운수')
-      typeInto(input(first.container, '#carBizNumber'), '123-45-67890')
+      typeInto(input(first.container, '#carBizNumber'), '1234567890')
       typeInto(input(first.container, '#carBizRepresentative'), '김대표')
       typeInto(input(first.container, '#carBankName'), '국민은행')
       typeInto(input(first.container, '#carAccountNumber'), '111-222-333')
@@ -134,7 +134,7 @@ test('끄고 입력 후 저장하면 Store에 반영·"저장했습니다." 토�
     assert.equal(saved.businessInfo?.sameAsOwner, false)
     assert.equal(saved.businessInfo?.name, '한빛운수')
     assert.equal(saved.personalInfo?.name, '김대표')
-    assert.equal(saved.personalInfo?.bizNumber, '123-45-67890')
+    assert.equal(saved.personalInfo?.bizNumber, '123-45-67890', '숫자만 쳐도 - 자동 삽입')
     assert.equal(saved.personalInfo?.bank, '국민은행')
     assert.equal(saved.personalInfo?.driverName, '김기사')
   } finally { await first.cleanup() }

@@ -41,7 +41,10 @@ export default function DailyInspectionNotice({ ownerKey, logId, dateKey, month,
     return () => { alive = false }
   }, [active, vehicleId, dateKey, reloadTick])
 
-  if (!active || vehicleId == null || load.status === 'loading') return null
+  if (!active || vehicleId == null) return null
+  // 서버 확인 중엔 같은 크기 빈 상자로 자리만 잡아 아래 내용이 밀리지 않게 한다.
+  if (load.status === 'loading') return <div className="daily-inspection-notice is-loading" aria-hidden="true" />
+
 
   const car = (logId === 'main' ? cars.find((item) => item.type === 'main') : cars.find((item) => item.number === logId)) || null
   const inspectorName = String(car?.driverName || profile.name || '').trim()

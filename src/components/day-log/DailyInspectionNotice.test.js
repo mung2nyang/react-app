@@ -12,11 +12,13 @@ import { beforeEach, mock, test } from 'node:test'
 /** @type {import('../../lib/dailyInspections.js').DailyInspection|null} */
 let serverRecord = null
 let failFetch = false
+/** @type {Promise<null>|null} */
+let holdFetch = null
 /** @type {Array<Record<string, unknown>>} */
 let saved = []
 mock.module('../../lib/dailyInspections.js', {
   namedExports: {
-    fetchDailyInspection: async () => { if (failFetch) throw new Error('down'); return serverRecord },
+    fetchDailyInspection: async () => { if (holdFetch) return holdFetch; if (failFetch) throw new Error('down'); return serverRecord },
     saveDailyInspection: async (/** @type {Record<string, unknown>} */ input) => { saved.push(input) },
   },
 })
@@ -36,6 +38,7 @@ const OWNER = 'di-notice-owner'
 beforeEach(() => {
   serverRecord = null
   failFetch = false
+  holdFetch = null
   saved = []
   commitCars(OWNER, [
     { id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' },
@@ -74,6 +77,18 @@ test('꺼짐·휴무·비회원이면 안내 줄 없음', async () => {
     } finally {
       await view.cleanup()
     }
+  }
+})
+
+test('서버 확인 중엔 글씨 없는 빈 상자로 자리만 잡는다', async () => {
+  holdFetch = new Promise(() => {})
+  const view = await render()
+  try {
+    const box = view.container.querySelector('.daily-inspection-notice')
+    assert.ok(box?.classList.contains('is-loading'))
+    assert.equal(box?.textContent, '')
+  } finally {
+    await view.cleanup()
   }
 })
 

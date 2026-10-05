@@ -1,6 +1,7 @@
 // @ts-check
 import { useState } from 'react'
 import { assetPath } from '../lib/assetPath.js'
+import { tonnageDigits, tonnageValue } from '../domain/formatPhone.js'
 
 /** @typedef {import('../lib/onboardingFinish.js').OnboardingWizard} OnboardingWizard */
 
@@ -118,13 +119,18 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
               </div>
               <div className="auth-field">
                 <label htmlFor="onboardingCarTonnage">차량 톤수</label>
-                <input
-                  id="onboardingCarTonnage"
-                  className="auth-input-box"
-                  placeholder="예: 5톤, 11톤, 25톤"
-                  value={wizard.carTonnage}
-                  onChange={(e) => setWizard({ ...wizard, carTonnage: e.target.value })}
-                />
+                <div className="unit-input">
+                  <input
+                    id="onboardingCarTonnage"
+                    className="auth-input-box"
+                    inputMode="decimal"
+                    placeholder="예: 5, 11, 25"
+                    value={tonnageDigits(wizard.carTonnage)}
+                    onChange={(e) => setWizard({ ...wizard, carTonnage: tonnageValue(e.target.value) })}
+                    onBlur={() => setWizard({ ...wizard, carTonnage: tonnageValue(wizard.carTonnage, true) })}
+                  />
+                  <span className="unit-input-suffix">톤</span>
+                </div>
               </div>
             </div>
           </div>

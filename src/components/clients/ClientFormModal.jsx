@@ -1,7 +1,8 @@
 // @ts-check
-import { formatPhoneNumber } from '../../lib/formatPhone.js'
+import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../domain/formatPhone.js'
 import { needsPaymentTermValue, PAYMENT_TERMS } from '../../lib/clients.js'
 import AppDropdown from '../shared/AppDropdown.jsx'
+import BizNumberHint from '../shared/BizNumberHint.jsx'
 import ClientTradeFields from './ClientTradeFields.jsx'
 import './client-management.css'
 
@@ -48,7 +49,8 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
         </div>
         <div className="form-group">
           <label htmlFor="clientBizNumber">사업자 번호</label>
-          <input id="clientBizNumber" className="input-box" placeholder="사업자 번호 입력" value={draft.bizNumber || ''} onChange={(e) => setDraft({ ...draft, bizNumber: e.target.value })} />
+          <input id="clientBizNumber" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(draft.bizNumber || '')} onChange={(e) => setDraft({ ...draft, bizNumber: formatBizNumber(e.target.value) })} />
+          <BizNumberHint value={draft.bizNumber} />
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">

@@ -1,5 +1,5 @@
 // @ts-check
-import { formatPhoneNumber } from '../../lib/formatPhone.js'
+import { formatPhoneNumber, tonnageDigits, tonnageValue } from '../../lib/formatPhone.js'
 import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
 import CarDriverIncomeFields from './CarDriverIncomeFields.jsx'
@@ -83,7 +83,10 @@ export default function CarFormModal({
         </div>
         <div className="form-group">
           <label htmlFor="newCarTonnage">차량 톤수</label>
-          <input id="newCarTonnage" className="input-box" placeholder="예: 5톤, 11톤, 25톤" value={draft.tonnage} onChange={(e) => setDraft({ ...draft, tonnage: e.target.value })} />
+          <div className="unit-input">
+            <input id="newCarTonnage" className="input-box" inputMode="decimal" placeholder="예: 5, 11, 25" value={tonnageDigits(draft.tonnage)} onChange={(e) => setDraft({ ...draft, tonnage: tonnageValue(e.target.value) })} onBlur={() => setDraft({ ...draft, tonnage: tonnageValue(draft.tonnage, true) })} />
+            <span className="unit-input-suffix">톤</span>
+          </div>
         </div>
         {isSub && (
           <>

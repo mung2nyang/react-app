@@ -1,5 +1,7 @@
 // @ts-check
+import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../domain/formatPhone.js'
 import { formatWon } from '../lib/money.js'
+import BizNumberHint from './shared/BizNumberHint.jsx'
 import TemporalInput from './shared/TemporalInput.jsx'
 import './tax-invoice/tax-invoice.css'
 
@@ -24,7 +26,8 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
         </div>
         <div className="form-group">
           <label htmlFor="invBiz">사업자등록번호</label>
-          <input id="invBiz" className="input-box" value={modalItem.clientBizNumber || ''} onChange={(e) => onChange({ ...modalItem, clientBizNumber: e.target.value })} />
+          <input id="invBiz" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(modalItem.clientBizNumber || '')} onChange={(e) => onChange({ ...modalItem, clientBizNumber: formatBizNumber(e.target.value) })} />
+          <BizNumberHint value={modalItem.clientBizNumber} />
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">

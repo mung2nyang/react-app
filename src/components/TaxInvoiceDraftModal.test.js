@@ -29,14 +29,14 @@ const baseItem = {
   issueDate: '2026-09-24',
 }
 
-/** @param {(next: object) => void} onChange */
-async function mount(onChange) {
+/** @param {(next: object) => void} onChange @param {object} [override] */
+async function mount(onChange, override = {}) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
     root.render(React.createElement(TaxInvoiceDraftModal, {
-      modalItem: baseItem,
+      modalItem: { ...baseItem, ...override },
       flowMeta: { label: '매출 발행', partyHeading: '공급받는 자' },
       onChange,
       onCancel: () => {},
@@ -88,5 +88,36 @@ test('입력하면 그 필드만 바뀐 값으로 onChange가 호출된다', asy
       await act(async () => { root.unmount() })
       container.remove()
     }
+  }
+})
+
+test('사업자등록번호 칸: 숫자만 쳐도 000-00-00000 모양으로 - 자동 삽입, 10자리까지', async () => {
+  const calls = []
+  const { container, root } = await mount((next) => calls.push(next))
+  try {
+    const input = container.querySelector('#invBiz')
+    assert.equal(input.value, '123-45-67890')
+    await act(async () => { typeInto(input, '98765432109') })
+    assert.equal(calls[0].clientBizNumber, '987-65-43210')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('사업자등록번호 검증번호가 틀리면 칸 아래 안내만 보인다', async () => {
+  const { container, root } = await mount(() => {})
+  try {
+    assert.ok((container.textContent ?? '').includes('* 사업자번호를 다시 확인해 주세요'), '123-45-67890은 검증번호 불일치')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+  const ok = await mount(() => {}, { clientBizNumber: '123-45-67891' })
+  try {
+    assert.equal(ok.container.querySelector('.biz-number-hint'), null)
+  } finally {
+    await act(async () => { ok.root.unmount() })
+    ok.container.remove()
   }
 })
