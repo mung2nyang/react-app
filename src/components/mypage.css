@@ -82,11 +82,6 @@
 
 .mypage-shortcut-section {
   margin-top: 12px;
-  padding: 15px;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  background: var(--card-bg);
-  box-shadow: var(--shadow-sm);
 }
 
 .mypage-section-heading {
@@ -112,36 +107,35 @@
 
 .mypage-shortcut-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 
+/* 아이콘 위·이름 아래, 배경 카드 없음 */
 .mypage-shortcut {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 9px;
+  gap: 6px;
   min-width: 0;
-  min-height: 78px;
-  padding: 11px;
-  border: 1px solid var(--border-color);
-  border-radius: 14px;
-  background: var(--input-bg);
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
   color: var(--text-color);
   font: inherit;
-  text-align: left;
+  text-align: center;
   cursor: pointer;
 }
 
 .mypage-shortcut-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
 }
 
 .mypage-shortcut-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
 }
 
 .mypage-shortcut > span:last-child {
@@ -155,13 +149,6 @@
   font-size: var(--fs-2);
   font-weight: 800;
   line-height: 1.25;
-}
-
-.mypage-shortcut small {
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-  line-height: 1.35;
-  word-break: keep-all;
 }
 
 .mypage-notice-area {

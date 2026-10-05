@@ -2,7 +2,7 @@
 // 기사차량 폼의 "기사 유형·산재보험·원천징수(3.3%)·필요경비율·산재보험료율" 블록(CarFormModal에서 분리).
 // 계산 규칙은 domain/driverIncomeDeductions.js, 값은 draft에만 두고 저장은 차량 저장 경로가 한다.
 import { formatPercentInput } from '../../lib/money.js'
-import { EXPENSE_RATE_PRESETS } from '../../domain/driverIncomeDeductions.js'
+import { DEFAULT_INSURANCE_RATE, EXPENSE_RATE_PRESETS } from '../../domain/driverIncomeDeductions.js'
 import AppDropdown from '../shared/AppDropdown.jsx'
 
 const PRESET_OPTIONS = [
@@ -48,15 +48,13 @@ export default function CarDriverIncomeFields({ draft, setDraft }) {
           <span className="slider"></span>
         </label>
       </div>
-      <div className="setting-item">
-        <div className="car-option-copy">
-          <label htmlFor="newCarWithholdingOn">원천징수 (3.3%)</label>
-          <p>켜면 기사 정산액의 3.3%를 사업소득세로 떼고 지급합니다.</p>
+      <div className="form-group">
+        <label htmlFor="newCarInsuranceRate">산재보험료율</label>
+        <p className="car-settlement-mode-guide">매년 1월 1일 변경되는 법정 요율({DEFAULT_INSURANCE_RATE}%)입니다.<br />직접 수정할 수 있으며, '0' 입력 시 계산에서 제외됩니다.</p>
+        <div className="car-commission-input">
+          <input id="newCarInsuranceRate" inputMode="decimal" placeholder="1.8" value={String(draft.insuranceRate ?? '')} onChange={(e) => setDraft((prev) => ({ ...prev, insuranceRate: formatPercentInput(e.target.value) }))} />
+          <b>%</b>
         </div>
-        <label className="switch">
-          <input id="newCarWithholdingOn" type="checkbox" checked={!!draft.withholdingOn} onChange={(e) => setDraft((prev) => ({ ...prev, withholdingOn: e.target.checked }))} />
-          <span className="slider"></span>
-        </label>
       </div>
       <div className="form-group">
         <label htmlFor="newCarExpenseRate">필요경비율</label>
@@ -77,13 +75,15 @@ export default function CarDriverIncomeFields({ draft, setDraft }) {
           </div>
         </div>
       </div>
-      <div className="form-group">
-        <label htmlFor="newCarInsuranceRate">산재보험료율</label>
-        <p className="car-settlement-mode-guide">매년 1월 1일 바뀌는 법정 요율입니다. 직접 고칠 수 있고, 0을 넣으면 산재보험료를 계산하지 않습니다.</p>
-        <div className="car-commission-input">
-          <input id="newCarInsuranceRate" inputMode="decimal" placeholder="1.8" value={String(draft.insuranceRate ?? '')} onChange={(e) => setDraft((prev) => ({ ...prev, insuranceRate: formatPercentInput(e.target.value) }))} />
-          <b>%</b>
+      <div className="setting-item">
+        <div className="car-option-copy">
+          <label htmlFor="newCarWithholdingOn">원천징수 (3.3%)</label>
+          <p>켜면 정산 금액에서 사업소득세 3.3%를 공제한 실수령액으로 계산됩니다.</p>
         </div>
+        <label className="switch">
+          <input id="newCarWithholdingOn" type="checkbox" checked={!!draft.withholdingOn} onChange={(e) => setDraft((prev) => ({ ...prev, withholdingOn: e.target.checked }))} />
+          <span className="slider"></span>
+        </label>
       </div>
     </>
   )

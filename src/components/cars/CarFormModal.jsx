@@ -77,15 +77,17 @@ export default function CarFormModal({
         <div className="modal-title">
           {editingId ? (isSub ? '기사 정보 수정' : '차량 수정') : (isSub ? '기사 등록' : '차량 등록')}
         </div>
-        <div className="form-group">
-          <label htmlFor="newCarNumber">차량번호</label>
-          <input id="newCarNumber" className="input-box" placeholder="12가 3456" value={draft.number} onChange={(e) => setDraft({ ...draft, number: e.target.value })} />
-        </div>
-        <div className="form-group">
-          <label htmlFor="newCarTonnage">차량 톤수</label>
-          <div className="unit-input">
-            <input id="newCarTonnage" className="input-box" inputMode="decimal" placeholder="예: 5, 11, 25" value={tonnageDigits(draft.tonnage)} onChange={(e) => setDraft({ ...draft, tonnage: tonnageValue(e.target.value) })} onBlur={() => setDraft({ ...draft, tonnage: tonnageValue(draft.tonnage, true) })} />
-            <span className="unit-input-suffix">톤</span>
+        <div className="personal-inline-fields">
+          <div className="form-group">
+            <label htmlFor="newCarNumber">차량번호</label>
+            <input id="newCarNumber" className="input-box" placeholder="12가 3456" value={draft.number} onChange={(e) => setDraft({ ...draft, number: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <label htmlFor="newCarTonnage">차량 톤수</label>
+            <div className="unit-input">
+              <input id="newCarTonnage" className="input-box" inputMode="decimal" placeholder="예: 5, 11, 25" value={tonnageDigits(draft.tonnage)} onChange={(e) => setDraft({ ...draft, tonnage: tonnageValue(e.target.value) })} onBlur={() => setDraft({ ...draft, tonnage: tonnageValue(draft.tonnage, true) })} />
+              <span className="unit-input-suffix">톤</span>
+            </div>
           </div>
         </div>
         {isSub && (
@@ -98,6 +100,7 @@ export default function CarFormModal({
               <label htmlFor="newUserPhone">연락처</label>
               <input id="newUserPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.driverPhone} onChange={(e) => setDraft({ ...draft, driverPhone: formatPhoneNumber(e.target.value) })} />
             </div>
+            <hr className="car-modal-divider" />
             <div className="form-group">
               <label htmlFor="newCarSettlementValue">정산</label>
               <p className="car-settlement-mode-guide">

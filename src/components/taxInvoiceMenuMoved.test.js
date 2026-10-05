@@ -29,7 +29,7 @@ async function renderText(element) {
   return text
 }
 
-test('사이드메뉴·마이페이지에 "세금계산서" 메뉴 없음, 마이페이지 서류 발급 설명에 세금계산서', async () => {
+test('사이드메뉴·마이페이지에 "세금계산서" 메뉴 없음(서류 발급으로 들어감)', async () => {
   const side = await renderText(React.createElement(SideMenu, { open: true, onClose: () => {}, onSelect: () => {} }))
   assert.ok(side.includes('서류 발급'))
   assert.equal(side.includes('세금계산서'), false)
@@ -40,6 +40,6 @@ test('사이드메뉴·마이페이지에 "세금계산서" 메뉴 없음, 마�
     onOpen: () => {},
     onBack: () => {},
   }))
-  assert.ok(my.includes('세금계산서·운송비 내역서·일상점검표 발급'))
-  assert.equal(my.replace('세금계산서·운송비 내역서·일상점검표 발급', '').includes('세금계산서'), false)
+  assert.ok(my.includes('서류 발급'))
+  assert.equal(my.includes('세금계산서'), false)
 })
