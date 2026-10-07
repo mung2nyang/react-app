@@ -55,7 +55,7 @@ export default function WelcomeProfileView({ initialName = '', onSubmit }) {
           </div>
           <div className="auth-field">
             <label htmlFor="welcomePhone">휴대전화 번호</label>
-            <input
+            <ClearableInput
               id="welcomePhone"
               type="tel"
               className="auth-input-box"

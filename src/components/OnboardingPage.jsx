@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { assetPath } from '../lib/assetPath.js'
 import { tonnageDigits, tonnageValue } from '../domain/formatPhone.js'
+import ClearableInput from './shared/ClearableInput.jsx'
 
 /** @typedef {import('../lib/onboardingFinish.js').OnboardingWizard} OnboardingWizard */
 
@@ -109,7 +110,7 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
             <div className="onboarding-form-fields">
               <div className="auth-field">
                 <label htmlFor="onboardingCarNumber">차량번호</label>
-                <input
+                <ClearableInput
                   id="onboardingCarNumber"
                   className="auth-input-box"
                   placeholder="12가 3456"
