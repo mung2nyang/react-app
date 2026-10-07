@@ -1,5 +1,5 @@
 // @ts-check
-// 225줄, §6: 상/하차지 onFocus·칩 배선은 폼 응집 유지. 칩·거래처+추가는 별도 컴포넌트.
+// 237줄, §6: 상/하차지 onFocus·칩 배선은 폼 응집 유지. 칩·거래처+추가는 별도 컴포넌트.
 import { useState } from 'react'
 import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
@@ -7,6 +7,7 @@ import { computeDistanceKm } from '../../lib/workData.js'
 import { draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
 import CallClientQuickAdd from './CallClientQuickAdd.jsx'
+import ClearableInput from '../shared/ClearableInput.jsx'
 import TemporalInput from '../shared/TemporalInput.jsx'
 import './call-detail-form.css'
 
@@ -76,11 +77,11 @@ export default function CallDetailForm({
       <div className="call-detail-panel call-route-panel">
         <div className="form-group">
           <label className="load-label" htmlFor="callLoadLoc">상차지</label>
-          <input id="callLoadLoc" className="input-box" placeholder="상차지 입력" value={draft.loadLoc} onFocus={() => setActiveLocationTarget('load')} onChange={(e) => setDraft({ ...draft, loadLoc: e.target.value })} />
+          <ClearableInput id="callLoadLoc" className="input-box" placeholder="상차지 입력" value={draft.loadLoc} onFocus={() => setActiveLocationTarget('load')} onChange={(e) => setDraft({ ...draft, loadLoc: e.target.value })} />
         </div>
         <div className="form-group">
           <label className="unload-label" htmlFor="callUnloadLoc">하차지</label>
-          <input id="callUnloadLoc" className="input-box" placeholder="하차지 입력" value={draft.unloadLoc} onFocus={() => setActiveLocationTarget('unload')} onChange={(e) => setDraft({ ...draft, unloadLoc: e.target.value })} />
+          <ClearableInput id="callUnloadLoc" className="input-box" placeholder="하차지 입력" value={draft.unloadLoc} onFocus={() => setActiveLocationTarget('unload')} onChange={(e) => setDraft({ ...draft, unloadLoc: e.target.value })} />
         </div>
         <LocationShortcuts
           locations={locationShortcuts}
@@ -147,7 +148,7 @@ export default function CallDetailForm({
         <div className="call-detail-panel">
           <div className="call-inline-field platform-main-row">
             <label htmlFor="callPlatform">플랫폼</label>
-            <input id="callPlatform" className="input-box" placeholder="직접입력 또는 선택" value={draft.platform} onChange={(e) => setDraft({ ...draft, platform: e.target.value })} />
+            <ClearableInput id="callPlatform" className="input-box" placeholder="직접입력 또는 선택" value={draft.platform} onChange={(e) => setDraft({ ...draft, platform: e.target.value })} />
           </div>
           <div className="call-platform-quick-list">
             {PLATFORM_PRESETS.map((name) => (
@@ -159,7 +160,7 @@ export default function CallDetailForm({
       <div className="call-detail-panel call-client-panel">
         <label htmlFor="callClient">거래처</label>
         <div className="call-client-row">
-          <input id="callClient" className="input-box" list="callClientOptions" placeholder="직접입력 또는 선택" value={draft.client} onChange={(e) => applyClient(e.target.value)} />
+          <ClearableInput id="callClient" className="input-box" list="callClientOptions" placeholder="직접입력 또는 선택" value={draft.client} onChange={(e) => applyClient(e.target.value)} />
           <datalist id="callClientOptions">
             {scopedClients.map((client) => <option key={client.id} value={client.companyName} />)}
           </datalist>
@@ -225,7 +226,7 @@ export default function CallDetailForm({
       )}
       <div className="call-detail-panel form-group call-remarks-panel">
         <label htmlFor="callRemarks">비고</label>
-        <input id="callRemarks" className="input-box" placeholder="특이사항 입력" value={draft.remarks} onChange={(e) => setDraft({ ...draft, remarks: e.target.value })} />
+        <ClearableInput id="callRemarks" className="input-box" placeholder="특이사항 입력" value={draft.remarks} onChange={(e) => setDraft({ ...draft, remarks: e.target.value })} />
       </div>
       <div className="modal-btns call-detail-form-actions">
         <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>

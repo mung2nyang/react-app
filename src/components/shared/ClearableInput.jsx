@@ -22,6 +22,7 @@ export default function ClearableInput(props) {
     <span className={`clearable-input${showClear ? ' has-clear' : ''}`}>
       <input
         {...rest}
+        style={showClear ? { ...rest.style, paddingRight: 44 } : rest.style}
         ref={inputRef}
         onFocus={(e) => { setFocused(true); onFocus?.(e) }}
         onBlur={(e) => { setFocused(false); onBlur?.(e) }}

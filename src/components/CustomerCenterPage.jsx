@@ -5,6 +5,7 @@ import { isCloudSession } from '../lib/cloudSession.js'
 import { fetchMyInquiries, requestSupportInquirySave } from '../lib/supportInquiryMutations.js'
 import PageHeader from './PageHeader.jsx'
 import AppDropdown from './shared/AppDropdown.jsx'
+import ClearableInput from './shared/ClearableInput.jsx'
 import './customer-center.css'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
@@ -90,7 +91,7 @@ function InquiryForm({ userId, showToast }) {
       </label>
       <label>
         제목
-        <input className="input-box" maxLength={50} placeholder="제목을 입력해 주세요" value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <ClearableInput className="input-box" maxLength={50} placeholder="제목을 입력해 주세요" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </label>
       <label>
         내용

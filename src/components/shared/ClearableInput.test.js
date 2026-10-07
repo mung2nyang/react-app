@@ -97,3 +97,14 @@ test('정리 함수가 있는 칸(연락처)도 X로 비워진다', async () => 
     assert.equal(input.value, '')
   } finally { await cleanup() }
 })
+
+test('X가 보일 때만 칸 오른쪽 여백 44px가 직접 들어간다(화면 CSS가 덮어쓰지 못하게)', async () => {
+  const { input, cleanup } = await mount('테스트거래처')
+  try {
+    assert.equal(input.style.paddingRight, '')
+    await act(async () => { input.focus() })
+    assert.equal(input.style.paddingRight, '44px')
+    await act(async () => { input.blur() })
+    assert.equal(input.style.paddingRight, '')
+  } finally { await cleanup() }
+})
