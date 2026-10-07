@@ -1,0 +1,48 @@
+/* 로드맵 12번: 홈 정산 카드 (i) 설명 버튼·펼친 설명. SummaryInfoToggle.jsx가 import. */
+.summary-info-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 보이는 크기 20px, 누르는 영역은 ::before로 44px(줄 높이는 그대로). */
+.summary-info-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--sub-text-color);
+  cursor: pointer;
+}
+
+.summary-info-btn::before {
+  content: '';
+  position: absolute;
+  inset: -12px;
+}
+
+.summary-info-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.summary-info-btn[aria-expanded="true"] { color: var(--primary-color); }
+.summary-info-btn:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+
+.summary-info-text {
+  margin: -4px 0 12px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  font-weight: 500;
+  line-height: 1.5;
+}

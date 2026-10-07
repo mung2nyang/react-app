@@ -2,10 +2,31 @@
 // Step 5(달력 홈 재작성): MainPage.jsx의 미수금 미니 카드 + 월간 운송료 정산 카드를 옮긴다.
 // 이관 계획 ③-2: monthSettlementSummary 반환값으로 거래처별·파렛트·서브수수료·지출 행 렌더.
 import { formatWon } from '../../domain/money.js'
+import SummaryInfoToggle from './SummaryInfoToggle.jsx'
 
 /**
  * @typedef {ReturnType<typeof import('../../domain/monthSettlement.js').monthSettlementSummary>} MonthSettlementSummary
  */
+
+const TOTAL_INFO = '운송료 + 파렛트 회수 청구액 − 수수료 + 부가세예요. 아래 정비비·주유비·통행료는 합계에서 빼지 않은 이번 달 차량 지출 기록이에요.'
+
+/** 수수료 설정 표시: "10%"는 그대로, 금액은 "건당 5,000원" @param {string} setting */
+function perTripSetting(setting) {
+  return setting.endsWith('%') || setting.startsWith('건당') ? setting : `건당 ${setting}`
+}
+
+/** @param {string} setting */
+function clientCommInfo(setting) {
+  const shown = setting ? `(${perTripSetting(setting)})` : ''
+  return `거래처 등록 때 적은 수수료${shown}만큼 이 거래처 운송료에서 빼요.`
+}
+
+/** 라벨 "3456 차량 10%" / "3456 차량 건당 5,000원" → 설정 부분만 @param {string} label */
+function subCarCommInfo(label) {
+  const setting = label.replace(/^\S+ 차량 /, '')
+  const shown = setting && setting !== label ? `(${setting})` : ''
+  return `차량 관리에 적은 이 차량의 수수료${shown}예요. 운송료에서 거래처 수수료를 뺀 금액을 기준으로 계산해 빼요.`
+}
 
 /**
  * @param {Object} props
@@ -61,21 +82,26 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
               <span className="summary-value">{formatWon(summary.fareByClient[client])}</span>
             </div>
             {(summary.commissionByClient[client] || 0) > 0 && (
-              <div className="summary-row summary-client-commission-row">
-                <span className="summary-client-commission-label">
-                  {client} 수수료 ({summary.commissionLabelByClient[client]})
-                </span>
-                <span className="summary-value">- {formatWon(summary.commissionByClient[client])}</span>
-              </div>
+              <SummaryInfoToggle
+                className="summary-row summary-client-commission-row"
+                labelClassName="summary-client-commission-label"
+                label={`${client} 수수료 (${summary.commissionLabelByClient[client]})`}
+                value={`- ${formatWon(summary.commissionByClient[client])}`}
+                infoName={`${client} 수수료`}
+                info={clientCommInfo(String(summary.commissionLabelByClient[client] || ''))}
+              />
             )}
           </div>
         ))}
 
         {summary.subCarComm > 0 && (
-          <div className="summary-row">
-            <span>{summary.subCarCommLabel}</span>
-            <span className="summary-value">- {formatWon(summary.subCarComm)}</span>
-          </div>
+          <SummaryInfoToggle
+            className="summary-row"
+            label={summary.subCarCommLabel}
+            value={`- ${formatWon(summary.subCarComm)}`}
+            infoName="기사차량 수수료"
+            info={subCarCommInfo(summary.subCarCommLabel)}
+          />
         )}
         {summary.palletFare > 0 && (
           <div className="summary-row">
@@ -88,10 +114,7 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
           <span>부가세 (공급가액 기준 10%)</span>
           <span className="summary-value">{formatWon(summary.vat)}</span>
         </div>
-        <div className="summary-row total">
-          <span>합계</span>
-          <span className="summary-value">{formatWon(summary.total)}</span>
-        </div>
+        <SummaryInfoToggle className="summary-row total" label="합계" value={formatWon(summary.total)} infoName="합계" info={TOTAL_INFO} />
 
         {summary.maint > 0 && (
           <div

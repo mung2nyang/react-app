@@ -183,3 +183,69 @@ test('지출 3행 아이콘·색상·구분선과 서브수수료→파렛트 �
     await cleanup()
   }
 })
+
+/** @param {Element} root @param {string} name */
+function infoButton(root, name) {
+  return [...root.querySelectorAll('.summary-info-btn')].find((btn) => (btn.getAttribute('aria-label') || '').startsWith(`${name} 설명`))
+}
+
+test('로드맵 12번: 합계 (i)을 누르면 설명이 펼쳐지고 다시 누르면 접힌다', async () => {
+  const { container, cleanup } = await renderSummary(emptySummary({ vat: 1000, total: 11000, maint: 3000 }))
+  try {
+    const btn = infoButton(container, '합계')
+    assert.ok(btn instanceof window.HTMLButtonElement, '합계 줄에 (i) 버튼')
+    assert.equal(btn.getAttribute('aria-expanded'), 'false')
+    assert.equal(container.querySelector('.summary-info-text'), null)
+    await act(async () => { btn.click() })
+    assert.equal(btn.getAttribute('aria-expanded'), 'true')
+    const text = container.querySelector('.summary-info-text')
+    assert.ok(text?.textContent?.includes('합계에서 빼지 않은 이번 달 차량 지출'))
+    assert.equal(btn.getAttribute('aria-controls'), text?.id)
+    await act(async () => { btn.click() })
+    assert.equal(btn.getAttribute('aria-expanded'), 'false')
+    assert.equal(container.querySelector('.summary-info-text'), null)
+  } finally {
+    await cleanup()
+  }
+})
+
+test('로드맵 12번: 수수료 있는 거래처 줄에만 (i), 설명에 그 설정 값(% / 건당 금액)', async () => {
+  const { container, cleanup } = await renderSummary(emptySummary({
+    fareByClient: { 한진: 100000, 대한: 50000, 무수료: 30000 },
+    commissionByClient: { 한진: 10000, 대한: 6000 },
+    commissionLabelByClient: { 한진: '10%', 대한: '3,000원' },
+    vat: 18000,
+    total: 182000,
+  }))
+  try {
+    assert.equal(infoButton(container, '무수료 수수료'), undefined, '수수료 없는 거래처엔 (i) 없음')
+    const hanjin = infoButton(container, '한진 수수료')
+    const daehan = infoButton(container, '대한 수수료')
+    assert.ok(hanjin && daehan)
+    await act(async () => { hanjin.click(); daehan.click() })
+    const texts = [...container.querySelectorAll('.summary-info-text')].map((el) => el.textContent || '')
+    assert.ok(texts.some((t) => t.includes('수수료(10%)만큼 이 거래처 운송료에서 빼요')))
+    assert.ok(texts.some((t) => t.includes('수수료(건당 3,000원)만큼')))
+    assert.ok((container.textContent || '').includes('한진 수수료 (10%)'), '줄 이름은 그대로')
+  } finally {
+    await cleanup()
+  }
+})
+
+test('로드맵 12번: 기사차량 수수료가 있을 때만 그 줄에 (i), 설명에 차량 설정 값', async () => {
+  const none = await renderSummary(emptySummary({ vat: 0, total: 0 }))
+  try {
+    assert.equal(infoButton(none.container, '기사차량 수수료'), undefined)
+  } finally {
+    await none.cleanup()
+  }
+  const shown = await renderSummary(emptySummary({ subCarComm: 8000, subCarCommLabel: '3456 차량 건당 5,000원', vat: 0, total: 0 }))
+  try {
+    const btn = infoButton(shown.container, '기사차량 수수료')
+    assert.ok(btn)
+    await act(async () => { btn.click() })
+    assert.ok((shown.container.querySelector('.summary-info-text')?.textContent || '').includes('이 차량의 수수료(건당 5,000원)예요'))
+  } finally {
+    await shown.cleanup()
+  }
+})
