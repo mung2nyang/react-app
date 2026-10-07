@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- 로드맵 11번 1단계: 홈 화면 앱(주소창 없이 열기). 상태바 색은 아래 테마 스크립트가 다크일 때 바꿈. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#f4f7f6" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>운행 일지</title>
     <!-- 로딩 표시 "운행 일지"도 홈 배너와 같은 Jua 글꼴 — 기다리지 않게 불러옴(print → all) -->
@@ -18,6 +23,7 @@
           theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
         }
         if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark')
+        if (theme === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#121212')
       })()
     </script>
     <style>
