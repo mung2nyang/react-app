@@ -265,7 +265,7 @@ describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
   const revenueShareAmount = 67500
   /** 김기사 산재(경비율 30.5%·요율 1.8%, 적용 ON): 월보수액 46913 → 총액 844 → 차주 몫 422 */
   const kimInsuranceOwner = 422
-  /** 박기사 월급제 2,000,000 산재(적용 꺼짐): 월보수액 1,390,000 → 총액 25,020 전부 차주 몫 */
+  /** 박기사 월급제 2,000,000 산재(4대보험 근로자): 월보수액 1,390,000 → 총액 25,020 전부 차주 몫 */
   const parkInsuranceOwner = 25020
   const salaryCarNumber = '부산33나1111'
 

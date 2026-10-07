@@ -71,22 +71,37 @@ async function mount(render, initial = SUB_DRAFT) {
 /** @param {HarnessProps} props */
 const fields = ({ draft, setDraft }) => React.createElement(CarDriverIncomeFields, { draft, setDraft })
 
-test('기사 유형을 고르면 두 토글 기본값이 함께 바뀌고, 이후 하나씩 따로 고칠 수 있다', async () => {
+test('기사 유형은 원천징수 기본값만 바꾸고 산재 토글은 그대로 둔다', async () => {
   const view = await mount(fields)
   try {
     const buttons = /** @type {Array<HTMLButtonElement>} */ ([...view.container.querySelectorAll('.car-commission-type button')])
     assert.deepEqual(buttons.map((b) => b.textContent), ['4대보험 근로자', '3.3% 사업소득자'])
     await act(async () => { buttons[0].click() })
     assert.equal(view.draft().driverIncomeType, 'employee')
-    assert.equal(el(view.container, '#newCarInsuranceOn').checked, false)
+    assert.equal(el(view.container, '#newCarInsuranceOn').checked, true, '근로자도 산재 적용(차주 전액 부담)')
     assert.equal(el(view.container, '#newCarWithholdingOn').checked, false)
     await act(async () => { el(view.container, '#newCarWithholdingOn').click() })
     assert.equal(view.draft().withholdingOn, true, '근로자여도 예외로 원천징수만 켤 수 있다')
-    assert.equal(view.draft().insuranceOn, false)
     await act(async () => { buttons[1].click() })
     assert.equal(view.draft().driverIncomeType, 'business')
     assert.equal(view.draft().insuranceOn, true)
     assert.equal(view.draft().withholdingOn, true)
+  } finally { await view.cleanup() }
+})
+
+test('산재 적용을 끄면 두 요율이 0이 되고 숨겨지며, 켜면 기본값으로 다시 보인다', async () => {
+  const view = await mount(fields)
+  try {
+    await act(async () => { el(view.container, '#newCarInsuranceOn').click() })
+    assert.equal(view.draft().insuranceOn, false)
+    assert.equal(view.draft().insuranceRate, '0')
+    assert.equal(view.draft().expenseRate, '0')
+    assert.equal(view.container.querySelector('#newCarInsuranceRate'), null)
+    assert.equal(view.container.querySelector('#newCarExpenseRate'), null)
+    await act(async () => { el(view.container, '#newCarInsuranceOn').click() })
+    assert.equal(view.draft().insuranceRate, '1.8')
+    assert.equal(view.draft().expenseRate, '30.5')
+    assert.equal(el(view.container, '#newCarExpenseRate').value, '30.5')
   } finally { await view.cleanup() }
 })
 
@@ -102,23 +117,13 @@ test('필요경비율·산재보험료율 입력은 숫자와 소수점만 남�
   } finally { await view.cleanup() }
 })
 
-test('품목·차종을 고르면 필요경비율 기본값(30.5 / 43.1)이 채워지고 직접 고칠 수 있다', async () => {
+test('필요경비율은 품목·차종 선택 없이 기본값 30.5로 시작하고 직접 고칠 수 있다', async () => {
   const view = await mount(fields)
   try {
-    const openMenu = async () => { await act(async () => { el(view.container, '.app-dropdown-trigger').click() }) }
-    const pick = async (/** @type {string} */ label) => {
-      await openMenu()
-      const option = /** @type {Array<HTMLButtonElement>} */ ([...view.container.querySelectorAll('.app-dropdown-option')]).find((o) => (o.textContent ?? '').startsWith(label))
-      assert.ok(option, label)
-      await act(async () => { option.click() })
-    }
-    await pick('렉카차')
-    assert.equal(view.draft().expenseRate, '43.1')
-    assert.equal(el(view.container, '#newCarExpenseRate').value, '43.1')
-    await pick('컨테이너 운송')
-    assert.equal(view.draft().expenseRate, '30.5')
-    await act(async () => { typeInto(el(view.container, '#newCarExpenseRate'), '31') })
-    assert.equal(view.draft().expenseRate, '31', '고른 뒤에도 숫자를 직접 고칠 수 있다')
+    assert.equal(view.container.querySelector('.app-dropdown-trigger'), null, '품목·차종 선택칸 없음')
+    assert.equal(el(view.container, '#newCarExpenseRate').value, '30.5')
+    await act(async () => { typeInto(el(view.container, '#newCarExpenseRate'), '43.1') })
+    assert.equal(view.draft().expenseRate, '43.1', '숫자를 직접 고칠 수 있다')
   } finally { await view.cleanup() }
 })
 

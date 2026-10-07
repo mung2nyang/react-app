@@ -14,9 +14,9 @@ const REVENUE_SHARE = 67500
  * 총액 = floor(46913×1.8%=844.4) = 844. 산재 적용 ON → 기사 422·차주 422, OFF → 차주 844.
  */
 const KIM_INSURANCE_OWNER_ON = 422
-const KIM_INSURANCE_OWNER_OFF = 844
+const KIM_INSURANCE_OWNER_EMPLOYEE = 844
 const SALARY_AMOUNT = 2000000
-/** 픽스처 박기사 월급제 2,000,000: 월보수액 1,390,000 × 1.8% = 25,020(산재 적용 꺼짐 → 전액 차주). */
+/** 픽스처 박기사 월급제 2,000,000: 월보수액 1,390,000 × 1.8% = 25,020(4대보험 근로자 → 전액 차주). */
 const PARK_INSURANCE_OWNER = 25020
 
 describe('getMonthlyDriverRevenueShareExpense', () => {
@@ -52,7 +52,7 @@ describe('getMonthlyDriverRevenueShareExpense', () => {
 describe('getMonthlyDriverInsuranceOwnerShare — 산재보험료 차주 부담분', () => {
   const subCars = FIXTURE_SETTINGS.cars.filter((c) => c.type === 'sub')
 
-  test('매출제(김기사, 산재 ON)는 총액의 절반, 월급제(박기사, 산재 꺼짐)는 총액 전부가 차주 몫', () => {
+  test('사업소득자(김기사)는 총액의 절반, 4대보험 근로자(박기사)는 총액 전부가 차주 몫', () => {
     const result = getMonthlyDriverInsuranceOwnerShare(MONTH_KEY, FIXTURE_SETTINGS, subCars, FIXTURE_WORK)
     assert.deepEqual(
       result.items.map((item) => [item.label, item.amount]),
@@ -61,10 +61,17 @@ describe('getMonthlyDriverInsuranceOwnerShare — 산재보험료 차주 부담�
     assert.equal(result.total, KIM_INSURANCE_OWNER_ON + PARK_INSURANCE_OWNER)
   })
 
-  test('산재 적용을 끄면 매출제도 총액 전부가 차주 몫', () => {
-    const cars = subCars.map((car) => (car.number === '서울12가3456' ? { ...car, insuranceOn: false } : car))
+  test('매출제도 4대보험 근로자면 총액 전부가 차주 몫', () => {
+    const cars = subCars.map((car) => (car.number === '서울12가3456' ? { ...car, driverIncomeType: /** @type {'employee'} */ ('employee') } : car))
     const result = getMonthlyDriverInsuranceOwnerShare(MONTH_KEY, FIXTURE_SETTINGS, cars, FIXTURE_WORK)
-    assert.equal(result.items.find((item) => item.label.startsWith('김기사'))?.amount, KIM_INSURANCE_OWNER_OFF)
+    assert.equal(result.items.find((item) => item.label.startsWith('김기사'))?.amount, KIM_INSURANCE_OWNER_EMPLOYEE)
+  })
+
+  test('산재 적용을 끄면 산재보험료가 없다 — 항목이 생기지 않는다', () => {
+    const cars = subCars.map((car) => ({ ...car, insuranceOn: false }))
+    const result = getMonthlyDriverInsuranceOwnerShare(MONTH_KEY, FIXTURE_SETTINGS, cars, FIXTURE_WORK)
+    assert.equal(result.total, 0)
+    assert.equal(result.items.length, 0)
   })
 
   test('요율 0은 산재 적용 제외 — 항목이 생기지 않는다', () => {
@@ -97,19 +104,19 @@ describe('getOwnerMonthlyFinanceDetail — C-3 월급제+매출제 합산', () =
     assert.equal(detail.expense.salary.items.length, 0)
   })
 
-  test('(d) 산재 적용을 끄면 김기사 정산액은 그대로이고 산재 차주 몫만 절반에서 전액으로 늘어난다', () => {
+  test('(d) 김기사를 4대보험 근로자로 바꾸면 정산액은 그대로이고 산재 차주 몫만 절반에서 전액으로 늘어난다', () => {
     const withIns = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'all', FIXTURE_SETTINGS, FIXTURE_WORK, [])
     const withoutIns = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'all', {
       ...FIXTURE_SETTINGS,
       cars: FIXTURE_SETTINGS.cars.map((car) => (
-        car.number === '서울12가3456' ? { ...car, insuranceOn: false } : car
+        car.number === '서울12가3456' ? { ...car, driverIncomeType: /** @type {'employee'} */ ('employee') } : car
       )),
     }, FIXTURE_WORK, [])
     const find = (/** @type {typeof withIns} */ detail, /** @type {string} */ label) => detail.expense.salary.items.find((i) => i.label === label)?.amount
     assert.equal(find(withIns, '김기사'), REVENUE_SHARE)
     assert.equal(find(withoutIns, '김기사'), REVENUE_SHARE)
     assert.equal(find(withIns, '김기사 산재보험(차주 부담)'), KIM_INSURANCE_OWNER_ON)
-    assert.equal(find(withoutIns, '김기사 산재보험(차주 부담)'), KIM_INSURANCE_OWNER_OFF)
-    assert.equal(withIns.expense.salary.total + (KIM_INSURANCE_OWNER_OFF - KIM_INSURANCE_OWNER_ON), withoutIns.expense.salary.total)
+    assert.equal(find(withoutIns, '김기사 산재보험(차주 부담)'), KIM_INSURANCE_OWNER_EMPLOYEE)
+    assert.equal(withIns.expense.salary.total + (KIM_INSURANCE_OWNER_EMPLOYEE - KIM_INSURANCE_OWNER_ON), withoutIns.expense.salary.total)
   })
 })

@@ -11,20 +11,6 @@ export const DEFAULT_EXPENSE_RATE = '30.5'
 export const DEFAULT_INSURANCE_RATE = '1.8'
 const WITHHOLDING_RATE = 3.3
 
-/** 고시 필요경비율 기본값(근로복지공단 고시 기준, 보리 제공). 저장은 숫자만 하고 선택 상태는 저장하지 않는다. */
-export const EXPENSE_RATE_PRESETS = [
-  { label: '컨테이너 운송', rate: '30.5' },
-  { label: '시멘트 운송 (BCT 등)', rate: '30.5' },
-  { label: '철강재 운송', rate: '30.5' },
-  { label: '위험물질 운송 (탱크로리)', rate: '30.5' },
-  { label: '자동차 수송 (카캐리어)', rate: '30.5' },
-  { label: '곡물·사료 운송', rate: '30.5' },
-  { label: '일반 화물차 (카고·윙바디·탑차 등)', rate: '30.5' },
-  { label: '살수차', rate: '43.1' },
-  { label: '카고크레인', rate: '43.1' },
-  { label: '렉카차 (구난형 특수자동차)', rate: '43.1' },
-]
-
 /**
  * 새 기사차량 폼 기본값: 3.3% 사업소득자 → 산재·원천징수 둘 다 켬.
  * @type {DriverIncomeFields}
@@ -85,14 +71,15 @@ export function getDriverSettlementAmount(/** @type {CarLike|null|undefined} */ 
 }
 
 /**
- * 산재보험료 총액·부담 나눔·3.3%·기사 실수령. 산재 기사 몫은 산재 적용 토글이 켜졌을 때만 총액의 50%(버림),
- * 나머지는 차주 몫(토글이 꺼지면 차주 100%). 3.3%는 산재 공제 전 정산액 기준이며 원천징수 토글이 켜졌을 때만.
+ * 산재보험료 총액·부담 나눔·3.3%·기사 실수령. 산재는 산재 적용 토글이 켜졌을 때만(꺼지면 총액 0),
+ * 부담은 기사 유형이 정한다: 사업소득자 = 기사 50%(버림)·차주 나머지, 근로자 = 차주 100%.
+ * 3.3%는 산재 공제 전 정산액 기준이며 원천징수 토글이 켜졌을 때만.
  */
 export function getDriverIncomeDeductions(/** @type {CarLike|null|undefined} */ car, /** @type {number} */ settlementAmount) {
   const amount = Math.max(0, Math.floor(Number(settlementAmount) || 0))
   const insuranceBase = amount - floorWon(amount * rateOf(car?.expenseRate, DEFAULT_EXPENSE_RATE) / 100)
-  const insuranceTotal = floorWon(insuranceBase * rateOf(car?.insuranceRate, DEFAULT_INSURANCE_RATE) / 100)
-  const insuranceDriverShare = car?.insuranceOn ? Math.floor(insuranceTotal / 2) : 0
+  const insuranceTotal = car?.insuranceOn ? floorWon(insuranceBase * rateOf(car?.insuranceRate, DEFAULT_INSURANCE_RATE) / 100) : 0
+  const insuranceDriverShare = car?.driverIncomeType === 'employee' ? 0 : Math.floor(insuranceTotal / 2)
   const withholding = car?.withholdingOn ? floorWon(amount * WITHHOLDING_RATE / 100) : 0
   return {
     settlementAmount: amount,

@@ -1,7 +1,6 @@
 // @ts-check
-// 로드맵 12번: 정산 카드 한 줄 + 이름 옆 (i) 버튼, 누르면 줄 바로 아래에 설명이 펼쳐진다(펼침 상태는 화면 안에서만).
-import { useId, useState } from 'react'
-import './calendar-month-summary.css'
+// 로드맵 12번: 정산 카드 한 줄 + 이름 옆 (i) 버튼, 누르면 (i) 바로 아래에 설명 카드가 뜬다.
+import InfoTip from '../shared/InfoTip.jsx'
 
 /**
  * @param {Object} props
@@ -13,31 +12,13 @@ import './calendar-month-summary.css'
  * @param {string} props.info 펼칠 설명
  */
 export default function SummaryInfoToggle({ className, label, labelClassName, value, infoName, info }) {
-  const [open, setOpen] = useState(false)
-  const infoId = useId()
   return (
-    <>
-      <div className={className}>
-        <span className="summary-info-label">
-          <span className={labelClassName}>{label}</span>
-          <button
-            type="button"
-            className="summary-info-btn"
-            aria-label={`${infoName} 설명 ${open ? '접기' : '보기'}`}
-            aria-expanded={open}
-            aria-controls={infoId}
-            onClick={() => setOpen((v) => !v)}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="11"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-          </button>
-        </span>
-        <span className="summary-value">{value}</span>
-      </div>
-      {open && <p id={infoId} className="summary-info-text">{info}</p>}
-    </>
+    <div className={className}>
+      <span className="summary-info-label">
+        <span className={labelClassName}>{label}</span>
+        <InfoTip name={infoName} info={info} />
+      </span>
+      <span className="summary-value">{value}</span>
+    </div>
   )
 }

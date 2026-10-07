@@ -1,8 +1,14 @@
-/* 로드맵 12번: 홈 정산 카드 (i) 설명 버튼·펼친 설명. SummaryInfoToggle.jsx가 import. */
+/* (i) 설명 버튼·(i) 아래 뜨는 설명 카드. InfoTip.jsx가 import(정산 카드·차량 폼 등 공용). */
 .summary-info-label {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+/* 설명 카드 위치 기준 = (i) 버튼 */
+.summary-info-anchor {
+  position: relative;
+  display: inline-flex;
 }
 
 /* 보이는 크기 20px, 누르는 영역은 ::before로 44px(줄 높이는 그대로). */
@@ -40,9 +46,35 @@
 .summary-info-btn:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
 
 .summary-info-text {
-  margin: -4px 0 12px;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: calc(-14px + var(--shift, 0px));
+  z-index: 20;
+  width: max-content;
+  max-width: min(300px, calc(100vw - 64px));
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-md);
   color: var(--sub-text-color);
   font-size: var(--fs-2);
   font-weight: 500;
   line-height: 1.5;
+  text-align: left;
+  white-space: pre-line;
+}
+
+/* 카드 위 꼬리 — (i) 가운데를 가리킨다 */
+.summary-info-text::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: calc(19px - var(--shift, 0px));
+  width: 10px;
+  height: 10px;
+  border-top: 1px solid var(--border-color);
+  border-left: 1px solid var(--border-color);
+  background: var(--card-bg);
+  transform: rotate(45deg);
 }

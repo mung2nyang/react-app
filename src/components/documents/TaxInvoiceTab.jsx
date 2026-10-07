@@ -18,12 +18,22 @@ import {
   useOwnerSettings,
   useOwnerWorkDataByLogId,
 } from '../../store/ownerDataHooks.js'
+import SummaryInfoToggle from '../calendar/SummaryInfoToggle.jsx'
 import TaxInvoiceDraftModal from '../TaxInvoiceDraftModal.jsx'
 import TaxInvoiceEntryList from '../TaxInvoiceEntryList.jsx'
 import MonthNavigator from './MonthNavigator.jsx'
 import '../tax-invoice/tax-invoice.css'
 
 /** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+
+/** 월간 정산 제목 옆 (i) 설명 — 홈택스 일괄 발급 순서. */
+const HOMETAX_GUIDE = [
+  '1. 엑셀 저장 후 발급하러 가기를 누르세요.',
+  '2. 홈택스에서 사업자로 로그인을 해주세요.',
+  '3. *일괄작성 파일에서 파일 선택을 눌러 앱에서 다운받은 엑셀을 등록해 주세요.',
+  '4. [엑셀파일 변환하기] 버튼을 눌러주세요.',
+  '5. [일괄 발급] 버튼을 눌러주세요.',
+].join('\n')
 
 /**
  * @param {Object} props
@@ -150,10 +160,13 @@ export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMont
       )}
 
       <div className="summary-card">
-        <div className="summary-title">
-          <span>{flowMeta.label} 월간 정산</span>
-          <span>{entries.length}건</span>
-        </div>
+        <SummaryInfoToggle
+          className="summary-title"
+          label={`${flowMeta.label} 월간 정산`}
+          value={`${entries.length}건`}
+          infoName="홈택스 발급 방법"
+          info={HOMETAX_GUIDE}
+        />
         <div className="summary-row"><span>공급가액</span><span className="summary-value">{formatWon(supplyTotal)}</span></div>
         <div className="summary-row"><span>부가세</span><span className="summary-value">{formatWon(taxTotal)}</span></div>
         <div className="summary-row total"><span>합계</span><span className="summary-value">{formatWon(supplyTotal + taxTotal)}</span></div>

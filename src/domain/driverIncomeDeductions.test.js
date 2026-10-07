@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import {
-  DEFAULT_EXPENSE_RATE, DEFAULT_INSURANCE_RATE, EXPENSE_RATE_PRESETS, NEW_DRIVER_INCOME_DRAFT,
+  DEFAULT_EXPENSE_RATE, DEFAULT_INSURANCE_RATE, NEW_DRIVER_INCOME_DRAFT,
   driverIncomeDraftFromCar, driverIncomeFieldsFromDraft, getDriverIncomeDeductions,
   getDriverSettlementAmount, getDriverSettlementBreakdown,
 } from './driverIncomeDeductions.js'
@@ -12,8 +12,8 @@ import { upsertCar } from './cars.js'
 
 /** 사업소득자(3.3%): 산재·원천징수 둘 다 켬 */
 const BUSINESS_CAR = /** @type {CarLike} */ ({ number: '12가3456', driverIncomeType: 'business', insuranceOn: true, withholdingOn: true })
-/** 4대보험 근로자: 산재·원천징수 둘 다 끔 */
-const EMPLOYEE_CAR = /** @type {CarLike} */ ({ number: '12가3456', driverIncomeType: 'employee', insuranceOn: false, withholdingOn: false })
+/** 4대보험 근로자: 산재 켬(차주 전액 부담)·원천징수 끔 */
+const EMPLOYEE_CAR = /** @type {CarLike} */ ({ number: '12가3456', driverIncomeType: 'employee', insuranceOn: true, withholdingOn: false })
 
 // 보리 확정 규칙(2026-09-27, docs/roadmap.md 4-2)의 예시 3개 — 이 값이 정답이다.
 describe('getDriverIncomeDeductions — 확정 규칙 예시', () => {
@@ -40,7 +40,7 @@ describe('getDriverIncomeDeductions — 확정 규칙 예시', () => {
     assert.equal(result.driverNet, 1921490)
   })
 
-  test('월급제 2,000,000, 4대보험 근로자(둘 다 OFF) — 산재 총액 전부 차주 몫, 기사 공제 없음', () => {
+  test('월급제 2,000,000, 4대보험 근로자(산재 ON·원천징수 OFF) — 산재 총액 전부 차주 몫, 기사 공제 없음', () => {
     const result = getDriverIncomeDeductions(EMPLOYEE_CAR, 2000000)
     assert.equal(result.insuranceTotal, 25020)
     assert.equal(result.insuranceDriverShare, 0)
@@ -51,13 +51,14 @@ describe('getDriverIncomeDeductions — 확정 규칙 예시', () => {
 })
 
 describe('getDriverIncomeDeductions — 토글·요율·경계', () => {
-  test('산재만 켜면 3.3%는 없고, 원천징수만 켜면 산재 기사 몫은 없다', () => {
+  test('산재만 켜면 3.3%는 없고, 산재를 끄면 산재보험료 자체가 없다(기사·차주 몫 모두 0)', () => {
     const onlyInsurance = getDriverIncomeDeductions({ ...BUSINESS_CAR, withholdingOn: false }, 200000)
     assert.equal(onlyInsurance.withholding, 0)
     assert.equal(onlyInsurance.driverNet, 200000 - 1251)
     const onlyWithholding = getDriverIncomeDeductions({ ...BUSINESS_CAR, insuranceOn: false }, 200000)
+    assert.equal(onlyWithholding.insuranceTotal, 0)
     assert.equal(onlyWithholding.insuranceDriverShare, 0)
-    assert.equal(onlyWithholding.insuranceOwnerShare, 2502)
+    assert.equal(onlyWithholding.insuranceOwnerShare, 0)
     assert.equal(onlyWithholding.driverNet, 200000 - 6600)
   })
 
@@ -109,11 +110,11 @@ describe('getDriverIncomeDeductions — 토글·요율·경계', () => {
     }
   })
 
-  test('차량이 없거나 설정이 비어 있으면 기존 동작 유지(기사 공제 없음), 산재 총액만 기본 요율로 계산', () => {
+  test('차량이 없거나 설정이 비어 있으면 공제 없음(산재 꺼짐 = 산재보험료 0)', () => {
     const result = getDriverIncomeDeductions(null, 200000)
     assert.equal(result.insuranceDriverShare, 0)
     assert.equal(result.withholding, 0)
-    assert.equal(result.insuranceTotal, 2502)
+    assert.equal(result.insuranceTotal, 0)
     assert.equal(result.driverNet, 200000)
   })
 })
@@ -156,12 +157,6 @@ describe('차량 폼 draft ↔ 저장 필드', () => {
     })
     assert.equal(DEFAULT_EXPENSE_RATE, '30.5')
     assert.equal(DEFAULT_INSURANCE_RATE, '1.8')
-  })
-
-  test('품목·차종 기본값은 30.5%와 43.1% 두 종류다(살수차·카고크레인·렉카차만 43.1%)', () => {
-    assert.equal(EXPENSE_RATE_PRESETS.length, 10)
-    assert.deepEqual([...new Set(EXPENSE_RATE_PRESETS.map((p) => p.rate))].sort(), ['30.5', '43.1'])
-    assert.deepEqual(EXPENSE_RATE_PRESETS.filter((p) => p.rate === '43.1').map((p) => p.label), ['살수차', '카고크레인', '렉카차 (구난형 특수자동차)'])
   })
 
   test('driverIncomeFieldsFromDraft: 빈 요율은 기본값, 이상한 유형은 사업소득자, 숫자 문자열로 정리', () => {

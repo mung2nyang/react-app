@@ -32,19 +32,21 @@
   line-height: 1.55;
 }
 
-/* 필요경비율: 품목·차종 드롭다운과 % 입력칸 한 줄(CarDriverIncomeFields 전용). */
+/* 산재보험료율 | 필요경비율 반반 한 줄, 이름 옆 (i)(CarDriverIncomeFields 전용). */
 .car-income-rate-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 110px;
-  align-items: center;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
 }
 
-.car-income-rate-row .app-dropdown-menu {
-  width: max-content;
-  min-width: 100%;
-  max-width: min(340px, calc(100vw - 64px));
+.car-income-rate-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
 }
+
+.car-modal .car-income-rate-label label { margin-bottom: 0; }
 
 /* 기사 등록 창: 연락처와 정산 사이 구분선 */
 .car-modal .car-modal-divider {
