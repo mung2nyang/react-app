@@ -80,13 +80,32 @@ test('꺼짐·휴무·비회원이면 안내 줄 없음', async () => {
   }
 })
 
-test('서버 확인 중엔 글씨 없는 빈 상자로 자리만 잡는다', async () => {
+test('서버 확인 중엔 같은 상자에 글자·버튼 자리 막대(로드맵 15번), 버튼 없음, 읽기용 "불러오는 중"', async () => {
   holdFetch = new Promise(() => {})
   const view = await render()
   try {
     const box = view.container.querySelector('.daily-inspection-notice')
     assert.ok(box?.classList.contains('is-loading'))
-    assert.equal(box?.textContent, '')
+    assert.equal(box?.getAttribute('aria-busy'), 'true')
+    assert.equal(box?.querySelectorAll('.di-skeleton').length, 2, '글자 자리 + 버튼 자리 막대 두 개')
+    assert.equal(box?.querySelectorAll('button').length, 0)
+    assert.equal(box?.textContent, '일상점검표 불러오는 중')
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('확인이 끝나면 막대가 사라지고 "작성이 필요합니다" + [+ 입력]', async () => {
+  /** @type {(value: null) => void} */
+  let release = () => {}
+  holdFetch = new Promise((resolve) => { release = resolve })
+  const view = await render()
+  try {
+    assert.equal(view.container.querySelectorAll('.di-skeleton').length, 2)
+    await act(async () => { release(null) })
+    assert.equal(view.container.querySelectorAll('.di-skeleton').length, 0)
+    assert.ok(view.text().includes('일상점검표 작성이 필요합니다.'))
+    assert.ok([...view.container.querySelectorAll('button')].some((el) => el.textContent === '+ 입력'))
   } finally {
     await view.cleanup()
   }

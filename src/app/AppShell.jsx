@@ -2,11 +2,11 @@
 // Step 3 라우터 셸: `/app/*` 레이아웃 라우트. App.jsx의 옛 `screen==='home'` 블록을
 // 그대로 옮긴 자리 — 하단탭/사이드메뉴/알림패널은 여기서 한 번만 마운트하고,
 // 화면별 콘텐츠는 중첩 <Routes>의 Outlet 자리에서 페이지 컴포넌트가 그린다.
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav.jsx'
 import LoadingScreen from '../components/LoadingScreen.jsx'
-import SideMenu from '../components/SideMenu.jsx'
+import SideMenu, { preloadSideMenuBanner } from '../components/SideMenu.jsx'
 import NotificationPanel from '../components/NotificationPanel.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
 import { todayWorkLogSelection } from '../lib/calendar.js'
@@ -73,6 +73,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const [menuOpen, setMenuOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifTick, setNotifTick] = useState(0)
+  useEffect(() => { preloadSideMenuBanner() }, [])
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const settings = useOwnerSettings(ownerKey)

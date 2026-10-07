@@ -1,0 +1,41 @@
+/* 로드맵 15번: 일상점검표 안내 줄 확인 중 — 글자·버튼 자리 막대 위로 빛이 지나감. DailyInspectionNotice.jsx가 import. */
+.daily-inspection-notice .di-skeleton {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: var(--hover-bg);
+}
+
+.daily-inspection-notice .di-skeleton-text { width: 60%; height: 14px; }
+.daily-inspection-notice .di-skeleton-btn { flex-shrink: 0; width: 64px; height: 44px; border-radius: 12px; }
+
+.daily-inspection-notice .di-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: di-skeleton-shine 1.2s ease-in-out infinite;
+}
+
+[data-theme="dark"] .daily-inspection-notice .di-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+@keyframes di-skeleton-shine {
+  to { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-inspection-notice .di-skeleton::after { animation: none; }
+}
+
+.daily-inspection-notice .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

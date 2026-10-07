@@ -40,6 +40,7 @@
   position: relative;
   top: 3px;
   left: -10px;
+  width: 84px;
   height: 56px;
   object-fit: contain;
 }

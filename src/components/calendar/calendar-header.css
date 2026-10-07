@@ -21,3 +21,6 @@
   line-height: 18px;
   text-align: center;
 }
+
+/* 그림이 오기 전에도 칸 크기를 잡아 옆 글자가 밀리지 않게(로드맵 15번, 그림 비율 약 16:9). */
+.banner-container .banner-logo { width: 92px; height: 52px; }

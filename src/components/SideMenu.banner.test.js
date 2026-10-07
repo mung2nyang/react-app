@@ -13,7 +13,7 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
-const { default: SideMenu } = await import('./SideMenu.jsx')
+const { default: SideMenu, preloadSideMenuBanner } = await import('./SideMenu.jsx')
 
 /** @param {'dark'|'light'} theme */
 async function bannerSources(theme) {
@@ -40,4 +40,14 @@ test('다크 테마: 다크 배너 하나만', async () => {
   const sources = await bannerSources('dark')
   assert.equal(sources.length, 1)
   assert.match(String(sources[0]), /banner_image_dark\.png$/)
+})
+
+test('미리 받기(로드맵 15번): 메뉴가 닫혀 있어도 지금 테마 그림 1장만 요청', () => {
+  document.documentElement.setAttribute('data-theme', 'dark')
+  try {
+    assert.match(preloadSideMenuBanner().src, /banner_image_dark\.png$/)
+  } finally {
+    document.documentElement.removeAttribute('data-theme')
+  }
+  assert.match(preloadSideMenuBanner().src, /banner_image_Light\.png$/)
 })

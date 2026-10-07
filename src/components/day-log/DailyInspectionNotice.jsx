@@ -8,6 +8,7 @@ import { useOwnerCars } from '../../store/ownerDataHooks.js'
 import { useOwnerProfile } from '../../store/ownerProfileDriversHooks.js'
 import DailyInspectionModal from './DailyInspectionModal.jsx'
 import './daily-inspection.css'
+import './daily-inspection-loading.css'
 
 /** @typedef {import('../../lib/dailyInspections.js').DailyInspection} DailyInspection */
 
@@ -42,8 +43,16 @@ export default function DailyInspectionNotice({ ownerKey, logId, dateKey, month,
   }, [active, vehicleId, dateKey, reloadTick])
 
   if (!active || vehicleId == null) return null
-  // 서버 확인 중엔 같은 크기 빈 상자로 자리만 잡아 아래 내용이 밀리지 않게 한다.
-  if (load.status === 'loading') return <div className="daily-inspection-notice is-loading" aria-hidden="true" />
+  // 서버 확인 중엔 같은 크기 상자에 글자·버튼 자리 막대(빛 지나감)를 그려 아래 내용이 밀리지 않게 한다.
+  if (load.status === 'loading') {
+    return (
+      <div className="daily-inspection-notice is-loading" role="status" aria-busy="true">
+        <span className="di-skeleton di-skeleton-text" aria-hidden="true" />
+        <span className="di-skeleton di-skeleton-btn" aria-hidden="true" />
+        <span className="sr-only">일상점검표 불러오는 중</span>
+      </div>
+    )
+  }
 
 
   const car = (logId === 'main' ? cars.find((item) => item.type === 'main') : cars.find((item) => item.number === logId)) || null
