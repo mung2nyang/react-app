@@ -35,7 +35,7 @@ export default function CalendarHeader({
             </svg>
             {notifCount > 0 && <span className="notification-count-badge">{notifCount > 99 ? '99+' : notifCount}</span>}
           </button>
-        ) : <div style={{ width: 40 }}></div>}
+        ) : <div style={{ width: 44 }}></div>}
         <div></div>
         {onOpenMenu ? (
           <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
@@ -45,7 +45,7 @@ export default function CalendarHeader({
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
-        ) : <div style={{ width: 40 }}></div>}
+        ) : <div style={{ width: 44 }}></div>}
       </div>
       <div className="header">
         <div className="banner-container">

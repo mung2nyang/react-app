@@ -87,12 +87,11 @@ const SHORTCUTS = [
  * @param {AppSession|null} [props.session]
  * @param {string} [props.ownerKey]
  * @param {(page: string, label?: string) => void} props.onOpen
- * @param {() => void} props.onBack
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(message: string) => void} [props.showToast]
  * @param {(session: AppSession) => void} [props.onLinked]
  */
-export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, onOpenMenu, showToast, onLinked }) {
+export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu, showToast, onLinked }) {
   const [inviteOpen, setInviteOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const profile = useOwnerProfile(ownerKey)
@@ -105,7 +104,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onBack, on
 
   return (
     <div className="page my-page">
-      <PageHeader title="마이페이지" onBack={onBack} onOpenMenu={onOpenMenu} />
+      <PageHeader title="마이페이지" onOpenMenu={onOpenMenu} />
 
       <button type="button" className="mypage-profile-card" onClick={() => onOpen('profile')}>
         <span className="mypage-profile-icon" aria-hidden="true"><PersonIcon /></span>

@@ -1,2 +1,3 @@
 .date-select-group .app-date-dropdown:last-child { min-width: 50px; }
 .date-select-group .app-date-dropdown:last-child .app-dropdown-trigger { flex: 1; justify-content: center; }
+.date-select-group .app-dropdown-trigger { min-height: 44px; }

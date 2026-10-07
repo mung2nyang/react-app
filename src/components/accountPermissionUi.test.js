@@ -42,7 +42,6 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
             ownerKey,
             session: /** @type {any} */ ({ accountType: 'employed_driver', name: '홍길동' }),
             onOpen: () => {},
-            onBack: () => {},
           }),
         )
       })
@@ -57,7 +56,6 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
             ownerKey,
             session: /** @type {any} */ ({ accountType: 'owner_driver', name: '홍길동' }),
             onOpen: () => {},
-            onBack: () => {},
           }),
         )
       })

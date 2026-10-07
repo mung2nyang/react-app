@@ -21,6 +21,7 @@ import '../side-menu.css'
 import '../management-common.css'
 import '../controls-common.css'
 import '../app-shell-base.css'
+import '../header-controls.css'
 import '../shared-controls.css'
 import '../modal-form.css'
 

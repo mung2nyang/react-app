@@ -10,15 +10,14 @@ import './revenue/revenue.css'
  * @param {Object} props
  * @param {string} [props.ownerKey]
  * @param {{ accountType?: string }} [props.session]
- * @param {() => void} props.onBack
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function RevenuePage({ ownerKey = 'guest', session, onBack, onOpenMenu }) {
+export default function RevenuePage({ ownerKey = 'guest', session, onOpenMenu }) {
   const isDriver = session?.accountType === 'employed_driver'
 
   return (
     <div className="page revenue-page">
-      <PageHeader title="매출" onBack={onBack} onOpenMenu={onOpenMenu} />
+      <PageHeader title="매출" onOpenMenu={onOpenMenu} />
       {isDriver
         ? <DriverRevenueView ownerKey={ownerKey} />
         : <OwnerRevenueView ownerKey={ownerKey} />}

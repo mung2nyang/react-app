@@ -22,7 +22,7 @@ async function render(session) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(MyPage, { session, ownerKey: 'data-download-test', onOpen: () => {}, onBack: () => {} }))
+    root.render(React.createElement(MyPage, { session, ownerKey: 'data-download-test', onOpen: () => {} }))
   })
   const links = [...container.querySelectorAll('.mypage-notice-link')]
   return {

@@ -43,7 +43,6 @@ test('초대코드 입력 버튼을 누르면 팝업이 뜨고, 4자 미만이�
         session: { userId: 'u-1', name: '기사', phone: '010-0000-0000', accountType: 'owner' },
         ownerKey: 'invite-modal-test',
         onOpen: (page) => { opened.push(page) },
-        onBack: () => {},
       }))
     })
     assert.equal(container.querySelector('.invite-redeem-modal'), null, '처음에는 팝업이 없다')

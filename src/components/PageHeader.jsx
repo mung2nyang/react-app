@@ -3,16 +3,20 @@
 /**
  * @param {Object} props
  * @param {import('react').ReactNode} props.title
- * @param {() => void} [props.onBack]
+ * @param {() => void} [props.onBack] 없으면 뒤로가기 대신 빈 자리(하단 메뉴 첫 화면)
  * @param {() => void} [props.onOpenMenu]
  * @param {import('react').ReactNode} [props.titleExtra]
  */
 export default function PageHeader({ title, onBack, onOpenMenu, titleExtra }) {
   return (
     <div className="settings-header">
-      <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-      </button>
+      {onBack ? (
+        <button type="button" className="icon-btn" title="뒤로가기" onClick={onBack}>
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+      ) : (
+        <div style={{ width: 44 }}></div>
+      )}
       {titleExtra ? (
         <div className="modal-title-stack">
           <div className="settings-title">{title}</div>
@@ -30,7 +34,7 @@ export default function PageHeader({ title, onBack, onOpenMenu, titleExtra }) {
           </svg>
         </button>
       ) : (
-        <div style={{ width: 40 }}></div>
+        <div style={{ width: 44 }}></div>
       )}
     </div>
   )
