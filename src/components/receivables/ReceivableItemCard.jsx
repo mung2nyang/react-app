@@ -1,6 +1,7 @@
 // @ts-check
 import { formatWon, formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
 import { formatWorkMonth, getDdayLabel, receivableItemKey } from '../../lib/receivables.js'
+import ClearableInput from '../shared/ClearableInput.jsx'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 /** @typedef {import('../../domain/callDetail.js').PaymentLike} PaymentLike */
@@ -109,7 +110,7 @@ export default function ReceivableItemCard({
       )}
       {partialKey === key && onConfirmPartial && onPartialAmountChange && (
         <div className="receivable-partial-input-row">
-          <input
+          <ClearableInput
             className="input-box"
             inputMode="numeric"
             placeholder="입금액 입력"

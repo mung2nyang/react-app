@@ -377,8 +377,11 @@
   margin-top: 8px;
 }
 
-.receivable-partial-input-row .input-box {
+.receivable-partial-input-row .clearable-input {
   flex: 1;
+}
+
+.receivable-partial-input-row .input-box {
   min-height: 36px;
   padding: 6px 10px;
   font-size: var(--fs-2);

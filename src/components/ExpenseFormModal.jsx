@@ -6,6 +6,7 @@ import {
 } from '../lib/expenses.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../lib/money.js'
 import TemporalInput from './shared/TemporalInput.jsx'
+import ClearableInput from './shared/ClearableInput.jsx'
 import './expense-form.css'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
@@ -69,7 +70,7 @@ export default function ExpenseFormModal({
           <>
             <div className="form-group">
               <label htmlFor="expenseName">{draft.kind === 'misc' ? '항목명' : '정비 항목명'}</label>
-              <input id="expenseName" className="input-box" placeholder="항목명을 입력하세요" value={draft.name} onChange={(e) => onChange({ ...draft, name: e.target.value })} />
+              <ClearableInput id="expenseName" className="input-box" placeholder="항목명을 입력하세요" value={draft.name} onChange={(e) => onChange({ ...draft, name: e.target.value })} />
             </div>
             <div className="form-group">
               <label>분류</label>

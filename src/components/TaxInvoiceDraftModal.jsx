@@ -2,6 +2,7 @@
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../domain/formatPhone.js'
 import { formatWon } from '../lib/money.js'
 import BizNumberHint from './shared/BizNumberHint.jsx'
+import ClearableInput from './shared/ClearableInput.jsx'
 import TemporalInput from './shared/TemporalInput.jsx'
 import './tax-invoice/tax-invoice.css'
 
@@ -26,36 +27,36 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
         </div>
         <div className="form-group">
           <label htmlFor="invBiz">사업자등록번호</label>
-          <input id="invBiz" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(modalItem.clientBizNumber || '')} onChange={(e) => onChange({ ...modalItem, clientBizNumber: formatBizNumber(e.target.value) })} />
+          <ClearableInput id="invBiz" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(modalItem.clientBizNumber || '')} onChange={(e) => onChange({ ...modalItem, clientBizNumber: formatBizNumber(e.target.value) })} />
           <BizNumberHint value={modalItem.clientBizNumber} />
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">
             <label htmlFor="invRep">대표자</label>
-            <input id="invRep" className="input-box" value={modalItem.clientRepresentative || ''} onChange={(e) => onChange({ ...modalItem, clientRepresentative: e.target.value })} />
+            <ClearableInput id="invRep" className="input-box" value={modalItem.clientRepresentative || ''} onChange={(e) => onChange({ ...modalItem, clientRepresentative: e.target.value })} />
           </div>
           <div className="form-group">
             <label htmlFor="invEmail">이메일</label>
-            <input id="invEmail" className="input-box" value={modalItem.clientEmail || ''} onChange={(e) => onChange({ ...modalItem, clientEmail: e.target.value })} />
+            <ClearableInput id="invEmail" className="input-box" value={modalItem.clientEmail || ''} onChange={(e) => onChange({ ...modalItem, clientEmail: e.target.value })} />
           </div>
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">
             <label htmlFor="invBizType">업태</label>
-            <input id="invBizType" className="input-box" value={modalItem.clientBizType || ''} onChange={(e) => onChange({ ...modalItem, clientBizType: e.target.value })} />
+            <ClearableInput id="invBizType" className="input-box" value={modalItem.clientBizType || ''} onChange={(e) => onChange({ ...modalItem, clientBizType: e.target.value })} />
           </div>
           <div className="form-group">
             <label htmlFor="invBizItem">종목</label>
-            <input id="invBizItem" className="input-box" value={modalItem.clientBizItem || ''} onChange={(e) => onChange({ ...modalItem, clientBizItem: e.target.value })} />
+            <ClearableInput id="invBizItem" className="input-box" value={modalItem.clientBizItem || ''} onChange={(e) => onChange({ ...modalItem, clientBizItem: e.target.value })} />
           </div>
         </div>
         <div className="form-group">
           <label htmlFor="invAddress">사업장 주소</label>
-          <input id="invAddress" className="input-box" value={modalItem.clientAddress || ''} onChange={(e) => onChange({ ...modalItem, clientAddress: e.target.value })} />
+          <ClearableInput id="invAddress" className="input-box" value={modalItem.clientAddress || ''} onChange={(e) => onChange({ ...modalItem, clientAddress: e.target.value })} />
         </div>
         <div className="form-group">
           <label htmlFor="invItem">품목</label>
-          <input id="invItem" className="input-box" value={modalItem.itemName || ''} onChange={(e) => onChange({ ...modalItem, itemName: e.target.value })} />
+          <ClearableInput id="invItem" className="input-box" value={modalItem.itemName || ''} onChange={(e) => onChange({ ...modalItem, itemName: e.target.value })} />
         </div>
         <div className="form-group">
           <label htmlFor="invDate">작성일자</label>
@@ -68,7 +69,7 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
         </div>
         <div className="form-group">
           <label htmlFor="invRemark">비고</label>
-          <input id="invRemark" className="input-box" value={modalItem.remark || ''} onChange={(e) => onChange({ ...modalItem, remark: e.target.value })} />
+          <ClearableInput id="invRemark" className="input-box" value={modalItem.remark || ''} onChange={(e) => onChange({ ...modalItem, remark: e.target.value })} />
         </div>
         <p className="car-type-hint">금액은 운행 일지 세부 입력에서 자동 집계됩니다. 실제 발급은 홈택스에서 해 주세요.</p>
         <div className="modal-btns">
