@@ -10,8 +10,10 @@
   font-weight: 700;
 }
 
+/* 좌우 4px = .form-group label 여백과 줄 맞춤 */
 .car-settlement-mode-guide {
   margin: 7px 0 12px;
+  padding: 0 4px;
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   line-height: 1.45;

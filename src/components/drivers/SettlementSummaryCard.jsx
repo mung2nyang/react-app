@@ -34,6 +34,9 @@ export default function SettlementSummaryCard({
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const breakdown = getDriverSettlementBreakdown(detail, detail?.car)
+  // 기사차량 설정에서 켠 공제만 줄로 보인다(근로자 산재는 차주 전액이라 기사 몫 줄 없음).
+  const showInsurance = !!detail?.car?.insuranceOn && detail.car.driverIncomeType !== 'employee'
+  const showWithholding = !!detail?.car?.withholdingOn
   return (
     <section className="tax-invoice-summary" id="linkedDriverSettlementSummary">
       <div className="date-navigator" style={{ marginBottom: 12 }}>
@@ -61,8 +64,8 @@ export default function SettlementSummaryCard({
       <div className="summary-title"><span>기사 정산</span><span>{detail?.tripCount || 0}건</span></div>
       <div className="summary-row"><span>총 운송료</span><span className="summary-value">{formatWon(breakdown.totalFare)}</span></div>
       <div className="summary-row"><span>기사 정산금</span><span className="summary-value">{formatWon(breakdown.settlementAmount)}</span></div>
-      <div className="summary-row"><span>산재보험 (기사 몫)</span><span className="summary-value">{deductionWon(breakdown.insuranceDriverShare)}</span></div>
-      <div className="summary-row"><span>원천징수 (3.3%)</span><span className="summary-value">{deductionWon(breakdown.withholding)}</span></div>
+      {showInsurance && <div className="summary-row"><span>산재보험 (기사 몫)</span><span className="summary-value">{deductionWon(breakdown.insuranceDriverShare)}</span></div>}
+      {showWithholding && <div className="summary-row"><span>원천징수 (3.3%)</span><span className="summary-value">{deductionWon(breakdown.withholding)}</span></div>}
       <div className="summary-row total"><span>최종 실수령 정산액</span><span className="summary-value">{formatWon(breakdown.driverNet)}</span></div>
     </section>
   )

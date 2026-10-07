@@ -99,7 +99,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
   }, [ctx.notFound, ctx.mode, ctx.car, dayData, monthKey, link, carOrEmpty, plate, settings])
 
   const invoice = useMemo(() => {
-    if (!detail) return { groups: [], unassignedCount: 0 }
+    if (!detail) return { groups: [], unassignedCount: 0, unassignedTrips: [] }
     return getLinkedDriverClientInvoiceGroups(detail.trips, carOrEmpty, settings)
   }, [detail, carOrEmpty, settings])
 

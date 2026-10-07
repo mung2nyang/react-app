@@ -17,6 +17,7 @@ import MonthNavigator from './documents/MonthNavigator.jsx'
 import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'
 import ReportShareModal from './ReportShareModal.jsx'
+import ConfirmModal from './ConfirmModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import './report/report.css'
 
@@ -37,6 +38,7 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
   const [savingPdf, setSavingPdf] = useState(false)
   const [savingImage, setSavingImage] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [confirmType, setConfirmType] = useState(/** @type {'pdf'|'image'|null} */ (null))
   const [viewMode, setViewMode] = useState(/** @type {'summary'|'detail'} */ ('summary'))
   const [clientFilter, setClientFilter] = useState('ALL')
   const [pickerOpen, setPickerOpen] = useState(false)
@@ -189,10 +191,10 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
 
       <div className="doc-action-card">
         <div className="report-pdf-actions">
-          <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={handleDownloadPdf}>
+          <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={() => setConfirmType('pdf')}>
             {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
           </button>
-          <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={handleDownloadImage}>
+          <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={() => setConfirmType('image')}>
             {savingImage ? '이미지 저장 중…' : '이미지 저장'}
           </button>
           <button type="button" className="theme-toggle-btn" onClick={() => setShareOpen(true)}>공유</button>
@@ -207,6 +209,14 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
         onConfirm={confirmDetailPicker}
         onClose={() => setPickerOpen(false)}
       />
+      {confirmType && (
+        <ConfirmModal
+          title={confirmType === 'pdf' ? 'PDF 저장' : '이미지 저장'}
+          message={`${confirmType === 'pdf' ? 'PDF' : '이미지'}로 저장하시겠습니까?`}
+          onCancel={() => setConfirmType(null)}
+          onConfirm={() => { setConfirmType(null); void (confirmType === 'pdf' ? handleDownloadPdf() : handleDownloadImage()) }}
+        />
+      )}
       {shareOpen && (
         <ReportShareModal
           exportRef={exportRef}

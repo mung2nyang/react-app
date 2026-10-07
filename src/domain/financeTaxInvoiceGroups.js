@@ -157,9 +157,10 @@ export function getLinkedDriverClientInvoiceGroups(trips, car, ownerSettings) {
   const supplier = /** @type {SupplierIdentity} */ (getVehicleSupplierIdentity(car, ownerSettings))
   /** @type {Record<string, { clientName: string, count: number, supplyAmount: number, taxAmount: number, trips: Array<DriverTrip> }>} */
   const grouped = {}
-  let unassignedCount = 0
+  /** @type {Array<DriverTrip>} 거래처 미지정 운행 — 계산서 대상 아님, 화면에 목록으로만 */
+  const unassignedTrips = []
   trips.filter((t) => t.type === 'call').forEach((trip) => {
-    if (!trip.client) { unassignedCount += 1; return }
+    if (!trip.client) { unassignedTrips.push(trip); return }
     if (trip.fare <= 0) return
     const key = trip.client
     if (!grouped[key]) grouped[key] = { clientName: trip.client, count: 0, supplyAmount: 0, taxAmount: 0, trips: [] }
@@ -169,5 +170,5 @@ export function getLinkedDriverClientInvoiceGroups(trips, car, ownerSettings) {
     grouped[key].trips.push(trip)
   })
   const groups = Object.values(grouped).map((g) => ({ ...g, totalAmount: g.supplyAmount + g.taxAmount, supplierBiz: supplier.biz, vehicleLabel: supplier.carLabel }))
-  return { groups, unassignedCount }
+  return { groups, unassignedCount: unassignedTrips.length, unassignedTrips }
 }

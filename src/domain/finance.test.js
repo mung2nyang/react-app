@@ -6,6 +6,7 @@ import {
   calculateDriverVehicleCommission,
   getCallDetailCommissionAmount,
   getDetailPaymentSummary,
+  getLinkedDriverClientInvoiceGroups,
   getLinkedDriverSettlementDetail,
   getMonthlyDriverTotals,
   getMonthlyFareRevenue,
@@ -395,5 +396,19 @@ describe('서브차량 스코프 고정노선 — 차주 집계', () => {
     assert.equal(findGroup(scoped, `한진__${SUB_PLATE}`), undefined)
     const base = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK)
     assert.equal(findGroup(base, `한진__${SUB_PLATE}`)?.supplyAmount, 250000)
+  })
+})
+
+describe('getLinkedDriverClientInvoiceGroups — 거래처 미지정 운행', () => {
+  test('거래처 없는 운행은 계산서 묶음에서 빠지고 목록(unassignedTrips)으로 따로 나온다', () => {
+    const trips = [
+      { type: 'call', dateKey: '2026-05-02', client: '한진', loadLoc: '부산', unloadLoc: '서울', fare: 100000, vatExempt: false },
+      { type: 'call', dateKey: '2026-05-03', client: '', loadLoc: '인천', unloadLoc: '대전', fare: 70000, vatExempt: false },
+      { type: 'fixed', dateKey: '2026-05-04', client: '', loadLoc: '', unloadLoc: '', fare: 50000, vatExempt: false, fixedCount: 1 },
+    ]
+    const result = getLinkedDriverClientInvoiceGroups(trips, { number: '서울12가3456' }, {})
+    assert.deepEqual(result.groups.map((g) => [g.clientName, g.totalAmount]), [['한진', 110000]])
+    assert.equal(result.unassignedCount, 1, '고정노선은 미지정으로 세지 않는다')
+    assert.deepEqual(result.unassignedTrips.map((t) => [t.dateKey, t.fare]), [['2026-05-03', 70000]])
   })
 })

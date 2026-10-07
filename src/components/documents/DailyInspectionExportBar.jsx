@@ -6,6 +6,7 @@ import { inspectionFileBaseName } from '../../domain/dailyInspectionMonth.js'
 import { createReportImageFile, createReportPdfFile } from '../../lib/reportExport.js'
 import DailyInspectionLegalForm from './DailyInspectionLegalForm.jsx'
 import DailyInspectionShareModal from './DailyInspectionShareModal.jsx'
+import ConfirmModal from '../ConfirmModal.jsx'
 
 /** @param {File} file */
 function downloadFile(file) {
@@ -29,6 +30,7 @@ export default function DailyInspectionExportBar({ form, ready, showToast }) {
   const formRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const [saving, setSaving] = useState(/** @type {'pdf'|'image'|null} */ (null))
   const [shareOpen, setShareOpen] = useState(false)
+  const [confirmType, setConfirmType] = useState(/** @type {'pdf'|'image'|null} */ (null))
   const baseName = inspectionFileBaseName(form.year, form.month, form.head.carNumber)
 
   /** @param {'pdf'|'image'} type */
@@ -57,10 +59,10 @@ export default function DailyInspectionExportBar({ form, ready, showToast }) {
     <>
       <div className="doc-action-card">
         <div className="report-pdf-actions">
-          <button type="button" className="theme-toggle-btn" disabled={!ready || saving !== null} onClick={() => save('pdf')}>
+          <button type="button" className="theme-toggle-btn" disabled={!ready || saving !== null} onClick={() => setConfirmType('pdf')}>
             {saving === 'pdf' ? 'PDF 저장 중…' : 'PDF 다운로드'}
           </button>
-          <button type="button" className="theme-toggle-btn" disabled={!ready || saving !== null} onClick={() => save('image')}>
+          <button type="button" className="theme-toggle-btn" disabled={!ready || saving !== null} onClick={() => setConfirmType('image')}>
             {saving === 'image' ? '이미지 저장 중…' : '이미지 저장'}
           </button>
           <button type="button" className="theme-toggle-btn" disabled={!ready} onClick={() => setShareOpen(true)}>공유</button>
@@ -71,6 +73,14 @@ export default function DailyInspectionExportBar({ form, ready, showToast }) {
         <div className="legal-form-offscreen" aria-hidden="true">
           <div ref={formRef}><DailyInspectionLegalForm {...form} /></div>
         </div>
+      )}
+      {confirmType && (
+        <ConfirmModal
+          title={confirmType === 'pdf' ? 'PDF 저장' : '이미지 저장'}
+          message={`${confirmType === 'pdf' ? 'PDF' : '이미지'}로 저장하시겠습니까?`}
+          onCancel={() => setConfirmType(null)}
+          onConfirm={() => { setConfirmType(null); void save(confirmType) }}
+        />
       )}
       {shareOpen && <DailyInspectionShareModal month={form.month} buildFile={buildFile} onClose={() => setShareOpen(false)} showToast={showToast} />}
     </>

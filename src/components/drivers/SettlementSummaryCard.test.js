@@ -47,15 +47,28 @@ test('매출제 20% 사업소득자(둘 다 ON): 운송료 1,000,000 → 정산�
   } finally { await view.cleanup() }
 })
 
-test('월급제 4대보험 근로자(둘 다 OFF): 월급 그대로, 기사 공제 0', async () => {
+test('월급제 둘 다 OFF: 산재·원천징수 줄이 없고 월급 그대로', async () => {
   const car = { number: '12가3456', driverPayMode: 'salary', driverSalaryAmount: '2000000', driverIncomeType: 'employee', insuranceOn: false, withholdingOn: false }
   const view = await render({ tripCount: 1, totalFare: 500000, commissionAmount: 0, car })
   try {
     assert.equal(view.rows['기사 정산금'], '2,000,000원')
-    assert.equal(view.rows['산재보험 (기사 몫)'], '0원')
-    assert.equal(view.rows['원천징수 (3.3%)'], '0원')
+    assert.equal('산재보험 (기사 몫)' in view.rows, false)
+    assert.equal('원천징수 (3.3%)' in view.rows, false)
     assert.equal(view.rows['최종 실수령 정산액'], '2,000,000원')
   } finally { await view.cleanup() }
+})
+
+test('켠 공제만 줄로 보인다: 원천징수만 ON이면 원천징수 줄만, 근로자는 산재 ON이어도 기사 몫 줄 없음', async () => {
+  const onlyWithholding = await render({ tripCount: 1, totalFare: 1000000, commissionAmount: 200000, car: { number: 'a', insuranceOn: false, withholdingOn: true } })
+  try {
+    assert.equal('산재보험 (기사 몫)' in onlyWithholding.rows, false)
+    assert.equal(onlyWithholding.rows['원천징수 (3.3%)'], '-6,600원')
+  } finally { await onlyWithholding.cleanup() }
+  const employee = await render({ tripCount: 1, totalFare: 1000000, commissionAmount: 200000, car: { number: 'a', driverIncomeType: 'employee', insuranceOn: true, withholdingOn: false } })
+  try {
+    assert.equal('산재보험 (기사 몫)' in employee.rows, false)
+    assert.equal(employee.rows['최종 실수령 정산액'], '200,000원')
+  } finally { await employee.cleanup() }
 })
 
 test('detail이 없으면 전부 0원으로 안전하게 그린다', async () => {
