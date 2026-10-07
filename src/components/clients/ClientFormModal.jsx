@@ -3,6 +3,7 @@ import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../.
 import { needsPaymentTermValue, PAYMENT_TERMS } from '../../lib/clients.js'
 import AppDropdown from '../shared/AppDropdown.jsx'
 import BizNumberHint from '../shared/BizNumberHint.jsx'
+import ClearableInput from '../shared/ClearableInput.jsx'
 import ClientTradeFields from './ClientTradeFields.jsx'
 import './client-management.css'
 
@@ -30,44 +31,44 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
         </div>
         <div className="form-group">
           <label htmlFor="clientCompanyName">업체명 (거래처명)</label>
-          <input id="clientCompanyName" className="input-box" placeholder="업체명 입력" value={draft.companyName || ''} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} />
+          <ClearableInput id="clientCompanyName" className="input-box" placeholder="업체명 입력" value={draft.companyName || ''} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} />
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">
             <label htmlFor="clientManagerName">이름 (담당자)</label>
-            <input id="clientManagerName" className="input-box" placeholder="담당자 이름 입력" value={draft.managerName || ''} onChange={(e) => setDraft({ ...draft, managerName: e.target.value })} />
+            <ClearableInput id="clientManagerName" className="input-box" placeholder="담당자 이름 입력" value={draft.managerName || ''} onChange={(e) => setDraft({ ...draft, managerName: e.target.value })} />
           </div>
           <div className="form-group">
             <label htmlFor="clientTaxRepresentative">대표자</label>
-            <input id="clientTaxRepresentative" className="input-box" placeholder="대표자명" value={draft.taxRepresentative || ''} onChange={(e) => setDraft({ ...draft, taxRepresentative: e.target.value })} />
+            <ClearableInput id="clientTaxRepresentative" className="input-box" placeholder="대표자명" value={draft.taxRepresentative || ''} onChange={(e) => setDraft({ ...draft, taxRepresentative: e.target.value })} />
           </div>
         </div>
         <div className="form-group">
           <label htmlFor="clientPhone">연락처</label>
-          <input id="clientPhone" className="input-box" type="tel" placeholder="연락처 입력" value={draft.phone || ''} onChange={(e) => setDraft({ ...draft, phone: formatPhoneNumber(e.target.value) })} />
+          <ClearableInput id="clientPhone" className="input-box" type="tel" placeholder="연락처 입력" value={draft.phone || ''} onChange={(e) => setDraft({ ...draft, phone: formatPhoneNumber(e.target.value) })} />
         </div>
         <div className="form-group">
           <label htmlFor="clientBizNumber">사업자 번호</label>
-          <input id="clientBizNumber" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(draft.bizNumber || '')} onChange={(e) => setDraft({ ...draft, bizNumber: formatBizNumber(e.target.value) })} />
+          <ClearableInput id="clientBizNumber" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(draft.bizNumber || '')} onChange={(e) => setDraft({ ...draft, bizNumber: formatBizNumber(e.target.value) })} />
           <BizNumberHint value={draft.bizNumber} />
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">
             <label htmlFor="clientTaxBizType">업태</label>
-            <input id="clientTaxBizType" className="input-box" placeholder="예: 운수업" value={draft.taxBizType || ''} onChange={(e) => setDraft({ ...draft, taxBizType: e.target.value })} />
+            <ClearableInput id="clientTaxBizType" className="input-box" placeholder="예: 운수업" value={draft.taxBizType || ''} onChange={(e) => setDraft({ ...draft, taxBizType: e.target.value })} />
           </div>
           <div className="form-group">
             <label htmlFor="clientTaxBizItem">종목</label>
-            <input id="clientTaxBizItem" className="input-box" placeholder="예: 화물운송" value={draft.taxBizItem || ''} onChange={(e) => setDraft({ ...draft, taxBizItem: e.target.value })} />
+            <ClearableInput id="clientTaxBizItem" className="input-box" placeholder="예: 화물운송" value={draft.taxBizItem || ''} onChange={(e) => setDraft({ ...draft, taxBizItem: e.target.value })} />
           </div>
         </div>
         <div className="form-group">
           <label htmlFor="clientTaxAddress">사업장 주소</label>
-          <input id="clientTaxAddress" className="input-box" placeholder="사업장 주소" value={draft.taxAddress || ''} onChange={(e) => setDraft({ ...draft, taxAddress: e.target.value })} />
+          <ClearableInput id="clientTaxAddress" className="input-box" placeholder="사업장 주소" value={draft.taxAddress || ''} onChange={(e) => setDraft({ ...draft, taxAddress: e.target.value })} />
         </div>
         <div className="form-group">
           <label htmlFor="clientTaxEmail">이메일</label>
-          <input id="clientTaxEmail" className="input-box" type="email" placeholder="이메일" value={draft.taxEmail || ''} onChange={(e) => setDraft({ ...draft, taxEmail: e.target.value })} />
+          <ClearableInput id="clientTaxEmail" className="input-box" type="email" placeholder="이메일" value={draft.taxEmail || ''} onChange={(e) => setDraft({ ...draft, taxEmail: e.target.value })} />
         </div>
         <div className="form-group">
           <label>결제 주기</label>

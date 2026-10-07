@@ -35,6 +35,21 @@ export default function DailyInspectionModal({ title, record, inspectorName, onC
     setMode('input')
   }
 
+  /** 같은 버튼을 다시 누르면 선택 취소. @param {string} key @param {'good'|'bad'} result */
+  function toggleItem(key, result) {
+    const next = { ...items }
+    if (next[key] === result) delete next[key]
+    else next[key] = result
+    setItems(next)
+  }
+
+  /** 전부 양호인 상태에서 다시 누르면 전부 선택 취소. */
+  function toggleAllGood() {
+    const all = allGoodItems()
+    const isAllGood = Object.keys(all).every((key) => items[key] === 'good')
+    setItems(isAllGood ? {} : all)
+  }
+
   function cancel() {
     if (fromView) { setMode('view'); setFromView(false); return }
     onClose()
@@ -70,7 +85,7 @@ export default function DailyInspectionModal({ title, record, inspectorName, onC
               <span className="di-badge">{section.no}</span>
               <h3>{section.title}</h3>
               {editing && index === 0 && (
-                <button type="button" className="di-all-good" onClick={() => setItems(allGoodItems())}>모두 양호</button>
+                <button type="button" className="di-all-good" onClick={toggleAllGood}>모두 양호</button>
               )}
             </div>
             {section.items.map((item) => {
@@ -86,7 +101,7 @@ export default function DailyInspectionModal({ title, record, inspectorName, onC
                           type="button"
                           className={`di-choice ${result}${value === result ? ' is-selected' : ''}`}
                           aria-pressed={value === result}
-                          onClick={() => setItems({ ...items, [item.key]: result })}
+                          onClick={() => toggleItem(item.key, result)}
                         >
                           {INSPECTION_RESULT_LABEL[result]}
                         </button>
