@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { assetPath } from '../../lib/assetPath.js'
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
+import ClearableInput from '../shared/ClearableInput.jsx'
 
 const BANNER = assetPath('/images/banner_image.png')
 
@@ -43,7 +44,7 @@ export default function WelcomeProfileView({ initialName = '', onSubmit }) {
         <div className="auth-form-fields">
           <div className="auth-field">
             <label htmlFor="welcomeName">이름</label>
-            <input
+            <ClearableInput
               id="welcomeName"
               className="auth-input-box"
               placeholder="이름을 입력하세요"

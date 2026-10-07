@@ -5,11 +5,13 @@
   width: 100%;
 }
 
-.clearable-input .input-box {
+.clearable-input .input-box,
+.clearable-input .auth-input-box {
   text-align: left;
 }
 
-.clearable-input.has-clear .input-box {
+.clearable-input.has-clear .input-box,
+.clearable-input.has-clear .auth-input-box {
   padding-right: 44px;
 }
 

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { carToBusinessForm } from '../../domain/carBusinessInfo.js'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../domain/formatPhone.js'
 import BizNumberHint from '../shared/BizNumberHint.jsx'
+import ClearableInput from '../shared/ClearableInput.jsx'
 import { requestCarBusinessInfoSave } from '../../lib/vehicleMutations.js'
 import { getCloudUserId } from '../../lib/cloudSession.js'
 import './car-business-info.css'
@@ -24,7 +25,7 @@ function Field({ id, label, value, onChange, inputMode, placeholder, hint }) {
   return (
     <div className="form-group">
       <label htmlFor={id}>{label}</label>
-      <input
+      <ClearableInput
         id={id}
         className="input-box"
         inputMode={/** @type {'text'|'numeric'|undefined} */ (inputMode)}

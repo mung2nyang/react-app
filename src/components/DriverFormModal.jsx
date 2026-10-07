@@ -4,6 +4,7 @@
 import { buildDriverInviteSmsHref } from '../lib/driverInviteSms.js'
 import { formatInviteCode, generateInviteCode } from '../lib/drivers.js'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
+import ClearableInput from './shared/ClearableInput.jsx'
 import TemporalInput from './shared/TemporalInput.jsx'
 import './drivers/driver-connection.css'
 
@@ -49,11 +50,11 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         <div className="modal-title">{editingId ? '초대 수정' : '기사 초대'}</div>
         <div className="form-group">
           <label htmlFor="drvName">기사 이름</label>
-          <input id="drvName" className="input-box" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+          <ClearableInput id="drvName" className="input-box" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
         </div>
         <div className="form-group">
           <label htmlFor="drvPhone">기사 전화번호</label>
-          <input id="drvPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: formatPhoneNumber(e.target.value) })} />
+          <ClearableInput id="drvPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: formatPhoneNumber(e.target.value) })} />
         </div>
         <div className="form-group">
           <label htmlFor="drvCode">초대 코드</label>
@@ -71,7 +72,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         </div>
         <div className="form-group">
           <label htmlFor="drvCar">할당 차량</label>
-          <input id="drvCar" className="input-box driver-car-input" list="drvCarOptions" placeholder="차량번호" value={draft.vehicleNumber} onChange={(e) => setDraft({ ...draft, vehicleNumber: e.target.value })} />
+          <ClearableInput id="drvCar" className="input-box driver-car-input" list="drvCarOptions" placeholder="차량번호" value={draft.vehicleNumber} onChange={(e) => setDraft({ ...draft, vehicleNumber: e.target.value })} />
           <datalist id="drvCarOptions">
             {assignableCars.map((car, index) => (
               <option key={String(car.id || car.number || `car-${index}`)} value={car.number} />

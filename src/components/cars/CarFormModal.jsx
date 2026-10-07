@@ -3,6 +3,7 @@ import { formatPhoneNumber, tonnageDigits, tonnageValue } from '../../lib/format
 import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
 import CarDriverIncomeFields from './CarDriverIncomeFields.jsx'
+import ClearableInput from '../shared/ClearableInput.jsx'
 
 /**
  * @typedef {Object} CarFormDraft
@@ -80,7 +81,7 @@ export default function CarFormModal({
         <div className="personal-inline-fields">
           <div className="form-group">
             <label htmlFor="newCarNumber">차량번호</label>
-            <input id="newCarNumber" className="input-box" placeholder="12가 3456" value={draft.number} onChange={(e) => setDraft({ ...draft, number: e.target.value })} />
+            <ClearableInput id="newCarNumber" className="input-box" placeholder="12가 3456" value={draft.number} onChange={(e) => setDraft({ ...draft, number: e.target.value })} />
           </div>
           <div className="form-group">
             <label htmlFor="newCarTonnage">차량 톤수</label>
@@ -94,11 +95,11 @@ export default function CarFormModal({
           <>
             <div className="form-group">
               <label htmlFor="newDriverName">기사명</label>
-              <input id="newDriverName" className="input-box" placeholder="기사명을 입력하세요" value={draft.driverName} onChange={(e) => setDraft({ ...draft, driverName: e.target.value })} />
+              <ClearableInput id="newDriverName" className="input-box" placeholder="기사명을 입력하세요" value={draft.driverName} onChange={(e) => setDraft({ ...draft, driverName: e.target.value })} />
             </div>
             <div className="form-group">
               <label htmlFor="newUserPhone">연락처</label>
-              <input id="newUserPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.driverPhone} onChange={(e) => setDraft({ ...draft, driverPhone: formatPhoneNumber(e.target.value) })} />
+              <ClearableInput id="newUserPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.driverPhone} onChange={(e) => setDraft({ ...draft, driverPhone: formatPhoneNumber(e.target.value) })} />
             </div>
             <hr className="car-modal-divider" />
             <div className="form-group">

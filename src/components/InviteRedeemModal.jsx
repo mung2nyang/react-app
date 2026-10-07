@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { redeemDriverInviteCode } from '../lib/driverLinkRpc.js'
 import { buildCloudAppSession, ownerKeyFromSession } from '../app/boot.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
+import ClearableInput from './shared/ClearableInput.jsx'
 import './InviteRedeemModal.css'
 
 /**
@@ -49,7 +50,7 @@ export default function InviteRedeemModal({ session, showToast, onClose, onLinke
         </p>
         <div className="form-group">
           <label htmlFor="driverInviteCode">초대코드</label>
-          <input
+          <ClearableInput
             id="driverInviteCode"
             className="input-box"
             placeholder="초대코드"
