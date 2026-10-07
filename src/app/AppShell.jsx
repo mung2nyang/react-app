@@ -15,6 +15,7 @@ import { savePracticeSettings } from '../lib/practiceSettings.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import AppShellRoutes from './AppShellRoutes.jsx'
+import useBackToExit from './useBackToExit.js'
 import { withFromLogState } from './fromLogNavigation.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
 
@@ -74,6 +75,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifTick, setNotifTick] = useState(0)
   useEffect(() => { preloadSideMenuBanner() }, [])
+  useBackToExit(showToast)
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const settings = useOwnerSettings(ownerKey)
