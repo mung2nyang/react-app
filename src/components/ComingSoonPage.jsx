@@ -10,7 +10,7 @@ export default function ComingSoonPage({ title, onBack }) {
   return (
     <div className="page coming-soon-page">
       <PageHeader title={title} onBack={onBack} />
-      <p className="empty-state">이 화면은 다음에 옮깁니다.</p>
+      <p className="empty-state">준비 중인 화면입니다.</p>
     </div>
   )
 }

@@ -21,7 +21,6 @@ export default function NotificationPanel({ open, items, onClose, onOpenItem, on
         <div className="notification-panel-header">
           <div>
             <h2>알림</h2>
-            <p>확인이 필요한 알림 내역입니다.</p>
           </div>
           <button type="button" className="icon-btn" title="알림 닫기" onClick={onClose}>
             <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

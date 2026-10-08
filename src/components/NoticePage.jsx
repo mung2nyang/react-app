@@ -3,23 +3,9 @@ import { useState } from 'react'
 import PageHeader from './PageHeader.jsx'
 import './notice.css'
 
-const NOTICES = [
-  {
-    title: '[필독] 서비스 이용 안내',
-    date: '2026.08.11',
-    body: '더 편리한 운행 기록을 위해 고객센터 메뉴가 새롭게 추가되었습니다.',
-  },
-  {
-    title: '데이터 백업 권장 안내',
-    date: '2026.08.05',
-    body: '중요한 운행 기록은 앱 설정의 백업 기능을 이용해 정기적으로 보관해 주세요.',
-  },
-  {
-    title: '최근 업데이트 안내',
-    date: '2026.08.01',
-    body: '사용성을 개선하고 일부 화면의 디자인을 다듬었습니다.',
-  },
-]
+// 실제 공지는 출시 때 추가(임시 글 삭제, 문구 정리 1).
+/** @type {Array<{ title: string, date: string, body: string }>} */
+const NOTICES = []
 
 /**
  * @param {Object} props
@@ -39,11 +25,7 @@ export default function NoticePage({ onBack, onOpenMenu }) {
       <PageHeader title="공지사항" onBack={onBack} onOpenMenu={onOpenMenu} />
 
       <section className="support-panel" aria-label="공지사항">
-        <div className="support-card">
-          <div className="support-card-label">NOTICE</div>
-          <h3>새로운 소식을 확인하세요</h3>
-          <p>서비스 업데이트와 중요한 안내를 가장 먼저 전해드립니다.</p>
-        </div>
+        {NOTICES.length === 0 && <div className="empty-state">등록된 공지사항이 없습니다.</div>}
         {NOTICES.map((notice, index) => (
           <button
             key={notice.title}

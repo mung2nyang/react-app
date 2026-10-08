@@ -16,15 +16,15 @@ import './customer-center.css'
 const FAQ_ITEMS = [
   {
     q: '운행 기록은 자동으로 저장되나요?',
-    a: '로그인하면 클라우드에 자동 저장됩니다. 게스트(비회원)로 쓰시면 이 기기에만 저장되므로, 브라우저 데이터를 지우거나 기기를 바꾸면 기록이 사라질 수 있어요. 게스트는 앱 설정의 백업으로 꼭 보관해 주세요.',
+    a: '로그인하면 서버에 자동 저장됩니다. 비회원은 이 휴대폰에만 저장되므로, 앱을 지우거나 휴대폰을 바꾸면 기록이 사라질 수 있습니다. 앱 설정의 백업으로 꼭 보관해 주세요.',
   },
   {
     q: '차량을 추가하거나 변경하려면 어떻게 하나요?',
-    a: '메뉴의 차량 관리에서 차량을 추가하고 기본 차량을 변경할 수 있습니다.',
+    a: '메뉴 → 차량 관리에서 차량을 추가하거나 수정할 수 있습니다.',
   },
   {
     q: '데이터를 다른 기기로 옮길 수 있나요?',
-    a: '로그인 계정이면 다른 기기에서 같은 계정으로 로그인하면 됩니다. 게스트 데이터는 앱 설정의 백업 파일 내보내기·가져오기로 옮길 수 있습니다.',
+    a: '로그인 계정은 다른 휴대폰에서 같은 계정으로 로그인하면 됩니다. 비회원 기록은 앱 설정의 [백업 저장하기]로 파일을 만든 뒤, 새 휴대폰에서 [백업 불러오기]로 옮길 수 있습니다.',
   },
   {
     q: '문의 답변은 어디서 확인하나요?',
@@ -193,7 +193,6 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
         <section className="support-panel" aria-label="FAQ">
           <div className="support-card">
             <h3>자주 묻는 질문</h3>
-            <p>궁금한 내용을 빠르게 확인해 보세요.</p>
           </div>
           {FAQ_ITEMS.map((item, index) => (
             <button key={item.q} type="button" className={`faq-item${openFaq === index ? ' open' : ''}`} onClick={() => toggleFaq(index)}>
