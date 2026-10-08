@@ -20,3 +20,23 @@ button:not(:disabled):active { scale: 0.97; }
 @media (prefers-reduced-motion: reduce) {
   button:not(:disabled):active { scale: none; opacity: 0.75; }
 }
+
+/* 로드맵 18-A 화면 들어옴 효과(usePageTransition.js가 이름을 붙였다 뗌) — 들어가는 화면만 움직인다. */
+.page-enter-forward { animation: page-enter-forward 0.2s ease-out; }
+.page-enter-back { animation: page-enter-back 0.2s ease-out; }
+.page-enter-fade { animation: page-enter-fade 0.15s ease-out; }
+/* 밀려 들어오는 동안 오른쪽 넘침을 잘라 둔다 — 모바일에서 화면이 넓어지면 스크롤이 맨 위로 튄다. */
+.main-app-container:has(> .page-transition.page-enter-forward) { overflow-x: clip; }
+@keyframes page-enter-forward { from { opacity: 0; transform: translateX(24px); } }
+@keyframes page-enter-back { from { opacity: 0; transform: translateX(-24px); } }
+@keyframes page-enter-fade { from { opacity: 0; } }
+
+/* 팝업: 배경은 서서히, 상자는 아래에서 살짝 올라옴 */
+.modal-overlay { animation: page-enter-fade 0.15s ease-out; }
+.modal-overlay .modal-content { animation: modal-rise 0.18s ease-out; }
+@keyframes modal-rise { from { opacity: 0; transform: translateY(12px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-forward, .page-enter-back, .page-enter-fade,
+  .modal-overlay, .modal-overlay .modal-content { animation: none; }
+}

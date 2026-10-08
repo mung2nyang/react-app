@@ -16,6 +16,7 @@ import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerD
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import AppShellRoutes from './AppShellRoutes.jsx'
 import useBackToExit from './useBackToExit.js'
+import usePageTransition from './usePageTransition.js'
 import { withFromLogState } from './fromLogNavigation.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
 
@@ -76,6 +77,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const [notifTick, setNotifTick] = useState(0)
   useEffect(() => { preloadSideMenuBanner() }, [])
   useBackToExit(showToast)
+  const pageBoxRef = usePageTransition()
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const settings = useOwnerSettings(ownerKey)
@@ -135,22 +137,24 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   return (
     <div className="container main-app-container">
       <HydrationRetryBanner showToast={showToast} />
-      <Suspense fallback={<LoadingScreen inline />}>
-        <AppShellRoutes
-          ownerKey={ownerKey}
-          session={session}
-          showToast={showToast}
-          bumpNotifTick={bumpNotifTick}
-          notifCount={notifications.length}
-          onOpenMenu={() => setMenuOpen(true)}
-          onOpenNotifs={() => { bumpNotifTick(); setNotifOpen(true) }}
-          onBackToAuth={onBackToAuth}
-          onGoAuth={onGoAuth}
-          onSessionUpdate={onSessionUpdate}
-          navigate={navigate}
-          goToPage={goToPage}
-        />
-      </Suspense>
+      <div ref={pageBoxRef} className="page-transition">
+        <Suspense fallback={<LoadingScreen inline />}>
+          <AppShellRoutes
+            ownerKey={ownerKey}
+            session={session}
+            showToast={showToast}
+            bumpNotifTick={bumpNotifTick}
+            notifCount={notifications.length}
+            onOpenMenu={() => setMenuOpen(true)}
+            onOpenNotifs={() => { bumpNotifTick(); setNotifOpen(true) }}
+            onBackToAuth={onBackToAuth}
+            onGoAuth={onGoAuth}
+            onSessionUpdate={onSessionUpdate}
+            navigate={navigate}
+            goToPage={goToPage}
+          />
+        </Suspense>
+      </div>
       <BottomNav active={activeNav} onSelect={selectTab} />
       <SideMenu
         open={menuOpen}
