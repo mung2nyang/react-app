@@ -35,7 +35,7 @@
   text-align: center;
 }
 
-.date-select:hover { background-color: var(--hover-bg); }
+@media (hover: hover) { .date-select:hover { background-color: var(--hover-bg); } }
 .date-select:focus { outline: none; }
 
 .arrow-btn {
@@ -62,9 +62,12 @@
   stroke-linejoin: round;
 }
 
-.arrow-btn:hover {
-  color: var(--text-color);
-  background-color: var(--hover-bg);
+/* 마우스 있는 기기에서만 — 휴대폰은 누른 뒤 색이 남음(로드맵 18-C) */
+@media (hover: hover) {
+  .arrow-btn:hover {
+    color: var(--text-color);
+    background-color: var(--hover-bg);
+  }
 }
 
 .settings-header {

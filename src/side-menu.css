@@ -118,8 +118,9 @@
   stroke-linejoin: round;
 }
 
-.side-menu .dropdown-item:hover {
-  background-color: var(--hover-bg);
+/* 마우스 있는 기기에서만 — 휴대폰은 누른 뒤 색이 남음(로드맵 18-C) */
+@media (hover: hover) {
+  .side-menu .dropdown-item:hover { background-color: var(--hover-bg); }
 }
 
 /* 로드맵 8: 메뉴가 열려 있는 동안 뒤 화면(문서) 스크롤을 잠그고, 회색 영역·메뉴 끝에서 스크롤이 뒤로 새지 않게 한다. */

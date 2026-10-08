@@ -76,7 +76,7 @@
   pointer-events: none;
 }
 
-.date-cell:hover:not(.empty):not(:disabled) { background-color: var(--hover-bg); }
+@media (hover: hover) { .date-cell:hover:not(.empty):not(:disabled) { background-color: var(--hover-bg); } }
 
 .work-badge,
 .off-badge,

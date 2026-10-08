@@ -114,10 +114,13 @@
   margin-bottom: 16px;
 }
 
-.top-notification-btn.icon-btn:hover,
-.top-menu-btn.icon-btn:hover {
-  background-color: var(--hover-bg);
-  color: var(--text-color);
+/* 마우스 있는 기기에서만 — 휴대폰은 누른 뒤 색이 남음(로드맵 18-C) */
+@media (hover: hover) {
+  .top-notification-btn.icon-btn:hover,
+  .top-menu-btn.icon-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+  }
 }
 
 /* 사업자번호 검증번호 불일치 안내(개인정보·기사 관리·거래처·세금계산서 공용) */

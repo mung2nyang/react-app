@@ -72,13 +72,16 @@
   font-weight: 700;
 }
 
-.action-icon-btn:hover {
-  background-color: var(--hover-bg);
-  color: var(--text-color);
-}
+/* 마우스 있는 기기에서만 — 휴대폰은 누른 뒤 색이 남음(로드맵 18-C) */
+@media (hover: hover) {
+  .action-icon-btn:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-color);
+  }
 
-.action-icon-btn.del:hover {
-  color: var(--sunday-color);
+  .action-icon-btn.del:hover {
+    color: var(--sunday-color);
+  }
 }
 
 .action-icon-btn svg {
