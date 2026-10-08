@@ -38,7 +38,8 @@ button, a, img { -webkit-user-select: none; user-select: none; -webkit-touch-cal
 .modal-overlay .modal-content { animation: modal-rise 0.26s cubic-bezier(0.2, 0.8, 0.2, 1); }
 @keyframes modal-rise { from { opacity: 0; transform: translateY(20px); } }
 
+/* 동작 줄이기 설정: 밀림·올라옴은 빼고 짧게 서서히만(멀미 없는 효과) — 화면이 툭 바뀌지 않게. */
 @media (prefers-reduced-motion: reduce) {
   .page-enter-forward, .page-enter-back, .page-enter-fade,
-  .modal-overlay, .modal-overlay .modal-content { animation: none; }
+  .modal-overlay, .modal-overlay .modal-content { animation: page-enter-fade 0.15s ease-out; }
 }

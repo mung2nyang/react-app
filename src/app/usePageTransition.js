@@ -32,15 +32,6 @@ export function decidePageTransition({ prev, next, navigationType }) {
   return 'fade'
 }
 
-/** 동작 줄이기 설정이면 효과 이름을 아예 안 붙인다(효과 끝남 신호가 안 와 이름이 남지 않게). */
-function prefersReducedMotion() {
-  try {
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  } catch {
-    return false
-  }
-}
-
 /** @returns {import('react').RefObject<HTMLDivElement | null>} 효과를 걸 겉 상자 */
 export default function usePageTransition() {
   const location = useLocation()
@@ -53,7 +44,7 @@ export default function usePageTransition() {
     const kind = decidePageTransition({ prev: prevRef.current, next, navigationType })
     prevRef.current = next
     const box = boxRef.current
-    if (!box || kind === 'none' || prefersReducedMotion()) return
+    if (!box || kind === 'none') return // 동작 줄이기 설정이면 CSS가 밀림 없이 서서히만 보여줌
     box.classList.remove(...ENTER_CLASSES)
     void box.offsetWidth // 같은 효과를 연달아 걸 때도 처음부터 다시 돌게
     box.classList.add(`page-enter-${kind}`)
