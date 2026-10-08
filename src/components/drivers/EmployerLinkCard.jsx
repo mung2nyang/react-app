@@ -11,7 +11,7 @@ import './driver-connection.css'
 
 /** @typedef {import('../../lib/outboxTypes.js').AppSession} AppSession */
 
-const HYDRATE_FAIL_TOAST = '연동은 해제됐지만 내 계정 데이터를 일부 못 불러왔습니다.'
+const HYDRATE_FAIL_TOAST = '연동은 해제됐지만 내 기록 일부를 불러오지 못했습니다.'
 
 /**
  * @param {{

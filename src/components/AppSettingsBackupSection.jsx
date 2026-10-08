@@ -72,7 +72,7 @@ export default function AppSettingsBackupSection({ showToast }) {
       try {
         parsed = JSON.parse(text.replace(/^\uFEFF/, ''))
       } catch {
-        showToast?.('파일 내용이 손상되었거나 JSON 파일이 아닙니다.')
+        showToast?.('백업 파일이 아니거나 파일이 손상되었습니다.')
         return
       }
       const res = applyGuestBackupData(parsed)

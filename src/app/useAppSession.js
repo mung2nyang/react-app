@@ -71,7 +71,7 @@ export function useAppSession() {
         setBootLinkFailed(true)
       } else if (restored) {
         clearGuestModePersisted()
-        const message = restored.hydrateError ? '로그인은 유지됐지만 클라우드 데이터를 일부 못 불러왔습니다.' : undefined
+        const message = restored.hydrateError ? '로그인은 됐지만 기록 일부를 불러오지 못했습니다.' : undefined
         if (restored.needsProfile) {
           // 구글 첫 로그인: 이름·전화번호부터 받는다(구글 로그인 G-2).
           setSession(restored.session)

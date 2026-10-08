@@ -28,7 +28,7 @@ export default function InviteRedeemModal({ session, showToast, onClose, onLinke
         await hydrateFromSupabase(session.userId, ownerKeyFromSession(next), { employedDriver: !!next.linkedOwnerId })
       } catch (error) {
         console.error(error)
-        showToast?.('연동은 됐지만 클라우드 데이터를 일부 못 불러왔습니다.')
+        showToast?.('연동은 됐지만 기록 일부를 불러오지 못했습니다.')
       }
       showToast?.('차주와 연동되었습니다.')
       onLinked(next)

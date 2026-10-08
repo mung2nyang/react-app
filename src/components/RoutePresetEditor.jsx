@@ -33,7 +33,7 @@ export default function RoutePresetEditor({ scope, settings, onPatch, showToast 
     <div className="setting-item fixed-route-preset-setting">
       <div className="run-count-preset-copy">
         <label>자주 다니는 노선 등록</label>
-        <p>부산→대구처럼 항상 같은 구간만 오간다면, 노선을 등록해 두고 일일운행에서 원탭으로 횟수를 기록하세요.</p>
+        <p>부산→대구처럼 항상 같은 구간만 오간다면, 노선을 등록해 두고 일일운행에서 한 번 눌러 횟수를 기록하세요.</p>
       </div>
       <div className="fixed-route-preset-list">
         {presets.length === 0 && <div className="fixed-route-preset-empty">등록된 노선이 없습니다.</div>}

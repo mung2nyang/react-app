@@ -47,10 +47,10 @@ export default function HydrationRetryBanner({ showToast }) {
     setRetrying(true)
     try {
       await retryHydrate()
-      showToast?.('클라우드 데이터를 다시 불러왔습니다.')
+      showToast?.('기록을 다시 불러왔습니다.')
     } catch (error) {
       console.error('[HydrationRetryBanner] 재시도 실패', error)
-      showToast?.('다시 시도했지만 아직 클라우드 데이터를 불러오지 못했습니다.')
+      showToast?.('다시 시도했지만 아직 불러오지 못했습니다.')
     } finally {
       setRetrying(false)
     }
@@ -58,9 +58,9 @@ export default function HydrationRetryBanner({ showToast }) {
 
   return (
     <div style={bannerStyle} role="alert">
-      <span>클라우드 데이터를 불러오지 못했습니다. 로컬 데이터로 계속 쓸 수 있어요.</span>
+      <span>서버에서 기록을 불러오지 못했습니다. 이 휴대폰에 있는 기록으로 계속 쓸 수 있습니다.</span>
       <button type="button" style={buttonStyle} onClick={handleRetry} disabled={retrying}>
-        {retrying ? '재시도 중...' : '다시 시도'}
+        {retrying ? '다시 시도하는 중…' : '다시 시도'}
       </button>
     </div>
   )

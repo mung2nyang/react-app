@@ -84,7 +84,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
 
       {locked && (
         <p id="settingsHydrationLockNotice" className="car-type-hint">
-          클라우드 동기화 중입니다. 잠시 후 다시 시도해 주세요.
+          서버에서 기록을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.
         </p>
       )}
 
