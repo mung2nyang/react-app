@@ -163,12 +163,13 @@ export async function restoreInvoices(ownerKey, picked) {
   }
 }
 
-/** @param {{ days: number, clients: number, expenses: number, invoices: number }} counts */
+/** @param {{ days: number, clients: number, expenses: number, invoices: number, inspections?: number }} counts */
 export function describeRestoreCounts(counts) {
   return [
     counts.days ? `일지 ${counts.days}일` : '',
     counts.clients ? `거래처 ${counts.clients}곳` : '',
     counts.expenses ? `지출 ${counts.expenses}건` : '',
     counts.invoices ? `세금계산서 ${counts.invoices}건` : '',
+    counts.inspections ? `점검표 ${counts.inspections}장` : '',
   ].filter(Boolean).join(' · ')
 }

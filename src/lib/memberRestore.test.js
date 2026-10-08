@@ -1,6 +1,6 @@
 // @ts-check
 // 회원 데이터 불러오기(22-A·B): 지금 없는 날짜만 더하고, 내 차량이 아니거나 연동 차량이면 건너뛰며, 잘못된 파일은 저장 0회.
-// 22-B: 저장 순서 거래처 → 일지 → 지출 → 계산서, 한 단계 실패하면 다음 단계 0회.
+// 22-B: 저장 순서 거래처 → 일지 → 지출 → 계산서, 한 단계 실패하면 다음 단계 0회. 22-C: 점검표는 맨 끝.
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
@@ -42,6 +42,12 @@ mock.module('./clientCloudSave.js', {
 mock.module('./expenses.js', {
   namedExports: { saveExpenses: async () => { order.push('expenses'); if (failStep.expenses) throw new Error('x') } },
 })
+mock.module('./dailyInspections.js', {
+  namedExports: {
+    fetchVehiclesDailyInspections: async () => ({}),
+    saveDailyInspection: async () => { order.push('inspections') },
+  },
+})
 mock.module('./invoices.js', {
   namedExports: { saveInvoices: async () => { order.push('invoices') } },
 })
@@ -59,7 +65,7 @@ mock.module('./dayLogCloudCommit.js', {
   },
 })
 
-const { applyMemberRestore, planMemberRestore } = await import('./memberRestore.js')
+const { addInspectionPicks, applyMemberRestore, planMemberRestore } = await import('./memberRestore.js')
 
 const MAIN = { id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'v-main' }
 const SUB = { id: 'c-sub', type: 'sub', number: '34나5678', supabaseId: 'v-sub' }
@@ -85,7 +91,7 @@ test('지금 없는 날짜만 고르고, 있는 날짜는 파일 내용이 달�
   assert.equal(plan.counts.days, 2)
   assert.equal(plan.skipped, 0)
   const res = await applyMemberRestore('o-1', plan)
-  assert.deepEqual(res, { ok: true, counts: { days: 2, clients: 0, expenses: 0, invoices: 0 }, toast: null })
+  assert.deepEqual(res, { ok: true, counts: { days: 2, clients: 0, expenses: 0, invoices: 0, inspections: 0 }, toast: null })
   assert.deepEqual(commits.map((c) => [c.logId, c.dateKeys]), [['main', ['2026-10-02']], ['34나5678', ['2026-10-03']]])
   assert.deepEqual(commits[0].nextData, { '2026-10-01': { fixedCount: 9 }, '2026-10-02': { fixedCount: 2 } }, '기존 날짜는 Store 값 그대로')
 })
@@ -159,7 +165,7 @@ test('중간에 실패하면 거기서 멈추고 성공한 날 수와 기존 안
     cloud: true, ok: false, partial: true, appliedDateKeys: dateKeys.slice(0, 1), failedDateKeys: dateKeys.slice(1), toast: '일부만 저장되었습니다.',
   })
   const res = await applyMemberRestore('o-1', plan)
-  assert.deepEqual(res, { ok: false, counts: { days: 1, clients: 0, expenses: 0, invoices: 0 }, toast: '일부만 저장되었습니다.' })
+  assert.deepEqual(res, { ok: false, counts: { days: 1, clients: 0, expenses: 0, invoices: 0, inspections: 0 }, toast: '일부만 저장되었습니다.' })
   assert.deepEqual(order, ['days'], '일지 실패 뒤 지출·계산서 0회')
   assert.equal(commits.length, 1, '두 번째 차량은 시도하지 않음')
 })
@@ -175,10 +181,10 @@ test('22-B: 거래처 → 일지 → 지출 → 계산서 순서로 저장하고
   reset()
   const plan = planMemberRestore('o-1', FILE_ALL)
   assert.ok(plan.ok)
-  assert.deepEqual(plan.counts, { days: 1, clients: 1, expenses: 1, invoices: 1 })
+  assert.deepEqual(plan.counts, { days: 1, clients: 1, expenses: 1, invoices: 1, inspections: 0 })
   const res = await applyMemberRestore('o-1', plan)
   assert.deepEqual(order, ['clients', 'days', 'expenses', 'invoices'])
-  assert.deepEqual(res, { ok: true, counts: { days: 1, clients: 1, expenses: 1, invoices: 1 }, toast: null })
+  assert.deepEqual(res, { ok: true, counts: { days: 1, clients: 1, expenses: 1, invoices: 1, inspections: 0 }, toast: null })
 })
 
 test('22-B: 거래처 저장이 실패하면 일지·지출·계산서는 0회', async () => {
@@ -199,7 +205,7 @@ test('22-B: 지출 저장이 실패하면 계산서는 0회, 앞 단계 개수�
   assert.ok(plan.ok)
   const res = await applyMemberRestore('o-1', plan)
   assert.deepEqual(order, ['clients', 'days', 'expenses'])
-  assert.deepEqual(res.counts, { days: 1, clients: 1, expenses: 0, invoices: 0 })
+  assert.deepEqual(res.counts, { days: 1, clients: 1, expenses: 0, invoices: 0, inspections: 0 })
   assert.equal(res.ok, false)
 })
 
@@ -215,7 +221,7 @@ test('22-D 연동 기사: 메인 칸 일지만 배정 차량(main)에 더하고,
   }
   const plan = planMemberRestore('o-1', file, { employed: true })
   assert.ok(plan.ok)
-  assert.deepEqual(plan.counts, { days: 1, clients: 0, expenses: 0, invoices: 0 })
+  assert.deepEqual(plan.counts, { days: 1, clients: 0, expenses: 0, invoices: 0, inspections: 0 })
   assert.equal(plan.skipped, 2, '다른 차량 칸 1 + 거래처 목록 1')
   const res = await applyMemberRestore('o-1', plan)
   assert.equal(res.ok, true)
@@ -244,4 +250,29 @@ test('22-D 연동 기사도 하루 기록이 하나라도 틀리면 저장 0회'
   const plan = planMemberRestore('o-1', { workData: { '2026-07-05': { fixedCount: -1 } } }, { employed: true })
   assert.equal(plan.ok, false)
   assert.equal(commits.length, 0)
+})
+
+test('22-C: 점검표는 계산서 다음 맨 끝에 저장하고 개수를 돌려준다', async () => {
+  reset()
+  const file = { ...FILE_ALL, dailyInspections: { main: { '2026-10-20': { items: { tire: 'good' }, actionNote: '', inspectorName: '김기사' } } } }
+  const planned = planMemberRestore('o-1', file)
+  assert.ok(planned.ok)
+  const plan = await addInspectionPicks('o-1', file, planned)
+  assert.ok(plan.ok)
+  assert.equal(plan.counts.inspections, 1)
+  const res = await applyMemberRestore('o-1', plan)
+  assert.deepEqual(order, ['clients', 'days', 'expenses', 'invoices', 'inspections'])
+  assert.deepEqual(res.counts, { days: 1, clients: 1, expenses: 1, invoices: 1, inspections: 1 })
+})
+
+test('22-C: 연동 기사 계정은 점검표를 고르지 않는다(일지만, 22-D와 같음)', async () => {
+  reset()
+  const file = { workLogs: { main: { '2026-10-21': { fixedCount: 1 } } }, dailyInspections: { main: { '2026-10-21': { items: {}, actionNote: '', inspectorName: '김기사' } } } }
+  const planned = planMemberRestore('o-1', file, { employed: true })
+  assert.ok(planned.ok)
+  const plan = await addInspectionPicks('o-1', file, planned, { employed: true })
+  assert.ok(plan.ok)
+  assert.equal(plan.counts.inspections, 0)
+  await applyMemberRestore('o-1', plan)
+  assert.ok(!order.includes('inspections'))
 })

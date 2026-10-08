@@ -3,7 +3,7 @@
 // 받아 둔 파일에서 지금 없는 일지·거래처·지출·세금계산서만 더하기(22-A·B, 덮어쓰기·삭제 없음).
 import { useRef, useState } from 'react'
 import { buildMemberBackupData, memberBackupBlockedReason } from '../lib/memberBackup.js'
-import { applyMemberRestore, planMemberRestore } from '../lib/memberRestore.js'
+import { addInspectionPicks, applyMemberRestore, planMemberRestore } from '../lib/memberRestore.js'
 import { describeRestoreCounts } from '../lib/memberRestoreRecords.js'
 
 /** @typedef {import('../lib/memberRestore.js').RestorePlan} RestorePlan */
@@ -73,7 +73,9 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast, employ
         showToast?.('파일 내용이 올바르지 않습니다.')
         return
       }
-      const next = planMemberRestore(ownerKey, parsed, { employed })
+      const planned = planMemberRestore(ownerKey, parsed, { employed })
+      setBusy(true)
+      const next = planned.ok ? await addInspectionPicks(ownerKey, parsed, planned, { employed }) : planned
       if (!next.ok) showToast?.(next.error)
       else if (!describeRestoreCounts(next.counts)) showToast?.('더할 기록이 없습니다. 파일의 기록이 모두 이미 있습니다.')
       else setPlan(next)
@@ -81,6 +83,7 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast, employ
       console.error('데이터 불러오기 파일 읽기 실패:', error)
       showToast?.('파일을 읽지 못했습니다.')
     } finally {
+      setBusy(false)
       input.value = ''
     }
   }

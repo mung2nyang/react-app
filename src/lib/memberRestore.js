@@ -1,6 +1,7 @@
 // @ts-check
-// 회원 데이터 불러오기(22-A·B): 다운로드 파일에서 지금 없는 것만 더한다(덮어쓰기·삭제 없음). 22-D 연동 기사는 일지만.
-// 일지는 여기서, 거래처·지출·세금계산서는 memberRestoreRecords.js. 저장 순서는 거래처 → 일지 → 지출 → 계산서.
+// 회원 데이터 불러오기(22-A·B·C): 다운로드 파일에서 지금 없는 것만 더한다(덮어쓰기·삭제 없음). 22-D 연동 기사는 일지만.
+// 일지는 여기서, 거래처·지출·세금계산서는 memberRestoreRecords.js, 점검표는 memberRestoreInspections.js.
+// 저장 순서는 거래처 → 일지 → 지출 → 계산서 → 점검표.
 // 하루 기록의 주유·정비·기타 칸은 지출 기록으로 따로 저장되므로 일지에서는 뺀다.
 import { readOwnerWorkDataByLogId } from '../store/ownerDataHooks.js'
 import { parsePersistedWorkDataMap } from '../store/persistDayRecord.js'
@@ -8,17 +9,18 @@ import { isPlainObject } from '../store/persistDomainRecords.js'
 import { commitMainDayLogMapToCloud } from './dayLogCloudCommit.js'
 import { memberBackupBlockedReason } from './memberBackup.js'
 import { isOwnUnlinkedCar, pickMemberRecords, restoreClients, restoreExpenses, restoreInvoices } from './memberRestoreRecords.js'
+import { pickInspections, restoreInspections } from './memberRestoreInspections.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {{ logId: string, records: Record<string, DayRecordLike> }} RestoreTarget */
-/** @typedef {{ days: number, clients: number, expenses: number, invoices: number }} RestoreCounts */
+/** @typedef {{ days: number, clients: number, expenses: number, invoices: number, inspections: number }} RestoreCounts */
 /** @typedef {{ ok: true, targets: RestoreTarget[], records: import('./memberRestoreRecords.js').RecordPicks,
- *   counts: RestoreCounts, skipped: number }} RestorePlan */
+ *   inspections: import('./memberRestoreInspections.js').InspectionPick[], counts: RestoreCounts, skipped: number }} RestorePlan */
 
 const INVALID_FILE = '파일 내용이 올바르지 않습니다.'
 const EXPENSE_KEYS = ['fuelItems', 'maintItems', 'miscItems']
-const KNOWN_KEYS = ['workLogs', 'workData', 'clients', 'expenses', 'invoices']
+const KNOWN_KEYS = ['workLogs', 'workData', 'clients', 'expenses', 'invoices', 'dailyInspections']
 
 /**
  * 파일의 일지를 차량 칸(main·서브 번호)별로 꺼낸다. 하나라도 모양이 틀리면 null.
@@ -105,8 +107,20 @@ export function planMemberRestore(ownerKey, parsed, options = {}) {
     targets.push({ logId, records: picked })
     dayCount += count
   }
-  const counts = { days: dayCount, clients: records.clients.length, expenses: records.expenses.length, invoices: records.invoices.length }
-  return { ok: true, targets, records, counts, skipped: skippedCars + records.skippedItems }
+  const counts = { days: dayCount, clients: records.clients.length, expenses: records.expenses.length, invoices: records.invoices.length, inspections: 0 }
+  return { ok: true, targets, records, inspections: [], counts, skipped: skippedCars + records.skippedItems }
+}
+
+/**
+ * 22-C: 서버에서 점검표를 읽어 없는 날짜만 고른 결과를 계획에 더한다(연동 기사는 부르지 않음).
+ * @param {string} ownerKey @param {JsonValue} parsed @param {RestorePlan} plan @param {{ employed?: boolean }} [options]
+ * @returns {Promise<RestorePlan | { ok: false, error: string }>}
+ */
+export async function addInspectionPicks(ownerKey, parsed, plan, options = {}) {
+  if (options.employed) return plan
+  const res = await pickInspections(ownerKey, parsed)
+  if (!res.ok) return res
+  return { ...plan, inspections: res.picks, counts: { ...plan.counts, inspections: res.picks.length }, skipped: plan.skipped + res.skipped }
 }
 
 /**
@@ -132,14 +146,14 @@ async function restoreDays(ownerKey, targets) {
 }
 
 /**
- * 거래처 → 일지 → 지출 → 세금계산서 순서로 저장한다. 한 단계라도 실패하면 거기서 멈춘다.
+ * 거래처 → 일지 → 지출 → 세금계산서 → 점검표 순서로 저장한다. 한 단계라도 실패하면 거기서 멈춘다.
  * @param {string} ownerKey
  * @param {RestorePlan} plan
  * @returns {Promise<{ ok: boolean, counts: RestoreCounts, toast: string|null }>}
  */
 export async function applyMemberRestore(ownerKey, plan) {
   /** @type {RestoreCounts} */
-  const counts = { days: 0, clients: 0, expenses: 0, invoices: 0 }
+  const counts = { days: 0, clients: 0, expenses: 0, invoices: 0, inspections: 0 }
   const blocked = memberBackupBlockedReason(ownerKey)
   if (blocked) return { ok: false, counts, toast: blocked }
   /** @type {Array<[keyof RestoreCounts, () => Promise<{ ok: boolean, count: number, toast: string|null }>]>} */
@@ -148,6 +162,7 @@ export async function applyMemberRestore(ownerKey, plan) {
     ['days', () => restoreDays(ownerKey, plan.targets)],
     ['expenses', () => restoreExpenses(ownerKey, plan.records.expenses)],
     ['invoices', () => restoreInvoices(ownerKey, plan.records.invoices)],
+    ['inspections', () => restoreInspections(plan.inspections)],
   ]
   for (const [key, run] of steps) {
     const res = await run()
