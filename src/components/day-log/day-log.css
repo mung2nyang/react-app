@@ -22,6 +22,11 @@
   min-height: min-content;
   overflow: visible;
 }
+/* 로드맵 20-A: 열린 칸으로 내려갈 때 위 여백, 칸 안 양식이 새로 그려질 때 서서히(다른 항목으로 바꾼 걸 알게) */
+.inline-sheet-panel { scroll-margin-top: 16px; }
+.inline-sheet-panel > * { animation: inline-sheet-swap 0.25s ease-out; }
+@keyframes inline-sheet-swap { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .inline-sheet-panel > * { animation-duration: 0.15s; } }
 
 .work-log-page {
   box-sizing: border-box;

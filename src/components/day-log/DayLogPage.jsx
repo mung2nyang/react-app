@@ -183,7 +183,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
               <InlineSheet
                 open={callFormOpen}
                 forceInstant={expenseForm.kindPick || expenseForm.modalOpen}
-                className="call-detail-inline-host"
+                className="call-detail-inline-host" scrollKey={editingCallId ?? 'new'}
               >
                 <CallDetailForm
                   key={editingCallId ?? 'new'}

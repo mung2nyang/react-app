@@ -32,8 +32,10 @@ test('일지 인라인 시트의 취소/저장 액션 바는 sticky/fixed가 아
   assert.equal(/position:\s*fixed/.test(actionsBlock), false)
 })
 
-test('InlineSheet는 scrollIntoView 등 직접 DOM 조작을 하지 않는다', () => {
+// 로드맵 20-A(보리 결정 2026-10-08, sot 4-9 변경): 칸이 열린 뒤 그 자리로 내려가는 scrollIntoView는 InlineSheet에서만 허용.
+// 펼쳐짐이 끝난 뒤(transitionend)·고르는 항목이 바뀔 때만 — 렌더 중 동기 측정(useLayoutEffect)은 여전히 금지.
+test('InlineSheet: 자동 스크롤은 펼쳐짐이 끝난 뒤에만, useLayoutEffect는 쓰지 않는다', () => {
   const source = readFileSync(join(here, 'InlineSheet.jsx'), 'utf8')
-  assert.equal(source.includes('scrollIntoView'), false)
   assert.equal(source.includes('useLayoutEffect'), false)
+  assert.match(source, /scrollIntoView\(\{ block: 'start'/)
 })

@@ -38,10 +38,12 @@ export default function DayLogExpenses({ dayExpenses, expenseForm, callFormOpen,
         open={expenseForm.kindPick || expenseForm.modalOpen}
         forceInstant={callFormOpen}
         className="maint-fuel-inline-host"
+        scrollKey={expenseForm.kindPick ? 'pick' : expenseForm.editingId ?? `new-${expenseForm.draft.kind}`}
       >
         {expenseForm.kindPick && <ExpenseSelectPanel onPick={onAdd} />}
         {expenseForm.modalOpen && (
           <ExpenseFormModal
+            key={expenseForm.editingId ?? `new-${expenseForm.draft.kind}`}
             inline
             draft={expenseForm.draft}
             editingId={expenseForm.editingId}
