@@ -202,3 +202,46 @@ test('22-B: 지출 저장이 실패하면 계산서는 0회, 앞 단계 개수�
   assert.deepEqual(res.counts, { days: 1, clients: 1, expenses: 0, invoices: 0 })
   assert.equal(res.ok, false)
 })
+
+test('22-D 연동 기사: 메인 칸 일지만 배정 차량(main)에 더하고, 다른 차량 칸·거래처·지출·계산서는 건너뛴다', async () => {
+  reset()
+  cars = [{ ...LINKED, type: 'sub' }]
+  drivers = [{ id: 'd-1', status: 'linked', vehicleNumber: '56다7890' }]
+  workLogs = { main: { '2026-07-01': { fixedCount: 9 } } }
+  const file = {
+    workData: { '2026-07-01': { callDetails: [] }, '2026-07-02': { callDetails: [{ fare: '380,000', client: '금오물류' }] } },
+    workLogs: { main: { '2026-07-01': { callDetails: [] }, '2026-07-02': { callDetails: [{ fare: '380,000', client: '금오물류' }] } }, '34나5678': { '2026-07-03': { fixedCount: 1 } } },
+    clients: [{ id: 'cl-1', companyName: '금오물류' }],
+  }
+  const plan = planMemberRestore('o-1', file, { employed: true })
+  assert.ok(plan.ok)
+  assert.deepEqual(plan.counts, { days: 1, clients: 0, expenses: 0, invoices: 0 })
+  assert.equal(plan.skipped, 2, '다른 차량 칸 1 + 거래처 목록 1')
+  const res = await applyMemberRestore('o-1', plan)
+  assert.equal(res.ok, true)
+  assert.deepEqual(order, ['days'], '거래처·지출·계산서 저장 0회')
+  assert.deepEqual(commits.map((c) => [c.logId, c.dateKeys]), [['main', ['2026-07-02']]])
+  assert.deepEqual(commits[0].nextData['2026-07-01'], { fixedCount: 9 }, '이미 있는 날짜는 그대로')
+})
+
+test('22-D 연동 기사: 같은 파일을 차주 방식으로 읽으면 연동 차량이라 건너뛴다(기사 옵션이 있어야만 들어감)', () => {
+  reset()
+  cars = [{ ...LINKED, type: 'sub' }]
+  drivers = [{ id: 'd-1', status: 'linked', vehicleNumber: '56다7890' }]
+  workLogs = { main: {} }
+  const file = { workLogs: { '56다7890': { '2026-07-04': { fixedCount: 1 } } } }
+  const owner = planMemberRestore('o-1', file)
+  assert.ok(owner.ok)
+  assert.equal(owner.counts.days, 0)
+  const driver = planMemberRestore('o-1', file, { employed: true })
+  assert.ok(driver.ok)
+  assert.equal(driver.counts.days, 0, '기사는 메인 칸만 — 번호판 칸은 건너뜀')
+  assert.equal(driver.skipped, 1)
+})
+
+test('22-D 연동 기사도 하루 기록이 하나라도 틀리면 저장 0회', () => {
+  reset()
+  const plan = planMemberRestore('o-1', { workData: { '2026-07-05': { fixedCount: -1 } } }, { employed: true })
+  assert.equal(plan.ok, false)
+  assert.equal(commits.length, 0)
+})

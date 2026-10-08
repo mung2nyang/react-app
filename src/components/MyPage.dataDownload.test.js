@@ -1,4 +1,4 @@
-// 데이터 다운로드(B-1): 마이페이지 가로줄 아래·공지사항 위 메뉴는 차주·개인 회원만, 누르면 확인 창(22-A부터 불러오기 포함).
+// 데이터 다운로드(B-1): 마이페이지 가로줄 아래·공지사항 위 메뉴는 차주·개인 회원, 누르면 확인 창(22-A부터 불러오기 포함). 22-D 연동 기사는 불러오기만.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -47,15 +47,23 @@ test('차주·개인 회원: 가로줄 바로 아래(공지사항 위)에 데이
   } finally { await view.cleanup() }
 })
 
-test('연동 기사와 비회원에겐 데이터 다운로드가 없고, 가로줄은 공지사항 위 그대로', async () => {
-  for (const session of [
-    { userId: 'd-1', name: '기사', accountType: 'employed_driver', linkedOwnerId: 'o-1' },
-    { name: '비회원', guestMode: true },
-  ]) {
-    const view = await render(session)
-    try {
-      assert.equal(view.download, undefined)
-      assert.equal(view.entry, '공지사항')
-    } finally { await view.cleanup() }
-  }
+test('비회원에겐 데이터 다운로드가 없고, 가로줄은 공지사항 위 그대로', async () => {
+  const view = await render({ name: '비회원', guestMode: true })
+  try {
+    assert.equal(view.download, undefined)
+    assert.equal(view.entry, '공지사항')
+  } finally { await view.cleanup() }
+})
+
+test('22-D 연동 기사: 데이터 불러오기만 보이고, 창에는 다운로드 버튼이 없다', async () => {
+  const view = await render({ userId: 'd-1', name: '기사', accountType: 'employed_driver', linkedOwnerId: 'o-1' })
+  try {
+    assert.equal(view.download, undefined, '다운로드 메뉴 없음')
+    assert.equal(view.entry, '데이터 불러오기')
+    const entry = [...view.container.querySelectorAll('.mypage-notice-link')].find((el) => el.textContent.includes('데이터 불러오기'))
+    await act(async () => { entry?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    assert.ok(view.container.textContent.includes('지금 없는 날짜의 일지만'))
+    const buttons = [...view.container.querySelectorAll('.modal-btns button')].map((b) => b.textContent)
+    assert.deepEqual(buttons, ['취소', '불러오기'])
+  } finally { await view.cleanup() }
 })

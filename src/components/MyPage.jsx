@@ -99,7 +99,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
   const employed = session?.accountType === 'employed_driver'
   const isOwner = !employed && drivers.length > 0
   const cloud = isCloudSession(session)
-  const canDownload = cloud && !employed // 데이터 다운로드: 차주·개인 회원만(기사 기록은 차주 장부, 비회원은 앱 설정 백업)
+  const canDownload = cloud // 차주·개인 회원은 다운로드·불러오기, 연동 기사는 일지 불러오기만(22-D), 비회원은 앱 설정 백업
   const displayName = profile.name || (session?.name && session.name !== '비회원' ? session.name : '') || (!cloud ? '비회원' : employed ? '기사' : '대표자')
 
   return (
@@ -166,7 +166,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
         {canDownload && (
           <button type="button" className="mypage-notice-link mypage-notice-entry" onClick={() => setDownloadOpen(true)}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>데이터 다운로드</span>
+            <span>{employed ? '데이터 불러오기' : '데이터 다운로드'}</span>
           </button>
         )}
         <button type="button" className={`mypage-notice-link${canDownload ? '' : ' mypage-notice-entry'}`} onClick={() => onOpen('notice')}>
@@ -190,7 +190,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
           onLinked={(next) => onLinked?.(next)}
         />
       )}
-      {downloadOpen && <DataDownloadModal ownerKey={ownerKey} showToast={showToast} onClose={() => setDownloadOpen(false)} />}
+      {downloadOpen && <DataDownloadModal ownerKey={ownerKey} employed={employed} showToast={showToast} onClose={() => setDownloadOpen(false)} />}
     </div>
   )
 }

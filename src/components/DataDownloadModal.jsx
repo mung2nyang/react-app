@@ -29,8 +29,9 @@ function saveJsonFile(data) {
  * @param {string} props.ownerKey
  * @param {() => void} props.onClose
  * @param {(message: string) => void} [props.showToast]
+ * @param {boolean} [props.employed] 연동 기사(22-D): 다운로드 없이 일지 불러오기만
  */
-export default function DataDownloadModal({ ownerKey, onClose, showToast }) {
+export default function DataDownloadModal({ ownerKey, onClose, showToast, employed = false }) {
   const [busy, setBusy] = useState(false)
   const [plan, setPlan] = useState(/** @type {RestorePlan|null} */ (null))
   const fileInputRef = useRef(/** @type {HTMLInputElement|null} */ (null))
@@ -72,7 +73,7 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast }) {
         showToast?.('파일 내용이 올바르지 않습니다.')
         return
       }
-      const next = planMemberRestore(ownerKey, parsed)
+      const next = planMemberRestore(ownerKey, parsed, { employed })
       if (!next.ok) showToast?.(next.error)
       else if (!describeRestoreCounts(next.counts)) showToast?.('더할 기록이 없습니다. 파일의 기록이 모두 이미 있습니다.')
       else setPlan(next)
@@ -109,15 +110,39 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast }) {
           <p className="confirm-modal-text" style={TEXT_STYLE}>
             {`이 파일에서 지금 없는 것만 더합니다.\n${describeRestoreCounts(plan.counts)}\n이미 있는 기록은 내용이 달라도 건드리지 않습니다.`}
           </p>
-          {plan.skipped > 0 && (
+          {(employed || plan.skipped > 0) && (
             <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
-              {'내 차량에 없거나 기사가 연동된 차량의 기록은 건너뜁니다.'}
+              {employed
+                ? '일지만 불러옵니다. 거래처·지출·세금계산서와 다른 차량 기록은 건너뜁니다.'
+                : '내 차량에 없거나 기사가 연동된 차량의 기록은 건너뜁니다.'}
             </p>
           )}
           <div className="modal-btns">
             <button type="button" className="modal-btn cancel" disabled={busy} onClick={onClose}>취소</button>
             <button type="button" className="modal-btn confirm" disabled={busy} onClick={() => { void restore() }}>불러오기</button>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  const fileInput = (
+    <input ref={fileInputRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={(event) => { void pickFile(event) }} />
+  )
+
+  if (employed) {
+    return (
+      <div className="modal-overlay" onClick={close}>
+        <div className="modal-content" onClick={(event) => event.stopPropagation()}>
+          <div className="modal-title">데이터 불러오기</div>
+          <p className="confirm-modal-text" style={TEXT_STYLE}>
+            {'받아 둔 파일에서 지금 없는 날짜의 일지만 내 운행일지에 더합니다.\n이미 있는 날짜는 건드리지 않습니다.'}
+          </p>
+          <div className="modal-btns">
+            <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
+            <button type="button" className="modal-btn confirm" disabled={busy} onClick={() => fileInputRef.current?.click()}>불러오기</button>
+          </div>
+          {fileInput}
         </div>
       </div>
     )
@@ -141,7 +166,7 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast }) {
           <button type="button" className="modal-btn cancel" disabled={busy} onClick={() => fileInputRef.current?.click()}>불러오기</button>
           <button type="button" className="modal-btn confirm" disabled={busy} onClick={() => { void download() }}>다운로드</button>
         </div>
-        <input ref={fileInputRef} type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={(event) => { void pickFile(event) }} />
+        {fileInput}
       </div>
     </div>
   )

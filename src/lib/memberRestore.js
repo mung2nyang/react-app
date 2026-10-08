@@ -1,5 +1,5 @@
 // @ts-check
-// 회원 데이터 불러오기(22-A·B): 다운로드 파일에서 지금 없는 것만 더한다(덮어쓰기·삭제 없음).
+// 회원 데이터 불러오기(22-A·B): 다운로드 파일에서 지금 없는 것만 더한다(덮어쓰기·삭제 없음). 22-D 연동 기사는 일지만.
 // 일지는 여기서, 거래처·지출·세금계산서는 memberRestoreRecords.js. 저장 순서는 거래처 → 일지 → 지출 → 계산서.
 // 하루 기록의 주유·정비·기타 칸은 지출 기록으로 따로 저장되므로 일지에서는 뺀다.
 import { readOwnerWorkDataByLogId } from '../store/ownerDataHooks.js'
@@ -52,14 +52,33 @@ function withoutExpenseItems(record) {
 }
 
 /**
- * 파일에서 지금 없는 날짜만 고른다(저장은 안 함).
+ * 22-D 연동 기사: 파일의 메인 칸 일지만 자기 배정 차량(main)에 넣고, 나머지 칸은 건너뛴 것으로 센다.
+ * @param {JsonValue} parsed @param {Record<string, Record<string, DayRecordLike>>} fileLogs
+ * @returns {{ logs: Record<string, Record<string, DayRecordLike>>, records: import('./memberRestoreRecords.js').RecordPicks }}
+ */
+function employedDriverPicks(parsed, fileLogs) {
+  const otherLogs = Object.keys(fileLogs).filter((logId) => logId !== 'main' && Object.keys(fileLogs[logId]).length > 0).length
+  const otherLists = ['clients', 'expenses', 'invoices'].filter((key) => (
+    isPlainObject(parsed) && Array.isArray(parsed[key]) && parsed[key].length > 0
+  )).length
+  return {
+    logs: fileLogs.main ? { main: fileLogs.main } : {},
+    records: { clients: [], expenses: [], invoices: [], skippedItems: otherLogs + otherLists },
+  }
+}
+
+/**
+ * 파일에서 지금 없는 날짜만 고른다(저장은 안 함). 연동 기사(employed)는 일지만, 배정 차량에.
  * @param {string} ownerKey
  * @param {JsonValue} parsed
+ * @param {{ employed?: boolean }} [options]
  * @returns {RestorePlan | { ok: false, error: string }}
  */
-export function planMemberRestore(ownerKey, parsed) {
+export function planMemberRestore(ownerKey, parsed, options = {}) {
   const fileLogs = readFileLogs(parsed)
-  const records = pickMemberRecords(ownerKey, parsed)
+  const employed = !!options.employed
+  const picks = fileLogs && employed ? employedDriverPicks(parsed, fileLogs) : null
+  const records = picks ? picks.records : pickMemberRecords(ownerKey, parsed)
   const known = isPlainObject(parsed) && KNOWN_KEYS.some((key) => key in parsed)
   if (!known || !fileLogs || !records) return { ok: false, error: INVALID_FILE }
   const current = readOwnerWorkDataByLogId(ownerKey)
@@ -67,9 +86,9 @@ export function planMemberRestore(ownerKey, parsed) {
   const targets = []
   let dayCount = 0
   let skippedCars = 0
-  for (const [logId, days] of Object.entries(fileLogs)) {
+  for (const [logId, days] of Object.entries(picks ? picks.logs : fileLogs)) {
     if (Object.keys(days).length === 0) continue
-    if (!isOwnUnlinkedCar(ownerKey, logId)) {
+    if (!employed && !isOwnUnlinkedCar(ownerKey, logId)) {
       skippedCars += 1
       continue
     }
