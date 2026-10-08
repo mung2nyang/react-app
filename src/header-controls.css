@@ -36,6 +36,7 @@
 }
 
 @media (hover: hover) { .date-select:hover { background-color: var(--hover-bg); } }
+.date-select:active { background-color: var(--hover-bg); }
 .date-select:focus { outline: none; }
 
 .arrow-btn {
@@ -69,6 +70,7 @@
     background-color: var(--hover-bg);
   }
 }
+.arrow-btn:active { color: var(--text-color); background-color: var(--hover-bg); }
 
 .settings-header {
   display: flex;

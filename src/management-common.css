@@ -83,6 +83,8 @@
     color: var(--sunday-color);
   }
 }
+.action-icon-btn:active { background-color: var(--hover-bg); color: var(--text-color); }
+.action-icon-btn.del:active { color: var(--sunday-color); }
 
 .action-icon-btn svg {
   width: 16px;

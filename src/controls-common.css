@@ -122,6 +122,8 @@
     color: var(--text-color);
   }
 }
+.top-notification-btn.icon-btn:active,
+.top-menu-btn.icon-btn:active { background-color: var(--hover-bg); color: var(--text-color); }
 
 /* 사업자번호 검증번호 불일치 안내(개인정보·기사 관리·거래처·세금계산서 공용) */
 .biz-number-hint {

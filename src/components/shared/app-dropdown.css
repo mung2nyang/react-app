@@ -23,6 +23,7 @@
 @media (hover: hover) {
   .app-dropdown-trigger:hover { background-color: var(--hover-bg); }
 }
+.app-dropdown-trigger:active { background-color: var(--hover-bg); }
 
 .app-dropdown-value {
   white-space: nowrap;
@@ -91,6 +92,7 @@
 @media (hover: hover) {
   .app-dropdown-option:hover { background: color-mix(in srgb, var(--primary-color) 12%, transparent); outline: none; }
 }
+.app-dropdown-option:active { background: color-mix(in srgb, var(--primary-color) 12%, transparent); }
 
 /* 폼 필드용 — 기존 `.input-box` select와 같은 테두리·배경·폭 */
 .app-dropdown-boxed {
@@ -114,6 +116,7 @@
 @media (hover: hover) {
   .app-dropdown-boxed .app-dropdown-trigger:hover { background-color: var(--input-bg); }
 }
+.app-dropdown-boxed .app-dropdown-trigger:active { background-color: var(--input-bg); }
 
 .app-dropdown-boxed .app-dropdown-trigger:focus-visible {
   border-color: var(--primary-color);
