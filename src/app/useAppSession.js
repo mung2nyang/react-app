@@ -24,6 +24,7 @@ export function useAppSession() {
   const [session, setSession] = useState(/** @type {AppSession|null} */ (null))
   const [toast, setToast] = useState('')
   const [booting, setBooting] = useState(true)
+  const [bootLinkFailed, setBootLinkFailed] = useState(false) // 로드맵 19: 연동 확인 실패 → 안내 화면
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -66,7 +67,9 @@ export function useAppSession() {
     let cancelled = false
     restoreSessionOnBoot().then((restored) => {
       if (cancelled) return
-      if (restored) {
+      if (restored && 'linkCheckFailed' in restored) {
+        setBootLinkFailed(true)
+      } else if (restored) {
         clearGuestModePersisted()
         const message = restored.hydrateError ? '로그인은 유지됐지만 클라우드 데이터를 일부 못 불러왔습니다.' : undefined
         if (restored.needsProfile) {
@@ -132,6 +135,7 @@ export function useAppSession() {
     toast,
     showToast,
     booting,
+    bootLinkFailed,
     ownerKey,
     cars,
     inAccountFlow,

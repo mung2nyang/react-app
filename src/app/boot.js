@@ -5,7 +5,7 @@
 import { supabase } from '../supabaseClient.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
 import { singleFlight } from '../lib/singleFlight.js'
-import { fetchLinkedDriverLink } from '../lib/driverLinkRpc.js'
+import { checkLinkedDriverLink, fetchLinkedDriverLink } from '../lib/driverLinkRpc.js'
 import { settleExpiredDriverUnlinks } from '../lib/driverUnlink.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
@@ -57,7 +57,41 @@ export async function buildCloudAppSession(userId, overrides = {}) {
   const profile = await fetchAccountProfile(userId)
   // 로드맵 7-C-2: 3일 지난 해제 요청을 먼저 처리해야 기사가 열 때도 해제된 상태로 시작한다.
   await settleExpiredDriverUnlinks()
-  const link = await fetchLinkedDriverLink(userId)
+  return sessionFromLink(userId, overrides, profile, await fetchLinkedDriverLink(userId))
+}
+
+export const LINK_RETRY_MS = 1000
+
+/**
+ * 로드맵 19: 앱 켤 때만 — 연동 확인이 실패하면 1초 뒤 1번 더, 그래도 실패하면 null(본인 칸으로 들어가지 않게).
+ * @param {string} userId
+ * @param {{ name?: string, phone?: string }} overrides
+ * @param {number} retryMs
+ * @returns {Promise<AppSession|null>}
+ */
+async function buildBootSession(userId, overrides, retryMs) {
+  const profile = await fetchAccountProfile(userId)
+  await settleExpiredDriverUnlinks()
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    if (attempt > 0) await new Promise((resolve) => { setTimeout(resolve, retryMs) })
+    try {
+      const check = await checkLinkedDriverLink(userId)
+      if (check.ok) return sessionFromLink(userId, overrides, profile, check.link)
+    } catch (error) {
+      console.warn('[boot] 연동 확인 실패', error)
+    }
+  }
+  return null
+}
+
+/**
+ * @param {string} userId
+ * @param {{ name?: string, phone?: string }} overrides
+ * @param {{ name: string, phone: string, accountType: string }} profile
+ * @param {{ owner_id?: unknown } | null} link
+ * @returns {AppSession}
+ */
+function sessionFromLink(userId, overrides, profile, link) {
   const linkedOwnerId = link?.owner_id ? String(link.owner_id) : null
   return {
     userId,
@@ -82,13 +116,16 @@ export function ownerKeyFromSession(session) {
 
 /**
  * needsProfile: 내 profiles 행이 없어 홈 대신 기본 정보 화면(/welcome)으로 보내야 함.
- * @returns {Promise<{ session: AppSession, hydrateError: boolean, needsProfile: boolean } | null>}
+ * linkCheckFailed: 연동 확인이 두 번 다 실패 — 어느 칸으로 들어갈지 몰라 안내 화면(로드맵 19).
+ * @param {number} [retryMs] 테스트용으로만 바꿈
+ * @returns {Promise<{ session: AppSession, hydrateError: boolean, needsProfile: boolean } | { linkCheckFailed: true } | null>}
  */
-export function restoreSessionOnBoot() {
-  return singleFlight('boot:restoreSession', performRestoreSessionOnBoot)
+export function restoreSessionOnBoot(retryMs = LINK_RETRY_MS) {
+  return singleFlight('boot:restoreSession', () => performRestoreSessionOnBoot(retryMs))
 }
 
-async function performRestoreSessionOnBoot() {
+/** @param {number} retryMs */
+async function performRestoreSessionOnBoot(retryMs) {
   let authUser
   try {
     const { data, error } = await supabase.auth.getSession()
@@ -100,10 +137,11 @@ async function performRestoreSessionOnBoot() {
   }
 
   const userId = authUser.id
-  const session = await buildCloudAppSession(userId, {
+  const session = await buildBootSession(userId, {
     name: authUser.user_metadata?.name || '',
     phone: authUser.phone || '',
-  })
+  }, retryMs)
+  if (!session) return { linkCheckFailed: /** @type {const} */ (true) }
   if (!session.name) session.name = authUser.user_metadata?.name || ''
   if (!session.phone) session.phone = authUser.phone || ''
 

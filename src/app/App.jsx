@@ -4,6 +4,7 @@
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../components/OnboardingPage.jsx'
 import WelcomeProfileView from '../components/auth/WelcomeProfileView.jsx'
+import BootRetryScreen from '../components/BootRetryScreen.jsx'
 import { ensureProfileRow } from '../supabaseClient.js'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
@@ -35,12 +36,15 @@ export default function App() {
     toast,
     showToast,
     booting,
+    bootLinkFailed,
     ownerKey,
     cars,
     inAccountFlow,
     goHome,
     handleLogout,
   } = useAppSession()
+
+  if (bootLinkFailed) return <BootRetryScreen />
 
   return (
     <>

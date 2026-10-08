@@ -95,12 +95,13 @@ export async function redeemDriverInviteCode(inviteCode) {
 }
 
 /**
- * 로그인 사용자가 이미 linked인 driver_links 행(자기 행만 — RLS).
+ * 로그인 사용자가 이미 linked인 driver_links 행(자기 행만 — RLS). 확인 실패와 "연동 없음"을 구별한다
+ * (로드맵 19: 실패를 "없음"으로 보면 기사가 차주 칸 대신 본인 칸으로 들어감).
  * @param {string} userId
- * @returns {Promise<DriverLinkRow|null>}
+ * @returns {Promise<{ ok: true, link: DriverLinkRow|null } | { ok: false }>}
  */
-export async function fetchLinkedDriverLink(userId) {
-  if (!userId) return null
+export async function checkLinkedDriverLink(userId) {
+  if (!userId) return { ok: true, link: null }
   const { data, error } = await supabase
     .from('driver_links')
     .select('*')
@@ -109,9 +110,19 @@ export async function fetchLinkedDriverLink(userId) {
     .maybeSingle()
   if (error) {
     console.warn('[driverLinkRpc] linked 조회 실패', error)
-    return null
+    return { ok: false }
   }
-  return data ? /** @type {DriverLinkRow} */ (data) : null
+  return { ok: true, link: data ? /** @type {DriverLinkRow} */ (data) : null }
+}
+
+/**
+ * 위 확인의 예전 모양(실패도 null) — 앱이 켜진 뒤 사용처(연동 해제·초대코드·다시 불러오기)는 그대로 쓴다.
+ * @param {string} userId
+ * @returns {Promise<DriverLinkRow|null>}
+ */
+export async function fetchLinkedDriverLink(userId) {
+  const result = await checkLinkedDriverLink(userId)
+  return result.ok ? result.link : null
 }
 
 /** @returns {Promise<Array<{ id: string, number?: string, type?: string, tonnage?: string, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|null, insurance_on?: boolean|null, driver_income_type?: string|null, withholding_on?: boolean|null, expense_rate?: string|null, insurance_rate?: string|null }>>} */
