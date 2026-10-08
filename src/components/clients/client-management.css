@@ -94,14 +94,23 @@
   background: color-mix(in srgb, #f0ad2b 12%, var(--input-bg));
 }
 
-.management-badge.pinned {
-  border-color: #f0ad2b;
+.client-card-title .client-pinned-star {
   color: #f0ad2b;
+  font-size: var(--fs-4);
 }
 
 .client-list-card {
+  position: relative;
   cursor: grab;
 }
+
+/* 수정·삭제 아이콘은 제목 줄 오른쪽에 겹쳐 두고, 아래 줄들은 카드 폭을 다 써서 연락처가 한 줄에 들어가게. */
+.client-list-card .management-card-copy { flex: 1; min-width: 0; }
+.client-list-card .client-card-title,
+.client-list-card .client-card-badges { padding-right: 80px; }
+.client-list-card .client-card-title { min-height: 30px; } /* 칩이 없어도 아래 줄이 아이콘과 안 겹치게 */
+.client-list-card .car-action-btns { position: absolute; top: 14px; right: 20px; margin-left: 0; }
+.client-list-card .client-phone { white-space: nowrap; }
 
 .client-list-card.client-dragging {
   opacity: 0.72;
