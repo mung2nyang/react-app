@@ -1,6 +1,6 @@
 // 로드맵 18-E: 인터넷 없이 앱 주소를 열면 브라우저 오류 화면 대신 안내 화면(offline.html).
 // 앱 파일·서버 데이터는 저장하지 않고 손대지 않는다 — 새 버전 배포 뒤 옛 화면이 남지 않게.
-const CACHE = 'offline-v1'
+const CACHE = 'offline-v2'
 const OFFLINE_URL = new URL('offline.html', self.registration.scope).href
 
 self.addEventListener('install', (event) => {

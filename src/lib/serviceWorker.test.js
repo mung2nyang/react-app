@@ -70,9 +70,9 @@ test('서비스워커: 설치 때 안내 화면 저장, 옛 저장분 정리', a
   const worker = loadWorker(net)
   worker.store.set('offline-old', new Map())
   await worker.fire('install')
-  assert.equal(worker.store.get('offline-v1')?.get(OFFLINE), `cached:${OFFLINE}`)
+  assert.equal(worker.store.get('offline-v2')?.get(OFFLINE), `cached:${OFFLINE}`)
   await worker.fire('activate')
-  assert.deepEqual([...worker.store.keys()], ['offline-v1'])
+  assert.deepEqual([...worker.store.keys()], ['offline-v2'])
 })
 
 test('서비스워커: 화면 주소 열기 — 인터넷 있으면 그대로, 없으면 안내 화면, 다른 요청은 손 안 댐', async () => {
