@@ -1,9 +1,10 @@
 // @ts-check
 // 마이페이지 "데이터 다운로드 / 불러오기": 내 기록 전체를 비회원 백업과 같은 파일로 기기에 저장(B-1),
-// 받아 둔 파일의 일지 중 지금 없는 날짜만 더하기(22-A, 덮어쓰기·삭제 없음).
+// 받아 둔 파일에서 지금 없는 일지·거래처·지출·세금계산서만 더하기(22-A·B, 덮어쓰기·삭제 없음).
 import { useRef, useState } from 'react'
 import { buildMemberBackupData, memberBackupBlockedReason } from '../lib/memberBackup.js'
 import { applyMemberRestore, planMemberRestore } from '../lib/memberRestore.js'
+import { describeRestoreCounts } from '../lib/memberRestoreRecords.js'
 
 /** @typedef {import('../lib/memberRestore.js').RestorePlan} RestorePlan */
 
@@ -73,7 +74,7 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast }) {
       }
       const next = planMemberRestore(ownerKey, parsed)
       if (!next.ok) showToast?.(next.error)
-      else if (next.dayCount === 0) showToast?.('더할 일지가 없습니다. 파일의 날짜가 모두 이미 있습니다.')
+      else if (!describeRestoreCounts(next.counts)) showToast?.('더할 기록이 없습니다. 파일의 기록이 모두 이미 있습니다.')
       else setPlan(next)
     } catch (error) {
       console.error('데이터 불러오기 파일 읽기 실패:', error)
@@ -88,8 +89,9 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast }) {
     setBusy(true)
     try {
       const res = await applyMemberRestore(ownerKey, plan)
-      if (res.ok) showToast?.(`일지 ${res.restored}일을 불러왔습니다.`)
-      else if (res.toast) showToast?.(res.toast)
+      const done = describeRestoreCounts(res.counts)
+      if (res.ok) showToast?.(`불러왔습니다 — ${done}`)
+      else if (res.toast) showToast?.(done ? `${res.toast} (먼저 저장됨: ${done})` : res.toast)
     } catch (error) {
       console.error('데이터 불러오기 실패:', error)
       showToast?.('불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
@@ -105,11 +107,11 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast }) {
         <div className="modal-content" onClick={(event) => event.stopPropagation()}>
           <div className="modal-title">데이터 불러오기</div>
           <p className="confirm-modal-text" style={TEXT_STYLE}>
-            {`이 파일의 일지 중 지금 없는 날짜 ${plan.dayCount}일을 더합니다.\n이미 있는 날짜는 내용이 달라도 건드리지 않습니다.`}
+            {`이 파일에서 지금 없는 것만 더합니다.\n${describeRestoreCounts(plan.counts)}\n이미 있는 기록은 내용이 달라도 건드리지 않습니다.`}
           </p>
-          {plan.skippedCars > 0 && (
+          {plan.skipped > 0 && (
             <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
-              {`내 차량에 없거나 기사가 연동된 차량 ${plan.skippedCars}대의 기록은 건너뜁니다.`}
+              {'내 차량에 없거나 기사가 연동된 차량의 기록은 건너뜁니다.'}
             </p>
           )}
           <div className="modal-btns">
@@ -132,7 +134,7 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast }) {
           {'파일에는 계좌번호 등 개인정보가 들어 있으니 안전하게 보관해 주세요.\n세무 신고용 서류는 서류 발급에서 PDF·엑셀로도 받을 수 있습니다.'}
         </p>
         <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
-          {'불러오기는 받아 둔 파일의 일지 중 지금 없는 날짜만 더합니다.'}
+          {'불러오기는 받아 둔 파일에서 지금 없는 일지·거래처·지출·세금계산서만 더합니다.'}
         </p>
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
