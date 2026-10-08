@@ -102,7 +102,8 @@ export default function MainPageRoute({
         settings={settings}
         showToast={showToast}
         onWorkChanged={onWorkChanged}
-        onClose={closeWorkLog}
+        // 하단 "일일운행" 탭으로 들어오면 첫 화면이라 뒤로가기를 숨긴다.
+        onClose={location.state?.from === 'bottomNav' ? undefined : closeWorkLog}
         onOpenMenu={onOpenMenu}
         isEmployedDriver={session?.accountType === 'employed_driver'}
       />

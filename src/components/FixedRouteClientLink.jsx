@@ -27,32 +27,30 @@ export default function FixedRouteClientLink({ ownerKey, scopeKey, showToast }) 
 
   return (
     <div className="setting-item fixed-route-client-setting">
-      {/* 왼쪽: 제목·설명·연결 상태, 오른쪽: 버튼(왼쪽 묶음 세로 가운데) */}
-      <div className="fixed-route-client-head">
-        <div className="fixed-route-client-left">
-          <div className="run-count-preset-copy">
-            <label>거래처 연결</label>
-            <p>고정 노선 운행분을 정산할 거래처와 단가를 정합니다.</p>
-          </div>
-          {!candidates.length ? (
-            <p className="fixed-route-client-hint">먼저 거래처를 등록해 주세요.</p>
-          ) : (
-            <div className="fixed-route-client-summary-copy">
-              {linked ? (
-                <>
-                  <strong>{linked.companyName}</strong>
-                  <span>{detail}</span>
-                </>
-              ) : (
-                <span>{fallback ? `연결하지 않으면 차주 메인 연결 거래처(${fallback.companyName})를 씁니다.` : '연결된 거래처가 없습니다.'}</span>
-              )}
-            </div>
+      {/* 제목 줄 오른쪽에 버튼, 아래에 설명·연결 상태(거래처·단가 한 줄) */}
+      <div className="run-count-preset-copy">
+        <div className="fixed-route-client-head">
+          <label>거래처 연결</label>
+          {candidates.length > 0 && (
+            <button type="button" className="fixed-route-client-open" onClick={() => setOpen(true)}>{linked ? '수정' : '+ 추가'}</button>
           )}
         </div>
-        {candidates.length > 0 && (
-          <button type="button" className="fixed-route-client-open" onClick={() => setOpen(true)}>{linked ? '수정' : '+ 추가'}</button>
-        )}
+        <p>고정 노선의 정산 거래처와 단가를 설정합니다.</p>
       </div>
+      {!candidates.length ? (
+        <p className="fixed-route-client-hint">먼저 거래처를 등록해 주세요.</p>
+      ) : (
+        <div className="fixed-route-client-summary-copy">
+          {linked ? (
+            <>
+              <strong>{linked.companyName}</strong>
+              <span>{detail}</span>
+            </>
+          ) : (
+            <span>{fallback ? `연결하지 않으면 차주 메인 연결 거래처(${fallback.companyName})를 씁니다.` : '연결된 거래처가 없습니다.'}</span>
+          )}
+        </div>
+      )}
       {open && (
         <FixedRouteClientModal
           ownerKey={ownerKey}

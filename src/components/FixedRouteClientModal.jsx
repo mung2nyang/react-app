@@ -70,11 +70,11 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
     <div className="modal-overlay">
       <div className="modal-content client-modal fixed-route-client-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-title">고정노선 거래처</div>
-        <div className="form-group">
+        <div className="form-group fixed-route-client-row">
           <label>거래처</label>
           <AppDropdown label="고정노선 거래처" value={selectedId} options={options} placeholder="선택" className="app-dropdown-boxed" onChange={pick} />
         </div>
-        <div className="form-group">
+        <div className="form-group fixed-route-client-row">
           <label htmlFor="fixedRouteClientPrice">1회 단가</label>
           <span className="car-commission-input">
             <input id="fixedRouteClientPrice" inputMode="numeric" placeholder="0" value={price} onChange={(e) => setPrice(formatCurrencyInput(e.target.value))} />
@@ -89,7 +89,7 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
           </label>
         </div>
         {palletOn && (
-          <span className="car-commission-input">
+          <span className="car-commission-input fixed-route-client-pallet-price">
             <input id="fixedRoutePalletPrice" aria-label="파렛트 단가" inputMode="numeric" placeholder="0" value={palletPrice} onChange={(e) => setPalletPrice(formatCurrencyInput(e.target.value))} />
             <b>원</b>
           </span>

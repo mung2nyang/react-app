@@ -170,7 +170,11 @@
   font-weight: 800;
   text-align: left;
   cursor: pointer;
+  border-radius: 12px;
 }
+
+/* 목록 줄은 줄이지 않고 둥근 옅은 배경으로 누름 표시 */
+.mypage-notice-link:not(:disabled):active { scale: none; background: var(--hover-bg); }
 
 .mypage-notice-link svg {
   width: 20px;
@@ -182,6 +186,16 @@
   stroke-linejoin: round;
 }
 
+/* 구분선은 테두리 대신 따로 그린다 — 줄 모서리가 둥글어도 선은 곧게. */
 .mypage-notice-entry {
+  position: relative;
+}
+
+.mypage-notice-entry::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   border-top: 1px solid var(--border-color);
 }

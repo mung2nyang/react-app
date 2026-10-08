@@ -52,7 +52,7 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  * @param {Settings} props.settings
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onWorkChanged] 커밋될 때만(AppShell 알림 뱃지).
- * @param {() => void} props.onClose
+ * @param {() => void} [props.onClose] 없으면 뒤로가기 숨김(하단 메뉴 진입)
  * @param {(() => void)} [props.onOpenMenu]
  * @param {string} [props.logId]
  * @param {string} [props.clientScopeKey] 거래처 스코프(연동 기사는 배정 차량번호). 없으면 logId.
@@ -90,7 +90,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   // 있다 — beforeunload는 pendingWriteRetryListeners.js가 막지만, 화면 안 이동
   // (뒤로가기)은 데이터 라우터가 아니라 useBlocker를 못 써서(main.jsx) 여기서 직접 확인.
   function handleClose() {
-    if (confirmLeaveIfUnsafe()) onClose()
+    if (confirmLeaveIfUnsafe()) onClose?.()
   }
 
   /** @param {Partial<DayDraft>} patch */
@@ -149,7 +149,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
       <PageHeader
         title={<>{`${month}월 ${day}일 운행 일지`}{workData[dateKey]?.assignedVehicleNumber ? <span className="assigned-vehicle-tag">배정차량 {workData[dateKey].assignedVehicleNumber}</span> : null}</>}
         titleExtra={<AutoSaveStatus status={autoSaveStatus} />}
-        onBack={handleClose}
+        onBack={onClose ? handleClose : undefined}
         onOpenMenu={onOpenMenu}
       />
       <OffToggle isOff={draft.isOff} onChange={(off) => patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })} />

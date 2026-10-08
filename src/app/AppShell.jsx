@@ -122,7 +122,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
     setMenuOpen(false)
     setNotifOpen(false)
     if (tab === 'work') {
-      navigate(`/app/day/${todayWorkLogSelection().dateKey}`)
+      navigate(`/app/day/${todayWorkLogSelection().dateKey}`, { state: { from: 'bottomNav' } })
       return
     }
     if (tab === 'revenue') {

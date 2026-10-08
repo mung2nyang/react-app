@@ -21,11 +21,11 @@
   display: block;
   color: var(--text-color);
   font-size: var(--fs-2);
-  font-weight: 750;
+  font-weight: 500;
 }
 
 .run-count-preset-copy p {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   line-height: 1.45;
@@ -191,10 +191,15 @@
 
 /* 고정 노선 거래처 연결 줄(FixedRouteClientLink) — 요약 + 버튼, 입력은 팝업(FixedRouteClientModal) */
 .setting-item.fixed-route-client-setting { flex-direction: column; align-items: stretch; gap: 0; }
-.fixed-route-client-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.fixed-route-client-left { min-width: 0; }
-.fixed-route-client-summary-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: var(--fs-2); }
+.fixed-route-client-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 7px; }
+.fixed-route-client-summary-copy { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; font-size: var(--fs-2); }
+.fixed-route-client-summary-copy strong { font-weight: 500; }
 .fixed-route-client-summary-copy span, .fixed-route-client-hint { margin: 0; line-height: 1.45; color: var(--sub-text-color); font-size: var(--fs-floor); }
-.fixed-route-client-open { flex-shrink: 0; min-height: 40px; padding: 0 14px; border: 1px solid var(--primary-color); border-radius: 10px; background: transparent; color: var(--primary-color); font: inherit; font-weight: 750; cursor: pointer; }
+/* 버튼이 제목 줄 높이를 늘리지 않게 겹쳐 두고, 제목+설명 두 줄의 가운데로 내린다. */
+.fixed-route-client-open { flex-shrink: 0; min-height: 32px; margin-block: -7px; transform: translateY(11px); padding: 0 12px; border: 1px solid var(--primary-color); border-radius: 8px; background: transparent; color: var(--primary-color); font: inherit; font-size: var(--fs-floor); font-weight: 700; cursor: pointer; }
 .fixed-route-client-unlink { margin-top: 14px; padding: 0; border: 0; background: none; color: var(--sunday-color); font: inherit; font-size: var(--fs-floor); text-decoration: underline; cursor: pointer; }
 .fixed-route-client-modal .car-commission-input { margin-bottom: 4px; }
+/* 고정노선 거래처 팝업 — 제목 왼쪽·입력칸 오른쪽 한 줄, 파렛트 입력칸은 입력칸 열에 맞춘다. */
+.fixed-route-client-modal .fixed-route-client-row { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 10px; }
+.fixed-route-client-modal .form-group.fixed-route-client-row > label { margin: 0; }
+.fixed-route-client-modal .fixed-route-client-pallet-price { margin-left: 86px; }
