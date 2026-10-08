@@ -6,6 +6,7 @@ import { applyTheme } from '../lib/practiceSettings.js'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { flushCloudSync } from '../lib/syncQueue.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
+import { buzz } from '../lib/haptic.js'
 import { supabase } from '../supabaseClient.js'
 import { restoreSessionOnBoot, ownerKeyFromSession } from './boot.js'
 import { initializeOwnerFromPersist } from '../store/owner-state.js'
@@ -107,6 +108,7 @@ export function useAppSession() {
 
   useEffect(() => {
     if (!toast) return undefined
+    buzz() // 로드맵 18-B: 안내 문구가 뜰 때 짧은 진동
     const timer = setTimeout(() => setToast(''), 4000)
     return () => clearTimeout(timer)
   }, [toast])
