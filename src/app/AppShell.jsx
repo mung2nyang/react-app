@@ -5,7 +5,7 @@
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav.jsx'
-import LoadingScreen from '../components/LoadingScreen.jsx'
+import { PageSkeleton } from '../components/shared/Skeleton.jsx'
 import SideMenu, { preloadSideMenuBanner } from '../components/SideMenu.jsx'
 import NotificationPanel from '../components/NotificationPanel.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
@@ -138,7 +138,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
     <div className="container main-app-container">
       <HydrationRetryBanner showToast={showToast} />
       <div ref={pageBoxRef} className="page-transition">
-        <Suspense fallback={<LoadingScreen inline />}>
+        <Suspense fallback={<PageSkeleton />}>
           <AppShellRoutes
             ownerKey={ownerKey}
             session={session}

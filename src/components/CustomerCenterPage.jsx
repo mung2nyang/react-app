@@ -6,6 +6,7 @@ import { fetchMyInquiries, requestSupportInquirySave } from '../lib/supportInqui
 import PageHeader from './PageHeader.jsx'
 import AppDropdown from './shared/AppDropdown.jsx'
 import ClearableInput from './shared/ClearableInput.jsx'
+import { SkeletonLines } from './shared/Skeleton.jsx'
 import './customer-center.css'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
@@ -125,7 +126,7 @@ function MyInquiriesList({ userId, showToast }) {
     return () => { cancelled = true }
   }, [userId, showToast])
 
-  if (loading) return <div className="support-panel-empty">불러오는 중…</div>
+  if (loading) return <SkeletonLines lines={3} label="문의 목록 불러오는 중" />
   if (!items.length) return <div className="support-panel-empty">아직 접수한 문의·건의가 없습니다.</div>
 
   return (

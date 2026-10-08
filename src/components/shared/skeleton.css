@@ -1,0 +1,40 @@
+/* 로드맵 18-D 뼈대(Skeleton.jsx) — 일상점검 안내 줄 뼈대(daily-inspection-loading.css)와 같은 색·빛. */
+.skeleton-lines { display: grid; gap: 10px; padding: 12px 0; }
+.page-skeleton { display: grid; gap: 14px; padding-top: 8px; }
+
+.skeleton-bar {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  height: 14px;
+  border-radius: 8px;
+  background-color: var(--hover-bg);
+}
+.skeleton-lines .skeleton-bar:last-of-type { width: 60%; }
+.skeleton-title { width: 40%; height: 22px; margin: 4px auto 6px; }
+.skeleton-card { height: 120px; border-radius: 16px; }
+
+.skeleton-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: skeleton-shine 1.2s ease-in-out infinite;
+}
+[data-theme="dark"] .skeleton-bar::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+@keyframes skeleton-shine { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bar::after { animation: none; }
+}
+
+.skeleton-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

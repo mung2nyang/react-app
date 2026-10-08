@@ -11,6 +11,7 @@ import { useOwnerCars, useOwnerWorkDataByLogId } from '../../store/ownerDataHook
 import { useOwnerProfile } from '../../store/ownerProfileDriversHooks.js'
 import DailyInspectionExportBar from './DailyInspectionExportBar.jsx'
 import MonthNavigator from './MonthNavigator.jsx'
+import { SkeletonLines } from '../shared/Skeleton.jsx'
 
 /** @typedef {import('../../domain/dailyInspectionMonth.js').MonthInspection} MonthInspection */
 
@@ -88,7 +89,7 @@ export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, 
           <button type="button" className="doc-retry-btn" onClick={() => setReloadTick((n) => n + 1)}>다시 시도</button>
         </div>
       ) : load.status === 'loading' ? (
-        <div className="doc-sheet-message"><span>불러오는 중입니다.</span></div>
+        <SkeletonLines lines={3} label="일상점검표 불러오는 중" />
       ) : DAILY_INSPECTION_SECTIONS.map((section) => (
         <table key={section.no} className="doc-sheet-table">
           <thead>

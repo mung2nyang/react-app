@@ -6,6 +6,7 @@ import { requestDriverUnlinkAction } from '../../lib/driverUnlink.js'
 import { hydrateFromSupabase } from '../../lib/hydrate.js'
 import { useOwnerDrivers, useOwnerProfile } from '../../store/ownerDataHooks.js'
 import DriverUnlinkControls from './DriverUnlinkControls.jsx'
+import { SkeletonLines } from '../shared/Skeleton.jsx'
 import './driver-connection.css'
 
 /** @typedef {import('../../lib/outboxTypes.js').AppSession} AppSession */
@@ -65,7 +66,7 @@ export default function EmployerLinkCard({ ownerKey, session, showToast, onUnlin
           </div>
         </>
       ) : (
-        <p className="car-sub-text">연동 정보를 불러오는 중입니다.</p>
+        <SkeletonLines label="연동 정보 불러오는 중" />
       )}
     </section>
   )
