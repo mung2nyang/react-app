@@ -51,6 +51,13 @@ test('화면 이동 때 겉 상자에 맞는 효과 이름이 붙고, 같은 주
   const root = createRoot(container)
   const box = () => /** @type {HTMLElement} */ (container.querySelector('#box'))
   const move = async (/** @type {string} */ to) => { await act(async () => { go.current?.(to) }) }
+  // 뒤로가기는 브라우저가 늦게 처리할 수 있어 정해진 시간 대신 주소가 바뀔 때까지 기다림.
+  const back = async (/** @type {string} */ path) => {
+    await act(async () => {
+      window.history.back()
+      for (let i = 0; i < 100 && window.location.pathname + window.location.search !== path; i += 1) await new Promise((resolve) => { setTimeout(resolve, 10) })
+    })
+  }
   try {
     await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(Probe))) })
     assert.equal(box().className, '', '첫 진입은 효과 없음')
@@ -58,8 +65,8 @@ test('화면 이동 때 겉 상자에 맞는 효과 이름이 붙고, 같은 주
     assert.equal(box().className, 'page-enter-forward')
     await move('/app/notice?tab=1')
     assert.equal(box().className, 'page-enter-forward', '같은 주소면 그대로(새로 안 붙음)')
-    await act(async () => { window.history.back(); await new Promise((resolve) => { setTimeout(resolve, 20) }) })
-    await act(async () => { window.history.back(); await new Promise((resolve) => { setTimeout(resolve, 20) }) })
+    await back('/app/notice')
+    await back('/app/me')
     assert.equal(window.location.pathname, '/app/me')
     assert.equal(box().className, 'page-enter-back')
     await move('/app')

@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './app/App.jsx'
 import { routerBasename } from './app/routerBasename.js'
+import { registerServiceWorker } from './lib/registerServiceWorker.js'
 
 const rootEl = document.getElementById('root')
 if (!rootEl) throw new Error('#root not found')
@@ -15,3 +16,4 @@ createRoot(rootEl).render(
     </BrowserRouter>
   </StrictMode>,
 )
+void registerServiceWorker({ prod: import.meta.env.PROD, base: import.meta.env.BASE_URL, nav: navigator })
