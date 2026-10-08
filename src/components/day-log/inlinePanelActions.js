@@ -7,19 +7,29 @@
 // React 훅을 쓰지 않는다) DayLogPage.jsx 200줄 제한 때문에 분리했다 — 200줄 넘긴다고
 // 로직 없이 기계적으로 쪼개지 말라는 지시가 있어, 실제로 독립된 책임(패널 상호배제)
 // 하나를 통째로 옮겼다.
+// 추가 버튼을 한 번 더 누르면 열려 있던 같은 새 입력 칸을 닫는다(보리 지시 2026-10-08).
 /**
  * @param {(action: import('./day-log-reducer.js').DayLogAction) => void} dispatch
- * @param {{ closeAll: () => void, openAdd: (kind: string) => void, openEdit: (item: import('./dayLogTypes.js').ExpenseItem) => void, openKindPick: () => void }} expenseForm
+ * @param {{ closeAll: () => void, openAdd: (kind: string) => void, openEdit: (item: import('./dayLogTypes.js').ExpenseItem) => void, openKindPick: () => void, modalOpen: boolean, editingId: string|null, draft: { kind?: string } }} expenseForm
+ * @param {{ callFormOpen: boolean, editingCallId: string|null }} callPanel 지금 콜상세 칸 상태
  */
-export function bindInlinePanelActions(dispatch, expenseForm) {
+export function bindInlinePanelActions(dispatch, expenseForm, callPanel) {
   return {
     /** @param {string|null} id */
     openCallForm(id) {
+      if (id === null && callPanel.callFormOpen && callPanel.editingCallId === null) {
+        dispatch({ type: 'closeCallForm' })
+        return
+      }
       expenseForm.closeAll()
       dispatch({ type: 'openCallForm', id })
     },
     /** @param {string} kind */
     openExpenseAdd(kind) {
+      if (expenseForm.modalOpen && expenseForm.editingId === null && expenseForm.draft.kind === kind) {
+        expenseForm.closeAll()
+        return
+      }
       dispatch({ type: 'closeCallForm' })
       expenseForm.openAdd(kind)
     },

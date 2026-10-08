@@ -100,7 +100,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
 
   // 콜상세/비용 인라인 패널이 서로 다른 state라 하나를 열어도 안 닫히던 문제 —
   // inlinePanelActions.js 참고(200줄 제한 때문에 로직을 옮겼다).
-  const { openCallForm, openExpenseAdd, openExpenseEdit, openExpenseKindPick } = bindInlinePanelActions(dispatch, expenseForm)
+  const { openCallForm, openExpenseAdd, openExpenseEdit, openExpenseKindPick } = bindInlinePanelActions(dispatch, expenseForm, { callFormOpen, editingCallId })
 
   /** @param {string} routeId @param {number} delta */
   function handleRouteRun(routeId, delta) {
