@@ -1,7 +1,7 @@
 # 자동 검증 관문(CI): push/PR 마다 GitHub가 직접 테스트·타입검사·빌드를 돌린다.
 # 결과는 저장소 상단의 초록 ✓ / 빨강 ✗ 로 표시된다. 코드를 읽지 않아도 ✗만 보면 된다.
 # main 에서는 검증이 초록일 때만 같은 빌드를 GitHub Pages 에 배포한다.
-# 배포 주소: https://mung2nyang.github.io/react-app/
+# 배포 주소: https://getdrivelog.com/
 name: CI
 
 on:

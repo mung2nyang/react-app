@@ -1,6 +1,6 @@
 // @ts-check
-// public/ 자산 경로. Vite `base`(`/` 또는 `/react-app/`)에 맞춰
-// GitHub Pages에서도 404가 나지 않게 한다.
+// public/ 자산 경로. Vite `base`(지금은 `/`)에 맞춰
+// 배포 주소가 바뀌어도 404가 나지 않게 한다.
 
 /**
  * @param {string} path public 기준 경로 (`/images/...` 또는 `images/...`)

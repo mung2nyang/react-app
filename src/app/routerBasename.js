@@ -1,7 +1,7 @@
 // @ts-check
-// GitHub Pages 프로젝트 사이트(https://mung2nyang.github.io/react-app/)는
-// 루트가 `/`가 아니라 `/react-app/`다. Vite `base`와 BrowserRouter basename을 맞춘다.
-// `vite`(dev)는 base `/`라 빈 문자열 → 로컬 테스트·기존 App.test 경로(`/app`)와 같다.
+// Vite `base`와 BrowserRouter basename을 맞춘다. 배포 주소(https://getdrivelog.com/)와
+// 개발 서버 모두 base `/`라 빈 문자열을 돌려준다(App.test 경로 `/app`과 같음).
+// 하위 경로 배포로 바뀌면 그 경로를 basename으로 쓴다.
 
 export function routerBasename() {
   const env = import.meta.env
