@@ -1,4 +1,4 @@
-// 데이터 다운로드(B-1): 마이페이지 가로줄 아래·공지사항 위 메뉴는 차주·개인 회원만, 누르면 확인 창(내보내기만).
+// 데이터 다운로드(B-1): 마이페이지 가로줄 아래·공지사항 위 메뉴는 차주·개인 회원만, 누르면 확인 창(22-A부터 불러오기 포함).
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -43,7 +43,7 @@ test('차주·개인 회원: 가로줄 바로 아래(공지사항 위)에 데이
     assert.ok(view.container.textContent.includes('지금까지 입력한 운행·정산·차량 기록 전체를 내 기기로 다운로드합니다.'))
     assert.ok(view.container.textContent.includes('계좌번호 등 개인정보'))
     const buttons = [...view.container.querySelectorAll('.modal-btns button')].map((b) => b.textContent)
-    assert.deepEqual(buttons, ['취소', '다운로드'], '가져오기 없이 내보내기만')
+    assert.deepEqual(buttons, ['취소', '불러오기', '다운로드'], '22-A: 불러오기 추가')
   } finally { await view.cleanup() }
 })
 
