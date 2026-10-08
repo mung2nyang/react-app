@@ -8,6 +8,7 @@ import BottomNav from '../components/BottomNav.jsx'
 import { PageSkeleton } from '../components/shared/Skeleton.jsx'
 import SideMenu, { preloadSideMenuBanner } from '../components/SideMenu.jsx'
 import NotificationPanel from '../components/NotificationPanel.jsx'
+import PullRefreshIndicator from '../components/PullRefreshIndicator.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
 import { todayWorkLogSelection } from '../lib/calendar.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
@@ -156,6 +157,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
         </Suspense>
       </div>
       <BottomNav active={activeNav} onSelect={selectTab} />
+      <PullRefreshIndicator />
       <SideMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}

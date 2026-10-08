@@ -1,0 +1,41 @@
+/* 로드맵 21 당겨서 새로고침 표시(PullRefreshIndicator.jsx). 평소엔 화면 위 밖(top: -60px, 그림자까지)에 숨어 있음. */
+.pull-refresh {
+  position: fixed;
+  top: -60px;
+  left: 50%;
+  z-index: 950;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -20px;
+  border-radius: 50%;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  transition: transform 0.2s ease, background-color 0.15s ease;
+}
+.pull-refresh.is-dragging { transition: background-color 0.15s ease; } /* 손가락을 바로 따라오게 */
+.pull-refresh svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--primary-color);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pull-refresh.is-ready { background: var(--primary-fill); }
+.pull-refresh.is-ready svg { stroke: #fff; }
+.pull-refresh.is-refreshing svg { animation: pull-refresh-spin 0.8s linear infinite; }
+@keyframes pull-refresh-spin { to { rotate: 360deg; } }
+
+/* 설치 앱에서만 크롬 기본 동그란 화살표 끄기 — 브라우저 탭은 그대로. */
+@media (display-mode: standalone) {
+  html, body { overscroll-behavior-y: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pull-refresh svg { transform: none !important; }
+  .pull-refresh.is-refreshing svg { animation: none; }
+}
