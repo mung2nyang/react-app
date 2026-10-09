@@ -6,7 +6,7 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 
 import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { beforeEach, describe, mock, test } from 'node:test'
+import { beforeEach, describe, test } from 'node:test'
 import {
   fillMessageTemplatePattern,
   getDefaultMessageTemplatePatterns,
@@ -104,9 +104,10 @@ describe('MessageTemplateSheet — 문자 양식 3종 + ②-1 설정 반영', ()
     }
   })
 
-  test('연락처 없으면 alert만 뜨고 onClose는 호출되지 않는다', async () => {
+  test('연락처 없으면 안내 메시지만 뜨고 onClose는 호출되지 않는다', async () => {
     let closeCount = 0
-    const alertSpy = mock.method(window, 'alert', () => {})
+    /** @type {string[]} */
+    const toasts = []
     const { container, root } = mountSheet()
     try {
       await act(async () => {
@@ -114,6 +115,7 @@ describe('MessageTemplateSheet — 문자 양식 3종 + ②-1 설정 반영', ()
           item: sampleItem,
           client: { id: 'c1', companyName: '한진' },
           onClose: () => { closeCount += 1 },
+          showToast: (/** @type {string} */ m) => { toasts.push(m) },
         }))
       })
       const first = /** @type {HTMLButtonElement|null} */ (container.querySelector('.message-template-list button'))
@@ -121,11 +123,9 @@ describe('MessageTemplateSheet — 문자 양식 3종 + ②-1 설정 반영', ()
       await act(async () => {
         first.click()
       })
-      assert.equal(alertSpy.mock.callCount(), 1)
-      assert.equal(alertSpy.mock.calls[0]?.arguments[0], '거래처에 등록된 연락처가 없습니다.')
+      assert.deepEqual(toasts, ['거래처에 등록된 연락처가 없습니다.'])
       assert.equal(closeCount, 0)
     } finally {
-      alertSpy.mock.restore()
       await act(async () => { root.unmount() })
       container.remove()
     }

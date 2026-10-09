@@ -72,25 +72,11 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
         <section className="setting-section settings-theme-card">
           {!logId && (
             <div className="setting-item settings-theme-row">
-              <label>테마 선택</label>
-              <div className="segment-control">
-                <button
-                  type="button"
-                  className={`segment-btn${isDark ? '' : ' active'}`}
-                  aria-pressed={!isDark}
-                  onClick={() => patch({ theme: 'light' })}
-                >
-                  라이트
-                </button>
-                <button
-                  type="button"
-                  className={`segment-btn${isDark ? ' active' : ''}`}
-                  aria-pressed={isDark}
-                  onClick={() => patch({ theme: 'dark' })}
-                >
-                  다크
-                </button>
-              </div>
+              <label htmlFor="theme-dark">다크 모드</label>
+              <label className="switch">
+                <input id="theme-dark" type="checkbox" checked={isDark} onChange={(e) => patch({ theme: e.target.checked ? 'dark' : 'light' })} />
+                <span className="slider"></span>
+              </label>
             </div>
           )}
           <div className="setting-item settings-calendar-row">

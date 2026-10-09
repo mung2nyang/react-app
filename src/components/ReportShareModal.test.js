@@ -90,9 +90,10 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
     }
   })
 
-  test('SMS: 연락처 없으면 alert 1회·onClose 미호출', async () => {
+  test('SMS: 연락처 없으면 안내 메시지 1회·onClose 미호출', async () => {
     let closeCount = 0
-    const alertSpy = mock.method(window, 'alert', () => {})
+    /** @type {string[]} */
+    const toasts = []
     const { container, root, exportRef } = mountModal()
     try {
       await act(async () => {
@@ -104,6 +105,7 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
           year: 2026,
           month: 8,
           onClose: () => { closeCount += 1 },
+          showToast: (/** @type {string} */ m) => { toasts.push(m) },
         }))
       })
       const smsPdf = findChannelButton(container, '문자로 보내기', 'PDF로 보내기')
@@ -111,14 +113,9 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
       await act(async () => {
         smsPdf.click()
       })
-      assert.equal(alertSpy.mock.callCount(), 1)
-      assert.equal(
-        alertSpy.mock.calls[0]?.arguments[0],
-        '문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.',
-      )
+      assert.deepEqual(toasts, ['문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.'])
       assert.equal(closeCount, 0)
     } finally {
-      alertSpy.mock.restore()
       await act(async () => { root.unmount() })
       container.remove()
     }

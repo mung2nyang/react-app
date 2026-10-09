@@ -108,19 +108,20 @@
 }
 
 /* §8 결제방식·§13 횟수/금액 공용 세그먼트 (expense-form.css에서 이동) */
+/* 보이는 칸은 34px로 납작하게, 누르는 영역은 44px 그대로(위아래 5px씩 투명). */
 .segment-control {
+  position: relative;
   display: flex;
   width: 140px;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: transparent;
 }
+.segment-control::before { content: ''; position: absolute; inset: 5px 0; border: 1px solid var(--border-color); border-radius: 8px; pointer-events: none; }
 
 .segment-btn {
+  position: relative;
+  z-index: 0;
   flex: 1;
   min-height: 44px;
-  padding: 8px 0;
+  padding: 0;
   border: none;
   background: transparent;
   color: var(--sub-text-color);
@@ -130,8 +131,11 @@
   cursor: pointer;
 }
 
+.segment-btn::before { content: ''; position: absolute; inset: 5px 0; z-index: -1; }
+.segment-btn:first-child::before { border-radius: 8px 0 0 8px; }
+.segment-btn:last-child::before { border-radius: 0 8px 8px 0; }
+.segment-btn.active::before { background: var(--primary-fill); }
 .segment-btn.active {
-  background: var(--primary-fill);
   color: #fff;
   font-weight: 700;
 }

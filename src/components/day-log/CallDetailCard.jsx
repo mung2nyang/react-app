@@ -19,8 +19,9 @@ import './call-detail-card.css'
  * @param {() => void} props.onDelete
  * @param {() => void} props.onTogglePayment
  * @param {() => void} props.onMessage
+ * @param {(message: string) => void} [props.showToast]
  */
-export default function CallDetailCard({ item, payment, settings, client, onEdit, onDelete, onTogglePayment, onMessage }) {
+export default function CallDetailCard({ item, payment, settings, client, onEdit, onDelete, onTogglePayment, onMessage, showToast }) {
   const fare = parseCurrencyValue(item.fare)
   const unpaid = payment.status !== 'paid'
   const distance = parseFloat(item.distanceKm || '') || 0
@@ -73,7 +74,7 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
                     type="button"
                     className="call-phone-btn detail-call-phone"
                     title="연락처 없음"
-                    onClick={() => window.alert('거래처에 등록된 연락처가 없습니다.')}
+                    onClick={() => showToast?.('거래처에 등록된 연락처가 없습니다.')}
                   >
                     <PhoneIcon />
                   </button>

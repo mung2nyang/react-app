@@ -78,7 +78,7 @@ export default function ReportShareModal({ exportRef, viewMode, clientFilter, cl
   /** @param {'pdf'|'image'} type */
   async function shareBySms(type) {
     if (!contact) {
-      window.alert('문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.')
+      showToast?.('문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.')
       return
     }
     onClose()

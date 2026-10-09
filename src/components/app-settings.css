@@ -155,15 +155,14 @@
   cursor: pointer;
 }
 
-/* 세부 입력 하위 묶음(AppSettingsPage·FixedRouteBlock 전용): 안쪽 상자 + 줄 구분선, 글씨·스위치 한 단계 작게. */
-.tree-line-group { margin-top: 10px; padding: 0 14px; border-radius: 14px; background: var(--input-bg); }
+/* 세부 입력 하위 묶음(AppSettingsPage·FixedRouteBlock 전용): 카드 안 상자 없이 줄 구분선만, 글씨·스위치 한 단계 작게. */
+.tree-line-group { margin-top: 10px; border-top: 1px solid var(--border-color); }
 .tree-line-group > .setting-item { margin: 0; padding: 10px 0; min-height: 44px; }
 .tree-line-group > * + * { border-top: 1px solid var(--border-color); }
 .tree-line-group > .setting-item > label:first-child { font-size: var(--fs-2); font-weight: 500; }
 .tree-line-group .switch { width: 40px; height: 22px; }
 .tree-line-group .slider:before { width: 16px; height: 16px; }
 .tree-line-group input:checked + .slider:before { transform: translateX(18px); }
-.tree-line-group .run-count-preset-chip, .tree-line-group .input-box { background: var(--card-bg); }
 
 
 /* 9-B-1: "일상점검표 사용"은 세부 입력 카드 맨 위 한 줄 + 아래 구분선(피그마 앱 설정) */
@@ -175,8 +174,8 @@
 
 /* 테마 선택 + 달력 일일 표시 방식 한 카드: 두 줄 사이 구분선 */
 .settings-theme-row { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
-/* 달력 일일 표시 방식: 왼쪽 제목+설명, 오른쪽 위 횟수|금액 */
-.settings-calendar-row { align-items: flex-start; margin-bottom: 0; }
+/* 달력 일일 표시 방식: 왼쪽 제목+설명, 오른쪽 횟수|금액(상하 가운데) */
+.settings-calendar-row { align-items: center; margin-bottom: 0; }
 .settings-calendar-row .segment-control { flex-shrink: 0; }
 .settings-calendar-copy { min-width: 0; }
 .settings-calendar-copy label { font-size: var(--fs-4); font-weight: 600; }

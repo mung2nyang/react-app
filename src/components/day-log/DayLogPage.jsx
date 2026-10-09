@@ -182,6 +182,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
             onTogglePayment={handleTogglePayment}
             onMessage={(id) => setMessageCallId(id)}
             onAdd={() => openCallForm(null)}
+            showToast={showToast}
           >
             {settings.callDetail && (
               <InlineSheet
@@ -226,6 +227,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
           item={messageItem}
           client={clients.find((item) => item.companyName === messageItem.client)}
           onClose={() => setMessageCallId(null)}
+          showToast={showToast}
         />
       )}
     </div>

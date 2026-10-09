@@ -22,8 +22,9 @@ export function buildTemplateSmsUrl(phone, body) {
  * @param {CallDetailLike} props.item
  * @param {ClientLike|undefined} props.client
  * @param {() => void} props.onClose
+ * @param {(message: string) => void} [props.showToast]
  */
-export default function MessageTemplateSheet({ item, client, onClose }) {
+export default function MessageTemplateSheet({ item, client, onClose, showToast }) {
   const fare = parseCurrencyValue(item.fare).toLocaleString('ko-KR')
   const route = `${item.loadLoc || '상차지'} → ${item.unloadLoc || '하차지'}`
   const company = item.client || '거래처'
@@ -36,7 +37,7 @@ export default function MessageTemplateSheet({ item, client, onClose }) {
   function send(body) {
     const phone = client?.phone || ''
     if (!phone) {
-      window.alert('거래처에 등록된 연락처가 없습니다.')
+      showToast?.('거래처에 등록된 연락처가 없습니다.')
       return
     }
     window.location.href = buildTemplateSmsUrl(phone, body)
