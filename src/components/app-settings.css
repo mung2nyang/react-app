@@ -2,12 +2,6 @@
    테마 버튼 아이콘 정렬 + 고정노선/운행횟수 프리셋 편집기(RunCountChips.jsx/
    RoutePresetEditor.jsx, AppSettingsPage.jsx에서만 렌더) 전용 확인 후 이동. */
 
-.settings-theme-card .theme-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .setting-item.fixed-route-preset-setting,
 .setting-item.run-count-preset-setting {
   flex-direction: column;
