@@ -30,7 +30,6 @@
 .receivables-page .receivable-tab.active {
   background: var(--primary-fill);
   color: #fff;
-  box-shadow: 0 2px 5px color-mix(in srgb, var(--primary-color) 24%, transparent);
 }
 
 .receivables-page .receivable-group-card,
@@ -417,7 +416,6 @@
   font-size: var(--fs-3);
   font-weight: 850;
   cursor: pointer;
-  box-shadow: 0 5px 16px color-mix(in srgb, var(--primary-color) 28%, transparent);
 }
 
 .receivable-detail-all-paid:disabled {

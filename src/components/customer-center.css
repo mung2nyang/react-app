@@ -4,7 +4,7 @@
 .customer-center-page { padding-bottom: 110px; text-align: left; }
 .support-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0 14px; padding: 5px; border-radius: 14px; background: var(--input-bg); }
 .support-tab { min-height: 44px; padding: 7px 4px; border: 0; border-radius: 10px; background: transparent; color: var(--sub-text-color); font: inherit; font-size: var(--fs-floor); font-weight: 750; cursor: pointer; }
-.support-tab.active { color: #fff; background: var(--primary-fill); box-shadow: 0 4px 12px rgba(56, 115, 220, .22); }
+.support-tab.active { color: #fff; background: var(--primary-fill); }
 .support-panel { display: grid; gap: 9px; }
 .support-card { padding: 22px 20px; border: 1px solid var(--border-color); border-radius: 22px; background: var(--card-bg); }
 .support-card-label { margin-bottom: 9px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: 850; }
