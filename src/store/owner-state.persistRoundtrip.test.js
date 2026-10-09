@@ -15,7 +15,8 @@ const { storageKeyFor, storageKeyForLog } = await import('./persist.js')
 const { getState, subscribe, commitBatch } = await import('./app-store.js')
 const { initializeOwnerFromPersist } = await import('./owner-state.js')
 const { saveProfile } = await import('../lib/profile.js')
-const { commitCars, commitInvoices } = await import('./commitHelpers.js')
+const { commitCars, commitClients, commitInvoices } = await import('./commitHelpers.js')
+const { saveExpenses, upsertExpense, emptyExpenseDraft } = await import('../lib/expenses.js')
 const { persistInvoiceRecord } = await import('../domain/invoices.js')
 const { buildTaxInvoiceEntry } = await import('../domain/financeTaxInvoiceEntries.js')
 const { getPendingOps, outboxStorageKey } = await import('../lib/mutationOutbox.js')
@@ -177,4 +178,35 @@ test('레거시 off·dailyDistance·insuranceFee·바닐라 비용은 initialize
   assert.equal(after.unsafe, before.unsafe)
   assert.deepEqual(after.supabase, before.supabase)
   assert.equal(after.schedule, before.schedule)
+})
+
+test('로드맵 25: 비회원 기사 차량 지출(vehicleNumber)이 있어도 다시 켜면 차량·거래처·지출이 그대로 불러와진다', async () => {
+  const owner = 'roundtrip-guest-sub-expense'
+  commitCars(owner, [{ id: 'c-main', type: 'main', number: '12가3456' }, { id: 'c-sub', type: 'sub', number: '34나5678' }])
+  commitClients(owner, [{ id: 'cl-1', companyName: '한빛물류' }])
+  // 지출 번호는 저장 시각(1/1000초)이라 테스트처럼 빠르면 겹침 — 번호는 직접 정한다.
+  const mainItem = { ...upsertExpense([], { ...emptyExpenseDraft('fuel', '2026-10-09'), cost: '50000' }).items[0], id: 'exp-main' }
+  await saveExpenses(owner, [mainItem])
+  const subItem = { ...upsertExpense([], { ...emptyExpenseDraft('maint', '2026-10-09', '34나5678'), name: '엔진오일', cost: '80000' }).items[0], id: 'exp-sub' }
+  await saveExpenses(owner, [...(getState().expenses[owner] || []), subItem])
+  assert.equal(readPersistDomain('expenses', owner).kind, 'value', '기사 차량 지출이 있어도 저장소 형식 검사 통과')
+  commitBatch([
+    { domain: 'cars', ownerKey: owner, value: [] },
+    { domain: 'clients', ownerKey: owner, value: [] },
+    { domain: 'expenses', ownerKey: owner, value: [] },
+  ], { persist: false, syncToCloud: false })
+  initializeOwnerFromPersist(owner)
+  const state = getState()
+  assert.equal((state.cars[owner] || []).length, 2)
+  assert.equal((state.clients[owner] || []).length, 1)
+  const expenses = state.expenses[owner] || []
+  assert.equal(expenses.length, 2)
+  assert.equal(expenses.find((item) => item.kind === 'maint')?.vehicleNumber, '34나5678')
+  assert.equal(expenses.find((item) => item.kind === 'fuel')?.vehicleNumber, undefined)
+})
+
+test('로드맵 25: 지출의 vehicleNumber가 글자가 아니면 지금처럼 형식 오류', () => {
+  const owner = 'roundtrip-guest-bad-vehicle-number'
+  localStorage.setItem(storageKeyFor('expenses', owner), JSON.stringify([{ id: 'e-1', kind: 'maint', date: '2026-10-09', cost: 1000, vehicleNumber: 3456 }]))
+  assert.equal(readPersistDomain('expenses', owner).kind, 'schema')
 })

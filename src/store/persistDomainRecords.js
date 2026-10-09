@@ -48,7 +48,7 @@ const CLIENT_KEYS = [
   'palletOn', 'palletPrice', 'fixedUnitPrice', 'taxRepresentative', 'taxEmail', 'taxAddress',
   'taxBizType', 'taxBizItem', 'supabaseId',
 ]
-const EXPENSE_KEYS = ['id', 'kind', 'date', 'name', 'category', 'fuelType', 'payment', 'cost', 'subsidy', 'mileage', 'liters']
+const EXPENSE_KEYS = ['id', 'kind', 'date', 'name', 'category', 'fuelType', 'payment', 'cost', 'subsidy', 'mileage', 'liters', 'vehicleNumber']
 const DRIVER_KEYS = ['id', 'name', 'phone', 'vehicleNumber', 'startDate', 'endDate', 'inviteCode', 'status', 'supabaseId']
 
 /**
@@ -120,7 +120,7 @@ export function isPersistedExpense(value) {
   if (!isPlainObject(value) || !hasOnlyKeys(value, EXPENSE_KEYS)) return false
   if (typeof value.id !== 'string' || typeof value.date !== 'string') return false
   if (value.kind !== 'maint' && value.kind !== 'fuel' && value.kind !== 'misc') return false
-  for (const text of ['name', 'category', 'fuelType', 'payment']) {
+  for (const text of ['name', 'category', 'fuelType', 'payment', 'vehicleNumber']) {
     if (text in value && typeof value[text] !== 'string') return false
   }
   for (const num of ['cost', 'subsidy', 'mileage']) {
