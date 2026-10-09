@@ -66,6 +66,21 @@ export default function SideMenu({
           </div>
         </div>
         <div className="side-menu-sections">
+          <section className="side-menu-section business-section">
+            <h3 className="side-menu-section-title">경영</h3>
+            <button type="button" className="dropdown-item" onClick={() => pick('clients')}>
+              <PeopleIcon />
+              거래처
+            </button>
+            <button type="button" className="dropdown-item" onClick={() => pick('receivables')}>
+              <ChartIcon />
+              미수금/정산 관리
+            </button>
+            <button type="button" className="dropdown-item" onClick={() => pick('report')}>
+              <DocIcon />
+              서류 발급
+            </button>
+          </section>
           <section className="side-menu-section management-section">
             <h3 className="side-menu-section-title">관리</h3>
             <button type="button" className="dropdown-item" onClick={() => pick('cars')}>
@@ -100,21 +115,6 @@ export default function SideMenu({
                 {item.driverName || item.label} 기사 관리
               </button>
             ))}
-          </section>
-          <section className="side-menu-section business-section">
-            <h3 className="side-menu-section-title">경영</h3>
-            <button type="button" className="dropdown-item" onClick={() => pick('clients')}>
-              <PeopleIcon />
-              거래처
-            </button>
-            <button type="button" className="dropdown-item" onClick={() => pick('receivables')}>
-              <ChartIcon />
-              미수금/정산 관리
-            </button>
-            <button type="button" className="dropdown-item" onClick={() => pick('report')}>
-              <DocIcon />
-              서류 발급
-            </button>
           </section>
           <section className="side-menu-section settings-section">
             <h3 className="side-menu-section-title">설정</h3>

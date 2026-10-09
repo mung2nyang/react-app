@@ -4,7 +4,6 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(2px);
   z-index: 1000;
 }
 
@@ -14,6 +13,7 @@
   right: 0;
   width: 270px;
   height: 100vh;
+  height: 100dvh; /* 아이폰 주소창에 메뉴 아래가 가리지 않게 */
   z-index: 1001;
   display: flex;
   flex-direction: column;
@@ -61,49 +61,29 @@
 }
 
 .side-menu-section-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
   margin: 0 4px 5px;
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   font-weight: 850;
 }
 
-.side-menu-section-title::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--primary-color);
-}
-
-.management-section .side-menu-section-title::before { background: #68d391; }
-.business-section .side-menu-section-title::before { background: #63b3ed; }
-.settings-section .side-menu-section-title::before { background: #b794f4; }
-
-.business-section { order: 1; }
-.management-section { order: 2; }
-.settings-section { order: 4; }
-
 .side-menu .dropdown-item {
   width: 100%;
   min-height: 44px;
-  margin: 3px 0;
+  margin: 0;
   padding: 8px 11px;
   display: flex;
   align-items: center;
   gap: 9px;
   text-align: left;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  background-color: var(--input-bg);
+  border: 0;
+  border-radius: 10px;
+  background-color: transparent;
   color: var(--text-color);
   font: inherit;
   font-size: var(--fs-3);
   font-weight: 650;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .side-menu .dropdown-item svg {
