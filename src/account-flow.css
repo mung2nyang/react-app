@@ -473,7 +473,7 @@ body.account-flow-active {
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background-color: #cbd5e0;
+  background-color: var(--switch-off-bg);
   transition: .25s ease;
   border-radius: 26px;
 }
@@ -532,9 +532,9 @@ input:checked + .slider:before { transform: translateX(22px); }
 
 .toast-message {
   position: fixed;
-  top: 50%;
+  bottom: calc(76px + env(safe-area-inset-bottom)); /* 아래 탭 바로 위 — 내용을 가리지 않게 */
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   background-color: rgba(15, 23, 42, 0.9);
   color: #fff;
   padding: 14px 24px;

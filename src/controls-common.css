@@ -52,6 +52,9 @@
   font-weight: 800;
 }
 
+/* 스위치는 체크박스를 숨겨 그림으로 그리므로, 키보드 위치 표시를 그림에 준다. */
+.switch input:focus-visible + .slider { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+
 .setting-item {
   display: flex;
   align-items: center;
