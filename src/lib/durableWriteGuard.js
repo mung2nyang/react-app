@@ -75,5 +75,5 @@ export function guardBeforeUnload(event) {
 /** @returns {boolean} true면 이동을 진행해도 된다. */
 export function confirmLeaveIfUnsafe() {
   if (!isDurableWriteBroken()) return true
-  return window.confirm('마지막 편집을 아직 안전하게 저장하지 못했습니다. 그래도 나가시겠습니까?')
+  return window.confirm('방금 고친 내용이 아직 저장되지 않았습니다. 그래도 나가시겠습니까?')
 }

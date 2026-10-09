@@ -165,7 +165,7 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
       )}
       {pendingDelete && (
         <ConfirmModal
-          message="해당 업체를 삭제하시겠습니까?"
+          message="이 거래처를 삭제하시겠습니까?"
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmRemove}
         />

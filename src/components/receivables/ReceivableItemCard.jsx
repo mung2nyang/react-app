@@ -57,7 +57,7 @@ export default function ReceivableItemCard({
   }
 
   const route = (item.loadLoc || item.unloadLoc)
-    ? <>{item.loadLoc || '상차지 미상'}<span>→</span>{item.unloadLoc || '하차지 미상'}</>
+    ? <>{item.loadLoc || '상차지 없음'}<span>→</span>{item.unloadLoc || '하차지 없음'}</>
     : '운행 구간 미등록'
 
   return (
@@ -98,7 +98,7 @@ export default function ReceivableItemCard({
       {onPayItem && (
         <div className="receivable-item-actions">
           <button type="button" className="receivable-item-paid-btn" onClick={onPayItem} disabled={saving}>
-            이 건 입금 완료
+            입금 완료
           </button>
           <button type="button" className="receivable-item-partial-btn" onClick={() => onTogglePartial?.(key)}>
             부분 입금 처리

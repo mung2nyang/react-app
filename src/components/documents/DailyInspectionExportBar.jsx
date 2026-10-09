@@ -36,7 +36,7 @@ export default function DailyInspectionExportBar({ form, ready, showToast }) {
   /** @param {'pdf'|'image'} type */
   async function buildFile(type) {
     const element = formRef.current
-    if (!element) throw new Error('내보낼 서식을 찾지 못했습니다.')
+    if (!element) throw new Error('점검표를 만들지 못했습니다. 창을 닫았다가 다시 시도해 주세요.')
     return type === 'image' ? createReportImageFile(element, baseName, { orientation: 'landscape' }) : createReportPdfFile(element, baseName, { orientation: 'landscape' })
   }
 

@@ -114,7 +114,7 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
       assert.equal(alertSpy.mock.callCount(), 1)
       assert.equal(
         alertSpy.mock.calls[0]?.arguments[0],
-        '특정 거래처의 상세내역을 조회하고, 거래처 연락처가 등록되어 있는지 확인해 주세요.',
+        '문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.',
       )
       assert.equal(closeCount, 0)
     } finally {
@@ -157,7 +157,7 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
         await Promise.resolve()
       })
       assert.equal(closeCount, 1)
-      assert.ok(toasts.includes('이 기기에서는 파일 공유를 지원하지 않습니다.'))
+      assert.ok(toasts.includes('이 휴대폰에서는 파일 공유를 할 수 없습니다. [PDF 다운로드]로 저장한 뒤 보내 주세요.'))
     } finally {
       if (originalShare) {
         Object.defineProperty(navigator, 'share', originalShare)

@@ -156,7 +156,7 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast, employ
       <div className="modal-content" onClick={(event) => event.stopPropagation()}>
         <div className="modal-title">데이터 다운로드 / 불러오기</div>
         <p className="confirm-modal-text" style={TEXT_STYLE}>
-          {'지금까지 입력한 운행·정산·차량 기록 전체를 내 기기로 다운로드합니다.\n세무 증빙이나 개인 보관을 위한 내보내기 기능입니다.'}
+          {'지금까지 입력한 운행·정산·차량 기록 전체를 내 기기로 다운로드합니다.'}
         </p>
         <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
           {'파일에는 계좌번호 등 개인정보가 들어 있으니 안전하게 보관해 주세요.\n세무 신고용 서류는 서류 발급에서 PDF·엑셀로도 받을 수 있습니다.'}

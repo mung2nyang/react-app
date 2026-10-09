@@ -111,7 +111,7 @@ export default function ClientListPage({ ownerKey = 'guest', onBack, showToast, 
         <ClientFormModal draft={draft} setDraft={setDraft} editingId={editingId} onCancel={() => setModalOpen(false)} onSave={save} />
       )}
       {pendingDelete && (
-        <ConfirmModal message="해당 업체를 삭제하시겠습니까?" onCancel={() => setPendingDelete(null)} onConfirm={confirmRemove} />
+        <ConfirmModal message="이 거래처를 삭제하시겠습니까?" onCancel={() => setPendingDelete(null)} onConfirm={confirmRemove} />
       )}
     </div>
   )

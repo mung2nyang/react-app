@@ -41,7 +41,7 @@ export default function ReportShareModal({ exportRef, viewMode, clientFilter, cl
   /** @param {'pdf'|'image'} type */
   async function buildFile(type) {
     const element = exportRef.current
-    if (!element) throw new Error('내보낼 화면을 찾지 못했습니다.')
+    if (!element) throw new Error('내역서를 만들지 못했습니다. 창을 닫았다가 다시 시도해 주세요.')
     document.body.classList.add('pdf-export-mode')
     try {
       return type === 'image' ? await createReportImageFile(element, baseFileName) : await createReportPdfFile(element, baseFileName)
@@ -59,7 +59,7 @@ export default function ReportShareModal({ exportRef, viewMode, clientFilter, cl
       const file = await buildFile(type)
       const nav = /** @type {Navigator & { canShare?: (data: { files: Array<File> }) => boolean }} */ (navigator)
       if (!nav.share || (nav.canShare && !nav.canShare({ files: [file] }))) {
-        showToast?.('이 기기에서는 파일 공유를 지원하지 않습니다.')
+        showToast?.('이 휴대폰에서는 파일 공유를 할 수 없습니다. [PDF 다운로드]로 저장한 뒤 보내 주세요.')
         return
       }
       await nav.share({
@@ -78,7 +78,7 @@ export default function ReportShareModal({ exportRef, viewMode, clientFilter, cl
   /** @param {'pdf'|'image'} type */
   async function shareBySms(type) {
     if (!contact) {
-      window.alert('특정 거래처의 상세내역을 조회하고, 거래처 연락처가 등록되어 있는지 확인해 주세요.')
+      window.alert('문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.')
       return
     }
     onClose()

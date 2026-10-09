@@ -1,4 +1,4 @@
-// ReportPage — 위 카드 [전체][세부내역(거래처선택)] 탭(9-C-2), 버튼 카드는 내용 아래.
+// ReportPage — 위 카드 [전체][세부 내역 (거래처 선택)] 탭(9-C-2), 버튼 카드는 내용 아래.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -49,7 +49,7 @@ function buttonByText(root, text) {
   return found
 }
 
-test('[세부내역(거래처선택)] 탭 → 창 [조회] → 세부 보기·탭 파랑, 다시 누르면 창, [전체] → 요약', async () => {
+test('[세부 내역 (거래처 선택)] 탭 → 창 [조회] → 세부 보기·탭 파랑, 다시 누르면 창, [전체] → 요약', async () => {
   const ownerKey = 'report-page-detail-tab'
   commitClients(ownerKey, [
     { id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: 10000 },
@@ -63,13 +63,13 @@ test('[세부내역(거래처선택)] 탭 → 창 [조회] → 세부 보기·�
     assert.equal(topCard.querySelector('.doc-scope-tab.active')?.textContent, '전체')
     assert.equal([...container.querySelectorAll('button')].some((el) => el.textContent === '세부 내역서'), false, '옛 버튼 없음')
 
-    await act(async () => { buttonByText(topCard, '세부내역(거래처선택)').click() })
+    await act(async () => { buttonByText(topCard, '세부 내역 (거래처 선택)').click() })
     assert.ok(container.textContent.includes('세부 내역서 조회'))
     await act(async () => { buttonByText(container, '조회').click() })
     assert.ok(container.textContent.includes('세부 운송료 정산'))
-    assert.equal(topCard.querySelector('.doc-scope-tab.active')?.textContent, '세부내역(거래처선택)')
+    assert.equal(topCard.querySelector('.doc-scope-tab.active')?.textContent, '세부 내역 (거래처 선택)')
 
-    await act(async () => { buttonByText(topCard, '세부내역(거래처선택)').click() })
+    await act(async () => { buttonByText(topCard, '세부 내역 (거래처 선택)').click() })
     assert.ok(container.textContent.includes('세부 내역서 조회'), '세부 보기 중 다시 누르면 창')
     await act(async () => { buttonByText(container, '취소').click() })
 
@@ -87,7 +87,7 @@ test('[세부내역] 창에서 [취소] → 요약 그대로, 버튼 3개는 내
   const { container, cleanup } = await renderReport(ownerKey)
   try {
     const topCard = /** @type {Element} */ (container.querySelector('.report-top-card'))
-    await act(async () => { buttonByText(topCard, '세부내역(거래처선택)').click() })
+    await act(async () => { buttonByText(topCard, '세부 내역 (거래처 선택)').click() })
     await act(async () => { buttonByText(container, '취소').click() })
     assert.equal(container.textContent.includes('세부 내역서 조회'), false)
     assert.equal(topCard.querySelector('.doc-scope-tab.active')?.textContent, '전체')
@@ -110,7 +110,7 @@ test('세부 보기에서도 머리 뒤로가기는 화면 나가기', async () 
   const { container, cleanup } = await renderReport(ownerKey, () => { backCount += 1 })
   try {
     const topCard = /** @type {Element} */ (container.querySelector('.report-top-card'))
-    await act(async () => { buttonByText(topCard, '세부내역(거래처선택)').click() })
+    await act(async () => { buttonByText(topCard, '세부 내역 (거래처 선택)').click() })
     await act(async () => { buttonByText(container, '조회').click() })
     const back = container.querySelector('button[title="뒤로가기"]')
     assert.ok(back instanceof window.HTMLButtonElement)

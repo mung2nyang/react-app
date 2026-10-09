@@ -38,7 +38,7 @@ describe('notifications — 데이터 백업 권장 알림 및 게스트/로그�
     const backup14 = notifs14.find((item) => item.id.startsWith('backup:'))
     assert.ok(backup14, '14일 경과 시 백업 알림이 떠야 한다')
     assert.equal(backup14.title, '데이터 백업 권장')
-    assert.equal(backup14.body, '마지막 백업으로부터 14일이 지났습니다. 최신 데이터로 백업해 주세요.')
+    assert.equal(backup14.body, '마지막 백업 후 14일이 지났습니다. 지금 백업해 주세요.')
 
     // 15일 전: 알림 발생
     const fifteenDaysAgo = new Date(now - 15 * 86400000).toISOString()
@@ -46,7 +46,7 @@ describe('notifications — 데이터 백업 권장 알림 및 게스트/로그�
     const notifs15 = collectNotifications('guest')
     const backup15 = notifs15.find((item) => item.id.startsWith('backup:'))
     assert.ok(backup15, '15일 경과 시 백업 알림이 떠야 한다')
-    assert.equal(backup15.body, '마지막 백업으로부터 15일이 지났습니다. 최신 데이터로 백업해 주세요.')
+    assert.equal(backup15.body, '마지막 백업 후 15일이 지났습니다. 지금 백업해 주세요.')
   })
 
   test('세션 분기: 로그인(클라우드) 세션에서는 백업 알림이 전혀 뜨지 않는다', () => {

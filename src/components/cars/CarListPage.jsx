@@ -26,7 +26,7 @@ const emptyDraft = {
   ...NEW_DRIVER_INCOME_DRAFT,
   inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'log',
 }
-const DELETE_CAR_CONFIRM = '해당 차량을 삭제하시겠습니까? 이 차량으로 기록된 운행 내역도 함께 삭제되며 복구할 수 없습니다.'
+const DELETE_CAR_CONFIRM = '이 차량을 삭제하시겠습니까? 이 차량의 운행 기록도 함께 지워지며 되돌릴 수 없습니다.'
 const DISCONNECT_CONFIRM = '이 차량의 기사 연동을 해제하시겠습니까? 연동 중인 기사에게는 해제 요청이 가고, 기사가 동의하거나 3일이 지나면 해제됩니다.'
 
 /**

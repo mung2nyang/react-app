@@ -62,7 +62,7 @@ async function executeDriverUpsertOp(op, captured) {
   const conflict = await findOverlappingDriverLinkOnSupabase(car.supabaseId, op.payload.startDate ?? '', op.payload.endDate ?? '', op.payload.supabaseId)
   assertSessionStillCurrent(captured)
   if (conflict) {
-    throw new PermanentFailureError('같은 차량에 이미 겹치는 기간으로 연결되어 있거나 초대된 기록이 있습니다.')
+    throw new PermanentFailureError('이 차량은 같은 기간에 이미 다른 기사가 연결(또는 초대)되어 있습니다.')
   }
 
   return upsertDriverLinkOnSupabase({

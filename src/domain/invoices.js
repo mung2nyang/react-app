@@ -80,7 +80,7 @@ export function invoiceCanIssue(item, settings) {
     }
   }
   if (!item.clientBizNumber) {
-    return { ok: false, needDraft: true, error: '사업자등록번호란이 입력이 안 되어 있어요. 먼저 입력해 주세요.' }
+    return { ok: false, needDraft: true, error: '사업자등록번호를 먼저 입력해 주세요.' }
   }
   return { ok: true }
 }

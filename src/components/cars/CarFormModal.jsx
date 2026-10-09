@@ -107,7 +107,7 @@ export default function CarFormModal({
               <p className="car-settlement-mode-guide">
                 {isSalary
                   ? '건당(또는 월) 고정으로 기사에게 지급할 금액을 설정합니다.'
-                  : '해당 차량(기사) 운행 매출 중 기사에게 지급할 비율(%)을 설정합니다.'}
+                  : '이 차량 매출 중 기사에게 지급할 비율(%)을 설정합니다.'}
               </p>
               <div className="car-commission-value">
                 <div className="car-commission-type" role="group" aria-label="정산 방식">

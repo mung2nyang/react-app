@@ -15,7 +15,7 @@ import './PersonalInfoPage.css'
 /** @typedef {null|'first'|'second'} WithdrawStep */
 
 const WITHDRAW_MSG_1 = '정말 탈퇴하시겠습니까? 모든 운행 기록, 거래처, 정산 데이터가 영구적으로 삭제되며 복구할 수 없습니다.'
-const WITHDRAW_MSG_2 = '이 작업은 취소할 수 없습니다. 한 번 더 확인해 주세요'
+const WITHDRAW_MSG_2 = '탈퇴하면 되돌릴 수 없습니다. 마지막으로 한 번 더 확인해 주세요.'
 const WITHDRAW_LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습니다.'
 
 /**

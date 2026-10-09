@@ -145,7 +145,7 @@ export default function OwnerScopedClientsView({ ownerKey = 'guest', onBack, sho
       )}
       {pendingDelete && (
         <ConfirmModal
-          message="해당 업체를 삭제하시겠습니까?"
+          message="이 거래처를 삭제하시겠습니까?"
           onCancel={() => setPendingDelete(null)}
           onConfirm={confirmRemove}
         />

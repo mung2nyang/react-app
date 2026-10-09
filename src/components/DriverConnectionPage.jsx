@@ -144,7 +144,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
             </div>
             <div>
               <span>계약기간</span>
-              <strong>{driver.startDate || '-'}{driver.endDate ? ` ~ ${driver.endDate}` : ' ~ 계속'}</strong>
+              <strong>{driver.startDate || '-'}{driver.endDate ? ` ~ ${driver.endDate}` : ' ~ 종료일 없음'}</strong>
             </div>
           </div>
 

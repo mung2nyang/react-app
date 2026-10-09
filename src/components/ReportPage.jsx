@@ -151,7 +151,7 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
     setClientFilter(pickerValue)
     setViewMode('detail')
     setPickerOpen(false)
-    showToast?.('세부 내역서가 조회되었습니다.')
+    showToast?.('세부 내역서를 불러왔습니다.')
   }
 
   return (
@@ -163,7 +163,7 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
         {tabs}
         <div className="doc-scope-tabs" role="tablist" aria-label="내역 범위">
           <button type="button" role="tab" aria-selected={viewMode === 'summary'} className={`doc-scope-tab${viewMode === 'summary' ? ' active' : ''}`} onClick={() => setViewMode('summary')}>전체</button>
-          <button type="button" role="tab" aria-selected={viewMode === 'detail'} className={`doc-scope-tab${viewMode === 'detail' ? ' active' : ''}`} onClick={openDetailPicker}>세부내역(거래처선택)</button>
+          <button type="button" role="tab" aria-selected={viewMode === 'detail'} className={`doc-scope-tab${viewMode === 'detail' ? ' active' : ''}`} onClick={openDetailPicker}>세부 내역 (거래처 선택)</button>
         </div>
       </div>
 

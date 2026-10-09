@@ -98,7 +98,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
       id: DAILY_INSPECTION_NOTICE_ID,
       page: 'settings',
       title: '일상점검표가 의무화되었습니다',
-      body: '관련 법령에 따라 출발 전 일상점검표 작성이 의무화되었습니다. 안전한 운행을 위해 아래 버튼을 눌러 기능을 켜주세요.',
+      body: '관련 법령에 따라 출발 전 일상점검표 작성이 의무화되었습니다. 아래 버튼을 눌러 일상점검표 기능을 켜 주세요.',
       actionLabel: '바로 사용하기',
       dismissLabel: '다시 보지 않기',
     })
@@ -117,7 +117,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
       const backupId = `backup:${hasValidBackup ? lastBackupTime : 'never'}`
       if (!dismissed.has(backupId)) {
         const body = (hasValidBackup && daysSince !== null)
-          ? `마지막 백업으로부터 ${daysSince}일이 지났습니다. 최신 데이터로 백업해 주세요.`
+          ? `마지막 백업 후 ${daysSince}일이 지났습니다. 지금 백업해 주세요.`
           : '아직 백업한 적이 없습니다. 앱을 지우거나 휴대폰을 바꾸면 기록이 사라질 수 있습니다.'
         items.push({
           id: backupId,

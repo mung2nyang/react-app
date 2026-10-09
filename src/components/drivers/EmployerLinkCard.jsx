@@ -56,7 +56,7 @@ export default function EmployerLinkCard({ ownerKey, session, showToast, onUnlin
     <section className="setting-section personal-card employer-link-card">
       <div className="personal-card-heading">
         <span className="personal-card-icon">03</span>
-        <div><h3>소속 연결</h3><p>연동된 차주와의 연결 관리</p></div>
+        <div><h3>소속 연결</h3><p>차주와 연결 관리</p></div>
       </div>
       {link ? (
         <>
