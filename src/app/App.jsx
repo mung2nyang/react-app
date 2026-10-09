@@ -5,6 +5,7 @@ import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../components/OnboardingPage.jsx'
 import WelcomeProfileView from '../components/auth/WelcomeProfileView.jsx'
 import BootRetryScreen from '../components/BootRetryScreen.jsx'
+import LoadFailScreen from '../components/LoadFailScreen.jsx'
 import { ensureProfileRow } from '../supabaseClient.js'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
@@ -37,6 +38,7 @@ export default function App() {
     showToast,
     booting,
     bootLinkFailed,
+    guestLoadFailed,
     ownerKey,
     cars,
     inAccountFlow,
@@ -45,6 +47,7 @@ export default function App() {
   } = useAppSession()
 
   if (bootLinkFailed) return <BootRetryScreen />
+  if (guestLoadFailed) return <LoadFailScreen />
 
   return (
     <>

@@ -25,6 +25,7 @@ export function useAppSession() {
   const [toast, setToast] = useState('')
   const [booting, setBooting] = useState(true)
   const [bootLinkFailed, setBootLinkFailed] = useState(false) // 로드맵 19: 연동 확인 실패 → 안내 화면
+  const [loadFailedOwner, setLoadFailedOwner] = useState('') // 로드맵 32: 저장된 기록을 못 읽은 owner
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -101,7 +102,7 @@ export function useAppSession() {
   // 값으로 채운다. hydrate는 그 위에 서버 값을 덮어쓸 뿐 — 이 초기화 없이는 hydrate가
   // 없는 게스트 세션에서 store가 계속 비어 있게 된다.
   useEffect(() => {
-    initializeOwnerFromPersist(ownerKey)
+    setLoadFailedOwner(initializeOwnerFromPersist(ownerKey) ? '' : ownerKey)
   }, [ownerKey])
 
   useEffect(() => {
@@ -136,6 +137,8 @@ export function useAppSession() {
     showToast,
     booting,
     bootLinkFailed,
+    // 로드맵 32: 비회원 기록을 못 읽었으면 입력 전에 막음(빈 화면에서 쓰면 기존 기록을 덮어씀). 로그인 화면·회원은 그대로.
+    guestLoadFailed: !!session?.guestMode && loadFailedOwner === ownerKey,
     ownerKey,
     cars,
     inAccountFlow,

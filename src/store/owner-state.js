@@ -46,6 +46,7 @@ const SLICE_DOMAINS = ['cars', 'clients', 'settings', 'expenses', 'invoices', 'd
  * Store로 넣지 않는다 — 부트 시점엔 hydrate가 이미 서버 정본을 Store에 넣었고, 여기서
  * 옛 LS를 다시 얹으면 그 정본을 덮는다. 로그인 LS에 남는 dismissedNotifications만 읽는다.
  * @param {string} ownerKey
+ * @returns {boolean} 하나라도 못 읽었으면 false(로드맵 32: 비회원은 막기 화면)
  */
 export function initializeOwnerFromPersist(ownerKey) {
   const cloud = getCloudOwnerKey() === ownerKey
@@ -54,7 +55,7 @@ export function initializeOwnerFromPersist(ownerKey) {
   for (const domain of SLICE_DOMAINS) {
     if (cloud && CLOUD_MEMORY_ONLY_DOMAINS.has(domain)) continue
     const read = readPersistDomain(domain, ownerKey)
-    if (!read.ok) return
+    if (!read.ok) return false
     if (cloud && domain === 'settings') {
       const raw = read.value && typeof read.value === 'object' ? read.value : {}
       const theme = 'theme' in raw && raw.theme === 'dark' ? 'dark' : 'light'
@@ -70,10 +71,10 @@ export function initializeOwnerFromPersist(ownerKey) {
   }
   if (cloud) {
     if (entries.length) commitBatch(entries, { persist: false, syncToCloud: false })
-    return
+    return true
   }
   const workRead = readLogWorkData(ownerKey, 'main')
-  if (!workRead.ok) return
+  if (!workRead.ok) return false
   entries.push({ domain: 'workData', ownerKey, value: workRead.value })
   const carsEntry = entries.find((entry) => entry.domain === 'cars')
   const cars = Array.isArray(carsEntry?.value) ? /** @type {Array<CarLike>} */ (carsEntry.value) : []
@@ -82,7 +83,7 @@ export function initializeOwnerFromPersist(ownerKey) {
   for (const car of cars) {
     if (car?.type !== 'sub' || !car.number || car.number === 'main') continue
     const logRead = readLogWorkData(ownerKey, car.number)
-    if (!logRead.ok) return
+    if (!logRead.ok) return false
     extra[car.number] = logRead.value
   }
   commitBatch(entries, {
@@ -90,6 +91,7 @@ export function initializeOwnerFromPersist(ownerKey) {
     syncToCloud: false,
     replaceWorkLogs: { ownerKey, next: { main: workRead.value, ...extra } },
   })
+  return true
 }
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */

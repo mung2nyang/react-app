@@ -1034,8 +1034,10 @@ test('재감사 11차 — confirm으로 이동을 허용한 뒤 재진입해도 
   let errSpy
 
   try {
-    await setupGuestDayLog(container, root, dateKey, () => {
-      seedPalletClient(ownerKey)
+    await setupGuestDayLog(container, root, dateKey, () => { seedPalletClient(ownerKey) })
+    // 시험 일지는 [비회원으로 시작하기]로 저장소를 다 읽은 뒤 메모리에만 넣는다 — 저장소에 써지면 로드맵 32 막기 화면,
+    // 시작 전에 넣으면 시작할 때 저장소 값으로 바뀐다(이 테스트는 메모리 쪽 복원만 봄). 넣은 뒤 일지 화면을 다시 연다.
+    await act(async () => {
       commitWorkData(ownerKey, {
         [dateKey]: {
           isOff: false,
@@ -1044,7 +1046,13 @@ test('재감사 11차 — confirm으로 이동을 허용한 뒤 재진입해도 
           callDetails: [{ id: 'trp-unsafe-1', fare: '10,000', client: '한진', payments: rejectedPayments }],
           fixedRouteCounts: {},
         },
-      }, { syncToCloud: false })
+      }, { syncToCloud: false, persist: false })
+      window.history.pushState({}, '', '/app')
+      window.dispatchEvent(new window.PopStateEvent('popstate'))
+    })
+    await act(async () => {
+      window.history.pushState({}, '', `/app/day/${dateKey}`)
+      window.dispatchEvent(new window.PopStateEvent('popstate'))
     })
     await waitUntil(() => !!container.querySelector('#modalPalletCount'))
     errSpy = spyConsoleError('일지 자동 저장 실패:')
