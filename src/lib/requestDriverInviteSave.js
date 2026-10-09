@@ -25,7 +25,7 @@ import {
 } from './driverLinkRpc.js'
 
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const SESSION_CHANGED_MESSAGE = '세션이 바뀌어 저장을 중단했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SESSION_CHANGED_MESSAGE = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
 
 /**
  * 서버가 확정한 행을 해당 로컬 driver 항목에 반영한다(순수).

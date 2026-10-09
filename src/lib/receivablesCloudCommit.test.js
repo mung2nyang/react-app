@@ -20,7 +20,7 @@ const { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK } = await i
 const { markReceivableItemPaid, addPartialPayment, toggleCallPaymentStatus } = await import('../domain/payments.js')
 
 const FAIL_FAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const SESSION_CHANGED = '세션이 바뀌어 저장을 중단했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SESSION_CHANGED = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
 const DK = '2026-05-10'
 
 /** @param {string} userId @param {string} ownerKey @param {boolean} [ready] */

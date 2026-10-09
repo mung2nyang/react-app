@@ -36,7 +36,7 @@ describe('assertCloudWriteReady / blockedReasonForCloudWrite', () => {
   test('세션은 있는데 hydration이 ready가 아니면 던진다', () => {
     beginSessionEpoch('user-x', 'owner-x')
     setHydration({ status: 'hydrating', userId: 'user-x', ownerKey: 'owner-x' })
-    assert.throws(() => assertCloudWriteReady(), /준비되지 않았습니다/)
+    assert.throws(() => assertCloudWriteReady(), /아직 기록을 불러오는 중입니다/)
     assert.ok(blockedReasonForCloudWrite('some-cloud-id'))
     endCloudSession()
   })

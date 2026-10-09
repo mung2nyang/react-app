@@ -110,7 +110,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     beginFailed('user-1', ownerKey)
     commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '유지' }, { syncToCloud: false })
     writeJsonKey('profile', ownerKey, { name: 'LS유지' })
-    await assert.rejects(() => saveProfile(ownerKey, { ...EMPTY_PROFILE, name: '막힘' }), /클라우드 동기화가 아직 준비되지 않았습니다/)
+    await assert.rejects(() => saveProfile(ownerKey, { ...EMPTY_PROFILE, name: '막힘' }), /아직 기록을 불러오는 중입니다/)
     assert.equal(countOf('profiles', 'upsert'), 0)
     assert.equal(profileName(getState().profile[ownerKey]), '유지')
     assert.equal(profileName(readJsonKey('profile', ownerKey, {})), 'LS유지')

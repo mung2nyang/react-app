@@ -49,7 +49,7 @@ async function executeDriverUpsertOp(op, captured) {
   // Store를 우선 읽고, 이 owner가 Store에 없을 때만(게스트/미부트) 예전처럼 LS 폴백.
   const cars = /** @type {Array<CarRecord>} */ (getState().cars[op.ownerKey] ?? readJson(keyFor(KEYS.cars, op.ownerKey), []))
   const car = cars.find((item) => item.number === op.payload.vehicleNumber)
-  if (!car?.supabaseId) throw new Error('선택한 차량이 아직 클라우드에 동기화되지 않았습니다.')
+  if (!car?.supabaseId) throw new Error('방금 등록한 차량이 아직 저장 중입니다. 잠시 후 다시 시도해 주세요.')
 
   if (!op.payload.supabaseId) {
     // 사용자 지시 8번: 재시도 전에 "이미 내가 성공시켰을 수도 있는" 동일한 삽입이

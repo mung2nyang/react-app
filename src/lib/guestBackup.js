@@ -80,7 +80,7 @@ export function buildGuestBackupData() {
  */
 export function applyGuestBackupData(parsed) {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    return { ok: false, error: '유효한 백업 데이터가 아닙니다.' }
+    return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
   }
 
   const record = /** @type {Record<string, unknown>} */ (parsed)
@@ -89,7 +89,7 @@ export function applyGuestBackupData(parsed) {
     'drivers', 'profile', 'workData', 'workLogs', 'subWorkData',
   ]
   if (!KNOWN_KEYS.some((key) => key in record)) {
-    return { ok: false, error: '백업 데이터에 유효한 도메인이 없습니다.' }
+    return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
   }
 
   // 중첩 구조 및 타입 런타임 검증 (AGENTS §6)
@@ -98,44 +98,44 @@ export function applyGuestBackupData(parsed) {
     if (domain in record) {
       const arr = record[domain]
       if (!Array.isArray(arr) || arr.some((item) => !item || typeof item !== 'object')) {
-        return { ok: false, error: `${domain} 데이터 형식이 올바르지 않습니다.` }
+        return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
       }
     }
   }
 
   if ('settings' in record) {
     if (!record.settings || typeof record.settings !== 'object' || Array.isArray(record.settings)) {
-      return { ok: false, error: 'settings 형식이 올바르지 않습니다.' }
+      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
     }
   }
   if ('profile' in record) {
     if (!record.profile || typeof record.profile !== 'object' || Array.isArray(record.profile)) {
-      return { ok: false, error: 'profile 형식이 올바르지 않습니다.' }
+      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
     }
   }
   if ('workData' in record) {
     if (!record.workData || typeof record.workData !== 'object' || Array.isArray(record.workData)) {
-      return { ok: false, error: 'workData 형식이 올바르지 않습니다.' }
+      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
     }
     for (const day of Object.values(/** @type {Record<string, unknown>} */ (record.workData))) {
       if (!day || typeof day !== 'object' || Array.isArray(day)) {
-        return { ok: false, error: '일지 데이터 항목이 올바르지 않습니다.' }
+        return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
       }
     }
   }
   if ('workLogs' in record) {
     if (!record.workLogs || typeof record.workLogs !== 'object' || Array.isArray(record.workLogs)) {
-      return { ok: false, error: 'workLogs 형식이 올바르지 않습니다.' }
+      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
     }
     for (const log of Object.values(/** @type {Record<string, unknown>} */ (record.workLogs))) {
       if (!log || typeof log !== 'object' || Array.isArray(log)) {
-        return { ok: false, error: '차량별 일지 항목이 올바르지 않습니다.' }
+        return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
       }
     }
   }
   if ('subWorkData' in record) {
     if (!record.subWorkData || typeof record.subWorkData !== 'object' || Array.isArray(record.subWorkData)) {
-      return { ok: false, error: 'subWorkData 형식이 올바르지 않습니다.' }
+      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
     }
   }
 
@@ -169,6 +169,6 @@ export function applyGuestBackupData(parsed) {
     replaceOwnerState('guest', snapshot, { sync: false })
     return { ok: true }
   } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : '백업 적용 중 오류가 발생했습니다.' }
+    return { ok: false, error: err instanceof Error ? err.message : '백업을 적용하지 못했습니다.' }
   }
 }

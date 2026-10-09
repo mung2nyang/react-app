@@ -43,7 +43,7 @@ export async function deleteVehicleFromSupabase(vehicleSupabaseId, captured) {
   assertSessionStillCurrent(captured)
   if (error) throw error
   if (Array.isArray(data) && data.length === 0) {
-    throw new Error('삭제할 차량 행을 찾지 못했습니다.')
+    throw new Error('이미 삭제됐거나 찾을 수 없습니다. 화면을 새로고침해 주세요.')
   }
 }
 
@@ -66,7 +66,7 @@ export async function deleteClientFromSupabase(clientSupabaseId, captured) {
   assertSessionStillCurrent(captured)
   if (error) throw error
   if (Array.isArray(data) && data.length === 0) {
-    throw new Error('삭제할 거래처 행을 찾지 못했습니다.')
+    throw new Error('이미 삭제됐거나 찾을 수 없습니다. 화면을 새로고침해 주세요.')
   }
 }
 
@@ -165,7 +165,7 @@ export async function upsertDriverLinkOnSupabase({ supabaseId, vehicleId, invite
     }
     throw error
   }
-  throw lastError || new Error('초대 코드 생성에 반복적으로 실패했습니다.')
+  throw lastError || new Error('초대 코드를 만들지 못했습니다. 잠시 후 다시 눌러 주세요.')
 }
 
 /**
@@ -195,6 +195,6 @@ export async function deleteDriverLinkOnSupabase(supabaseId, captured) {
   assertSessionStillCurrent(captured)
   if (error) throw error
   if (!Array.isArray(data) || data.length === 0) {
-    throw new Error('삭제할 기사 연동 행을 찾지 못했습니다.')
+    throw new Error('이미 삭제됐거나 찾을 수 없습니다. 화면을 새로고침해 주세요.')
   }
 }

@@ -36,7 +36,7 @@ export function parseEntityNumber(value) {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-export const TAX_INVOICE_VEHICLE_RETRY_ERROR = '차량 정보가 아직 서버에 등록되지 않았습니다. 잠시 후 다시 시도해 주세요.'
+export const TAX_INVOICE_VEHICLE_RETRY_ERROR = '방금 등록한 차량이 아직 저장 중입니다. 잠시 후 다시 시도해 주세요.'
 
 /**
  * @param {{ carNumber?: string|null, vehicleNumbers?: Array<string>|null }} item

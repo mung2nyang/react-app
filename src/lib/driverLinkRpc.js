@@ -29,7 +29,7 @@ export async function upsertDriverLinkViaRpc({ idempotencyKey, vehicleId, invite
   })
   if (error) throw error
   const row = /** @type {DriverLinkRow|undefined} */ (Array.isArray(data) ? data[0] : data)
-  if (!row) throw new Error('서버가 저장 결과를 돌려주지 않았습니다.')
+  if (!row) throw new Error('저장이 끝났는지 확인하지 못했습니다. 화면을 새로고침해서 확인해 주세요.')
   return row
 }
 

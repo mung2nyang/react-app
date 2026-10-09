@@ -118,7 +118,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
       if (!dismissed.has(backupId)) {
         const body = (hasValidBackup && daysSince !== null)
           ? `마지막 백업으로부터 ${daysSince}일이 지났습니다. 최신 데이터로 백업해 주세요.`
-          : '아직 백업한 적이 없습니다. 브라우저 데이터 삭제 시 기록이 사라질 수 있습니다.'
+          : '아직 백업한 적이 없습니다. 앱을 지우거나 휴대폰을 바꾸면 기록이 사라질 수 있습니다.'
         items.push({
           id: backupId,
           page: 'settings',

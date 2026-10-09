@@ -119,7 +119,7 @@ export function planPendingLogMove(ownerKey, oldNumber, newNumber) {
   const oldInspect = inspectLogPending(ownerKey, oldNumber)
   const newInspect = inspectLogPending(ownerKey, newNumber)
   if (!oldInspect.readable || !newInspect.readable) {
-    return { error: '운행 대기 기록을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.' }
+    return { error: '기록을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.' }
   }
   /** @type {Record<string, EffectivePatch>} */
   const merged = Object.assign({}, newInspect.durable || {}, oldInspect.durable || {})
@@ -144,7 +144,7 @@ export function planPendingLogMove(ownerKey, oldNumber, newNumber) {
 export function planPendingLogDiscard(ownerKey, logId) {
   const inspect = inspectLogPending(ownerKey, logId)
   if (!inspect.readable) {
-    return { error: '운행 대기 기록을 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.' }
+    return { error: '기록을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.' }
   }
   return {
     extraWrites: [{ key: durableKey(inspect.pendingOwner), remove: true }],

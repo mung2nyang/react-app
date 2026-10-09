@@ -22,7 +22,7 @@ import { removeDayLogOnServer } from './dailyLogRemoval.js'
 import { upsertDailyLog } from './syncWorkData.js'
 
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const SESSION_CHANGED_TOAST = '세션이 바뀌어 저장을 중단했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
 
 /** @param {number} successCount @param {number} failCount */
 function partialFailToast(successCount, failCount) {

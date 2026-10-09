@@ -30,7 +30,7 @@ export { requestVehicleDeletion } from './vehicleDeletion.js'
 
 // 슬라이스 A~C 공통 문구. 다른 도메인 outbox의 STORAGE_FAIL_TOAST는 건드리지 않는다.
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const SESSION_CHANGED_TOAST = '세션이 바뀌어 저장을 중단했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
 
 /**
  * 로그인 사용자의 거래처 삭제. 슬라이스 C: outbox/tombstone 없이 clients.delete 직접 1회.

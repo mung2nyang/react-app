@@ -116,7 +116,7 @@ export function endCloudSession() {
  */
 export function assertCloudWriteReady() {
   if (!cloudUserId || !cloudOwnerKey) throw new Error('로그인이 필요합니다.')
-  if (!isHydrationReady()) throw new Error('클라우드 동기화가 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.')
+  if (!isHydrationReady()) throw new Error('아직 기록을 불러오는 중입니다. 잠시 후 다시 시도해 주세요.')
 }
 
 /**
@@ -151,20 +151,20 @@ export function blockedReasonForOwnerDataWrite(expected = {}) {
     return error instanceof Error ? error.message : String(error)
   }
   if (expected.ownerKey && getCloudOwnerKey() !== expected.ownerKey) {
-    return '다른 계정의 데이터를 저장할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
   }
   if (expected.userId && getCloudUserId() !== expected.userId) {
-    return '다른 계정의 데이터를 저장할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
   }
   if (expected.sessionEpoch != null && expected.sessionEpoch !== getSessionEpoch()) {
-    return '세션이 바뀌었습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
   }
   const hydration = getState().hydration
   if (expected.ownerKey && hydration.ownerKey && hydration.ownerKey !== expected.ownerKey) {
-    return '다른 계정의 데이터를 저장할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
   }
   if (expected.userId && hydration.userId && hydration.userId !== expected.userId) {
-    return '다른 계정의 데이터를 저장할 수 없습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
   }
   return null
 }

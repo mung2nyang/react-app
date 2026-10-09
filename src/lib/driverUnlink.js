@@ -10,7 +10,7 @@ import { commitDrivers } from '../store/commitHelpers.js'
 
 export const UNLINK_WAIT_DAYS = 3
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const SESSION_CHANGED_TOAST = '세션이 바뀌어 저장을 중단했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
 const RPC = { request: 'request_driver_unlink', consent: 'consent_driver_unlink', cancel: 'cancel_driver_unlink' }
 const DISCONNECTED_TOAST = '연동을 해제했습니다.'
 const REQUESTED_TOAST = '해제 요청을 보냈습니다. 상대가 동의하거나 3일이 지나면 해제됩니다.'

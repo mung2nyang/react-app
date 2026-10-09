@@ -19,7 +19,7 @@ describe('notifications — 데이터 백업 권장 알림 및 게스트/로그�
     assert.equal(backupNotif.id, 'backup:never')
     assert.equal(backupNotif.page, 'settings')
     assert.equal(backupNotif.title, '데이터 백업 권장')
-    assert.equal(backupNotif.body, '아직 백업한 적이 없습니다. 브라우저 데이터 삭제 시 기록이 사라질 수 있습니다.')
+    assert.equal(backupNotif.body, '아직 백업한 적이 없습니다. 앱을 지우거나 휴대폰을 바꾸면 기록이 사라질 수 있습니다.')
   })
 
   test('14일 경계값: 13일 전 백업은 알림 없고, 14일 전 백업부터 알림이 뜬다', () => {
