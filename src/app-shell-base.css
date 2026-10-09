@@ -1,5 +1,8 @@
 /* 비계정 body·480px 앱 컨테이너 — 전역 토큰은 variables.css. */
 
+/* 숫자 폭을 같게 — 금액을 위아래로 놓아도 자릿수가 어긋나지 않게. */
+body { font-variant-numeric: tabular-nums; }
+
 body:not(.account-flow-active) {
   background: var(--bg-color);
   color: var(--text-color);
