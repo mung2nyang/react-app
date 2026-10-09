@@ -68,7 +68,6 @@
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   font-weight: 850;
-  letter-spacing: 0.1em;
 }
 
 .side-menu-section-title::before {
