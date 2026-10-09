@@ -15,7 +15,7 @@ import { locationShortcutList, togglePinnedLocation } from '../../domain/locatio
 import { toggleCallPaymentStatus } from '../../domain/payments.js'
 import { confirmLeaveIfUnsafe } from '../../lib/durableWriteGuard.js'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
-import { useOwnerWorkData, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
+import { useOwnerDrivers, useOwnerWorkData, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
 import { useDayDraft } from './useDayDraft.js'
 import { useExpenseForm } from './useExpenseForm.js'
 import { bindInlinePanelActions } from './inlinePanelActions.js'
@@ -28,6 +28,7 @@ import CallDetailList from './CallDetailList.jsx'
 import CallDetailForm from './CallDetailForm.jsx'
 import DayLogExpenses from './DayLogExpenses.jsx'
 import DailyInspectionNotice from './DailyInspectionNotice.jsx'
+import AssignmentPeriodPage, { assignmentPeriodNotice } from './AssignmentPeriodPage.jsx'
 import MessageTemplateSheet from './MessageTemplateSheet.jsx'
 import InlineSheet from './InlineSheet.jsx'
 import PageHeader from '../PageHeader.jsx'
@@ -65,6 +66,8 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   const mainWorkData = useOwnerWorkData(ownerKey)
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const workData = logId === 'main' ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)
+  const myLink = useOwnerDrivers(ownerKey).find((driver) => driver.status === 'linked') // 로드맵 26: 연동 기사 본인 배정 기간
+  const periodNotice = isEmployedDriver ? assignmentPeriodNotice(dateKey, myLink?.startDate, myLink?.endDate) : null
   const pinnedLocations = settings.pinnedLocations || []
   const locationShortcuts = useMemo(
     () => locationShortcutList(workData, draft.callDetails, pinnedLocations),
@@ -144,6 +147,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
     showToast?.(unpaid ? '수금 처리했습니다.' : '수금을 취소했습니다.')
   }
 
+  if (periodNotice) return <AssignmentPeriodPage title={`${month}월 ${day}일 운행일지`} notice={periodNotice} onBack={onClose ? handleClose : undefined} onOpenMenu={onOpenMenu} />
   return (
     <div className="page work-log-page">
       <PageHeader

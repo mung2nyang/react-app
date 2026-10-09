@@ -61,6 +61,7 @@ export default function EmployerLinkCard({ ownerKey, session, showToast, onUnlin
       {link ? (
         <>
           <p className="car-sub-text">연동 중 · {profile.bizName || '연동된 운송사'} · 배정 차량 {link.vehicleNumber || '-'}</p>
+          <p className="car-sub-text">배정 기간 {link.startDate || '-'} ~ {link.endDate || '종료일 없음'}</p>
           <div className="driver-card-actions">
             <DriverUnlinkControls driver={link} meId={meId} counterpartLabel="차주" onAction={(action) => { void run(action) }} />
           </div>
