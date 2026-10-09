@@ -269,7 +269,7 @@ body.account-flow-active {
 
 .auth-role-tab.active {
   border-color: color-mix(in srgb, var(--primary-color) 40%, var(--border-color));
-  background: linear-gradient(145deg, color-mix(in srgb, var(--primary-color) 13%, var(--card-bg)), var(--card-bg) 72%);
+  background: color-mix(in srgb, var(--primary-color) 8%, var(--card-bg));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 20%, transparent);
 }
 
@@ -400,7 +400,7 @@ body.account-flow-active {
 }
 .onboarding-card-btn.active {
   border-color: var(--primary-color);
-  background: linear-gradient(145deg, color-mix(in srgb, var(--primary-color) 13%, var(--card-bg)), var(--card-bg) 72%);
+  background: color-mix(in srgb, var(--primary-color) 8%, var(--card-bg));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 20%, transparent);
 }
 

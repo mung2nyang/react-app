@@ -1,7 +1,7 @@
 /* NoticePage.jsx 전용. CustomerCenterPage.jsx의 customer-center.css와 바이트
    단위로 동일한 공유 규칙 — 둘 다 lazyPages.js 별도 청크라 자기완결 유지. */
 .support-panel { display: grid; gap: 9px; }
-.support-card { padding: 22px 20px; border: 1px solid var(--border-color); border-radius: 22px; background: linear-gradient(145deg, var(--card-bg), var(--input-bg)); }
+.support-card { padding: 22px 20px; border: 1px solid var(--border-color); border-radius: 22px; background: var(--card-bg); }
 .support-card-label { margin-bottom: 9px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: 850; letter-spacing: .12em; }
 .support-card h3 { margin: 0 0 7px; font-size: var(--fs-6); }
 .support-card p { margin: 0; color: var(--sub-text-color); font-size: var(--fs-3); line-height: 1.55; }

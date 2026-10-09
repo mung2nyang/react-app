@@ -10,7 +10,7 @@
   padding: 15px 16px;
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--primary-color) 9%, var(--card-bg)), var(--card-bg) 72%);
+  background: var(--card-bg);
   color: var(--text-color);
   box-shadow: var(--shadow-sm);
   font: inherit;
