@@ -23,7 +23,7 @@
   display: grid;
   place-items: center;
   color: var(--primary-color);
-  background: color-mix(in srgb, var(--primary-color) 12%, var(--input-bg));
+  background: var(--hover-bg);
 }
 
 .mypage-profile-icon {

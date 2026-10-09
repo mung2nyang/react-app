@@ -56,7 +56,7 @@
   width: 42px;
   height: 42px;
   border-radius: 13px;
-  background: color-mix(in srgb, var(--primary-color) 13%, var(--input-bg));
+  background: var(--hover-bg);
   color: var(--primary-color);
   font-size: var(--fs-3);
   font-weight: 900;

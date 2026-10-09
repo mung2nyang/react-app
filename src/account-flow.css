@@ -279,7 +279,7 @@ body.account-flow-active {
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: color-mix(in srgb, var(--primary-color) 12%, var(--input-bg));
+  background: var(--hover-bg);
   color: var(--primary-color);
 }
 

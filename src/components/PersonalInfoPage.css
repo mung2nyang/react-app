@@ -24,7 +24,7 @@
   flex: 0 0 30px;
   height: 30px;
   border-radius: 10px;
-  background: color-mix(in srgb, var(--primary-color) 10%, var(--input-bg));
+  background: var(--hover-bg);
   color: var(--primary-color);
   font-size: var(--fs-floor);
   font-weight: 700;
