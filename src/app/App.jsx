@@ -65,7 +65,7 @@ export default function App() {
                 setGuestModePersisted(true)
                 goHome(
                   GUEST_APP_SESSION,
-                  '비회원 모드로 시작합니다. 언제든 마이페이지에서 로그인할 수 있어요.',
+                  '비회원 모드로 시작합니다. 언제든 마이페이지에서 로그인할 수 있습니다.',
                 )
               }}
             />

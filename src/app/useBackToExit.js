@@ -4,7 +4,7 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 
-export const EXIT_HINT = '뒤로가기를 한 번 더 누르면 종료돼요'
+export const EXIT_HINT = '뒤로가기를 한 번 더 누르면 종료됩니다.'
 export const EXIT_WINDOW_MS = 4000 // 안내 문구 표시 시간(useAppSession.js 4초)과 같게
 
 /**

@@ -8,7 +8,7 @@ import SummaryInfoToggle from './SummaryInfoToggle.jsx'
  * @typedef {ReturnType<typeof import('../../domain/monthSettlement.js').monthSettlementSummary>} MonthSettlementSummary
  */
 
-const TOTAL_INFO = '운송료 + 파렛트 회수 청구액 − 수수료 + 부가세예요. 아래 정비비·주유비·통행료는 합계에서 빼지 않은 이번 달 차량 지출 기록이에요.'
+const TOTAL_INFO = '운송료 + 파렛트 회수 청구액 − 수수료 + 부가세입니다. 아래 정비비·주유비·통행료는 합계에서 빼지 않은 이번 달 차량 지출 기록입니다.'
 
 /** 수수료 설정 표시: "10%"는 그대로, 금액은 "건당 5,000원" @param {string} setting */
 function perTripSetting(setting) {
@@ -18,14 +18,14 @@ function perTripSetting(setting) {
 /** @param {string} setting */
 function clientCommInfo(setting) {
   const shown = setting ? `(${perTripSetting(setting)})` : ''
-  return `거래처 등록 때 적은 수수료${shown}만큼 이 거래처 운송료에서 빼요.`
+  return `거래처 등록 때 적은 수수료${shown}만큼 이 거래처 운송료에서 뺍니다.`
 }
 
 /** 라벨 "3456 차량 10%" / "3456 차량 건당 5,000원" → 설정 부분만 @param {string} label */
 function subCarCommInfo(label) {
   const setting = label.replace(/^\S+ 차량 /, '')
   const shown = setting && setting !== label ? `(${setting})` : ''
-  return `차량 관리에 적은 이 차량의 수수료${shown}예요. 운송료에서 거래처 수수료를 뺀 금액을 기준으로 계산해 빼요.`
+  return `차량 관리에 적은 이 차량의 수수료${shown}입니다. 거래처 수수료를 뺀 운송료에서 이만큼 다시 뺍니다.`
 }
 
 /**
@@ -46,7 +46,7 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
-          이번 달 총 {unpaidTotal.toLocaleString()}원의 미수금이 있습니다.
+          이번 달 미수금 {unpaidTotal.toLocaleString()}원이 있습니다.
         </div>
       )}
 

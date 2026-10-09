@@ -71,7 +71,7 @@ export default function CallDetailForm({
       <div className="modal-title call-detail-modal-title">{`${Number(dateKey.slice(8, 10))}일 일지 세부 입력${value ? ' 수정' : ''}`}</div>
       {!value && previousItem && (
         <button type="button" className="call-detail-copy-prev-btn" onClick={() => setDraft(draftFromDetail(previousItem, dateKey, clients))}>
-          ↺ 직전 항목과 동일하게 채우기
+          ↺ 바로 전 내역 그대로 채우기
         </button>
       )}
       <div className="call-detail-panel call-route-panel">
@@ -101,7 +101,7 @@ export default function CallDetailForm({
             <span className="suffix">원</span>
           </div>
         </div>
-        <p className="billing-settings-note">부가세 포함 금액으로 계약하셨다면 ÷1.1 한 금액을 입력해 주세요.</p>
+        <p className="billing-settings-note">부가세 포함 금액이면 1.1로 나눈 금액을 입력해 주세요. (예: 110,000원 → 100,000원)</p>
         {vatPreview && <p className="billing-settings-note vat-preview">{vatPreview}</p>}
         {settings.cargoTonnageOn && (
           <div className="call-inline-field">
@@ -148,7 +148,7 @@ export default function CallDetailForm({
         <div className="call-detail-panel">
           <div className="call-inline-field platform-main-row">
             <label htmlFor="callPlatform">플랫폼</label>
-            <ClearableInput id="callPlatform" className="input-box" placeholder="직접입력 또는 선택" value={draft.platform} onChange={(e) => setDraft({ ...draft, platform: e.target.value })} />
+            <ClearableInput id="callPlatform" className="input-box" placeholder="직접 입력 또는 선택" value={draft.platform} onChange={(e) => setDraft({ ...draft, platform: e.target.value })} />
           </div>
           <div className="call-platform-quick-list">
             {PLATFORM_PRESETS.map((name) => (
@@ -160,7 +160,7 @@ export default function CallDetailForm({
       <div className="call-detail-panel call-client-panel">
         <label htmlFor="callClient">거래처</label>
         <div className="call-client-row">
-          <ClearableInput id="callClient" className="input-box" list="callClientOptions" placeholder="직접입력 또는 선택" value={draft.client} onChange={(e) => applyClient(e.target.value)} />
+          <ClearableInput id="callClient" className="input-box" list="callClientOptions" placeholder="직접 입력 또는 선택" value={draft.client} onChange={(e) => applyClient(e.target.value)} />
           <datalist id="callClientOptions">
             {scopedClients.map((client) => <option key={client.id} value={client.companyName} />)}
           </datalist>
@@ -191,7 +191,7 @@ export default function CallDetailForm({
             ))}
           </div>
           <div className="call-vat-row">
-            <label htmlFor="callVatExempt">부가세 해제</label>
+            <label htmlFor="callVatExempt">부가세 없음</label>
             <label className="switch">
               <input id="callVatExempt" type="checkbox" checked={draft.vatExempt} onChange={(e) => setDraft({ ...draft, vatExempt: e.target.checked })} />
               <span className="slider"></span>
@@ -201,7 +201,7 @@ export default function CallDetailForm({
             <div className="call-inline-field">
               <label htmlFor="callInsuranceFee">산재보험료</label>
               <div className="input-with-suffix">
-                <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
+                <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액 입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
                 <span className="suffix">원</span>
               </div>
             </div>
@@ -217,7 +217,7 @@ export default function CallDetailForm({
       )}
       {!settings.paymentOn && (
         <div className="call-vat-row">
-          <label htmlFor="callVatExempt">부가세 해제</label>
+          <label htmlFor="callVatExempt">부가세 없음</label>
           <label className="switch">
             <input id="callVatExempt" type="checkbox" checked={draft.vatExempt} onChange={(e) => setDraft({ ...draft, vatExempt: e.target.checked })} />
             <span className="slider"></span>

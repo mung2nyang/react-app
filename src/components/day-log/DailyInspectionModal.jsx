@@ -119,7 +119,7 @@ export default function DailyInspectionModal({ title, record, inspectorName, onC
         <p className="di-sign">본인은 위 점검 내용을 사실대로 확인하였습니다.<br />점검자: {signer} (자동 서명)</p>
         <div className="di-note-label">불량상태 조치 기록</div>
         {editing ? (
-          <textarea className="input-box di-note" placeholder="(예시)창닦이기 불량" value={note} onChange={(e) => setNote(e.target.value)} />
+          <textarea className="input-box di-note" placeholder="예: 창닦이기 불량 → 와이퍼 교체" value={note} onChange={(e) => setNote(e.target.value)} />
         ) : (
           <div className="di-note-view">{record?.actionNote || '-'}</div>
         )}

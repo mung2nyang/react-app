@@ -25,7 +25,7 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
   const unpaid = payment.status !== 'paid'
   const distance = parseFloat(item.distanceKm || '') || 0
   const specs = [
-    settings.distanceOn && distance ? `운행거리:${distance}km` : '',
+    settings.distanceOn && distance ? `운행거리 ${distance}km` : '',
     settings.cargoTonnageOn && item.cargoTonnage ? `${item.cargoTonnage}톤` : '',
   ].filter(Boolean).join('　')
   const commission = commissionInfo(item)
@@ -34,9 +34,9 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
     <article className={`call-detail-card${unpaid ? ' unpaid-card' : ''}`}>
       <div className="call-detail-card-head">
         <div className="call-detail-route">
-          <strong>{item.loadLoc || '상차지 미상'}</strong>
+          <strong>{item.loadLoc || '상차지 없음'}</strong>
           <span>➜</span>
-          <strong>{item.unloadLoc || '하차지 미상'}</strong>
+          <strong>{item.unloadLoc || '하차지 없음'}</strong>
         </div>
         <div className="call-detail-actions">
           <button type="button" className="action-icon-btn" title="수정" onClick={onEdit}><EditIcon /></button>
@@ -45,7 +45,7 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
       </div>
       {settings.timeOn && (item.departureTime || item.arrivalTime) && (
         <div className="detail-meta-line">
-          출발:{formatCallTime(item.departureTime)} ➜ 도착:{formatCallTime(item.arrivalTime)}{durationSuffix(item)}
+          출발 {formatCallTime(item.departureTime)} ➜ 도착 {formatCallTime(item.arrivalTime)}{durationSuffix(item)}
         </div>
       )}
       <div className="detail-meta-line">
@@ -53,7 +53,7 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
         {commission.label ? <span className="commission-rate">수수료 {commission.label}</span> : null}
       </div>
       {specs && <div className="detail-meta-line">{specs}</div>}
-      <div className="detail-meta-line">비고:{item.remarks || '-'}</div>
+      <div className="detail-meta-line">비고: {item.remarks || '-'}</div>
       <div className="call-detail-fare-line">
         <span>운송료</span>
         <strong>{fare.toLocaleString('ko-KR')}원</strong>
@@ -67,7 +67,7 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
           <div className="detail-payment-actions">
             {unpaid && (
               client?.phone
-                ? <a href={`tel:${client.phone}`} className="call-phone-btn detail-call-phone" title="전화걸기" onClick={(e) => e.stopPropagation()}><PhoneIcon /></a>
+                ? <a href={`tel:${client.phone}`} className="call-phone-btn detail-call-phone" title="전화 걸기" onClick={(e) => e.stopPropagation()}><PhoneIcon /></a>
                 : (
                   <button
                     type="button"

@@ -38,7 +38,7 @@ export default function WelcomeProfileView({ initialName = '', onSubmit }) {
         </div>
         <div className="auth-heading-box">
           <h1>기본 정보</h1>
-          <p className="auth-desc-text">처음 오셨네요. 이름과 휴대전화 번호를 알려 주시면 바로 시작할 수 있어요.</p>
+          <p className="auth-desc-text">이름과 휴대전화 번호를 입력하면 바로 시작할 수 있습니다.</p>
         </div>
 
         <div className="auth-form-fields">

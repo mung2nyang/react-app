@@ -224,7 +224,7 @@ test('로드맵 12번: 수수료 있는 거래처 줄에만 (i), 설명에 그 �
     assert.ok(hanjin && daehan)
     await act(async () => { hanjin.click(); daehan.click() })
     const texts = [...container.querySelectorAll('.summary-info-text')].map((el) => el.textContent || '')
-    assert.ok(texts.some((t) => t.includes('수수료(10%)만큼 이 거래처 운송료에서 빼요')))
+    assert.ok(texts.some((t) => t.includes('수수료(10%)만큼 이 거래처 운송료에서 뺍니다')))
     assert.ok(texts.some((t) => t.includes('수수료(건당 3,000원)만큼')))
     assert.ok((container.textContent || '').includes('한진 수수료 (10%)'), '줄 이름은 그대로')
   } finally {
@@ -244,7 +244,7 @@ test('로드맵 12번: 기사차량 수수료가 있을 때만 그 줄에 (i), �
     const btn = infoButton(shown.container, '기사차량 수수료')
     assert.ok(btn)
     await act(async () => { btn.click() })
-    assert.ok((shown.container.querySelector('.summary-info-text')?.textContent || '').includes('이 차량의 수수료(건당 5,000원)예요'))
+    assert.ok((shown.container.querySelector('.summary-info-text')?.textContent || '').includes('이 차량의 수수료(건당 5,000원)입니다'))
   } finally {
     await shown.cleanup()
   }

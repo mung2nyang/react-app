@@ -129,7 +129,7 @@ test('작성 전 [+ 입력] → 빈 칸이면 저장 안 됨 → [모두 양호]
     assert.equal(saved[0].workDate, '2026-10-01')
     assert.equal(saved[0].inspectorName, '차주이름')
     assert.equal(view.container.ownerDocument.querySelector('.daily-inspection-modal'), null, '저장 후 창 닫힘')
-    assert.ok(view.text().includes('10월 1일 일상점검표 작성이 완료 되었습니다.'))
+    assert.ok(view.text().includes('10월 1일 일상점검표 작성이 완료되었습니다.'))
   } finally {
     await view.cleanup()
   }

@@ -66,7 +66,7 @@ export default function MessageSettingsPage({ onBack, showToast }) {
       <section className="message-settings-section">
         <div className="message-settings-heading">
           <h3>미수금 안내 문자</h3>
-          <p>운행일지의 미수금 문자보내기에 사용됩니다.</p>
+          <p>운행일지의 미수금 문자 보내기에 사용됩니다.</p>
         </div>
         <textarea className="message-settings-textarea" maxLength={500} aria-label="미수금 안내 문자 문구" value={unpaid} onChange={(e) => setUnpaid(e.target.value)} />
         <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처} · {운행구간} · {운송료}'}</p>
@@ -75,7 +75,7 @@ export default function MessageSettingsPage({ onBack, showToast }) {
       <section className="message-settings-section">
         <div className="message-settings-heading">
           <h3>입금 요청 문자</h3>
-          <p>운행일지의 입금 요청 문자보내기에 사용됩니다.</p>
+          <p>운행일지의 입금 요청 문자 보내기에 사용됩니다.</p>
         </div>
         <textarea className="message-settings-textarea" maxLength={500} aria-label="입금 요청 문자 문구" value={paymentRequest} onChange={(e) => setPaymentRequest(e.target.value)} />
         <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처} · {운행구간} · {운송료}'}</p>
@@ -84,7 +84,7 @@ export default function MessageSettingsPage({ onBack, showToast }) {
       <section className="message-settings-section">
         <div className="message-settings-heading">
           <h3>운행 완료 문자</h3>
-          <p>운행일지의 운행 완료 문자보내기에 사용됩니다.</p>
+          <p>운행일지의 운행 완료 문자 보내기에 사용됩니다.</p>
         </div>
         <textarea className="message-settings-textarea" maxLength={500} aria-label="운행 완료 문자 문구" value={tripComplete} onChange={(e) => setTripComplete(e.target.value)} />
         <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처} · {운행구간} · {운송료}'}</p>

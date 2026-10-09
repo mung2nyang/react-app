@@ -95,7 +95,7 @@ export default function RunCountChips({ scope, settings, onPatch, showToast }) {
       {pendingIndex !== null && (
         <ConfirmModal
           title="횟수 버튼 삭제"
-          message={`${presets[pendingIndex]}회 버튼을 삭제할까요?`}
+          message={`${presets[pendingIndex]}회 버튼을 삭제하시겠습니까?`}
           onCancel={() => setPendingIndex(null)}
           onConfirm={confirmRemove}
         />

@@ -83,7 +83,7 @@ export default function DailyInspectionNotice({ ownerKey, logId, dateKey, month,
           </>
         ) : load.record ? (
           <>
-            <span>{month}월 {day}일 일상점검표 작성이 완료 되었습니다.</span>
+            <span>{month}월 {day}일 일상점검표 작성이 완료되었습니다.</span>
             <button type="button" className="di-notice-btn view" onClick={() => setModalOpen(true)}>보기</button>
           </>
         ) : (
