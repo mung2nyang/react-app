@@ -54,7 +54,6 @@
   padding: 5px 2px;
   border: 1px solid var(--border-color);
   border-radius: 10px;
-  outline: none;
   box-sizing: border-box;
   background: var(--input-bg);
   color: var(--text-color);

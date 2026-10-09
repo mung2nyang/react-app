@@ -320,7 +320,8 @@ body.account-flow-active {
 .auth-input-box::placeholder { color: var(--sub-text-color); }
 .auth-input-box:focus {
   border-color: var(--primary-color);
-  outline: 2px solid color-mix(in srgb, var(--primary-color) 12%, transparent);
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
 }
 
 .auth-field-extra { display: flex; justify-content: flex-start; margin-top: 4px; }

@@ -102,6 +102,13 @@
   background: var(--card-bg);
 }
 
+/* 안쪽 입력칸은 테두리 없음 — 바깥 상자에 포커스 표시 */
+.car-commission-input:focus-within {
+  border-color: var(--primary-color);
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
 .car-commission-input input {
   min-width: 0;
   width: 100%;
