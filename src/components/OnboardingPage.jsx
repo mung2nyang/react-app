@@ -54,7 +54,7 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
           )}
           <div className="onboarding-brand-head">
             <img src={BANNER} alt="" className="onboarding-logo-img" />
-            <span className="onboarding-logo-text">운행 일지</span>
+            <span className="onboarding-logo-text">운행일지</span>
           </div>
         </div>
 

@@ -71,7 +71,7 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
           <label htmlFor="invRemark">비고</label>
           <ClearableInput id="invRemark" className="input-box" value={modalItem.remark || ''} onChange={(e) => onChange({ ...modalItem, remark: e.target.value })} />
         </div>
-        <p className="car-type-hint">금액은 운행 일지 세부 입력에서 자동 집계됩니다. 실제 발급은 홈택스에서 해 주세요.</p>
+        <p className="car-type-hint">금액은 운행일지 세부 입력에서 자동 집계됩니다. 실제 발급은 홈택스에서 해 주세요.</p>
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
           <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>

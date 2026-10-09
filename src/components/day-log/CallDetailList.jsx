@@ -35,7 +35,7 @@ export default function CallDetailList({ details, settings, clients, canAdd = tr
   return (
     <div className="modal-section call-detail-section">
       <div className="modal-section-title">
-        <span>운행 일지 세부 입력</span>
+        <span>운행일지 세부 입력</span>
         {canAdd && (
           <button type="button" className="compact-add-btn" onClick={onAdd}>+ 추가</button>
         )}
@@ -71,7 +71,7 @@ export default function CallDetailList({ details, settings, clients, canAdd = tr
       )}
       {canAdd && (
         <div className="call-detail-add-row">
-          <button type="button" className="call-detail-add-btn" onClick={onAdd}>+ 운행 일지 추가</button>
+          <button type="button" className="call-detail-add-btn" onClick={onAdd}>+ 운행일지 추가</button>
         </div>
       )}
       {children}

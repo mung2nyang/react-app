@@ -28,7 +28,7 @@ export default function AuthIntroView({ onGuest, onGoogle, busy = false }) {
       <div className="auth-view auth-intro-view">
         <div className="auth-brand-head">
           <img src={BANNER} alt="" className="auth-logo-img" />
-          <span className="auth-logo-text">운행 일지</span>
+          <span className="auth-logo-text">운행일지</span>
         </div>
         <div className="auth-intro-bottom">
           <div className="auth-btn-stack">

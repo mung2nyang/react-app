@@ -147,7 +147,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   return (
     <div className="page work-log-page">
       <PageHeader
-        title={<>{`${month}월 ${day}일 운행 일지`}{workData[dateKey]?.assignedVehicleNumber ? <span className="assigned-vehicle-tag">배정차량 {workData[dateKey].assignedVehicleNumber}</span> : null}</>}
+        title={<>{`${month}월 ${day}일 운행일지`}{workData[dateKey]?.assignedVehicleNumber ? <span className="assigned-vehicle-tag">배정차량 {workData[dateKey].assignedVehicleNumber}</span> : null}</>}
         titleExtra={<AutoSaveStatus status={autoSaveStatus} />}
         onBack={onClose ? handleClose : undefined}
         onOpenMenu={onOpenMenu}

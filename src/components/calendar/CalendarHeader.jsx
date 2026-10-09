@@ -49,8 +49,8 @@ export default function CalendarHeader({
       </div>
       <div className="header">
         <div className="banner-container">
-          <img src={BANNER} alt="운행 일지 로고" className="banner-logo" />
-          <span className="banner-text">운행 일지</span>
+          <img src={BANNER} alt="운행일지 로고" className="banner-logo" />
+          <span className="banner-text">운행일지</span>
         </div>
 
         <div className="date-navigator">

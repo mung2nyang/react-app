@@ -16,8 +16,8 @@
         if (ios) document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1')
       })()
     </script>
-    <title>운행 일지</title>
-    <!-- 로딩 표시 "운행 일지"도 홈 배너와 같은 Jua 글꼴 — 기다리지 않게 불러옴(print → all) -->
+    <title>운행일지</title>
+    <!-- 로딩 표시 "운행일지"도 홈 배너와 같은 Jua 글꼴 — 기다리지 않게 불러옴(print → all) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&display=swap" media="print" onload="this.media='all'" />
@@ -34,7 +34,7 @@
       })()
     </script>
     <style>
-      /* 10-L 로딩 표시 "🚚 운행 일지 ● ● ●" — 모양 정의는 여기 한 곳(LoadingScreen.jsx도 같은 클래스). 색은 variables.css 값과 같게. */
+      /* 10-L 로딩 표시 "🚚 운행일지 ● ● ●" — 모양 정의는 여기 한 곳(LoadingScreen.jsx도 같은 클래스). 색은 variables.css 값과 같게. */
       html { background: #f4f7f6; }
       html[data-theme="dark"] { background: #121212; }
       .boot-loading {
@@ -68,7 +68,7 @@
     <div id="root">
       <div class="boot-loading" role="status" aria-label="불러오는 중">
         <img src="/images/banner_image.png" alt="" />
-        <span class="boot-loading-name">운행 일지</span>
+        <span class="boot-loading-name">운행일지</span>
         <span class="boot-loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>
       </div>
     </div>

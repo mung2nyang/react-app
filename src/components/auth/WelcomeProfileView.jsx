@@ -33,7 +33,7 @@ export default function WelcomeProfileView({ initialName = '', onSubmit }) {
           <span aria-hidden="true" />
           <div className="auth-brand-sm">
             <img src={BANNER} alt="" className="auth-logo-sm" />
-            <span>운행 일지</span>
+            <span>운행일지</span>
           </div>
         </div>
         <div className="auth-heading-box">

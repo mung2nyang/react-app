@@ -32,7 +32,7 @@ test('운행 일지 탭은 안내 문구만 렌더한다', async () => {
     assert.ok(body)
     assert.equal(
       body?.textContent?.trim(),
-      '기사 연동 없이, 차주가 운행 일지를 직접 작성합니다.',
+      '기사 연동 없이, 차주가 운행일지를 직접 작성합니다.',
     )
     assert.equal(container.querySelectorAll('.car-daylog-preview').length, 0)
     assert.equal(container.querySelectorAll('.car-open-vehicle-log').length, 0)
@@ -58,7 +58,7 @@ test('신규 등록(logEnabled 없던 시절의 disabled 게이트 삭제됨) �
       }))
     })
     const tabs = [...container.querySelectorAll('.car-driver-connect-tabs button')]
-    const logTab = tabs.find((b) => b.textContent === '운행 일지')
+    const logTab = tabs.find((b) => b.textContent === '운행일지')
     assert.ok(logTab)
     assert.equal(logTab.disabled, false)
     await act(async () => { logTab.click() })

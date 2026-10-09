@@ -1,4 +1,4 @@
-// 10-L: 로딩 표시 "🚚 운행 일지 ● ● ●"(index.html과 같은 클래스), 테마를 바꾸면 다음 첫 로딩 화면 색용 lastTheme을 기억.
+// 10-L: 로딩 표시 "🚚 운행일지 ● ● ●"(index.html과 같은 클래스), 테마를 바꾸면 다음 첫 로딩 화면 색용 lastTheme을 기억.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -36,18 +36,18 @@ async function render(inline) {
   return info
 }
 
-test('배너 + "운행 일지" + 점 세 개, 화면 안(inline)용은 따로 표시', async () => {
+test('배너 + "운행일지" + 점 세 개, 화면 안(inline)용은 따로 표시', async () => {
   const full = await render(false)
   assert.equal(full.className, 'boot-loading')
-  assert.equal(full.name, '운행 일지')
+  assert.equal(full.name, '운행일지')
   assert.equal(full.dots, 3)
   assert.match(String(full.banner), /banner_image\.png$/)
   assert.equal((await render(true)).className, 'boot-loading boot-loading-inline')
 })
 
-test('index.html도 같은 모양(클래스)·탭 제목 "운행 일지"·앱 파일 전 테마 스크립트', () => {
+test('index.html도 같은 모양(클래스)·탭 제목 "운행일지"·앱 파일 전 테마 스크립트', () => {
   const html = readFileSync('./index.html', 'utf8')
-  assert.match(html, /<title>운행 일지<\/title>/)
+  assert.match(html, /<title>운행일지<\/title>/)
   assert.match(html, /class="boot-loading"/)
   assert.match(html, /localStorage\.getItem\('lastTheme'\)/)
   assert.match(html, /prefers-color-scheme: dark/)

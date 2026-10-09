@@ -62,7 +62,7 @@ export default function SideMenu({
       <aside className="side-menu open" aria-label="메뉴">
         <div className="side-menu-header">
           <div className="menu-banner-wrap">
-            <img src={banner} alt="운행 일지" className="menu-banner" />
+            <img src={banner} alt="운행일지" className="menu-banner" />
           </div>
         </div>
         <div className="side-menu-sections">

@@ -4,7 +4,7 @@ import { formatInviteCode, generateInviteCode } from '../../lib/drivers.js'
 import '../drivers/driver-connection.css'
 
 /**
- * Sub-car "기사 연동 / 운행 일지" panel (slice F mockup).
+ * Sub-car "기사 연동 / 운행일지" panel (slice F mockup).
  * @param {Object} props
  * @param {'link'|'log'} props.tab
  * @param {(tab: 'link'|'log') => void} props.onTab
@@ -34,7 +34,7 @@ export default function CarDriverConnectPanel({
           className={tab === 'log' ? 'active' : ''}
           onClick={() => onTab('log')}
         >
-          운행 일지
+          운행일지
         </button>
       </div>
 
@@ -43,7 +43,7 @@ export default function CarDriverConnectPanel({
           <p className="car-driver-connect-copy">
             기사를 초대해 차량을 배정하세요.
             <br />
-            (배정된 기사가 작성한 운행 일지를 확인할 수 있습니다.)
+            (배정된 기사가 작성한 운행일지를 확인할 수 있습니다.)
           </p>
           <div className="form-group">
             <label htmlFor="carInviteCode">초대 코드</label>
@@ -68,7 +68,7 @@ export default function CarDriverConnectPanel({
 
       {tab === 'log' && (
         <div className="car-driver-connect-body">
-          <p className="car-type-hint">기사 연동 없이, 차주가 운행 일지를 직접 작성합니다.</p>
+          <p className="car-type-hint">기사 연동 없이, 차주가 운행일지를 직접 작성합니다.</p>
         </div>
       )}
     </div>

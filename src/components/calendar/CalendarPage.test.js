@@ -346,7 +346,7 @@ test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수
       ))
     })
     assert.ok(container.querySelector('.sub-car-log-banner'), '서브 배너가 있어야 한다')
-    assert.ok(container.textContent.includes('9999 운행 일지'))
+    assert.ok(container.textContent.includes('9999 운행일지'))
     assert.equal(container.querySelector('.summary-client-commission-row'), null, '이 픽스처엔 수수료 없음')
     // 고정 2×20,000 + 콜 50,000 = 거래처 버킷 90,000 (구조 통일 후 한 행으로 합산)
     assert.ok(container.textContent.includes('서브거래처 기본 운송료'))

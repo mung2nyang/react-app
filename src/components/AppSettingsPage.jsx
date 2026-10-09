@@ -143,7 +143,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
           )}
           <SwitchRow
             id="callDetailToggle"
-            label="운행 일지 세부 입력"
+            label="운행일지 세부 입력"
             checked={!!activeSettings.callDetail}
             disabled={!fixedOn}
             onChange={(checked) => patchActive({ callDetail: checked })}

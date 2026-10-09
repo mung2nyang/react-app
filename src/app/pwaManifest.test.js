@@ -13,8 +13,8 @@ function pngSize(path) {
 }
 
 test('설정 파일: 이름·시작 주소·범위·주소창 없는 모드·아이콘(192·512·maskable)', () => {
-  assert.equal(manifest.name, '운행 일지')
-  assert.equal(manifest.short_name, '운행 일지')
+  assert.equal(manifest.name, '운행일지')
+  assert.equal(manifest.short_name, '운행일지')
   assert.equal(manifest.start_url, './', '배포 주소(https://getdrivelog.com/)에서 시작')
   assert.equal(manifest.scope, './')
   assert.equal(manifest.display, 'standalone')
