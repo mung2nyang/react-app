@@ -24,6 +24,13 @@ function setStandalone(standalone) {
 /** @param {number} ms */
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })
 
+// 정해진 시간 대신 실제로 그 일이 일어날 때까지 기다림(전체 테스트 실행 중 느려져도 안 깨지게).
+/** @param {() => boolean} ok @param {number} [limitMs] */
+async function waitUntil(ok, limitMs = 2000) {
+  const end = Date.now() + limitMs
+  while (!ok() && Date.now() < end) await wait(5)
+}
+
 /** @param {boolean} standalone */
 async function mount(standalone) {
   setStandalone(standalone)
@@ -41,7 +48,11 @@ async function mount(standalone) {
   await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(Probe))) })
   const idx = () => Reflect.get(window.history.state || {}, 'idx')
   const back = async () => {
-    await act(async () => { window.history.back(); await wait(20) })
+    await act(async () => {
+      const popped = new Promise((resolve) => { window.addEventListener('popstate', () => resolve(undefined), { once: true }) })
+      window.history.back()
+      await popped
+    })
   }
   return { toasts, idx, back, added: () => window.history.length - startLength, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
 }
@@ -63,7 +74,7 @@ test('설치 앱 홈: 붙잡기 기록 1개 → 뒤로 1번이면 안내 + 홈 �
     assert.equal(view.idx(), 0)
     assert.deepEqual(view.toasts, [EXIT_HINT])
     assert.equal(view.idx(), 0, '안내 시간 안엔 다시 안 쌓음(한 번 더 누르면 종료)')
-    await act(async () => { await wait(120) })
+    await act(async () => { await waitUntil(() => view.idx() === 1) })
     assert.equal(view.idx(), 1, '안내 시간이 지나면 다시 붙잡기')
     assert.deepEqual(view.toasts, [EXIT_HINT], '안내는 뒤로가기 때만')
   } finally {
