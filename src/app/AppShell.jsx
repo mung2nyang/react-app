@@ -14,6 +14,7 @@ import { todayWorkLogSelection } from '../lib/calendar.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { savePracticeSettings } from '../lib/practiceSettings.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
+import PageLoadErrorBoundary from '../components/PageLoadErrorBoundary.jsx'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import AppShellRoutes from './AppShellRoutes.jsx'
 import useBackToExit from './useBackToExit.js'
@@ -139,6 +140,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
     <div className="container main-app-container">
       <HydrationRetryBanner showToast={showToast} />
       <div ref={pageBoxRef} className="page-transition">
+        <PageLoadErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={<PageSkeleton />}>
           <AppShellRoutes
             ownerKey={ownerKey}
@@ -155,6 +157,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
             goToPage={goToPage}
           />
         </Suspense>
+        </PageLoadErrorBoundary>
       </div>
       <BottomNav active={activeNav} onSelect={selectTab} />
       <PullRefreshIndicator />
