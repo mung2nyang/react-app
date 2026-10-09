@@ -21,24 +21,6 @@
   white-space: nowrap;
 }
 
-.date-select {
-  font-size: 17px;
-  font-weight: 700;
-  color: var(--text-color);
-  background-color: transparent;
-  border: none;
-  padding: 4px 6px;
-  border-radius: 12px;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  text-align: center;
-}
-
-@media (hover: hover) { .date-select:hover { background-color: var(--hover-bg); } }
-.date-select:active { background-color: var(--hover-bg); }
-.date-select:focus { outline: none; }
-
 .arrow-btn {
   background: none;
   border: none;
