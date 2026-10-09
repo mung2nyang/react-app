@@ -31,7 +31,7 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
   const commission = commissionInfo(item)
 
   return (
-    <article className={`call-detail-card${unpaid ? ' unpaid-card' : ''}`}>
+    <article className="call-detail-card">
       <div className="call-detail-card-head">
         <div className="call-detail-route">
           <strong>{item.loadLoc || '상차지 없음'}</strong>

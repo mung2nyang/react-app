@@ -126,10 +126,6 @@
   background: color-mix(in srgb, var(--input-bg) 82%, var(--card-bg));
 }
 
-.call-detail-card.unpaid-card {
-  border-left: 3px solid var(--sunday-color);
-}
-
 .call-detail-card-head,
 .call-detail-card-foot {
   display: flex;
