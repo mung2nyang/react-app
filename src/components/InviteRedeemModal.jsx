@@ -33,7 +33,7 @@ export default function InviteRedeemModal({ session, showToast, onClose, onLinke
       showToast?.('차주와 연동되었습니다.')
       onLinked(next)
     } catch (error) {
-      const message = error instanceof Error ? error.message : '초대코드 연동에 실패했습니다.'
+      const message = error instanceof Error ? error.message : '초대 코드 연동에 실패했습니다.'
       showToast?.(message)
     } finally {
       setBusy(false)
@@ -43,17 +43,17 @@ export default function InviteRedeemModal({ session, showToast, onClose, onLinke
   return (
     <div className="modal-overlay">
       <div className="modal-content client-modal invite-redeem-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-title">초대코드 입력</div>
+        <div className="modal-title">초대 코드 입력</div>
         <p className="invite-redeem-note">
-          차주에게 전달받은 초대코드를 입력해 주세요.<br />
+          차주에게 전달받은 초대 코드를 입력해 주세요.<br />
           연동이 완료되면 기사님이 입력한 운행·매출 내역이 차주에게 공유됩니다.
         </p>
         <div className="form-group">
-          <label htmlFor="driverInviteCode">초대코드</label>
+          <label htmlFor="driverInviteCode">초대 코드</label>
           <ClearableInput
             id="driverInviteCode"
             className="input-box"
-            placeholder="초대코드"
+            placeholder="초대 코드"
             autoComplete="off"
             value={code}
             onChange={(e) => setCode(e.target.value)}

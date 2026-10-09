@@ -35,7 +35,7 @@ test('로그인 초대는 수동 연동 버튼 없이 수정·취소만, 비회�
     assert.equal(Boolean(findButton('연동 완료')), false, '차주가 기사 동의 없이 연동시키는 버튼은 없어야 함')
     assert.ok(findButton('초대 수정'))
     assert.ok(findButton('초대 취소'))
-    assert.ok(container.textContent?.includes('초대코드 123456'))
+    assert.ok(container.textContent?.includes('초대 코드 123456'))
     assert.equal(stubSupabaseCallCounts.update, 0)
     endCloudSession()
     await React.act(async () => {

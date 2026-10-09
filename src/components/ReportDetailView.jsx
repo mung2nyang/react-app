@@ -88,11 +88,11 @@ export default function ReportDetailContent({ report, clientFilter, showClientCo
           <tr>
             <th>차량번호</th>
             <td>{dash(car?.number)}</td>
-            <th>차량톤수</th>
+            <th>차량 톤수</th>
             <td>{dash(car?.tonnage)}</td>
           </tr>
           <tr>
-            <th>입금은행</th>
+            <th>입금 은행</th>
             <td>{dash(profile?.bankName)}</td>
             <th>예금주</th>
             <td>{dash(profile?.accountHolder)}</td>

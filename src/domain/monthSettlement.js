@@ -130,7 +130,7 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
   }
 
   let subCarComm = 0
-  let subCarCommLabel = '기사차량 수수료'
+  let subCarCommLabel = '기사 차량 수수료'
   if (logId !== 'main' && car) {
     subCarComm = calculateDriverVehicleCommission(car, fare + palletFare - commissionTotal, trips + callTrips)
     if (car.commEnabled && car.commission) {

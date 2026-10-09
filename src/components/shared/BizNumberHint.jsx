@@ -5,5 +5,5 @@ import { isBizNumberChecksumOk } from '../../domain/formatPhone.js'
 /** @param {{ value: string|undefined }} props */
 export default function BizNumberHint({ value }) {
   if (isBizNumberChecksumOk(value || '')) return null
-  return <p className="biz-number-hint">* 사업자번호를 다시 확인해 주세요</p>
+  return <p className="biz-number-hint">* 사업자등록번호를 다시 확인해 주세요</p>
 }

@@ -75,7 +75,7 @@ describe('기사 초대코드 수락', () => {
     handlers.rpc = { redeem_driver_invite_code: (args) => { sent.push(args); return { data: [], error: null } } }
     await assert.rejects(
       redeemDriverInviteCode(' a2b3c-4d5e6 '),
-      { message: '초대코드가 맞지 않거나 기한(7일)이 지났습니다. 차주에게 새 코드를 요청해 주세요.' },
+      { message: '초대 코드가 맞지 않거나 기한(7일)이 지났습니다. 차주에게 새 코드를 요청해 주세요.' },
     )
     assert.deepEqual(sent, [{ p_invite_code: 'A2B3C4D5E6' }])
   })

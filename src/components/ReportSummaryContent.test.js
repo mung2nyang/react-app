@@ -114,7 +114,7 @@ test('정보표: 입금은행|예금주 한 줄, 계좌번호 단독 줄', async
     assert.equal(rows.length, 4)
     const row3 = rows[2].textContent || ''
     const row4 = rows[3].textContent || ''
-    assert.ok(row3.includes('입금은행'))
+    assert.ok(row3.includes('입금 은행'))
     assert.ok(row3.includes('예금주'))
     assert.ok(row3.includes('국민'))
     assert.ok(row3.includes('홍길동'))

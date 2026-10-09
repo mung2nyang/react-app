@@ -42,7 +42,7 @@ const SHORTCUTS = [
   },
   {
     page: 'receivables',
-    title: '미수금/정산',
+    title: '미수금/정산 관리',
     icon: (
       <svg viewBox="0 0 29 29">
         <path strokeWidth="2" d="M25.0717 0.75C23.5691 0.75 22.3501 4.3761 22.3501 8.85H25.0717C26.3839 8.85 27.0386 8.85 27.445 8.39775C27.85 7.94415 27.7798 7.34745 27.6394 6.1554C27.2641 3.0045 26.257 0.75 25.0717 0.75Z"></path>
@@ -141,7 +141,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M19 8v6M16 11h6"></path>
             </svg>
-            <span>기사연동관리</span>
+            <span>기사 연동 관리</span>
           </button>
         )}
         {cloud && !employed && (
@@ -153,7 +153,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
                 <circle cx="15" cy="9" r="2"></circle>
               </g>
             </svg>
-            <span>초대코드 입력</span>
+            <span>초대 코드 입력</span>
           </button>
         )}
         <button type="button" className="mypage-notice-link" onClick={() => onOpen('message-settings')}>

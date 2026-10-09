@@ -34,7 +34,7 @@ export default function CarListItem({
       <div className="management-card-copy">
         <div className="car-info-text">
           <span className={`management-badge ${car.type === 'main' ? 'main' : 'sub'}`}>
-            {car.type === 'main' ? '메인' : assignedView ? '배정차량' : '기사차량'}
+            {car.type === 'main' ? '메인' : assignedView ? '배정 차량' : '기사 차량'}
           </span>
           {car.number}
           {isSub && car.driverName && ` [${car.driverName}]`}

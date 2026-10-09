@@ -105,7 +105,7 @@ export async function requestDriverInviteSave({ ownerKey, items, editingId, cars
     return {
       items: nextItems,
       blocked: null,
-      toast: editingId ? '기사 할당 정보를 수정했습니다.' : '기사 초대를 저장했습니다.',
+      toast: editingId ? '기사 배정 정보를 수정했습니다.' : '기사 초대를 저장했습니다.',
     }
   } catch (error) {
     if (error instanceof StaleSessionError) {

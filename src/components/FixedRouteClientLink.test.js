@@ -144,7 +144,7 @@ test('단가 빈칸 저장 → 기존 안내, 팝업 유지, Store 그대로', a
     assert.equal(view.container.querySelector('.fixed-route-client-open')?.textContent, '+ 추가')
     await view.pick('한빛물류')
     await view.save()
-    assert.ok(view.toasts.includes('고정노선 1회 단가를 입력해 주세요.'))
+    assert.ok(view.toasts.includes('고정 노선 1회 단가를 입력해 주세요.'))
     assert.ok(view.modal(), '실패하면 팝업 유지')
     assert.equal(!!clientsOf(owner)[0].fixedRouteLinked, false)
   } finally { await view.cleanup() }

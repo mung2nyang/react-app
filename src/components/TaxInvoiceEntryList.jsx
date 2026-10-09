@@ -52,7 +52,7 @@ export default function TaxInvoiceEntryList({
               {tab === 'issued' ? flowMeta.completeLabel : '작성 전'}
             </span>
           </div>
-          <div className="car-sub-text">{item.count || 0}건 · {item.clientBizNumber || '사업자번호 미입력'}</div>
+          <div className="car-sub-text">{item.count || 0}건 · {item.clientBizNumber || '사업자등록번호 미입력'}</div>
           {item.vehicleLabel && <div className="car-sub-text">{item.vehicleLabel}</div>}
           <div className="tax-invoice-amount-box">
             <div className="tax-invoice-amount-row">

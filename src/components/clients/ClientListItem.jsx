@@ -32,7 +32,7 @@ export default function ClientListItem({
         </div>
         {(client.fixedRouteLinked || client.commEnabled || client.palletOn) && (
           <div className="client-card-badges">
-            {client.fixedRouteLinked && <span className="management-badge tax-invoice">고정노선 연동</span>}
+            {client.fixedRouteLinked && <span className="management-badge tax-invoice">고정 노선 연동</span>}
             {client.commEnabled && (
               <span className="management-badge commission">
                 수수료 {client.commType === 'direct' ? `${client.commValue || ''}원` : `${client.commValue || ''}%`}

@@ -26,7 +26,7 @@ function emptySummary(overrides = {}) {
     commissionLabelByClient: {},
     palletFare: 0,
     subCarComm: 0,
-    subCarCommLabel: '기사차량 수수료',
+    subCarCommLabel: '기사 차량 수수료',
     distanceKm: 0,
     fare: 0,
     commissionTotal: 0,
@@ -235,17 +235,40 @@ test('로드맵 12번: 수수료 있는 거래처 줄에만 (i), 설명에 그 �
 test('로드맵 12번: 기사차량 수수료가 있을 때만 그 줄에 (i), 설명에 차량 설정 값', async () => {
   const none = await renderSummary(emptySummary({ vat: 0, total: 0 }))
   try {
-    assert.equal(infoButton(none.container, '기사차량 수수료'), undefined)
+    assert.equal(infoButton(none.container, '기사 차량 수수료'), undefined)
   } finally {
     await none.cleanup()
   }
   const shown = await renderSummary(emptySummary({ subCarComm: 8000, subCarCommLabel: '3456 차량 건당 5,000원', vat: 0, total: 0 }))
   try {
-    const btn = infoButton(shown.container, '기사차량 수수료')
+    const btn = infoButton(shown.container, '기사 차량 수수료')
     assert.ok(btn)
     await act(async () => { btn.click() })
     assert.ok((shown.container.querySelector('.summary-info-text')?.textContent || '').includes('이 차량의 수수료(건당 5,000원)입니다'))
   } finally {
     await shown.cleanup()
+  }
+})
+
+test('문구 정리 4-B: 기본 이름 "기사 차량 수수료"면 설명에 "(수수료)"가 붙지 않고, "3456 차량 10%"는 "(10%)"', async () => {
+  const plain = await renderSummary(emptySummary({ subCarComm: 8000, vat: 0, total: 0 }))
+  try {
+    const btn = infoButton(plain.container, '기사 차량 수수료')
+    assert.ok(btn)
+    await act(async () => { btn.click() })
+    const text = plain.container.querySelector('.summary-info-text')?.textContent || ''
+    assert.ok(text.includes('이 차량의 수수료입니다'), text)
+    assert.ok(!text.includes('(수수료)'), text)
+  } finally {
+    await plain.cleanup()
+  }
+  const rate = await renderSummary(emptySummary({ subCarComm: 8000, subCarCommLabel: '3456 차량 10%', vat: 0, total: 0 }))
+  try {
+    const btn = infoButton(rate.container, '기사 차량 수수료')
+    assert.ok(btn)
+    await act(async () => { btn.click() })
+    assert.ok((rate.container.querySelector('.summary-info-text')?.textContent || '').includes('이 차량의 수수료(10%)입니다'))
+  } finally {
+    await rate.cleanup()
   }
 })

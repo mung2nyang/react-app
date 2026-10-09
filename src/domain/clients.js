@@ -77,7 +77,7 @@ export function upsertClient(clients, draft, editingId = null) {
     : 'next_month_end'
   const paymentTermValue = String(draft.paymentTermValue || '').trim()
 
-  if (!companyName) return { error: '업체명을 입력해 주세요.', clients }
+  if (!companyName) return { error: '거래처명을 입력해 주세요.', clients }
 
   if (needsPaymentTermValue(paymentTerm)) {
     const n = Number(paymentTermValue)
@@ -97,7 +97,7 @@ export function upsertClient(clients, draft, editingId = null) {
   const palletPrice = String(draft.palletPrice ?? '').trim()
 
   if (commEnabled && !commValue) return { error: '수수료 값을 입력해 주세요.', clients }
-  if (fixedRouteLinked && !fixedUnitPrice) return { error: '고정노선 1회 단가를 입력해 주세요.', clients }
+  if (fixedRouteLinked && !fixedUnitPrice) return { error: '고정 노선 1회 단가를 입력해 주세요.', clients }
   if (palletOn && !palletPrice) return { error: '파렛트 단가를 입력해 주세요.', clients }
 
   const next = {

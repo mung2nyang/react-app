@@ -30,8 +30,8 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
           </button>
         </div>
         <div className="form-group">
-          <label htmlFor="clientCompanyName">업체명 (거래처명)</label>
-          <ClearableInput id="clientCompanyName" className="input-box" placeholder="업체명 입력" value={draft.companyName || ''} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} />
+          <label htmlFor="clientCompanyName">거래처명</label>
+          <ClearableInput id="clientCompanyName" className="input-box" placeholder="거래처명 입력" value={draft.companyName || ''} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} />
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">
@@ -48,7 +48,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
           <ClearableInput id="clientPhone" className="input-box" type="tel" placeholder="연락처 입력" value={draft.phone || ''} onChange={(e) => setDraft({ ...draft, phone: formatPhoneNumber(e.target.value) })} />
         </div>
         <div className="form-group">
-          <label htmlFor="clientBizNumber">사업자 번호</label>
+          <label htmlFor="clientBizNumber">사업자등록번호</label>
           <ClearableInput id="clientBizNumber" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(draft.bizNumber || '')} onChange={(e) => setDraft({ ...draft, bizNumber: formatBizNumber(e.target.value) })} />
           <BizNumberHint value={draft.bizNumber} />
         </div>

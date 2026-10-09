@@ -62,7 +62,7 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
     // 소스(차량)별 스코프 고정노선 우선, 없으면 차주 것 fallback(getFixedRouteClient).
     const fixedScopeKey = isMain && mainFixedScopeKey ? mainFixedScopeKey : source.logId
     const fixedRouteClientForTotals = getFixedRouteClient(settings, fixedScopeKey)
-    const fixedClientLabel = fixedRouteClientForTotals?.companyName || '고정노선'
+    const fixedClientLabel = fixedRouteClientForTotals?.companyName || '고정 노선'
     const activePalletOn = !!fixedRouteClientForTotals?.palletOn
     const fixedUnitPrice = resolveFixedUnitPrice(settings, fixedScopeKey)
     const palletUnitPrice = parseCurrencyValue(fixedRouteClientForTotals?.palletPrice)

@@ -104,7 +104,7 @@ export default function CarBusinessInfoSection({ ownerKey, car, cars, profile, s
             <Field id="carBizName" label="사업자명 (상호)" {...bind('name')} />
             <Field id="carBizRepresentative" label="대표자명" {...bind('representative')} />
           </div>
-          <Field id="carBizNumber" label="사업자 번호" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(form.bizNumber)} onChange={(value) => set('bizNumber', formatBizNumber(value))} hint={<BizNumberHint value={form.bizNumber} />} />
+          <Field id="carBizNumber" label="사업자등록번호" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(form.bizNumber)} onChange={(value) => set('bizNumber', formatBizNumber(value))} hint={<BizNumberHint value={form.bizNumber} />} />
           <Field id="carBizAddress" label="사업장 주소" {...bind('address')} />
           <div className="personal-inline-fields">
             <Field id="carBizType" label="업태" {...bind('bizType')} />

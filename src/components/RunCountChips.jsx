@@ -66,7 +66,7 @@ export default function RunCountChips({ scope, settings, onPatch, showToast }) {
         <label>횟수 버튼 설정</label>
         <p>운행일지에 표시할 횟수 버튼을 설정합니다.<br />+ 버튼을 눌러 필요한 만큼 추가할 수 있으며(최대 {RUN_COUNT_PRESET_MAX}개), 버튼을 길게 누르면 삭제할 수 있습니다.</p>
       </div>
-      <div className="run-count-preset-chips" aria-label={scope === 'sub' ? '기사차량 고정노선 횟수 버튼 설정' : '고정노선 횟수 버튼 설정'}>
+      <div className="run-count-preset-chips" aria-label={scope === 'sub' ? '기사 차량 고정 노선 횟수 버튼 설정' : '고정 노선 횟수 버튼 설정'}>
         {presets.map((count, index) => (
           <span key={`${count}-${index}`} className="run-count-preset-chip-wrap">
             <input

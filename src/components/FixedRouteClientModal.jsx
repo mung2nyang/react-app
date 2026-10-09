@@ -1,5 +1,5 @@
 // @ts-check
-// 고정노선 거래처 연결 팝업 — 거래처 고르기·1회 단가·파렛트 단가·저장/연결 해제. 저장은 거래처 창과 같은 requestClientSave.
+// 고정 노선 거래처 연결 팝업 — 거래처 고르기·1회 단가·파렛트 단가·저장/연결 해제. 저장은 거래처 창과 같은 requestClientSave.
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import AppDropdown from './shared/AppDropdown.jsx'
@@ -69,10 +69,10 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
   return createPortal(
     <div className="modal-overlay">
       <div className="modal-content client-modal fixed-route-client-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-title">고정노선 거래처</div>
+        <div className="modal-title">고정 노선 거래처</div>
         <div className="form-group fixed-route-client-row">
           <label>거래처</label>
-          <AppDropdown label="고정노선 거래처" value={selectedId} options={options} placeholder="선택" className="app-dropdown-boxed" onChange={pick} />
+          <AppDropdown label="고정 노선 거래처" value={selectedId} options={options} placeholder="선택" className="app-dropdown-boxed" onChange={pick} />
         </div>
         <div className="form-group fixed-route-client-row">
           <label htmlFor="fixedRouteClientPrice">1회 단가</label>

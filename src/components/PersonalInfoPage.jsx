@@ -86,7 +86,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
             <ClearableInput id="bizRepresentative" className="input-box" disabled={employed} placeholder="대표자명을 입력하세요" value={get('bizRepresentative')} onChange={(e) => update('bizRepresentative', e.target.value)} />
           </div>
           <div className="form-group">
-            <label htmlFor="bizNumber">사업자 번호</label>
+            <label htmlFor="bizNumber">사업자등록번호</label>
             <ClearableInput id="bizNumber" className="input-box" disabled={employed} inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(get('bizNumber'))} onChange={(e) => update('bizNumber', formatBizNumber(e.target.value))} />
             <BizNumberHint value={get('bizNumber')} />
           </div>

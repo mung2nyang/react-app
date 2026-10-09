@@ -16,7 +16,7 @@ describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
     ]
     // 기존 할당(5/1~5/31)과 겹치지 않는 6월 기간이어도 같은 차량이면 거절.
     const result = upsertDriver(items, { ...base, startDate: '2026-07-01', endDate: '2026-07-31' }, null, cars)
-    assert.equal(result.error, '이미 다른 기사에게 할당된 차량입니다.')
+    assert.equal(result.error, '이미 다른 기사에게 배정된 차량입니다.')
   })
 
   test('연결 해제된(disconnected) 기사가 쓰던 차량은 다시 할당할 수 있다', () => {
@@ -41,7 +41,7 @@ describe('기사 할당 — 같은 차량번호는 한 기사에게만', () => {
       startDate: '2026-05-01',
       endDate: '',
     }, null, [{ type: 'main', number: '서울00가0000' }])
-    assert.equal(result.error, '메인 차량은 기사에게 할당할 수 없습니다. 기사차량 번호를 입력해 주세요.')
+    assert.equal(result.error, '메인 차량은 기사에게 배정할 수 없습니다. 기사 차량 번호를 입력해 주세요.')
   })
 
   test('종료일이 시작일보다 빠르면 거절한다', () => {

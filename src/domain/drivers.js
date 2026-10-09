@@ -80,9 +80,9 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
   if (vehicleNumber) {
     const targetCar = (cars || []).find((car) => car.number === vehicleNumber)
     if (targetCar?.type === 'main') {
-      return { error: '메인 차량은 기사에게 할당할 수 없습니다. 기사차량 번호를 입력해 주세요.', items }
+      return { error: '메인 차량은 기사에게 배정할 수 없습니다. 기사 차량 번호를 입력해 주세요.', items }
     }
-    if (!startDate) return { error: '기사 이름, 할당 차량, 시작일을 입력해 주세요.', items }
+    if (!startDate) return { error: '기사 이름, 배정 차량, 시작일을 입력해 주세요.', items }
   }
   if (endDate && startDate && endDate < startDate) {
     return { error: '계약 종료일은 시작일 이후로 선택해 주세요.', items }
@@ -99,7 +99,7 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
       && String(item.status || '') !== 'disconnected'
       && String(item.vehicleNumber || '').trim() === vehicleNumber
     ))
-    if (taken) return { error: '이미 다른 기사에게 할당된 차량입니다.', items }
+    if (taken) return { error: '이미 다른 기사에게 배정된 차량입니다.', items }
 
     // 한 기사는 차량 1대에만 배정(전화번호 숫자 기준). 연결 해제된 기사는 제외.
     const cleanPhone = phone.replace(/\D/g, '')
@@ -168,7 +168,7 @@ export function getAssignmentState(link) {
   const endRaw = link?.assignmentEnd || link?.endDate || ''
   const start = startRaw ? new Date(`${startRaw}T00:00:00`) : null
   const end = endRaw ? new Date(`${endRaw}T23:59:59`) : null
-  if (start && start > today) return { key: 'scheduled', label: '할당 예정' }
-  if (end && end < today) return { key: 'ended', label: '할당 종료' }
-  return { key: 'active', label: '할당 중' }
+  if (start && start > today) return { key: 'scheduled', label: '배정 예정' }
+  if (end && end < today) return { key: 'ended', label: '배정 종료' }
+  return { key: 'active', label: '배정 중' }
 }

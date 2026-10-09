@@ -100,7 +100,7 @@ test('세부내역서: info-table에 성명·차량번호·계좌 배치 반영'
     assert.ok(text.includes('차주'))
     assert.ok(text.includes('차량번호'))
     assert.ok(text.includes('12가3456'))
-    assert.ok(text.includes('입금은행'))
+    assert.ok(text.includes('입금 은행'))
     assert.ok(text.includes('예금주'))
     assert.ok(text.includes('홍길동'))
     assert.ok(text.includes('계좌번호'))

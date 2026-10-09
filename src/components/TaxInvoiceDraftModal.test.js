@@ -108,7 +108,7 @@ test('사업자등록번호 칸: 숫자만 쳐도 000-00-00000 모양으로 - �
 test('사업자등록번호 검증번호가 틀리면 칸 아래 안내만 보인다', async () => {
   const { container, root } = await mount(() => {})
   try {
-    assert.ok((container.textContent ?? '').includes('* 사업자번호를 다시 확인해 주세요'), '123-45-67890은 검증번호 불일치')
+    assert.ok((container.textContent ?? '').includes('* 사업자등록번호를 다시 확인해 주세요'), '123-45-67890은 검증번호 불일치')
   } finally {
     await act(async () => { root.unmount() })
     container.remove()
