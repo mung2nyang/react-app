@@ -103,7 +103,7 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
         </div>
       </div>
       {confirmUnlink && (
-        <ConfirmModal title="연결 해제" message="고정 노선 거래처 연결을 해제하시겠습니까?" onCancel={() => setConfirmUnlink(false)} onConfirm={unlink} />
+        <ConfirmModal title="고정 노선 거래처 연결을 해제하시겠습니까?" confirmLabel="연결 해제" danger onCancel={() => setConfirmUnlink(false)} onConfirm={unlink} />
       )}
     </div>,
     document.body,

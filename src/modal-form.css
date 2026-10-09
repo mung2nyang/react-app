@@ -130,3 +130,6 @@
   font-weight: 700;
   text-align: center;
 }
+
+/* 확인 팝업의 되돌릴 수 없는 동작(삭제·해제·탈퇴) 버튼 */
+.modal-btn.confirm.danger { background: var(--danger-fill); }

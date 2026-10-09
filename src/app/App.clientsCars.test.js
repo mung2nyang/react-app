@@ -542,8 +542,8 @@ test('차량 관리 UI에서 한 대를 삭제해도 다른 차량과 일지는 
   await act(async () => {
     dropCard?.querySelector('.action-icon-btn.del')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
   })
-  await waitUntil(() => !!findButtonByText(container, '확인'))
-  await act(async () => { findButtonByText(container, '확인')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+  await waitUntil(() => !!container.querySelector('.modal-btn.confirm'))
+  await act(async () => { container.querySelector('.modal-btn.confirm')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => (getState().cars[ownerKey] || []).length === 1)
   assert.equal(getState().cars[ownerKey][0].id, 'car-ui-keep')
   assert.equal(getState().workLogs[ownerKey]['81다8181'], undefined)
@@ -577,11 +577,11 @@ test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store
   await act(async () => {
     container.querySelector('.action-icon-btn.del')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
   })
-  await waitUntil(() => !!findButtonByText(container, '확인'))
-  await act(async () => { findButtonByText(container, '확인')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+  await waitUntil(() => !!container.querySelector('.modal-btn.confirm'))
+  await act(async () => { container.querySelector('.modal-btn.confirm')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await wait(30)
   unsubscribe()
-  assert.ok(findButtonByText(container, '확인'), 'ConfirmModal이 닫히면 안 된다')
+  assert.ok(container.querySelector('.modal-btn.confirm'), 'ConfirmModal이 닫히면 안 된다')
   assert.equal(JSON.stringify(getState().clients[ownerKey]), beforeStore)
   assert.equal(localStorage.getItem(storageKeyFor('clients', ownerKey)), beforeLs)
   assert.equal(localStorage.getItem(outboxStorageKey(ownerKey)), beforeOutbox)
@@ -613,11 +613,11 @@ test('hydration failed에서 차량 삭제 ConfirmModal이 유지되고 Store/ou
   await act(async () => {
     container.querySelector('.action-icon-btn.del')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
   })
-  await waitUntil(() => !!findButtonByText(container, '확인'))
-  await act(async () => { findButtonByText(container, '확인')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+  await waitUntil(() => !!container.querySelector('.modal-btn.confirm'))
+  await act(async () => { container.querySelector('.modal-btn.confirm')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await wait(30)
   unsubscribe()
-  assert.ok(findButtonByText(container, '확인'), 'ConfirmModal이 닫히면 안 된다')
+  assert.ok(container.querySelector('.modal-btn.confirm'), 'ConfirmModal이 닫히면 안 된다')
   assert.equal(JSON.stringify(getState().cars[ownerKey]), beforeStore)
   assert.equal(localStorage.getItem(storageKeyFor('cars', ownerKey)), beforeLs)
   assert.equal(JSON.stringify(getState().workLogs[ownerKey] || {}), beforeLogs)
@@ -669,8 +669,8 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
     await act(async () => {
       container.querySelector('.action-icon-btn.del')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
     })
-    await waitUntil(() => !!findButtonByText(container, '확인'))
-    await act(async () => { findButtonByText(container, '확인')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    await waitUntil(() => !!container.querySelector('.modal-btn.confirm'))
+    await act(async () => { container.querySelector('.modal-btn.confirm')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   } finally {
     await unmountTracked(root)
     container.remove()
@@ -690,8 +690,8 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
     await act(async () => {
       carBox.querySelector('.action-icon-btn.del')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
     })
-    await waitUntil(() => !!findButtonByText(carBox, '확인'))
-    await act(async () => { findButtonByText(carBox, '확인')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    await waitUntil(() => !!carBox.querySelector('.modal-btn.confirm'))
+    await act(async () => { carBox.querySelector('.modal-btn.confirm')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   } finally {
     await unmountTracked(carRoot)
     carBox.remove()

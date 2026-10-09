@@ -213,6 +213,7 @@ export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBac
         <ConfirmModal
           title={confirmType === 'pdf' ? 'PDF 저장' : '이미지 저장'}
           message={`${confirmType === 'pdf' ? 'PDF' : '이미지'}로 저장하시겠습니까?`}
+          confirmLabel="저장"
           onCancel={() => setConfirmType(null)}
           onConfirm={() => { setConfirmType(null); void (confirmType === 'pdf' ? handleDownloadPdf() : handleDownloadImage()) }}
         />

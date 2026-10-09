@@ -3,15 +3,16 @@
 import { useCallback, useRef, useState } from 'react'
 import ConfirmModal from '../ConfirmModal.jsx'
 
-/** @typedef {{ message: string, resolve: (value: boolean) => void }} PendingConfirm */
+/** @typedef {{ confirmLabel?: string, danger?: boolean }} ConfirmOptions */
+/** @typedef {{ message: string, options: ConfirmOptions, resolve: (value: boolean) => void }} PendingConfirm */
 
 export function useConfirm() {
   const [pending, setPending] = useState(/** @type {PendingConfirm|null} */ (null))
   const pendingRef = useRef(pending)
   pendingRef.current = pending
 
-  const confirm = useCallback((/** @type {string} */ message) => new Promise((resolve) => {
-    setPending({ message, resolve })
+  const confirm = useCallback((/** @type {string} */ message, /** @type {ConfirmOptions} */ options = {}) => new Promise((resolve) => {
+    setPending({ message, options, resolve })
   }), [])
 
   const close = useCallback((/** @type {boolean} */ value) => {
@@ -23,7 +24,9 @@ export function useConfirm() {
 
   const confirmDialog = pending ? (
     <ConfirmModal
-      message={pending.message}
+      title={pending.message}
+      confirmLabel={pending.options.confirmLabel}
+      danger={pending.options.danger}
       onCancel={() => close(false)}
       onConfirm={() => close(true)}
     />

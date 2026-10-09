@@ -14,7 +14,7 @@ import './PersonalInfoPage.css'
 
 /** @typedef {null|'first'|'second'} WithdrawStep */
 
-const WITHDRAW_MSG_1 = '정말 탈퇴하시겠습니까? 모든 운행 기록, 거래처, 정산 데이터가 영구적으로 삭제되며 복구할 수 없습니다.'
+const WITHDRAW_MSG_1 = '모든 운행 기록, 거래처, 정산 데이터가 영구적으로 삭제되며 복구할 수 없습니다.'
 const WITHDRAW_MSG_2 = '탈퇴하면 되돌릴 수 없습니다. 마지막으로 한 번 더 확인해 주세요.'
 const WITHDRAW_LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습니다.'
 
@@ -175,8 +175,9 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
 
       {withdrawStep === 'first' && (
         <ConfirmModal
-          title="회원 탈퇴"
+          title="정말 탈퇴하시겠습니까?"
           message={WITHDRAW_MSG_1}
+          confirmLabel="다음"
           onCancel={() => setWithdrawStep(null)}
           onConfirm={() => setWithdrawStep('second')}
         />
@@ -185,6 +186,8 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
         <ConfirmModal
           title="마지막 확인"
           message={WITHDRAW_MSG_2}
+          confirmLabel="탈퇴"
+          danger
           onCancel={() => setWithdrawStep(null)}
           onConfirm={() => { void confirmWithdrawFinal() }}
         />

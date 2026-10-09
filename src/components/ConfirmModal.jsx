@@ -4,11 +4,13 @@ import { useEffect, useId, useRef } from 'react'
 /**
  * @param {Object} props
  * @param {string} [props.title]
- * @param {string} props.message
+ * @param {string} [props.message]
+ * @param {string} [props.confirmLabel] 버튼에 실제 동작을 쓴다(삭제·저장 등).
+ * @param {boolean} [props.danger] 되돌릴 수 없는 동작이면 빨간 버튼.
  * @param {() => void} props.onCancel
  * @param {() => void} props.onConfirm
  */
-export default function ConfirmModal({ title = '경고', message, onCancel, onConfirm }) {
+export default function ConfirmModal({ title = '경고', message, confirmLabel = '확인', danger = false, onCancel, onConfirm }) {
   const titleId = useId()
   const cancelRef = useRef(/** @type {HTMLButtonElement | null} */ (null))
   const onCancelRef = useRef(onCancel)
@@ -33,10 +35,10 @@ export default function ConfirmModal({ title = '경고', message, onCancel, onCo
     <div className="modal-overlay" onClick={onCancel}>
       <div className="modal-content" role="alertdialog" aria-modal="true" aria-labelledby={titleId} onClick={(event) => event.stopPropagation()}>
         <div className="modal-title" id={titleId}>{title}</div>
-        <p className="confirm-modal-text">{message}</p>
+        {message && <p className="confirm-modal-text">{message}</p>}
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" ref={cancelRef} onClick={onCancel}>취소</button>
-          <button type="button" className="modal-btn confirm" onClick={onConfirm}>확인</button>
+          <button type="button" className={`modal-btn confirm${danger ? ' danger' : ''}`} onClick={onConfirm}>{confirmLabel}</button>
         </div>
       </div>
     </div>

@@ -22,7 +22,7 @@ import {
  * @param {import('../../domain/financeTypes.js').FinanceSettings} params.settings
  * @param {(message: string) => void} [params.showToast]
  * @param {() => void} [params.onWorkChanged]
- * @param {(message: string) => Promise<boolean>} params.confirm
+ * @param {(message: string, options?: { confirmLabel?: string, danger?: boolean }) => Promise<boolean>} params.confirm
  */
 export function useReceivablesActions({
   ownerKey, workDataByLogId, settings, showToast, onWorkChanged, confirm,
@@ -110,7 +110,7 @@ export function useReceivablesActions({
 
   /** @param {ReceivableItemLike} item */
   async function undoPayment(item) {
-    const ok = await confirm('가장 최근 입금 기록 1건을 취소하시겠습니까?')
+    const ok = await confirm('가장 최근 입금 기록 1건을 취소하시겠습니까?', { confirmLabel: '입금 취소', danger: true })
     if (!ok) return
     applyPatch(item.logId, item.dateKey, item.detailId, (store, dateKey, detailId) => (
       undoLastPayment(store, dateKey, detailId)

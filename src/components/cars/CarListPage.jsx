@@ -26,8 +26,8 @@ const emptyDraft = {
   ...NEW_DRIVER_INCOME_DRAFT,
   inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'log',
 }
-const DELETE_CAR_CONFIRM = '이 차량을 삭제하시겠습니까? 이 차량의 운행 기록도 함께 지워지며 되돌릴 수 없습니다.'
-const DISCONNECT_CONFIRM = '이 차량의 기사 연동을 해제하시겠습니까? 연동 중인 기사에게는 해제 요청이 가고, 기사가 동의하거나 3일이 지나면 해제됩니다.'
+const DELETE_CAR_CONFIRM = '이 차량의 운행 기록도 함께 지워지며 되돌릴 수 없습니다.'
+const DISCONNECT_CONFIRM = '연동 중인 기사에게는 해제 요청이 가고, 기사가 동의하거나 3일이 지나면 해제됩니다.'
 
 /**
  * @param {Object} props
@@ -213,11 +213,14 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
         />
       )}
       {pendingDelete && (
-        <ConfirmModal message={DELETE_CAR_CONFIRM} onCancel={() => setPendingDelete(null)} onConfirm={confirmRemove} />
+        <ConfirmModal title="이 차량을 삭제하시겠습니까?" message={DELETE_CAR_CONFIRM} confirmLabel="삭제" danger onCancel={() => setPendingDelete(null)} onConfirm={confirmRemove} />
       )}
       {pendingDisconnect && (
         <ConfirmModal
+          title="이 차량의 기사 연동을 해제하시겠습니까?"
           message={DISCONNECT_CONFIRM}
+          confirmLabel="연동 해제"
+          danger
           onCancel={() => setPendingDisconnect(false)}
           onConfirm={confirmDisconnect}
         />
