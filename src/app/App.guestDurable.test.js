@@ -513,7 +513,7 @@ test('재감사 FAIL 지적 9번 — 자동 저장 quota 초과: store/localStor
     await act(async () => {
       backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
     })
-    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => window.location.pathname === '/app/calendar')
 
     assert.equal(
       getState().workLogs[ownerKey]?.main?.[dateKey]?.fixedCount, 4,
@@ -684,7 +684,7 @@ test('재감사 2차 FAIL 지적 — persistent quota + 라우트 이동에도 d
     await act(async () => {
       backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
     })
-    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => window.location.pathname === '/app/calendar')
     unsubscribe()
 
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey], undefined, 'quota가 여전히 막혀 있으니 store에는 아직 없어야 한다')
@@ -799,7 +799,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     await act(async () => {
       backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
     })
-    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => window.location.pathname === '/app/calendar')
     assert.equal(confirmSpy.mock.callCount(), 0, 'durable이 정상이면 헤더 닫기에 confirm이 뜨면 안 된다')
     assert.equal(errSpy.count(), 2, '언마운트 flush도 막혀 있어 한 번 더 로깅돼야 한다')
     assert.equal(getPendingDayWrite(ownerKey, dateKey)?.fixedCount, 9, '화면을 나가도 durable 편집은 남아야 한다')
@@ -1071,7 +1071,7 @@ test('재감사 11차 — confirm으로 이동을 허용한 뒤 재진입해도 
     await act(async () => {
       backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
     })
-    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => window.location.pathname === '/app/calendar')
     assert.equal(confirmSpy.mock.callCount(), 1, 'broken이면 헤더 닫기에 confirm이 떠야 한다')
     assert.equal(getUnsafeRegistrationPatch(ownerKey, dateKey)?.fixedCount, 9, '이동을 허용해도 unsafe patch를 지우면 안 된다')
 
@@ -1159,7 +1159,7 @@ test('재감사 12차 — persistent quota 실패 후 마운트 중 retry 성공
     await act(async () => {
       backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
     })
-    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => window.location.pathname === '/app/calendar')
     await act(async () => { await wait(80) })
     assert.equal(notifyCount, notifyAfterRetry, '페이지 이동이 중복 commitNow를 돌리면 안 된다')
     assert.equal(errSpy.count(), errAfterRetry)

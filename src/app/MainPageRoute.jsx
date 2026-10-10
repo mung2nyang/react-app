@@ -1,5 +1,5 @@
 // @ts-check
-// Step 3 라우터 셸: `/app`(달력)와 `/app/day/:date`(일지)를 한 라우트 그룹으로 묶는다.
+// Step 3 라우터 셸: `/app/calendar`(달력, 새 홈 1단계 전엔 `/app`)와 `/app/day/:date`(일지)를 한 라우트 그룹으로 묶는다.
 // Step 5(달력 홈 재작성) — 달력 쪽(`selected`가 없을 때)은 CalendarPage로 분할했다
 // (MainPage.jsx 폐기).
 // Step 6(일지 재작성) — 일지 쪽은 `DayLogPage`(WorkLogPage.jsx/InlineExpandHost.jsx
@@ -64,11 +64,11 @@ export default function MainPageRoute({
   const knownLog = logId === 'main' || cars.some((car) => car.number === logId)
 
   useEffect(() => {
-    if (date && !selected) navigate('/app', { replace: true })
+    if (date && !selected) navigate('/app/calendar', { replace: true })
   }, [date, selected, navigate])
 
   useEffect(() => {
-    if (rawLogId && !knownLog) navigate('/app', { replace: true })
+    if (rawLogId && !knownLog) navigate('/app/calendar', { replace: true })
   }, [rawLogId, knownLog, navigate])
 
   function closeWorkLog() {
@@ -102,8 +102,7 @@ export default function MainPageRoute({
         settings={settings}
         showToast={showToast}
         onWorkChanged={onWorkChanged}
-        // 하단 "일일운행" 탭으로 들어오면 첫 화면이라 뒤로가기를 숨긴다.
-        onClose={location.state?.from === 'bottomNav' ? undefined : closeWorkLog}
+        onClose={closeWorkLog}
         onOpenMenu={onOpenMenu}
         isEmployedDriver={session?.accountType === 'employed_driver'}
       />

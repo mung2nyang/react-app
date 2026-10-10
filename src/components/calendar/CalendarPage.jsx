@@ -97,7 +97,7 @@ export default function CalendarPage({
       />
 
       {!isMain && (
-        <CalendarSubLogBanner logId={logId} onBackToMain={() => navigate('/app')} />
+        <CalendarSubLogBanner logId={logId} onBackToMain={() => navigate('/app/calendar')} />
       )}
 
       <CalendarGrid

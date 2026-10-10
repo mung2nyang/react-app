@@ -6,17 +6,15 @@ import { useLocation, useNavigationType } from 'react-router-dom'
 /** @typedef {'forward' | 'back' | 'fade' | 'none'} PageTransition */
 /** @typedef {{ pathname: string, tab: boolean }} PageSpot */
 
-const TAB_PATHS = new Set(['/app', '/app/revenue', '/app/me'])
+const TAB_PATHS = new Set(['/app', '/app/calendar', '/app/revenue', '/app/me'])
 const ENTER_CLASSES = ['page-enter-forward', 'page-enter-back', 'page-enter-fade']
 
 /**
- * 하단 탭 화면인가 — 홈·매출·마이페이지, 하단 "일일운행"으로 연 일지.
+ * 하단 탭 화면인가 — 홈·운행(달력)·매출·마이페이지.
  * @param {string} pathname
- * @param {unknown} state 라우터 기록의 state
  */
-export function isTabSpot(pathname, state) {
-  if (TAB_PATHS.has(pathname)) return true
-  return !!state && typeof state === 'object' && Reflect.get(state, 'from') === 'bottomNav'
+export function isTabSpot(pathname) {
+  return TAB_PATHS.has(pathname)
 }
 
 /**
@@ -40,7 +38,7 @@ export default function usePageTransition() {
   const prevRef = useRef(/** @type {PageSpot | null} */ (null))
 
   useLayoutEffect(() => {
-    const next = { pathname: location.pathname, tab: isTabSpot(location.pathname, location.state) }
+    const next = { pathname: location.pathname, tab: isTabSpot(location.pathname) }
     const kind = decidePageTransition({ prev: prevRef.current, next, navigationType })
     prevRef.current = next
     const box = boxRef.current

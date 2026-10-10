@@ -28,12 +28,12 @@ test('판단: 새 화면 = 들어감, 뒤로 = 뒤로, 탭끼리 = 서서히, �
   assert.equal(decidePageTransition({ prev: spot('/app', true), next: spot('/app', true), navigationType: 'PUSH' }), 'none', '보던 달만 바뀜·17번 붙잡기 기록')
 })
 
-test('탭 화면: 홈·매출·마이페이지, 하단 "일일운행"으로 연 일지만', () => {
-  assert.equal(isTabSpot('/app', null), true)
-  assert.equal(isTabSpot('/app/me', undefined), true)
-  assert.equal(isTabSpot('/app/day/2026-10-08', { from: 'bottomNav' }), true)
-  assert.equal(isTabSpot('/app/day/2026-10-08', { from: 'calendar' }), false, '달력에서 연 일지')
-  assert.equal(isTabSpot('/app/notice', null), false)
+test('탭 화면: 홈·운행(달력)·매출·마이페이지만', () => {
+  assert.equal(isTabSpot('/app'), true)
+  assert.equal(isTabSpot('/app/calendar'), true)
+  assert.equal(isTabSpot('/app/me'), true)
+  assert.equal(isTabSpot('/app/day/2026-10-08'), false, '일지는 달력·홈에서 들어가는 화면')
+  assert.equal(isTabSpot('/app/notice'), false)
 })
 
 test('화면 이동 때 겉 상자에 맞는 효과 이름이 붙고, 같은 주소 이동이면 안 붙음', async () => {

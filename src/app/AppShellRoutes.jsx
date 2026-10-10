@@ -1,6 +1,7 @@
 // @ts-check
 // AppShell 라우트 트리만 분리(200줄). 셸 크롬(탭/메뉴/알림)은 AppShell.jsx에 남긴다.
 import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
+import HomePage from '../components/home/HomePage.jsx'
 import ComingSoonRoute from './ComingSoonRoute.jsx'
 import MainPageRoute from './MainPageRoute.jsx'
 import {
@@ -63,7 +64,8 @@ export default function AppShellRoutes({
   }
   return (
     <Routes>
-      <Route index element={mainPage()} />
+      <Route index element={<HomePage ownerKey={ownerKey} session={session} notifCount={notifCount} onOpenMenu={onOpenMenu} onOpenNotifs={onOpenNotifs} onOpenToday={(/** @type {string} */ dateKey) => navigate(`/app/day/${dateKey}`, { state: { from: 'home' } })} />} />
+      <Route path="calendar" element={mainPage()} />
       <Route path="day/:date" element={mainPage()} />
       <Route path="logs/:logId/manage" element={<LinkedDriverManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="logs/:logId/clients" element={<LinkedDriverClientsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />

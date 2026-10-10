@@ -87,7 +87,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
         id: todayId,
         page: 'home',
         title: '오늘 운행일지가 비어 있습니다',
-        body: '달력에서 오늘 날짜를 눌러 횟수나 휴무를 남겨 주세요.',
+        body: '홈에서 [운행 기록하기]를 눌러 횟수나 휴무를 남겨 주세요.',
       })
     }
   }

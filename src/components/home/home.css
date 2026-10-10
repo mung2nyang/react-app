@@ -1,0 +1,40 @@
+/* 새 홈 "오늘" 카드 — HomePage.jsx 전용. 색·글씨는 공용 변수만. */
+.home-page .header {
+  margin-bottom: 4px;
+}
+
+.home-today-card {
+  padding: 18px 18px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+}
+
+.home-today-date {
+  margin: 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+.home-today-status {
+  margin: 6px 0 16px;
+  color: var(--text-color);
+  font-size: var(--fs-7);
+  font-weight: 800;
+}
+
+.home-today-btn {
+  width: 100%;
+  min-height: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--primary-fill);
+  color: #fff;
+  font: inherit;
+  font-size: var(--fs-5);
+  font-weight: 800;
+  cursor: pointer;
+}

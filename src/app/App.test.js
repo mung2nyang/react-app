@@ -268,10 +268,10 @@ test('재감사 4번 — 로그인 세션 복원 상태로 /app?y=2026&m=6을 �
 
 // 재감사 9차(FAIL 지적 4번) — 모양은 `YYYY-MM-DD`지만 실존하지 않는 달력 날짜
 // (`2026-02-30`)로 `/app/day/:date`에 직접 진입하면, DayLogPage를 렌더하거나
-// 저장하는 대신 안전하게 `/app`으로 replace해야 한다. 순수 함수(parseDateKeySelection)
+// 저장하는 대신 안전하게 달력(`/app/calendar`)으로 replace해야 한다. 순수 함수(parseDateKeySelection)
 // 테스트만으로는 실제 라우팅 경로가 안전하다고 주장할 수 없어 실제 `<App/>`으로
 // 확인한다.
-test('재감사 9차 FAIL 지적 4번 — 존재하지 않는 달력 날짜로 /app/day/2026-02-30에 진입하면 DayLogPage가 렌더되지 않고 /app으로 replace된다', async () => {
+test('재감사 9차 FAIL 지적 4번 — 존재하지 않는 달력 날짜로 /app/day/2026-02-30에 진입하면 DayLogPage가 렌더되지 않고 /app/calendar로 replace된다', async () => {
   const ownerKey = 'user-boot-nav'
   window.history.pushState({}, '', '/app/day/2026-02-30')
   const container = document.createElement('div')
@@ -282,9 +282,9 @@ test('재감사 9차 FAIL 지적 4번 — 존재하지 않는 달력 날짜로 /
     await act(async () => {
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
-    await waitUntil(() => window.location.pathname === '/app', { timeoutMs: 3000 })
+    await waitUntil(() => window.location.pathname === '/app/calendar', { timeoutMs: 3000 })
 
-    assert.equal(window.location.pathname, '/app', '잘못된 달력 날짜는 /app으로 replace돼야 한다')
+    assert.equal(window.location.pathname, '/app/calendar', '잘못된 달력 날짜는 /app/calendar로 replace돼야 한다')
     assert.equal(container.querySelector('#modalFixedCountInput'), null, 'DayLogPage(일지 입력 화면)가 렌더되면 안 된다')
     assert.equal(committedRecord(ownerKey, '2026-02-30'), undefined, '존재하지 않는 날짜로는 아무 것도 저장되면 안 된다')
     assert.equal(readWorkData(ownerKey)['2026-02-30'], undefined, 'localStorage에도 저장되면 안 된다')
@@ -300,7 +300,7 @@ test('재감사 9차 FAIL 지적 4번 — 존재하지 않는 달력 날짜로 /
 // workData를 기준으로 커밋해서 함께 있던 다른 날짜를 지우면 안 된다.
 test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 workData를 CalendarPage/WorkLogPage가 보고, 한 날짜 편집이 다른 날짜를 지우지 않는다', async () => {
   // calendarViewDate: URL `m`은 0-based. 8월 일지를 보려면 오늘 달(9월)이 아니라 고정 월로 들어간다.
-  window.history.pushState({}, '', '/app?y=2026&m=7')
+  window.history.pushState({}, '', '/app/calendar?y=2026&m=7')
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createTrackedRoot(container)
@@ -310,7 +310,7 @@ test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 work
     await act(async () => {
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
-    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => window.location.pathname === '/app/calendar')
     await waitUntil(() => !container.querySelector('.boot-loading'))
     await act(async () => { await wait(50) }) // 부트 초기화(initializeOwnerFromPersist)가 끝날 시간을 준다.
 
@@ -400,7 +400,7 @@ test('Step 6 — 일지 디바운스 커밋 + 언마운트 flush + 빈 날 삭�
     await act(async () => {
       backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
     })
-    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => window.location.pathname === '/app/calendar')
 
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey]?.fixedCount, 7, '언마운트(뒤로가기) 시점에 밀린 편집(7)이 즉시 flush돼야 한다')
     assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 7, 'localStorage에도 flush된 값이 반영돼야 한다')
@@ -427,10 +427,10 @@ test('Step 6 — 일지 디바운스 커밋 + 언마운트 flush + 빈 날 삭�
 // 파라미터만 바뀌면 MainPageRoute/DayLogPage를 언마운트하지 않고 재사용한다.
 // useDayDraft의 draft는 "마운트 시 한 번만" 초기화되므로, key 없이는 A의 draft가
 // B로 넘어와 그대로 남고, 이미 걸려 있던 디바운스 타이머가 B의 dateKey로 A의
-// 데이터를 커밋해 버리는 데이터 오염이 생겼다 — 실제 경로(하단 "일일운행" 탭으로
-// 과거 일지 → 오늘 날짜 직행)로 재현하고, MainPageRoute.jsx의 key={ownerKey:dateKey}
-// 수정으로 고쳤는지 확인한다.
-test('재감사 FAIL 지적 1번 — 과거 일지에서 "일일운행" 탭으로 오늘 날짜로 이동해도 A의 draft가 B를 덮지 않고, A의 밀린 편집은 A에만 flush된다', async () => {
+// 데이터를 커밋해 버리는 데이터 오염이 생겼다 — 일지 화면을 벗어나지 않고 날짜만 바뀌는
+// 이동(예전 하단 "일일운행" 탭, 새 홈 1단계 뒤로는 주소 직접 이동)으로 재현하고,
+// MainPageRoute.jsx의 key={ownerKey:dateKey} 수정으로 고쳤는지 확인한다.
+test('재감사 FAIL 지적 1번 — 과거 일지에서 오늘 날짜 일지로 바로 이동해도 A의 draft가 B를 덮지 않고, A의 밀린 편집은 A에만 flush된다', async () => {
   const ownerKey = 'user-boot-nav'
   const dateA = '2026-08-01'
   const { dateKey: dateB } = todayWorkLogSelection()
@@ -470,13 +470,12 @@ test('재감사 FAIL 지적 1번 — 과거 일지에서 "일일운행" 탭으�
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
     assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '2', 'A는 자기 원래 값(2)으로 열려야 한다')
 
-    // A를 9로 고치되, 디바운스(600ms)가 끝나기 전에 즉시 "일일운행" 탭으로 이동한다.
+    // A를 9로 고치되, 디바운스(600ms)가 끝나기 전에 즉시 같은 일지 화면에서 B 날짜로 이동한다.
     await act(async () => { setNativeInputValue(container.querySelector('#modalFixedCountInput'), '9') })
 
-    const workTab = Array.from(container.querySelectorAll('button')).find((btn) => btn.textContent.includes('일일운행'))
-    assert.ok(workTab, '"일일운행" 하단 탭을 찾아야 한다')
     await act(async () => {
-      workTab.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
+      window.history.pushState({}, '', `/app/day/${dateB}`)
+      window.dispatchEvent(new window.PopStateEvent('popstate'))
     })
     await waitUntil(() => window.location.pathname === `/app/day/${dateB}`)
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
@@ -991,5 +990,61 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 저장은 성공�
     handlers.daily_logs = prevDailyLogs
     if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
     await flushCloudSync()
+  }
+})
+
+// 새 홈 1단계 — 하단 탭 홈·운행·매출·마이페이지: 운행 탭은 달력(/app/calendar),
+// 홈 "오늘" 카드 버튼은 오늘 일지, 그 일지의 뒤로가기는 홈으로 돌아간다.
+test('새 홈 1단계 — 운행 탭은 달력, 홈 [운행 기록하기] → 오늘 일지 → 뒤로가기 → 홈', async () => {
+  const { dateKey } = todayWorkLogSelection()
+  window.history.pushState({}, '', '/app')
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createTrackedRoot(container)
+  /** @param {string} label */
+  const navButton = (label) => Array.from(container.querySelectorAll('.bottom-nav-bar .nav-item'))
+    .find((btn) => btn.textContent.trim() === label)
+
+  try {
+    await act(async () => {
+      root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
+    })
+    await waitUntil(() => !!container.querySelector('.home-today-card'))
+    assert.equal(window.location.pathname, '/app')
+    assert.equal(container.querySelector('.calendar-grid'), null, '홈에는 달력이 없어야 한다')
+    assert.deepEqual(
+      Array.from(container.querySelectorAll('.bottom-nav-bar .nav-item')).map((btn) => btn.textContent.trim()),
+      ['홈', '운행', '매출', '마이페이지'],
+    )
+    assert.ok(navButton('홈')?.classList.contains('active'), '홈에서는 홈 탭이 켜져야 한다')
+
+    await act(async () => {
+      navButton('운행')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
+    })
+    await waitUntil(() => window.location.pathname === '/app/calendar')
+    await waitUntil(() => !!container.querySelector('.calendar-grid'))
+    assert.ok(navButton('운행')?.classList.contains('active'), '달력에서는 운행 탭이 켜져야 한다')
+
+    await act(async () => {
+      navButton('홈')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
+    })
+    await waitUntil(() => !!container.querySelector('.home-today-btn'))
+    await act(async () => {
+      container.querySelector('.home-today-btn')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
+    })
+    await waitUntil(() => window.location.pathname === `/app/day/${dateKey}`)
+    await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
+    assert.ok(navButton('운행')?.classList.contains('active'), '일지에서는 운행 탭이 켜져야 한다')
+
+    const backButton = Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '뒤로가기')
+    assert.ok(backButton, '홈에서 연 일지에는 뒤로가기가 있어야 한다')
+    await act(async () => {
+      backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
+    })
+    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => !!container.querySelector('.home-today-card'))
+  } finally {
+    await unmountTracked(root)
+    container.remove()
   }
 })

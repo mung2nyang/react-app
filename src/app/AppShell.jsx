@@ -10,7 +10,6 @@ import SideMenu, { preloadSideMenuBanner } from '../components/SideMenu.jsx'
 import NotificationPanel from '../components/NotificationPanel.jsx'
 import PullRefreshIndicator from '../components/PullRefreshIndicator.jsx'
 import { collectNotifications, dismissNotification } from '../lib/notifications.js'
-import { todayWorkLogSelection } from '../lib/calendar.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { savePracticeSettings } from '../lib/practiceSettings.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
@@ -104,7 +103,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const activeNav = location.pathname === '/app'
     || (location.pathname.startsWith('/app/logs/') && !location.pathname.includes('/day/'))
     ? 'home'
-    : location.pathname.startsWith('/app/day/')
+    : location.pathname === '/app/calendar' || location.pathname.startsWith('/app/day/')
       || (location.pathname.startsWith('/app/logs/') && location.pathname.includes('/day/'))
       ? 'work'
       : location.pathname === '/app/revenue'
@@ -126,7 +125,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
     setMenuOpen(false)
     setNotifOpen(false)
     if (tab === 'work') {
-      navigate(`/app/day/${todayWorkLogSelection().dateKey}`, { state: { from: 'bottomNav' } })
+      navigate('/app/calendar')
       return
     }
     if (tab === 'revenue') {
