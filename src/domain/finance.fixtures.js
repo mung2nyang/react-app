@@ -162,28 +162,3 @@ export const FIXTURE_EXPENSES = [
   { id: 'fx-misc-1', kind: 'misc', date: '2026-05-10', name: '통행료', cost: 8000 },
   { id: 'fx-maint-2', kind: 'maint', date: '2026-05-11', name: '정비', cost: 20000 },
 ]
-
-/** @type {Array<DriverLinkLike>} */
-export const OVERLAP_LINKS = [
-  {
-    id: 'a',
-    vehicleNumber: '서울12가3456',
-    assignmentStart: '2026-05-01',
-    assignmentEnd: '2026-05-31',
-    status: 'pending',
-  },
-  {
-    id: 'b',
-    vehicleNumber: '서울12가3456',
-    assignmentStart: '2026-06-01',
-    assignmentEnd: '',
-    status: 'linked',
-  },
-  {
-    id: 'c',
-    vehicleNumber: '서울12가3456',
-    assignmentStart: '2026-05-10',
-    assignmentEnd: '2026-05-20',
-    status: 'disconnected',
-  },
-]

@@ -36,14 +36,6 @@ export function loadWorkDataByLogId(ownerKey = 'guest') {
 
 /**
  * @param {string} ownerKey
- * @param {WorkDataByLogId} workDataByLogId
- */
-export function persistWorkDataByLogId(ownerKey, workDataByLogId) {
-  saveWorkData(ownerKey, workDataByLogId.main || {})
-}
-
-/**
- * @param {string} ownerKey
  * @param {WorkDataByLogId} nextWorkDataByLogId
  */
 function persistSubLogChanges(ownerKey, nextWorkDataByLogId) {

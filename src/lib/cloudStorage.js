@@ -28,15 +28,6 @@ export function readJson(storageKey, fallback) {
 }
 
 /**
- * @param {string} storageKey
- * @param {unknown} value
- * @returns {void}
- */
-export function writeJson(storageKey, value) {
-  localStorage.setItem(storageKey, JSON.stringify(value))
-}
-
-/**
  * @param {string} prefix
  * @param {string} ownerKey
  * @returns {string}

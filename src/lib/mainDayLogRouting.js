@@ -25,15 +25,6 @@ export function vehicleSupabaseIdForLog(ownerKey, logId = 'main') {
 }
 
 /**
- * 이 owner의 메인 차량 supabaseId(서버에 동기화된 것). 없으면 null.
- * @param {string} ownerKey
- * @returns {number|string|null}
- */
-export function mainCarSupabaseId(ownerKey) {
-  return vehicleSupabaseIdForLog(ownerKey, 'main')
-}
-
-/**
  * 로그인 + logId 차량이 서버에 있으면, 그 날짜 daily_logs에 직접 쓰고
  * durable / fallback / unsafe / retry 큐를 쓰지 않는 Fail-Fast 경로다.
  * @param {string} ownerKey
