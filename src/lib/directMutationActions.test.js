@@ -32,10 +32,11 @@ const { STORAGE_FAIL_TOAST } = await import('./outboxCommit.js')
  */
 async function expectLocalSaveFailLog(domain, fn) {
   const original = console.error
-  /** @type {Array<unknown>} */
+  const expected = `[outboxCommit] ${domain} 로컬 저장 실패:`
+  /** @type {Array<string>} */
   const logged = []
-  const spy = mock.method(console, 'error', (/** @type {Array<unknown>} */ ...args) => {
-    if (args[0] === `[outboxCommit] ${domain} 로컬 저장 실패:`) logged.push(args[0])
+  const spy = mock.method(console, 'error', (/** @type {Array<string | Error>} */ ...args) => {
+    if (args[0] === expected) logged.push(expected)
     else original(...args)
   })
   try {
