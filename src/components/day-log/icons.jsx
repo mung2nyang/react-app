@@ -1,6 +1,5 @@
 // @ts-check
-// Step 6(일지 재작성): WorkLogPage.jsx에 있던 작은 SVG 아이콘 컴포넌트들을 그대로
-// 옮긴다 — 순수 표시, 로직 없음.
+// 일지 화면의 작은 SVG 아이콘들(순수 표시).
 export function EditIcon() {
   return (
     <svg viewBox="0 0 24 24">
@@ -36,7 +35,7 @@ export function MessageIcon() {
   )
 }
 
-/** 즐겨찾기 별표(보리 지시 2026-09-14) — 다른 아이콘과 같은 Feather 스타일. */
+/** 즐겨찾기 별표 — 다른 아이콘과 같은 Feather 스타일. */
 /** @param {{ filled?: boolean }} props */
 export function StarIcon({ filled = false }) {
   return (

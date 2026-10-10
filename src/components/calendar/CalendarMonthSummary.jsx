@@ -1,6 +1,5 @@
 // @ts-check
-// Step 5(달력 홈 재작성): MainPage.jsx의 미수금 미니 카드 + 월간 운송료 정산 카드를 옮긴다.
-// 이관 계획 ③-2: monthSettlementSummary 반환값으로 거래처별·파렛트·서브수수료·지출 행 렌더.
+// 미수금 미니 카드 + 월간 운송료 정산 카드. monthSettlementSummary 결과로 거래처별·파렛트·서브수수료·지출 행을 그린다.
 import { formatWon } from '../../domain/money.js'
 import SummaryInfoToggle from './SummaryInfoToggle.jsx'
 

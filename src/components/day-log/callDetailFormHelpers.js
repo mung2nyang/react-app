@@ -1,8 +1,5 @@
 // @ts-check
-// 재감사(FAIL 지적 7번) — 이 파일이 @ts-check 없이 남아 있어서(신규 파일인데도
-// 활성 typecheck 게이트 밖이었다) TS7006(암묵적 any 매개변수) 5건이 안 잡히고
-// 있었다. WorkLogPage.jsx의 콜상세 폼 순수 헬퍼(초기값 구성/포맷팅)를 그대로
-// 옮긴다 — 로직 변경 없음, 타입 주석만 추가.
+// 콜상세 폼 순수 헬퍼(초기값 구성·포맷팅).
 import { dueDateForClient } from '../../lib/clients.js'
 import { getCallDetailDurationMinutes } from '../../lib/finance.js'
 import { formatCurrencyInput, formatWon, parseCurrencyValue } from '../../lib/money.js'

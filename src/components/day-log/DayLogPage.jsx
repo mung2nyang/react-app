@@ -1,10 +1,8 @@
 // @ts-check
-// Step 6(일지 재작성): WorkLogPage.jsx + InlineExpandHost.jsx 폐기 — 이 파일이 그
-// 자리를 대신한다. 화면 조합만 맡고, draft 편집·디바운스·커밋은 useDayDraft.js가,
+// 일지 화면 조합만 맡고, draft 편집·디바운스·커밋은 useDayDraft.js가,
 // 콜상세 폼은 CallDetailForm.jsx가, 비용(정비/주유/기타)은 useExpenseForm.js가
-// 예전처럼 별도 expenses 스토어에서 즉시 저장으로 관리한다(day record에 넣지 않는다
-// — 왜인지는 migration-audit-plan.md Step 6 기록의 "비용 계약" 항목 참고).
-// 211줄, §6: 즐겨찾기 칩용 이력 구독·고정 저장 배선은 이 페이지 조합 책임에 둔다.
+// 별도 expenses 스토어에서 즉시 저장으로 관리한다(day record에 넣지 않는다).
+// §6 예외: 즐겨찾기 칩용 이력 구독·고정 저장 배선은 이 페이지 조합 책임에 둔다.
 import { useMemo, useState } from 'react'
 import { expensesForVehicleDay } from '../../domain/calendarBadges.js'
 import { applyFixedRouteRun, getFixedRouteCounts } from '../../domain/day-record.js'
@@ -66,7 +64,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   const mainWorkData = useOwnerWorkData(ownerKey)
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const workData = logId === 'main' ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)
-  const myLink = useOwnerDrivers(ownerKey).find((driver) => driver.status === 'linked') // 로드맵 26: 연동 기사 본인 배정 기간
+  const myLink = useOwnerDrivers(ownerKey).find((driver) => driver.status === 'linked') // 연동 기사 본인 배정 기간
   const periodNotice = isEmployedDriver ? assignmentPeriodNotice(dateKey, myLink?.startDate, myLink?.endDate) : null
   const pinnedLocations = settings.pinnedLocations || []
   const locationShortcuts = useMemo(

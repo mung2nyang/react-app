@@ -1,13 +1,6 @@
 // @ts-check
-// Step 5(달력 홈 재작성): MainPage.jsx를 대체하는 새 달력 홈. 달력 표시월은 URL의
-// `?y=&m=` 쿼리에 둬서 새로고침에도 그대로 남는다(domain/calendarViewDate.js — 완료
-// 조건 "새로고침 후 같은 달"). workData/settings는 컴포넌트가 직접 loadX()로 뜬
-// 스냅샷이 아니라 store를 구독해서 받는다(재감사 4번: store/ownerDataHooks.js —
-// MainPageRoute의 WorkLogPage 입력도 같은 훅을 쓴다, 단일 진실 공급원) —
-// migration-plan.md 1.3이 금지한 "화면이 자기만의 스냅샷을 갖는" 패턴을 이 화면에서
-// 처음 깬다(migration-audit-plan.md "Step 5의 정확한 시작점").
-// Step 9 슬라이스 B: logId prop — 서브 차량 달력(workData·paymentOn·수수료 게이트).
-// 이관 계획 ③-2: 월간 정산 카드를 monthSettlementSummary로 연결.
+// 달력 화면. 표시 월은 URL `?y=&m=` 쿼리(calendarViewDate.js)라 새로고침해도 남고, workData·settings는 store를 구독한다.
+// logId가 있으면 서브 차량 달력(workData·paymentOn·수수료 게이트).
 import { useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'

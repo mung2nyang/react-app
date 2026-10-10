@@ -1,5 +1,5 @@
 // @ts-check
-// Step 9 슬라이스 B: 서브 차량 달력 모드 배너(메인 복귀). CalendarPage 150줄 한도용 분리.
+// 서브 차량 달력 모드 배너(메인 복귀).
 import { getShortCarNum } from '../../domain/cars.js'
 
 /**

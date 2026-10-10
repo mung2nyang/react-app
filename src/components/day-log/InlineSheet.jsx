@@ -3,7 +3,7 @@
 // 다른 시트로 전환(forceInstant)일 땐 즉시 제거해 두 폼 동시 DOM을 막는다.
 // 열리는 동안은 overflow:hidden으로 클립하고, 전환 완료(is-settled) 후에만 visible.
 // 부모가 children을 조건부 언마운트해도 닫히는 동안엔 마지막 내용을 유지한다.
-// 로드맵 20-A: 펼쳐짐이 끝났을 때·열린 채 scrollKey(고르는 항목)가 바뀔 때 칸 맨 위로 내려간다(화면 밖에서 열려 모르던 문제).
+// 펼쳐짐이 끝났을 때·열린 채 scrollKey(고르는 항목)가 바뀔 때 칸 맨 위로 내려간다(화면 밖에서 열려 모르던 문제).
 import { useEffect, useRef, useState } from 'react'
 
 /**

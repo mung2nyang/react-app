@@ -1,8 +1,6 @@
 // @ts-check
-// 재감사 12차 — 백그라운드 pending 재시도가 성공해도 useDayDraft가 hasPendingRef/
-// autoSaveStatus를 정리하지 않으면, 이후 언마운트 flush가 commitNow를 한 번 더 돌려
-// store/notify/클라우드가 중복된다. 재감사 13차 — 그 정리를 "성공이면 무조건" 하면
-// 더 최신 draft(B)가 있는 동안 과거 patch(A)의 콜백이 pending을 내려 B가 유실된다.
+// 백그라운드 재시도가 성공하면 pending 표시를 내려야 언마운트 때 중복 저장이 안 된다.
+// 단 더 최신 draft(B)가 있으면 옛 patch(A) 성공으로 내리지 않는다 — 내리면 B가 유실된다.
 import { useEffect, useRef } from 'react'
 import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../lib/durableWriteGuard.js'
 import { registerPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
@@ -11,7 +9,7 @@ import { registerPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
 
 export function useMountedRef() {
   const mountedRef = useRef(true)
-  // StrictMode(개발)의 켜기→끄기→다시 켜기에서도 다시 켜지면 열림으로 되돌린다(로드맵 0-3-B).
+  // StrictMode(개발)의 켜기→끄기→다시 켜기에서도 다시 켜지면 열림으로 되돌린다.
   useEffect(() => {
     mountedRef.current = true
     return () => { mountedRef.current = false }

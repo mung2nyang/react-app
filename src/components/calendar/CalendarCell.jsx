@@ -1,5 +1,5 @@
 // @ts-check
-// Step 5(달력 홈 재작성): MainPage.jsx의 달력 셀 렌더링을 그대로 옮긴다. 뱃지 문구/휴무/
+// 달력 셀 하나. 뱃지 문구/휴무/
 // 미수 여부는 CalendarGrid가 domain(calendarBadges.js)으로 미리 계산해서 넘긴다 — 이
 // 컴포넌트는 그 결과를 그리기만 한다(순수 표시).
 
@@ -45,11 +45,7 @@ export default function CalendarCell({ cell, badgeLabel, expenseBadgeLabel, isOf
       {isOff && <span className="off-badge">휴무</span>}
       {!isOff && badgeLabel && <span className="work-badge">{badgeLabel}</span>}
       {expenseBadgeLabel && <span className="maint-badge">{expenseBadgeLabel}</span>}
-      {/* 바닐라 script.js의 .unpaid-dot(당일 미수 콜상세 표시) — 이 react 포트에는 아직
-          없던 뱃지라 Step 5에서 새로 옮긴다. button 안에는 인터랙티브하지 않은 순수
-          장식 표시라 div보다 span이 맞고(재감사 2차), 별도로 읽어 줄 텍스트가 없으니
-          aria-hidden으로 스크린리더에서 숨긴다(미수 여부 자체는 셀의 다른 정보로도
-          전달되지 않으므로 장식 표시로만 취급한다 — 사용자 지시). */}
+      {/* 당일 미수 표시 점 — 장식이라 span + aria-hidden(화면 읽기 프로그램에서 숨김). */}
       {hasUnpaid && <span className="unpaid-dot" aria-hidden="true" />}
     </button>
   )

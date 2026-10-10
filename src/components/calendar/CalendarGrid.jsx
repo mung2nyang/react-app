@@ -1,7 +1,5 @@
 // @ts-check
-// Step 5(달력 홈 재작성): MainPage.jsx의 요일 헤더 + 날짜 셀 map을 옮긴다. 셀 하나하나의
-// 뱃지/휴무/미수 계산을 domain 함수(calendarBadges.js)로 여기서 미리 해서 CalendarCell에는
-// 이미 계산된 값만 넘긴다 — "domain에서 DayRecord → workBadge/isOff/hasUnpaid" 요구사항.
+// 요일 헤더 + 날짜 셀. 셀 뱃지/휴무/미수는 여기서 calendarBadges.js로 미리 계산해 CalendarCell에 넘긴다.
 import { dayExpenseBadgeLabel, dayHasUnpaid, dayWorkBadgeLabel } from '../../domain/calendarBadges.js'
 import { isOffDay } from '../../domain/day-record.js'
 import CalendarCell from './CalendarCell.jsx'

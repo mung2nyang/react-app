@@ -1,9 +1,5 @@
 // @ts-check
-// Step 6(일지 재작성): migration-plan.md는 MaintSummary/FuelSummary/MiscSummary를
-// 3개 파일로 나누라고 제안하지만, 세 종류가 렌더 구조는 완전히 같고 라벨/클래스만
-// kind로 달라진다(원래 WorkLogPage.jsx도 KINDS.map(...) 하나로 처리했다) — 3벌로
-// 쪼개면 오히려 중복이 생겨서, 기존처럼 kind로 매개변수화한 한 컴포넌트로 유지한다
-// (Step 5의 useCalendarDays 생략과 같은 종류의, 문서로 남기는 의도적 이탈).
+// 정비·주유·기타는 구조가 같고 라벨·클래스만 달라 kind로 나누는 한 컴포넌트로 둔다(3벌로 쪼개면 중복).
 // 종류별 합계는 카드 목록 아래 요약 상자 하나에 모은다(운행 일지 세부 내역 합계와 같은 모양).
 import { KINDS, expenseTitle } from '../../lib/expenses.js'
 import { formatWon } from '../../domain/money.js'
