@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 리포트 "요약" 화면 — 정보표·일자표·월간 정산 카드.
 import './report/report.css'
 /**
@@ -101,7 +102,7 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
  *   vat: number,
  *   total: number,
  * }} props.report
- * @param {(value: unknown) => string} props.dash
+ * @param {(value: JsonValue|undefined) => string} props.dash
  * @param {(value: number|string) => string} props.formatWon
  * @param {boolean} [props.distanceOn]
  * @param {boolean} [props.isExporting]

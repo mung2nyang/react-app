@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 9 slice C-2: driver self revenue scopes to one assigned vehicle.
 // financeCore.getMonthlyFareRevenue stays unchanged ? callers narrow settings/workData.
 
@@ -7,7 +8,7 @@
 /** @typedef {import('../../domain/financeTypes.js').WorkDataByLogId} WorkDataByLogId */
 /** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
 
-/** @param {unknown} value */
+/** @param {JsonValue|undefined} value */
 export function phoneDigits(value) {
   return String(value || '').replace(/\D/g, '')
 }

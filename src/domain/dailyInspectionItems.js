@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 로드맵 9-B-2: 운수종사자 일상점검표(화물자동차 운수사업법 시행규칙 별지 제14호의5서식) 점검 항목 — 서식 순서·문구 그대로 3묶음 11항목.
 
 /** @typedef {'good'|'bad'} InspectionResult */
@@ -53,7 +54,7 @@ export function isInspectionComplete(items) {
 
 /**
  * 서버에서 읽은 값을 아는 항목키·양호/불량만 남겨 좁힌다.
- * @param {unknown} raw
+ * @param {JsonValue|undefined} raw
  * @returns {InspectionItems}
  */
 export function sanitizeInspectionItems(raw) {
@@ -61,7 +62,7 @@ export function sanitizeInspectionItems(raw) {
   const items = {}
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return items
   for (const key of DAILY_INSPECTION_KEYS) {
-    const value = /** @type {Record<string, unknown>} */ (raw)[key]
+    const value = /** @type {Record<string, JsonValue|undefined>} */ (raw)[key]
     if (value === 'good' || value === 'bad') items[key] = value
   }
   return items

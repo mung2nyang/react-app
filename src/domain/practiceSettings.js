@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 4 도메인 폴더 이동: practiceSettings.js의 순수 계산부. localStorage I/O
 // (loadPracticeSettings/savePracticeSettings)와 DOM 부작용(applyTheme)은 lib/practiceSettings.js에
 // 남아 이 파일을 재수출한다 — applyTheme은 순수 함수가 아니라(document를 직접 바꿈)
@@ -14,7 +15,7 @@ export * from './practicePresets.js'
 /** 알림 화면에서 끌 수 있는 종류(lib/notifications.js kind와 같은 이름). */
 export const NOTIF_KINDS = ['overdue', 'today', 'driverInvite', 'backup']
 
-/** 끈 알림 종류 — 아는 이름만, 겹침 없이. @param {unknown} raw @returns {Array<string>} */
+/** 끈 알림 종류 — 아는 이름만, 겹침 없이. @param {JsonValue|undefined} raw @returns {Array<string>} */
 function normalizeNotifOff(raw) {
   if (!Array.isArray(raw)) return []
   return NOTIF_KINDS.filter((kind) => raw.includes(kind))
@@ -45,7 +46,7 @@ const defaults = {
 }
 
 /**
- * @param {unknown} value
+ * @param {JsonValue|undefined} value
  * @param {boolean} fallback
  * @returns {boolean}
  */
@@ -116,7 +117,7 @@ export function defaultCarSettings() {
 }
 
 /**
- * @param {unknown} raw
+ * @param {JsonValue|undefined} raw
  * @param {boolean} subFixedOn
  * @returns {Record<string, import('./financeTypes.js').SubCarPracticeSettings>}
  */

@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 4 도메인 폴더 이동: invoices.js의 순수 계산부. localStorage I/O(loadInvoices/
 // saveInvoices)는 lib/invoices.js에 남아 이 파일을 재수출한다.
 import {
@@ -14,7 +15,7 @@ import {
 
 /**
  * 세금계산서 레코드(최소 식별 필드 + 확장 필드).
- * @typedef {{ id: string, supabaseId?: string|number } & Record<string, unknown>} InvoiceRecordLike
+ * @typedef {{ id: string, supabaseId?: string|number } & Record<string, JsonValue|undefined>} InvoiceRecordLike
  */
 
 /**

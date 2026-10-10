@@ -1,7 +1,8 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
 /**
- * @param {unknown} str
+ * @param {JsonValue|undefined} str
  * @returns {number}
  */
 export function parseCurrencyValue(str) {
@@ -10,7 +11,7 @@ export function parseCurrencyValue(str) {
 }
 
 /**
- * @param {unknown} amount
+ * @param {JsonValue|undefined} amount
  * @returns {string}
  */
 export function formatWon(amount) {
@@ -18,7 +19,7 @@ export function formatWon(amount) {
 }
 
 /**
- * @param {unknown} value
+ * @param {JsonValue|undefined} value
  * @returns {string}
  */
 export function formatCurrencyInput(value) {
@@ -27,7 +28,7 @@ export function formatCurrencyInput(value) {
 }
 
 /**
- * @param {unknown} value
+ * @param {JsonValue|undefined} value
  * @returns {string}
  */
 export function formatPercentInput(value) {

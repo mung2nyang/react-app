@@ -18,7 +18,7 @@ export default class PageLoadErrorBoundary extends Component {
     return { failed: true }
   }
 
-  /** @param {unknown} error */
+  /** @param {Error} error */
   componentDidCatch(error) {
     console.error('[PageLoadErrorBoundary] 화면 오류:', error)
   }

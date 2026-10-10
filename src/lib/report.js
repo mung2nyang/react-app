@@ -1,8 +1,9 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 리포트 공용 — 파일명·표시용 짧은 헬퍼(공유 모달도 여기만 씀).
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 
-/** @param {unknown} value */
+/** @param {JsonValue|undefined} value */
 export function dash(value) {
   const text = String(value || '').trim()
   return text || '-'

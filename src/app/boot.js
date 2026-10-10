@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 2 부트 시퀀스: 새로고침 시 Supabase 세션을 복원한다.
 // 슬라이스 E(소속기사): linked driver_links가 있으면 accountType=employed_driver,
 // linkedOwnerId로 hydrate ownerKey를 잡는다.
@@ -88,7 +89,7 @@ async function buildBootSession(userId, overrides, retryMs) {
  * @param {string} userId
  * @param {{ name?: string, phone?: string }} overrides
  * @param {{ name: string, phone: string, accountType: string }} profile
- * @param {{ owner_id?: unknown } | null} link
+ * @param {{ owner_id?: JsonValue } | null} link
  * @returns {AppSession}
  */
 function sessionFromLink(userId, overrides, profile, link) {

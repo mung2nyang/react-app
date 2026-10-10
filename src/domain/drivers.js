@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 4 도메인 폴더 이동: drivers.js의 순수 계산부. localStorage I/O(loadDrivers/
 // saveDrivers)는 lib/drivers.js에 남아 이 파일을 재수출한다.
 //
@@ -13,7 +14,7 @@
 const INVITE_ALPHABET = '23456789ABCDEFGHJKMNPQRSTUVWXYZ'
 export const INVITE_CODE_PATTERN = /^[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{10}$/
 
-/** @param {unknown} value */
+/** @param {JsonValue|undefined} value */
 export function normalizeInviteCode(value) {
   return String(value || '').toUpperCase().replace(/[^0-9A-Z]/g, '')
 }

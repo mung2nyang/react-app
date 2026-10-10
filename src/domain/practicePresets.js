@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 운행 횟수 버튼·노선 이름표(프리셋) 정규화와 scope별 추가·삭제·교체 — practiceSettings.js에서 통째로 옮김(9-B-1, §6 250줄).
 // 서로 얽혀 있는 프리셋 함수끼리 한 파일에 둔다. practiceSettings.js가 그대로 다시 내보내므로 기존 import 경로는 안 바뀐다.
 
@@ -15,7 +16,7 @@ function routeId() {
 }
 
 /**
- * @param {unknown} value
+ * @param {JsonValue|undefined} value
  * @returns {Array<number>}
  */
 export function normalizeRunCountPresets(value) {
@@ -42,7 +43,7 @@ export function nextRunCountPreset(current) {
 }
 
 /**
- * @param {unknown} value
+ * @param {JsonValue|undefined} value
  * @returns {Array<{ id: string, loadLoc: string, unloadLoc: string }>}
  */
 export function normalizeFixedRoutePresets(value) {
@@ -51,6 +52,7 @@ export function normalizeFixedRoutePresets(value) {
   /** @type {Array<{ id: string, loadLoc: string, unloadLoc: string }>} */
   const presets = []
   value.forEach((route) => {
+    if (!route || typeof route !== 'object' || Array.isArray(route)) return
     const loadLoc = String(route?.loadLoc || '').trim()
     const unloadLoc = String(route?.unloadLoc || '').trim()
     const id = String(route?.id || '').trim() || routeId()
@@ -64,8 +66,8 @@ export function normalizeFixedRoutePresets(value) {
 /**
  * @param {FinanceSettings} settings
  * @param {'main'|'sub'} scope
- * @param {unknown} loadLoc
- * @param {unknown} unloadLoc
+ * @param {JsonValue|undefined} loadLoc
+ * @param {JsonValue|undefined} unloadLoc
  * @returns {{ settings: FinanceSettings, error?: string }}
  */
 export function addFixedRoutePreset(settings, scope, loadLoc, unloadLoc) {
@@ -125,12 +127,12 @@ export function removeRunCountPreset(settings, scope, index) {
  * @param {FinanceSettings} settings
  * @param {'main'|'sub'} scope
  * @param {number} index
- * @param {unknown} value
+ * @param {JsonValue} value
  * @returns {FinanceSettings}
  */
 export function replaceRunCountPreset(settings, scope, index, value) {
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
-  /** @type {Array<unknown>} */
+  /** @type {Array<JsonValue>} */
   const current = [...normalizeRunCountPresets(settings[key])]
   current[index] = value
   return { ...settings, [key]: normalizeRunCountPresets(current) }

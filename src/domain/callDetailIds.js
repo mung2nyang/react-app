@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 콜상세 id 정규화. hydrate(서버 numeric id)와 일지 저장이 같은 규칙을 쓴다.
 
 /**
@@ -8,7 +9,7 @@
  */
 export function withCoercedCallDetailId(item) {
   if (!item || typeof item !== 'object') return item
-  const id = /** @type {{ id?: unknown }} */ (item).id
+  const id = /** @type {{ id?: JsonValue }} */ (item).id
   if (typeof id === 'number' && Number.isFinite(id)) {
     return /** @type {T} */ ({ ...item, id: String(id) })
   }
@@ -50,7 +51,7 @@ export function dedupeCallDetailsById(list) {
   ;(Array.isArray(list) ? list : []).forEach((item) => {
     const coerced = withCoercedCallDetailId(item)
     if (!coerced || typeof coerced !== 'object') return
-    const id = /** @type {{ id?: unknown }} */ (coerced).id
+    const id = /** @type {{ id?: JsonValue }} */ (coerced).id
     const key = typeof id === 'string' ? id : ''
     if (key) {
       if (seen.has(key)) return

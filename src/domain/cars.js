@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 4 도메인 폴더 이동: cars.js의 순수 계산부. localStorage I/O(loadCars/saveCars)는
 // lib/cars.js에 남아 이 파일을 재수출한다. 전부 순수 계산 함수(차량 CRUD + 정산/발행 신원 판정).
 import { driverFieldsFromDraft } from './carDriverFields.js'
@@ -26,7 +27,7 @@ export function dedupeCarsById(cars) {
   const next = []
   ;(Array.isArray(cars) ? cars : []).forEach((car) => {
     if (!car || typeof car !== 'object') return
-    const rawId = /** @type {{ id?: unknown }} */ (car).id
+    const rawId = /** @type {{ id?: JsonValue }} */ (car).id
     const id = rawId == null || rawId === '' ? '' : String(rawId)
     if (id) {
       if (seen.has(id)) return

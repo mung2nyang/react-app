@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 세금계산서(tax_invoices) 순수 계산 — 금액 파싱, 차량/거래처 id 해소, upsert 행 조립,
 // 서버 행 병합. 실제 Supabase I/O는 lib/syncTaxInvoicesTable.js가, 하이드레이트 병합
 // 호출은 lib/hydrate.js가 한다. 타입은 기존 InvoiceLike/CarLike 재사용.
@@ -30,7 +31,7 @@
  * @property {TaxInvoiceItemInput} raw
  */
 
-/** @param {unknown} value */
+/** @param {JsonValue|undefined} value */
 export function parseEntityNumber(value) {
   const parsed = Number(String(value ?? '').replace(/[^0-9.-]/g, ''))
   return Number.isFinite(parsed) ? parsed : 0
@@ -86,13 +87,13 @@ export function buildTaxInvoiceRow(item, { userId, vehicleId, clientId }) {
 
 /**
  * @param {Array<InvoiceLike>} localRecords
- * @param {Array<{ id: string|number, raw?: unknown }>} rows tax_invoices 서버 행
+ * @param {Array<{ id: string|number, raw?: JsonValue|Record<string, JsonValue|undefined> }>} rows tax_invoices 서버 행
  * @returns {Array<InvoiceLike>}
  */
 export function mergeTaxInvoiceRecords(localRecords, rows) {
   const merged = [...(localRecords || [])]
   ;(rows || []).forEach((row) => {
-    const raw = row?.raw && typeof row.raw === 'object' ? /** @type {Record<string, unknown>} */ (row.raw) : {}
+    const raw = row?.raw && typeof row.raw === 'object' ? /** @type {Record<string, JsonValue|undefined>} */ (row.raw) : {}
     if (!raw.id) return
     const record = /** @type {InvoiceLike} */ ({ ...raw, supabaseId: row.id })
     const index = merged.findIndex((item) => item.id === record.id)

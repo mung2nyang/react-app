@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 상차지/하차지 즐겨찾기 칩 — 원본 script.js getFrequentAndRecentLocations /
 // renderLocationShortcuts / togglePinnedLocation 순수 로직.
 import { getCallDetails } from './day-record.js'
@@ -11,7 +12,7 @@ export const PINNED_LOCATION_LIMIT = 10
 export const LOCATION_SHORTCUT_DISPLAY_LIMIT = 12
 
 /**
- * @param {unknown} value
+ * @param {JsonValue|undefined} value
  * @returns {Array<string>}
  */
 export function normalizePinnedLocations(value) {
@@ -61,7 +62,7 @@ export function locationShortcutList(workData, currentCallDetails, pinnedLocatio
   /** @type {Map<string, { count: number, lastIndex: number }>} */
   const stats = new Map()
   let cursor = 0
-  /** @param {unknown} value */
+  /** @param {JsonValue|undefined} value */
   function addLocation(value) {
     const location = String(value || '').trim()
     if (!location) return
