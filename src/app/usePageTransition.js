@@ -1,5 +1,5 @@
 // @ts-check
-// 로드맵 18-A: 화면이 바뀔 때 겉 상자에 들어옴 효과(들어감·뒤로·탭)를 다시 건다. 화면은 새로 만들지 않아 작성 중 상태는 그대로.
+// 화면이 바뀔 때 겉 상자에 들어옴 효과(들어감·뒤로·탭)를 다시 건다. 화면은 새로 만들지 않아 작성 중 상태는 그대로.
 import { useLayoutEffect, useRef } from 'react'
 import { useLocation, useNavigationType } from 'react-router-dom'
 

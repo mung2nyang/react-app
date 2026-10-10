@@ -1,5 +1,4 @@
-// Step 3 라우터 셸: AppShell.jsx가 쓰는 지연 로드 페이지 컴포넌트를 한 곳에 모은다
-// (App.jsx가 원래 갖고 있던 lazy() 목록과 동일 — 파일만 분리, 동작 무변경).
+// AppShell.jsx가 쓰는 지연 로드 페이지 컴포넌트 목록.
 import { lazy } from 'react'
 
 export const CarManagementPage = lazy(() => import('../components/CarManagementPage.jsx'))

@@ -1,7 +1,6 @@
 // @ts-check
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// Step 2 부트 시퀀스: 새로고침 시 Supabase 세션을 복원한다.
-// 슬라이스 E(소속기사): linked driver_links가 있으면 accountType=employed_driver,
+// 새로고침 시 Supabase 세션을 복원한다. 소속기사는 linked driver_links가 있으면 accountType=employed_driver,
 // linkedOwnerId로 hydrate ownerKey를 잡는다.
 import { supabase } from '../supabaseClient.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
@@ -56,7 +55,7 @@ export async function isProfileRowMissing(userId) {
  */
 export async function buildCloudAppSession(userId, overrides = {}) {
   const profile = await fetchAccountProfile(userId)
-  // 로드맵 7-C-2: 3일 지난 해제 요청을 먼저 처리해야 기사가 열 때도 해제된 상태로 시작한다.
+  // 3일 지난 해제 요청을 먼저 처리해야 기사가 열 때도 해제된 상태로 시작한다.
   await settleExpiredDriverUnlinks()
   return sessionFromLink(userId, overrides, profile, await fetchLinkedDriverLink(userId))
 }
@@ -64,7 +63,7 @@ export async function buildCloudAppSession(userId, overrides = {}) {
 export const LINK_RETRY_MS = 1000
 
 /**
- * 로드맵 19: 앱 켤 때만 — 연동 확인이 실패하면 1초 뒤 1번 더, 그래도 실패하면 null(본인 칸으로 들어가지 않게).
+ * 앱 켤 때만 — 연동 확인이 실패하면 1초 뒤 1번 더, 그래도 실패하면 null(본인 칸으로 들어가지 않게).
  * @param {string} userId
  * @param {{ name?: string, phone?: string }} overrides
  * @param {number} retryMs
@@ -117,7 +116,7 @@ export function ownerKeyFromSession(session) {
 
 /**
  * needsProfile: 내 profiles 행이 없어 홈 대신 기본 정보 화면(/welcome)으로 보내야 함.
- * linkCheckFailed: 연동 확인이 두 번 다 실패 — 어느 칸으로 들어갈지 몰라 안내 화면(로드맵 19).
+ * linkCheckFailed: 연동 확인이 두 번 다 실패 — 어느 칸으로 들어갈지 몰라 안내 화면.
  * @param {number} [retryMs] 테스트용으로만 바꿈
  * @returns {Promise<{ session: AppSession, hydrateError: boolean, needsProfile: boolean } | { linkCheckFailed: true } | null>}
  */

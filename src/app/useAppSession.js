@@ -24,8 +24,8 @@ export function useAppSession() {
   const [session, setSession] = useState(/** @type {AppSession|null} */ (null))
   const [toast, setToast] = useState('')
   const [booting, setBooting] = useState(true)
-  const [bootLinkFailed, setBootLinkFailed] = useState(false) // 로드맵 19: 연동 확인 실패 → 안내 화면
-  const [loadFailedOwner, setLoadFailedOwner] = useState('') // 로드맵 32: 저장된 기록을 못 읽은 owner
+  const [bootLinkFailed, setBootLinkFailed] = useState(false) // 연동 확인 실패 → 안내 화면
+  const [loadFailedOwner, setLoadFailedOwner] = useState('') // 저장된 기록을 못 읽은 owner
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -57,10 +57,7 @@ export function useAppSession() {
     [],
   )
 
-  // Step 2 부트: 새로고침 시 Supabase 세션을 복원한다. 로그인 상태가 아니면 그대로
-  // /auth에 남는다 — 게스트/로그아웃 동작은 바뀌지 않는다. 이미 /app(또는
-  // /onboarding)에 진입해 있었으면(=새로고침/딥링크) goHome()을 건너뛴다 — 그
-  // 판단·이유는 bootHomeGuard.js(재감사 6번, 완료 조건 "새로고침 후 같은 달").
+  // 새로고침 시 세션 복원. 로그인 상태가 아니면 /auth에 남는다. 이미 /app·/onboarding이면 홈 이동을 건너뛴다(bootHomeGuard.js).
   const homePathRef = useRef(location.pathname)
   useEffect(() => { homePathRef.current = location.pathname })
 
@@ -98,7 +95,7 @@ export function useAppSession() {
     // 유발하지 않는다 — 린트 경고 없이 "마운트 시 한 번만" 계약을 유지한다.
   }, [goHome])
 
-  // Step 0-4 감사 보완: ownerKey가 정해질 때마다(게스트든 로그인이든) store를 persist된
+  // ownerKey가 정해질 때마다(게스트든 로그인이든) store를 persist된
   // 값으로 채운다. hydrate는 그 위에 서버 값을 덮어쓸 뿐 — 이 초기화 없이는 hydrate가
   // 없는 게스트 세션에서 store가 계속 비어 있게 된다.
   useEffect(() => {
@@ -112,7 +109,7 @@ export function useAppSession() {
 
   useEffect(() => {
     if (!toast) return undefined
-    buzz() // 로드맵 18-B: 안내 문구가 뜰 때 짧은 진동
+    buzz() // 안내 문구가 뜰 때 짧은 진동
     const timer = setTimeout(() => setToast(''), 4000)
     return () => clearTimeout(timer)
   }, [toast])
@@ -137,7 +134,7 @@ export function useAppSession() {
     showToast,
     booting,
     bootLinkFailed,
-    // 로드맵 32: 비회원 기록을 못 읽었으면 입력 전에 막음(빈 화면에서 쓰면 기존 기록을 덮어씀). 로그인 화면·회원은 그대로.
+    // 비회원 기록을 못 읽었으면 입력 전에 막음(빈 화면에서 쓰면 기존 기록을 덮어씀). 로그인 화면·회원은 그대로.
     guestLoadFailed: !!session?.guestMode && loadFailedOwner === ownerKey,
     ownerKey,
     cars,

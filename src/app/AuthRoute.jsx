@@ -1,7 +1,6 @@
 // @ts-check
-// Step 3 라우터 셸: `/auth` 라우트. 부트 중에는 AuthPage 대신 로딩 표시만 보여줘
-// 로그인 세션이 있는데도 잠깐 첫 화면이 번쩍이는 것을 막는다(App.jsx의 옛 booting 게이트).
-// 10-L: 세션이 이미 있으면(홈 이동은 BrowserRouter가 startTransition으로 늦게 처리) 넘어갈 때까지 로딩 표시 유지.
+// `/auth` 라우트. 부트 중에는 로딩 표시만 보여 로그인 상태인데 첫 화면이 번쩍이지 않게 한다.
+// 세션이 이미 있으면(홈 이동은 BrowserRouter가 startTransition으로 늦게 처리) 넘어갈 때까지 로딩 표시 유지.
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthPage from '../components/AuthPage.jsx'

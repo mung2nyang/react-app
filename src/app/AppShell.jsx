@@ -1,7 +1,5 @@
 // @ts-check
-// Step 3 라우터 셸: `/app/*` 레이아웃 라우트. App.jsx의 옛 `screen==='home'` 블록을
-// 그대로 옮긴 자리 — 하단탭/사이드메뉴/알림패널은 여기서 한 번만 마운트하고,
-// 화면별 콘텐츠는 중첩 <Routes>의 Outlet 자리에서 페이지 컴포넌트가 그린다.
+// `/app/*` 레이아웃 — 하단탭·사이드메뉴는 여기서 한 번만 마운트하고 화면은 중첩 라우트가 그린다.
 import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav.jsx'
@@ -56,11 +54,8 @@ function pagePath(page) {
 export default function AppShell({ ownerKey, session, showToast, onBackToAuth, onGoAuth, onSessionUpdate }) {
   const location = useLocation()
   const rawNavigate = useNavigate()
-  // 재감사 4차(FAIL 지적 3번) — DayLogPage 헤더의 "뒤로가기"만 durableWriteGuard로
-  // 막고 있었다. BottomNav/SideMenu/알림 패널/각 페이지 onBack이 부르는 navigate는
-  // 전부 이 지역 변수 하나를 거치므로, 여기서 한 번만 감싸면 아래 11곳 전부가
-  // 자동으로 같은 가드를 받는다. (to, options)/(delta: number) 두 오버로드를
-  // any/unknown 없이 그대로 좁히려고 number 여부로 직접 분기한다.
+  // 화면 이동은 모두 이 navigate를 거치므로 저장 안 된 편집 확인(durableWriteGuard)을 여기서 한 번에 건다.
+  // (to, options)/(delta) 두 모양은 number 여부로 나눈다.
   /**
    * @param {import('react-router-dom').To | number} to
    * @param {import('react-router-dom').NavigateOptions} [options]

@@ -1,6 +1,6 @@
 // @ts-check
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// 로드맵 17번: 설치 앱(바탕화면 아이콘) 홈에서 더 돌아갈 화면이 없을 때, 뒤로가기 1번은 안내만, 안내 4초 안에 1번 더면 종료.
+// 설치 앱(바탕화면 아이콘) 홈에서 더 돌아갈 화면이 없을 때, 뒤로가기 1번은 안내만, 안내 4초 안에 1번 더면 종료.
 // 같은 홈 주소로 "붙잡기용 기록"을 하나 더 쌓아 두고, 그게 빠지면(뒤로가기) 안내를 띄운 뒤 4초 동안은 다시 안 쌓는다.
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'

@@ -1,5 +1,5 @@
 // @ts-check
-// Step 9 슬라이스 B §1-A: 차주 사이드 메뉴 "[번호] 일지" = 연동 안 된 sub만.
+// 차주 사이드 메뉴 "[번호] 일지" = 연동 안 된 sub만.
 import { getShortCarNum } from '../domain/cars.js'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */

@@ -1,18 +1,6 @@
 // @ts-check
-// Step 3 라우터 셸: `/app/calendar`(달력, 새 홈 1단계 전엔 `/app`)와 `/app/day/:date`(일지)를 한 라우트 그룹으로 묶는다.
-// Step 5(달력 홈 재작성) — 달력 쪽(`selected`가 없을 때)은 CalendarPage로 분할했다
-// (MainPage.jsx 폐기).
-// Step 6(일지 재작성) — 일지 쪽은 `DayLogPage`(WorkLogPage.jsx/InlineExpandHost.jsx
-// 폐기)로 바뀌었다. `DayLogPage`는 store 구독(useDayDraft)으로 자기 workData를 직접
-// 읽고 디바운스 커밋까지 스스로 하므로, 이 라우터는 이제 `record`/`count`/`isOff`/
-// `saveDay` 같은 걸 더 들고 있지 않는다 — `dateKey`/`ownerKey`만 넘겨주면 된다
-// (재감사 4번에서 만든 `store/ownerDataHooks.js`의 `useOwnerSettings`는 여전히
-// 여기서 settings를 구독해 두 화면에 같은 값을 준다).
-//
-// Step 0-4 감사 보완: 달력 셀 클릭으로 들어왔다는 표시(location.state.from)를 남겨서,
-// 일지를 닫을 때 진짜 뒤로가기(navigate(-1))와 직접 진입 시의 교체 이동을 구분한다
-// (resolveWorkLogCloseTarget — workLogNavigation.js).
-// Step 9 슬라이스 B: `/app/logs/:logId` 서브 차량 달력 + 일지 닫기 시 그 달력 복귀.
+// 달력(`/app/calendar`, 서브 차량 `/app/logs/:logId`)과 일지(`/app/day/:date`) 라우트 묶음. 일지는 스스로 저장하므로 dateKey·ownerKey만 넘긴다.
+// 달력에서 들어온 표시(location.state.from)로 일지 닫기를 뒤로가기/교체 이동 중 고른다(workLogNavigation.js).
 import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import CalendarPage from '../components/calendar/CalendarPage.jsx'
@@ -77,16 +65,8 @@ export default function MainPageRoute({
     if (rawLogId && !knownLog) return null
     return (
       <DayLogPage
-        // 재감사 1번(FAIL 지적) — react-router는 같은 Route(`day/:date`) 안에서
-        // date 파라미터만 바뀌면 MainPageRoute/DayLogPage를 언마운트하지 않고
-        // 재사용한다. useDayDraft의 useReducer 초기값은 "마운트 시 한 번만" 계산되므로,
-        // key 없이는 A 날짜의 draft가 B 날짜로 넘어와 그대로 남고, 이미 걸려 있던
-        // 디바운스 타이머가 B의 dateKey로 A의 데이터를 커밋해 버리는 데이터 오염이
-        // 생겼다(실측: 하단 "일일운행" 탭으로 과거 일지 → 오늘 날짜 직행 시 재현).
-        // key를 dateKey(+ownerKey)로 주면 날짜가 바뀔 때마다 React가 이 서브트리를
-        // 완전히 새로 마운트한다 — 기존(이미 실측 검증된) 언마운트 flush effect가
-        // "옛 인스턴스"에서 정확히 한 번 실행돼 A의 밀린 편집을 A에 flush하고,
-        // "새 인스턴스"는 B의 데이터로 완전히 새로 초기화된다.
+        // key 필수: 날짜만 바뀌면 React가 화면을 재사용해 A 날짜 편집이 B 날짜로 저장된다.
+        // key로 새로 마운트하면 옛 화면이 A 편집을 A에 저장하고 끝난다.
         key={`${ownerKey}:${logId}:${selected.dateKey}`}
         month={selected.month}
         day={selected.day}
@@ -117,7 +97,7 @@ export default function MainPageRoute({
       // closeWorkLog(DayLogPage 헤더 "뒤로가기")는 DayLogPage.jsx의 handleClose가
       // 이미 confirmLeaveIfUnsafe()로 감싸서 부른다 — 여기서 또 감싸면 같은 이동에
       // confirm이 두 번 뜬다. 달력→일지 진입은 그 경로가 아니라서(어디서도 아직
-      // 확인 안 함) 여기서 직접 가드한다(재감사 4차 FAIL 지적 3번 — 전역 이동 경로).
+      // 확인 안 함) 여기서 직접 가드한다.
       onSelectDay={(sel) => {
         if (!confirmLeaveIfUnsafe()) return
         const path = logId === 'main'

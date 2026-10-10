@@ -1,6 +1,5 @@
 // @ts-check
-// Step 3 라우터 셸: 옛 src/App.jsx의 screen/appPage 문자열 스위치를 실제 라우트로 바꾼
-// 자리. 세션·부트·토스트 상태만 여기 남기고, 화면별 로직은 AuthRoute/AppShell로 옮겼다.
+// 라우터 최상위. 세션·부트·토스트 상태만 두고 화면별 로직은 AuthRoute/AppShell이 맡는다.
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../components/OnboardingPage.jsx'
 import WelcomeProfileView from '../components/auth/WelcomeProfileView.jsx'
