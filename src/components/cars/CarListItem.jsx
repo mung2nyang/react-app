@@ -33,14 +33,16 @@ export default function CarListItem({
     <div className="management-list-card">
       <div className="management-card-copy">
         <div className="car-info-text">
-          <span className={`management-badge ${car.type === 'main' ? 'main' : 'sub'}`}>
-            {car.type === 'main' ? '메인' : assignedView ? '배정 차량' : '기사 차량'}
-          </span>
+          {car.type === 'main' && <span className="management-badge main">메인</span>}
           {car.number}
           {isSub && car.driverName && ` [${car.driverName}]`}
-          {hasDriverLink && <span className="management-badge log-enabled">기사연동</span>}
-          {isSub && !hasDriverLink && <span className="management-badge log-enabled">운행일지</span>}
         </div>
+        {isSub && (
+          <div className="car-card-badges">
+            <span className="management-badge sub">{assignedView ? '배정 차량' : '기사 차량'}</span>
+            <span className="management-badge">{hasDriverLink ? '기사연동' : '운행일지'}</span>
+          </div>
+        )}
         {subText && <div className="car-sub-text">{subText}</div>}
       </div>
       {!readOnly && onEdit && onDelete && (

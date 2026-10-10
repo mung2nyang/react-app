@@ -10,6 +10,21 @@
   font-weight: 700;
 }
 
+/* 기사연동·운행일지 칩 줄 — 거래처 카드 칩 줄(.client-card-badges)과 같은 모양 */
+.car-card-badges {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.car-card-badges span {
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  font-weight: 650;
+}
+
 /* 좌우 4px = .form-group label 여백과 줄 맞춤 */
 .car-settlement-mode-guide {
   margin: 7px 0 12px;
