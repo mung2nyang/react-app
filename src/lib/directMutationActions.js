@@ -35,6 +35,7 @@ const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했
 /**
  * 로그인 사용자의 거래처 삭제. 슬라이스 C: outbox/tombstone 없이 clients.delete 직접 1회.
  * @param {{ ownerKey: string, userId: string|null, clients: Array<import('../domain/clientTypes.js').ClientLike>, clientId: string }} params
+ * @returns {Promise<{ clients: Array<import('../domain/clientTypes.js').ClientLike>, blocked: string|null, toast: string|null, failed: boolean, closeModal: boolean }>}
  */
 export async function requestClientDeletion({ ownerKey, userId, clients, clientId }) {
   const ownerBlocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
@@ -68,6 +69,7 @@ export async function requestClientDeletion({ ownerKey, userId, clients, clientI
  * 로그인 사용자의 기사 연동 상태변경. 슬라이스 B: outbox 없이 driver_links.update 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록만 바꾼다.
  * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('./outboxTypes.js').DriverRecord>, driverId: string, status: 'pending'|'linked', cloud: boolean }} params
+ * @returns {Promise<{ drivers: Array<import('./outboxTypes.js').DriverRecord>, blocked: string|null, toast: string }>}
  */
 export async function requestDriverStatusChange({ ownerKey, drivers, driverId, status, cloud }) {
   const driver = drivers.find((item) => item.id === driverId)

@@ -55,7 +55,7 @@ export async function requestDriverInviteSave({ ownerKey, items, editingId, cars
     // 로컬 편집은 게스트와 동일하게 저장한다(게스트 JSON 백업과 충돌하지 않는다).
     const successToast = editingId ? '초대를 수정했습니다.' : '초대를 저장했습니다.'
     const { value, toast, failed } = commitLocalOnly({ domain: 'drivers', ownerKey, value: items, successToast })
-    return { items: failed ? items : /** @type {Array<DriverRecord>} */ (value), blocked: null, toast }
+    return { items: failed ? items : value, blocked: null, toast }
   }
 
   /** @type {string|null} */

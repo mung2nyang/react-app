@@ -21,6 +21,30 @@ const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { setHydration, getState, subscribe } = await import('../store/app-store.js')
 const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../store/persist.js')
 const { hasPendingOps } = await import('./mutationOutbox.js')
+const { STORAGE_FAIL_TOAST } = await import('./outboxCommit.js')
+
+/**
+ * 로드맵 29: 비회원 로컬 저장 실패 — 예상 console.error 1건만 확인하고 나머지는 그대로 통과시킨다.
+ * @template T
+ * @param {string} domain
+ * @param {() => Promise<T>} fn
+ * @returns {Promise<T>}
+ */
+async function expectLocalSaveFailLog(domain, fn) {
+  const original = console.error
+  /** @type {Array<unknown>} */
+  const logged = []
+  const spy = mock.method(console, 'error', (/** @type {Array<unknown>} */ ...args) => {
+    if (args[0] === `[outboxCommit] ${domain} 로컬 저장 실패:`) logged.push(args[0])
+    else original(...args)
+  })
+  try {
+    return await fn()
+  } finally {
+    spy.mock.restore()
+    assert.equal(logged.length, 1, '로컬 저장 실패 기록 1건')
+  }
+}
 
 function beginReady(userId, ownerKey) {
   resetHandlers()
@@ -321,6 +345,27 @@ describe('requestClientDeletion — 사용자 지시 10번 필수 시나리오',
     assert.equal(hasPendingOps(ownerKey), false)
     endCloudSession()
   })
+
+  test('로드맵 29 — 비회원 로컬 거래처 삭제인데 휴대폰 저장이 실패하면: 원래 목록·실패 안내, Store·localStorage 그대로', async () => {
+    const ownerKey = 'dma-client-guest-storage-fail'
+    resetHandlers()
+    endCloudSession()
+    const clients = [{ id: 'client-1', companyName: '한진' }]
+    writeJsonKey('clients', ownerKey, clients)
+    const domainKey = storageKeyFor('clients', ownerKey)
+    const rawBefore = localStorage.getItem(domainKey)
+    const storeBefore = getState().clients[ownerKey]
+
+    const result = await expectLocalSaveFailLog('clients', () => withFailingSetItem((/** @type {string} */ key) => key === domainKey, () => requestClientDeletion({ ownerKey, userId: null, clients, clientId: 'client-1' })))
+
+    assert.deepEqual(result.clients, clients, '실패하면 원래 목록(비어 있지 않음)')
+    assert.equal(result.failed, true)
+    assert.equal(result.closeModal, false)
+    assert.equal(result.toast, STORAGE_FAIL_TOAST)
+    assert.equal(getState().clients[ownerKey], storeBefore, 'Store 그대로')
+    assert.equal(localStorage.getItem(domainKey), rawBefore, 'localStorage 그대로')
+    assert.equal(countOf('clients', 'delete'), 0)
+  })
 })
 
 // 슬라이스 A·B 공통 Fail-Fast 실패 토스트.
@@ -494,6 +539,25 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
     assert.deepEqual(result.drivers, [{ id: 'drv-1', name: '기사', status: 'linked' }])
     assert.equal(countOf('driver_links', 'update'), 0)
     endCloudSession()
+  })
+
+  test('로드맵 29 — 비회원 기사 상태변경인데 휴대폰 저장이 실패하면: 원래 목록·실패 안내, Store·localStorage 그대로', async () => {
+    const ownerKey = 'dma-driver-guest-storage-fail'
+    resetHandlers()
+    endCloudSession()
+    const drivers = asDrivers([{ id: 'drv-1', name: '기사', status: 'pending' }])
+    writeJsonKey('drivers', ownerKey, drivers)
+    const domainKey = storageKeyFor('drivers', ownerKey)
+    const rawBefore = localStorage.getItem(domainKey)
+    const storeBefore = getState().drivers[ownerKey]
+
+    const result = await expectLocalSaveFailLog('drivers', () => withFailingSetItem((/** @type {string} */ key) => key === domainKey, () => requestDriverStatusChange({ ownerKey, userId: null, drivers, driverId: 'drv-1', status: 'linked', cloud: false })))
+
+    assert.deepEqual(result.drivers, drivers, '실패하면 원래 목록(비어 있지 않음)')
+    assert.equal(result.toast, STORAGE_FAIL_TOAST)
+    assert.equal(getState().drivers[ownerKey], storeBefore, 'Store 그대로')
+    assert.equal(localStorage.getItem(domainKey), rawBefore, 'localStorage 그대로')
+    assert.equal(countOf('driver_links', 'update'), 0)
   })
 
   test('supabaseId 없는 로컬 전용 항목은 cloud:true여도 서버 없이 로컬만 삭제한다', async () => {
