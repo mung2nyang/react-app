@@ -74,9 +74,9 @@ test('기록이 없으면 "아직 기록이 없습니다" + [운행 기록하기
   const opened = []
   const view = await renderHome(ownerKey, (key) => opened.push(key))
   try {
-    const actions = Array.from(view.container.querySelectorAll('.home-topbar-actions button')).map((btn) => btn.title)
+    const actions = Array.from(view.container.querySelectorAll('.app-topbar-actions button')).map((btn) => btn.title)
     assert.deepEqual(actions, ['알림', '메뉴'], '오른쪽에 알림 종 다음 메뉴가 있어야 한다')
-    assert.ok(view.container.querySelector('.home-brand')?.textContent.includes('운행일지'), '왼쪽에 작은 로고가 있어야 한다')
+    assert.ok(view.container.querySelector('.app-brand')?.textContent.includes('운행일지'), '왼쪽에 작은 로고가 있어야 한다')
     const card = view.container.querySelector('.home-today-card')
     assert.ok(card, '오늘 카드가 있어야 한다')
     assert.ok(card.textContent.includes(`${month}월 ${day}일`), `오늘 날짜가 보여야 한다 — 실제: ${card.textContent}`)

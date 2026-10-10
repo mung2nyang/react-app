@@ -2,29 +2,7 @@
    CalendarPage.jsx가 main-calendar.css 다음에 이 파일을 import한다. */
 
 .main-page .header {
-  margin-top: -30px;
   margin-bottom: 10px;
-}
-
-.banner-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.banner-logo {
-  height: 52px;
-  object-fit: contain;
-}
-
-.banner-text {
-  font-family: 'Jua', sans-serif;
-  font-size: 2.2rem;
-  font-weight: 400;
-  letter-spacing: -0.5px;
-  color: var(--text-color);
 }
 
 .calendar-grid {

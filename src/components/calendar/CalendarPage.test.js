@@ -498,3 +498,26 @@ test('연동기사 본인 달력: clientScopeKey로 배정 차량 스코프 고�
     await withoutScope.cleanup()
   }
 })
+
+test('새 홈 3단계 — 운행 탭 달력 위쪽은 홈과 같은 한 줄(작은 로고 + 메뉴), 알림 종·큰 로고 없음, 달 이동 그대로', async () => {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app/calendar?y=2026&m=9'] },
+        React.createElement(CalendarPage, { ownerKey: 'test-calendar-topbar', onOpenMenu: () => {}, onSelectDay: () => {} }),
+      ))
+    })
+    assert.ok(container.querySelector('.app-brand')?.textContent?.includes('운행일지'), '왼쪽에 작은 로고가 있어야 한다')
+    const actions = Array.from(container.querySelectorAll('.app-topbar-actions button')).map((btn) => btn.getAttribute('title'))
+    assert.deepEqual(actions, ['메뉴'], '오른쪽엔 메뉴만 — 알림 종은 홈에만')
+    assert.equal(container.querySelector('.banner-container'), null, '예전 큰 로고 줄은 없어야 한다')
+    assert.ok(container.querySelector('button[title="이전 달"]') && container.querySelector('button[title="다음 달"]'), '달 이동 버튼은 그대로')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})

@@ -55,9 +55,7 @@ export default function AppShellRoutes({
         userName={session?.name}
         showToast={showToast}
         onWorkChanged={bumpNotifTick}
-        notifCount={notifCount}
         onOpenMenu={onOpenMenu}
-        onOpenNotifs={onOpenNotifs}
         onBackToAuth={onBackToAuth}
       />
     )

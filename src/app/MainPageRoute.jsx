@@ -32,9 +32,7 @@ import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
  * @param {string} [props.userName]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onWorkChanged]
- * @param {number} [props.notifCount]
  * @param {(() => void)} [props.onOpenMenu]
- * @param {(() => void)} [props.onOpenNotifs]
  * @param {(() => void)} [props.onBackToAuth]
  */
 export default function MainPageRoute({
@@ -43,9 +41,7 @@ export default function MainPageRoute({
   userName,
   showToast,
   onWorkChanged,
-  notifCount,
   onOpenMenu,
-  onOpenNotifs,
   onBackToAuth,
 }) {
   const { date, logId: rawLogId } = useParams()
@@ -115,9 +111,7 @@ export default function MainPageRoute({
       logId={logId}
       clientScopeKey={clientScopeKey}
       userName={userName}
-      notifCount={notifCount}
       onOpenMenu={onOpenMenu}
-      onOpenNotifs={onOpenNotifs}
       onBackToAuth={onBackToAuth}
       showToast={showToast}
       // closeWorkLog(DayLogPage 헤더 "뒤로가기")는 DayLogPage.jsx의 handleClose가
