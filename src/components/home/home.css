@@ -142,6 +142,18 @@
   font-weight: 800;
 }
 
+.home-month-expense {
+  margin-top: 2px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+.home-month-expense strong {
+  color: var(--text-color);
+  font-weight: 800;
+}
+
 .home-month-link {
   flex-shrink: 0;
   color: var(--primary-color);

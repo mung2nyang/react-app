@@ -27,7 +27,7 @@ const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
 const { default: HomePage } = await import('./HomePage.jsx')
 const { default: CalendarPage } = await import('../calendar/CalendarPage.jsx')
-const { commitCars, commitClients, commitSettings, commitWorkData } = await import('../../store/commitHelpers.js')
+const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../../store/commitHelpers.js')
 const { todayWorkLogSelection } = await import('../../domain/calendar.js')
 const { normalizeSettings } = await import('../../domain/practiceSettings.js')
 const { allGoodItems } = await import('../../domain/dailyInspectionItems.js')
@@ -265,5 +265,28 @@ test('2단계 — 이번 달 정산 합계 = 운행 탭 달력 "합계", 거래�
     await act(async () => { calRoot.unmount() })
     calContainer.remove()
     await home.cleanup()
+  }
+})
+
+test('바로 수정 — 이번 달 지출이 있으면 정산 합계 아래 "이번 달 지출 합계"(달력의 정비·주유·통행료/기타 합), 없으면 안 보임', async () => {
+  const ownerKey = 'test-home-expense'
+  const now = new Date()
+  const { dateKey } = todayWorkLogSelection(now)
+  const none = await renderHome(ownerKey, () => {})
+  try {
+    assert.equal(none.container.querySelector('.home-month-expense'), null)
+  } finally {
+    await none.cleanup()
+  }
+  commitExpenses(ownerKey, [
+    { id: 'e1', kind: 'maint', date: dateKey, cost: 30000 },
+    { id: 'e2', kind: 'fuel', date: dateKey, cost: 50000 },
+    { id: 'e3', kind: 'misc', date: dateKey, cost: 7000 },
+  ], { syncToCloud: false })
+  const view = await renderHome(ownerKey, () => {})
+  try {
+    assert.equal(view.container.querySelector('.home-month-expense')?.textContent, '이번 달 지출 합계 87,000원')
+  } finally {
+    await view.cleanup()
   }
 })

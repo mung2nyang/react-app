@@ -61,7 +61,7 @@ export default function HomePage({
         onOpenInspection={() => onOpenToday(today.dateKey)}
         onOpenReceivables={onOpenReceivables}
       />
-      <HomeMonthCard total={summary.total} onOpenCalendar={onOpenCalendar} />
+      <HomeMonthCard total={summary.total} expenseTotal={summary.maint + summary.fuel + summary.misc} onOpenCalendar={onOpenCalendar} />
     </div>
   )
 }
