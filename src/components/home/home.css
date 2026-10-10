@@ -33,13 +33,26 @@
   flex-shrink: 0;
 }
 
-.home-today-card {
+/* 홈 카드 공통 — 오늘·할 일·이번 달 */
+.home-card {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
   padding: 18px 18px 16px;
   border: 1px solid var(--border-color);
   border-radius: 20px;
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
+  color: var(--text-color);
+  font: inherit;
   text-align: left;
+}
+
+.home-card-label {
+  margin: 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-3);
+  font-weight: 650;
 }
 
 .home-today-date {
@@ -67,4 +80,111 @@
   font-size: var(--fs-5);
   font-weight: 800;
   cursor: pointer;
+}
+
+/* 오늘 운행 줄 */
+.home-trip-list {
+  margin: -6px 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.home-trip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--border-color);
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+.home-trip-route {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--sub-text-color);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-trip-more {
+  padding-top: 6px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
+
+/* 할 일 */
+.home-todo-card {
+  padding-bottom: 6px;
+}
+
+.home-todo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-4);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-card-label + .home-todo-row {
+  margin-top: 8px;
+}
+
+.home-row-arrow {
+  color: var(--sub-text-color);
+  font-size: 1.2rem;
+}
+
+.home-todo-empty {
+  padding: 14px 18px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-3);
+  font-weight: 650;
+}
+
+/* 이번 달 정산 합계 */
+.home-month-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.home-month-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-month-copy .home-card-label {
+  margin: 0;
+}
+
+.home-month-total {
+  font-size: var(--fs-7);
+  font-weight: 800;
+}
+
+.home-month-link {
+  flex-shrink: 0;
+  color: var(--primary-color);
+  font-size: var(--fs-3);
+  font-weight: 700;
+}
+
+/* 카드 폭 전체 버튼은 93%면 크게 움찔 — 매출 펼치기 줄(app-shell-base.css)처럼 살짝만 */
+.home-month-card:not(:disabled):active, .home-todo-row:not(:disabled):active { scale: 0.98; }
+@media (prefers-reduced-motion: reduce) {
+  .home-month-card:not(:disabled):active, .home-todo-row:not(:disabled):active { scale: none; opacity: 0.75; }
 }

@@ -64,7 +64,7 @@ export default function AppShellRoutes({
   }
   return (
     <Routes>
-      <Route index element={<HomePage ownerKey={ownerKey} session={session} notifCount={notifCount} onOpenMenu={onOpenMenu} onOpenNotifs={onOpenNotifs} onOpenToday={(/** @type {string} */ dateKey) => navigate(`/app/day/${dateKey}`, { state: { from: 'home' } })} />} />
+      <Route index element={<HomePage ownerKey={ownerKey} session={session} notifCount={notifCount} onOpenMenu={onOpenMenu} onOpenNotifs={onOpenNotifs} onOpenToday={(/** @type {string} */ dateKey) => navigate(`/app/day/${dateKey}`, { state: { from: 'home' } })} onOpenReceivables={() => goToPage('receivables', undefined, 'home')} onOpenCalendar={() => navigate('/app/calendar')} />} />
       <Route path="calendar" element={mainPage()} />
       <Route path="day/:date" element={mainPage()} />
       <Route path="logs/:logId/manage" element={<LinkedDriverManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />

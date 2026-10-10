@@ -12,22 +12,15 @@ import { useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../domain/calendar.js'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../domain/calendarViewDate.js'
-import { resolveLogSettings } from '../../domain/carSettingsScope.js'
-import { getFixedRouteClient, resolveFixedUnitPrice } from '../../domain/clients.js'
 import { monthCallUnpaidTotal } from '../../domain/day-record.js'
-import { monthSettlementSummary } from '../../domain/monthSettlement.js'
-import {
-  useOwnerCars, useOwnerClients, useOwnerExpenses,
-  useOwnerSettings, useOwnerWorkData, useOwnerWorkDataByLogId,
-} from '../../store/ownerDataHooks.js'
 import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
 import CalendarSubLogBanner from './CalendarSubLogBanner.jsx'
+import useMonthSettlement from './useMonthSettlement.js'
 import './calendar.css'
 
 const YEAR_OPTIONS = getYearOptions()
-const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ ({})
 
 /**
  * @param {Object} props
@@ -52,30 +45,13 @@ export default function CalendarPage({
   const month = viewDate.getMonth()
   const isMain = logId === 'main'
 
-  const mainWorkData = useOwnerWorkData(ownerKey)
-  const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
-  const workData = isMain ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)
-  const settings = useOwnerSettings(ownerKey)
-  const inputMode = resolveLogSettings(settings, logId).inputMode === 'fare' ? 'fare' : 'count'
-  const clients = useOwnerClients(ownerKey)
+  const { workData, settings, inputMode, unitPrice, expenses, summary } = useMonthSettlement({
+    ownerKey, logId, clientScopeKey, year, month,
+  })
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
-  const fixedScopeKey = clientScopeKey || logId
-  const unitPrice = resolveFixedUnitPrice({ clients }, fixedScopeKey)
-  const cars = useOwnerCars(ownerKey)
-  const expenses = useOwnerExpenses(ownerKey)
-
-  const fixedRouteClient = getFixedRouteClient({ clients }, fixedScopeKey)
-  const activeFixedOn = isMain ? !!settings.fixedOn : !!settings.subFixedOn
-  const car = isMain ? null : (cars || []).find((c) => c.number === logId) || null
   // 서브차량 실거리: react-app에 subDistanceOn 설정이 없어 이번 슬라이스는 메인만.
   const distanceOn = isMain && !!settings.distanceOn
 
-  const summary = useMemo(
-    () => monthSettlementSummary(workData, year, month, {
-      logId, unitPrice, fixedRouteClient, activeFixedOn, clients, car, expenses,
-    }),
-    [workData, year, month, logId, unitPrice, fixedRouteClient, activeFixedOn, clients, car, expenses],
-  )
   const cells = useMemo(() => buildCalendarCells(viewDate), [viewDate])
   const unpaidTotal = useMemo(() => monthCallUnpaidTotal(workData, year, month), [workData, year, month])
 

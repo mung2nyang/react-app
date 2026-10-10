@@ -1,17 +1,20 @@
 // @ts-check
-// 새 홈 1단계: 위쪽 줄(알림·로고·메뉴) + "오늘" 카드. 달력은 하단 "운행" 탭(/app/calendar)으로 옮김.
+// 새 홈: 위쪽 줄(작은 로고·알림·메뉴) + 오늘 카드 + 할 일 카드 + 이번 달 정산 합계. 달력은 하단 "운행" 탭(/app/calendar).
 import { resolveLogSettings } from '../../domain/carSettingsScope.js'
-import { dayWorkBadgeLabel } from '../../domain/calendarBadges.js'
 import { todayWorkLogSelection } from '../../domain/calendar.js'
-import { resolveFixedUnitPrice } from '../../domain/clients.js'
 import { isOffDay } from '../../domain/day-record.js'
 import { assetPath } from '../../lib/assetPath.js'
-import { useOwnerCars, useOwnerClients, useOwnerSettings, useOwnerWorkData } from '../../store/ownerDataHooks.js'
+import { useOwnerCars } from '../../store/ownerDataHooks.js'
+import useMonthSettlement from '../calendar/useMonthSettlement.js'
+import { useReceivablesData } from '../receivables/useReceivablesData.js'
+import HomeMonthCard from './HomeMonthCard.jsx'
+import HomeTodayCard from './HomeTodayCard.jsx'
+import HomeTodoCard from './HomeTodoCard.jsx'
+import useTodayInspectionMissing from './useTodayInspectionMissing.js'
 import '../calendar/calendar-header.css'
 import './home.css'
 
 const BANNER = assetPath('/images/banner_image.png')
-const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
 /**
  * @param {Object} props
@@ -21,24 +24,26 @@ const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(() => void)} [props.onOpenNotifs]
  * @param {(dateKey: string) => void} props.onOpenToday
+ * @param {() => void} props.onOpenReceivables
+ * @param {() => void} props.onOpenCalendar
  */
-export default function HomePage({ ownerKey, session, notifCount = 0, onOpenMenu, onOpenNotifs, onOpenToday }) {
-  const workData = useOwnerWorkData(ownerKey)
-  const settings = useOwnerSettings(ownerKey)
-  const clients = useOwnerClients(ownerKey)
+export default function HomePage({
+  ownerKey, session, notifCount = 0, onOpenMenu, onOpenNotifs, onOpenToday, onOpenReceivables, onOpenCalendar,
+}) {
   const cars = useOwnerCars(ownerKey)
-  // 달력 칸 글자와 같은 값 — MainPageRoute·CalendarPage와 같은 규칙으로 단가·입력 방식을 고름.
+  // 달력과 같은 규칙(MainPageRoute): 연동 기사 본인은 배정 차량 거래처 스코프.
   const clientScopeKey = session?.linkedOwnerId ? (cars[0]?.number || 'main') : 'main'
-  const unitPrice = resolveFixedUnitPrice({ clients }, clientScopeKey)
-  const inputMode = resolveLogSettings(settings, 'main').inputMode === 'fare' ? 'fare' : 'count'
-
   const now = new Date()
   const today = todayWorkLogSelection(now)
+  const { workData, settings, inputMode, unitPrice, summary } = useMonthSettlement({
+    ownerKey, clientScopeKey, year: now.getFullYear(), month: now.getMonth(),
+  })
   const record = workData[today.dateKey]
-  const off = isOffDay(record)
-  const label = dayWorkBadgeLabel(record, { inputMode, unitPrice })
-  const weekday = WEEKDAYS[now.getDay()]
-  const status = off ? '오늘은 휴무입니다' : label ? `오늘 ${label}` : '아직 기록이 없습니다'
+  const inspectionMissing = useTodayInspectionMissing({
+    ownerKey, dateKey: today.dateKey, enabled: !!resolveLogSettings(settings, 'main').dailyInspectionOn, isOff: isOffDay(record),
+  })
+  const { items: unpaidItems } = useReceivablesData(ownerKey)
+  const unpaidTotal = unpaidItems.reduce((sum, item) => sum + item.remainingAmount, 0)
 
   return (
     <div className="page home-page">
@@ -69,13 +74,22 @@ export default function HomePage({ ownerKey, session, notifCount = 0, onOpenMenu
         </div>
       </div>
 
-      <section className="home-today-card" aria-label="오늘 운행">
-        <p className="home-today-date">{today.month}월 {today.day}일 ({weekday})</p>
-        <p className="home-today-status">{status}</p>
-        <button type="button" className="home-today-btn" onClick={() => onOpenToday(today.dateKey)}>
-          {off ? '일지 열기' : label ? '하나 더 기록' : '운행 기록하기'}
-        </button>
-      </section>
+      <HomeTodayCard
+        record={record}
+        today={today}
+        weekday={now.getDay()}
+        inputMode={inputMode}
+        unitPrice={unitPrice}
+        onOpenToday={onOpenToday}
+      />
+      <HomeTodoCard
+        inspectionMissing={inspectionMissing}
+        unpaidCount={unpaidItems.length}
+        unpaidTotal={unpaidTotal}
+        onOpenInspection={() => onOpenToday(today.dateKey)}
+        onOpenReceivables={onOpenReceivables}
+      />
+      <HomeMonthCard total={summary.total} onOpenCalendar={onOpenCalendar} />
     </div>
   )
 }
