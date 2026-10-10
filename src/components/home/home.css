@@ -143,7 +143,7 @@
 }
 
 .home-month-expense {
-  margin-top: 2px;
+  margin-bottom: 6px;
   color: var(--sub-text-color);
   font-size: var(--fs-3);
   font-weight: 650;
