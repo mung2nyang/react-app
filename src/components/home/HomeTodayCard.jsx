@@ -48,7 +48,7 @@ export default function HomeTodayCard({ record, today, weekday, inputMode, unitP
         </ul>
       )}
       <button type="button" className="home-today-btn" onClick={() => onOpenToday(today.dateKey)}>
-        {off ? '일지 열기' : label ? '하나 더 기록' : '운행 기록하기'}
+        {off ? '일지 열기' : label ? '운행 기록 추가' : '운행 기록하기'}
       </button>
     </section>
   )

@@ -92,7 +92,7 @@ test('기록이 없으면 "아직 기록이 없습니다" + [운행 기록하기
   }
 })
 
-test('오늘 기록이 생기면(store 구독) "오늘 3회" + [하나 더 기록]으로 바뀐다', async () => {
+test('오늘 기록이 생기면(store 구독) "오늘 3회" + [운행 기록 추가]로 바뀐다', async () => {
   const ownerKey = 'test-home-count'
   const { dateKey } = todayWorkLogSelection()
   const view = await renderHome(ownerKey, () => {})
@@ -102,7 +102,7 @@ test('오늘 기록이 생기면(store 구독) "오늘 3회" + [하나 더 기�
       commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] } }, { syncToCloud: false })
     })
     assert.ok(view.container.textContent.includes('오늘 3회'), `실제: ${view.container.textContent}`)
-    assert.equal(todayButton(view.container).textContent, '하나 더 기록')
+    assert.equal(todayButton(view.container).textContent, '운행 기록 추가')
   } finally {
     await view.cleanup()
   }
