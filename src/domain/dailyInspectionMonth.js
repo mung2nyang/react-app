@@ -1,5 +1,5 @@
 // @ts-check
-// 서류 발급 일상점검표 한 달 표(9-C-1): 8일 단위 구간과 칸 표기. 표기 규칙(로드맵 9번 ④·결정 "가"·9-C 결정 2):
+// 서류 발급 일상점검표 한 달 표: 8일 단위 구간과 칸 표기. 표기 규칙:
 // 오늘 이후 = 빈칸, 휴무 = 미(저장분이 있어도), 점검표 없음 = 미, 있으면 양호 O·불량 X.
 
 /** @typedef {import('./dailyInspectionItems.js').InspectionItems} InspectionItems */

@@ -1,7 +1,6 @@
 // @ts-check
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// Step 4 도메인 폴더 이동: invoices.js의 순수 계산부. localStorage I/O(loadInvoices/
-// saveInvoices)는 lib/invoices.js에 남아 이 파일을 재수출한다.
+// 계산서 순수 계산부. localStorage I/O는 lib/invoices.js가 재수출하며 맡는다.
 import {
   getTaxInvoiceFlowMeta,
   getTaxInvoiceRecordId,

@@ -1,10 +1,7 @@
 // @ts-check
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// Step 4 도메인 폴더 이동: practiceSettings.js의 순수 계산부. localStorage I/O
-// (loadPracticeSettings/savePracticeSettings)와 DOM 부작용(applyTheme)은 lib/practiceSettings.js에
-// 남아 이 파일을 재수출한다 — applyTheme은 순수 함수가 아니라(document를 직접 바꿈)
-// domain으로 옮기지 않았다.
-// 프리셋(운행 횟수 버튼·노선 이름표) 함수는 practicePresets.js(9-B-1) — 여기서 그대로 다시 내보낸다.
+// 앱 설정 순수 계산부. localStorage I/O와 화면 테마 적용(applyTheme)은 lib/practiceSettings.js가 맡는다.
+// 프리셋(운행 횟수 버튼·노선 이름표) 함수는 practicePresets.js — 여기서 다시 내보낸다.
 import { normalizePinnedLocations } from './locationShortcuts.js'
 import { normalizeFixedRoutePresets, normalizeRunCountPresets } from './practicePresets.js'
 
@@ -93,7 +90,7 @@ export function normalizeSettings(raw = {}) {
 }
 
 /**
- * 서브차량 전용 설정(§16 슬라이스 C, 세부입력 5종+달력 표시방식만). `subFixedOn`
+ * 서브차량 전용 설정(세부입력 5종+달력 표시방식만). `subFixedOn`
  * 꺼지면 메인과 동일 규칙으로 `callDetail` 강제 켬(고정노선은 여전히 공용).
  * @param {Partial<import('./financeTypes.js').SubCarPracticeSettings>} [raw]
  * @param {boolean} [subFixedOn]

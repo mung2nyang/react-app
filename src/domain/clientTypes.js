@@ -1,7 +1,5 @@
 // @ts-check
-// 재감사 3차(FAIL 지적 4번) — clients.js에 @ts-check를 붙이면서 200줄을 넘겨서
-// 타입 선언만 이 파일로 뺐다(callDetail.js/dayLogTypes.js와 같은 관례, export {}
-// 뿐인 타입 전용 모듈). ClientLike/ClientDraft의 정본은 여기다.
+// ClientLike/ClientDraft 타입 정본(타입 전용 모듈).
 /**
  * @typedef {Object} ClientLike
  * @property {string} id

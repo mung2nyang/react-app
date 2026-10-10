@@ -25,7 +25,7 @@ import { parseCurrencyValue } from './money.js'
 export function selectExpensesForScope(scope, expenses = [], driverExpenses = []) {
   const ownerList = Array.isArray(expenses) ? expenses : []
   const driverList = Array.isArray(driverExpenses) ? driverExpenses : []
-  // 로드맵 5-A-2: 차주 목록의 서브 표시 항목은 그 서브차량 비용 — 수입과 같이 "기사" 탭에 센다.
+  // 차주 목록의 서브 표시 항목은 그 서브차량 비용 — 수입과 같이 "기사" 탭에 센다.
   const ownerSub = ownerList.filter((item) => String(item?.vehicleNumber || '').trim())
   if (scope === 'owner') return ownerList.filter((item) => !String(item?.vehicleNumber || '').trim())
   if (scope === 'driver') return driverList.concat(ownerSub)

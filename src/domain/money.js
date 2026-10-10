@@ -37,5 +37,4 @@ export function formatPercentInput(value) {
   return next
 }
 
-// formatFareShort(달력 셀 fare 뱃지용 짧은 금액 표기)는 calendarBadges.js로 옮겼다
-// (Step 5 재감사 3번 — 타입 전용 모듈 분리).
+// formatFareShort(달력 셀 짧은 금액 표기)는 calendarBadges.js에 있다.

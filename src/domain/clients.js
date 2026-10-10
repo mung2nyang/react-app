@@ -1,12 +1,6 @@
 // @ts-check
-// Step 4 도메인 폴더 이동: clients.js의 순수 계산부. localStorage I/O(loadClients/
-// saveClients)는 lib/clients.js에 남아 이 파일을 재수출한다.
-// 재감사 3차(FAIL 지적 4번) — @ts-check 적용. ClientLike/ClientDraft는
-// clientTypes.js가 정본이다(200줄 제한 때문에 타입만 뺐다) — day-log/dayLogTypes.js도
-// 그걸 alias한다. 결제 주기/입금 예정일 계산은 clientPaymentTerms.js로 뺐고(같은
-// 이유), 여기서 그대로 재수출해서 기존 `from './clients.js'` import 경로는 안 바뀐다.
-// §6 예외(224줄, ~250 한도 내) — 2026-09-17 computeFixedRouteFare 추가.
-// resolveFixedUnitPrice와 같은 고정노선 계산 소스라 옆에 둬야 응집됨.
+// 거래처 순수 계산부. localStorage I/O는 lib/clients.js, 타입은 clientTypes.js, 결제 주기 계산은 clientPaymentTerms.js(여기서 재수출).
+// §6 예외(~250 한도 내) — computeFixedRouteFare는 resolveFixedUnitPrice와 같은 고정노선 계산이라 옆에 둔다.
 import { parseCurrencyValue } from './money.js'
 
 export * from './clientPaymentTerms.js'
@@ -18,7 +12,7 @@ import { PAYMENT_TERMS, needsPaymentTermValue } from './clientPaymentTerms.js'
 // scopeKey를 안 넘기면 계정 전체에서 찾는다(기존 동작, 하위호환). 넘기면 그
 // 스코프(예: 연동기사 배정 차량번호) 전용 고정노선을 먼저 찾고, 없으면 차주
 // 본인(미스코프) 것으로 fallback한다 — 아직 그 스코프가 자기 고정노선을 등록
-// 안 했으면 지금처럼 차주 것을 그대로 쓰게 하기 위함(2026-09-18, §15 슬라이스 D).
+// 안 했으면 차주 것을 그대로 쓰게 하기 위함.
 /** @param {{ clients?: Array<ClientLike> }} settings @param {string} [scopeKey] */
 export function getFixedRouteClient(settings, scopeKey) {
   const list = settings.clients || []
@@ -30,9 +24,8 @@ export function getFixedRouteClient(settings, scopeKey) {
   return list.find((client) => client.fixedRouteLinked && !client.scopedToVehicleNumber) || null
 }
 
-// 바닐라는 별도 "1회 단가" 설정이 없다. 계정(또는 scopeKey 스코프)에서 고정노선에
-// 연결한 거래처 1곳의 fixedUnitPrice만 본다. settings.unitPrice는 포트 초기
-// 임시값이라 더 이상 fallback하지 않는다.
+// 별도 "1회 단가" 설정은 없다 — 계정(또는 scopeKey 스코프)에서 고정노선에 연결한 거래처 1곳의
+// fixedUnitPrice만 본다(settings.unitPrice는 쓰지 않는다).
 /**
  * @param {{ clients?: Array<ClientLike>, unitPrice?: number|string }} settings
  * @param {string} [scopeKey]
@@ -44,8 +37,7 @@ export function resolveFixedUnitPrice(settings, scopeKey) {
 
 // 고정노선 운행은 그날 기록에 금액을 안 저장하고(fixedCount만) 매번 단가×횟수로
 // 계산한다(getOwnerMonthlyFinanceDetail과 같은 공식) — 기사 정산 쪽(financeCore.js
-// getMonthlyDriverTotals)도 이 공식을 재사용해야 금액이 안 빠진다(2026-09-17,
-// §6 응집도 예외로 여기 배치: resolveFixedUnitPrice 바로 옆).
+// getMonthlyDriverTotals)도 이 공식을 재사용해야 금액이 안 빠진다.
 /**
  * @param {{ isOff?: boolean, fixedCount?: number|string, palletCount?: number|string }|null|undefined} record
  * @param {{ fixedUnitPrice: number, palletUnitPrice?: number, subFixedOn?: boolean, activePalletOn?: boolean }} opts
@@ -144,7 +136,7 @@ export function upsertClient(clients, draft, editingId = null) {
   return { clients: sortClientsPinnedFirst(unique), id: savedId }
 }
 
-// 재감사 3차(FAIL 지적 3번) — 달력의 "1회 단가" 편집이 고정노선 연결 거래처가
+// 달력의 "1회 단가" 편집이 고정노선 연결 거래처가
 // 있을 때 그 거래처의 fixedUnitPrice를 원자적으로 고치게 하는 유일한 창구.
 // upsertClient의 `next`는 회사 정보와 고정노선·파렛트·수수료를 함께 정규화한다.
 // 고정노선이 true면 unique 단계에서 같은 결과 배열의 다른 거래처를 모두 해제한다.

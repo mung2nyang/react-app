@@ -1,10 +1,6 @@
 // @ts-check
-// 재감사 9차(FAIL 지적 4번) — dateKey(`YYYY-MM-DD`) 검증을 "정규식 모양만 확인"에서
-// "실제 존재하는 달력 날짜인지 왕복 검증"으로 강화한 함수를 durableStorage.js
-// 내부 전용으로만 두지 않는다. 여기 공용 domain 모듈로 분리해서
-// durableStorage.js(readDurable)와 domain/calendar.js(parseDateKeySelection, 곧
-// MainPageRoute.jsx가 실제 라우팅에 쓴다) 양쪽이 같은 함수를 쓰게 한다 — 한쪽만
-// 고치면 "durable에만 있으면 안전"이라는 착각이 실제 URL 경로에서는 안 지켜진다.
+// dateKey(`YYYY-MM-DD`)가 실제 있는 날짜인지 왕복 검증. durableStorage.js와 calendar.js(라우팅)가
+// 같은 함수를 써야 두 경로 판정이 어긋나지 않는다.
 const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}$/
 
 /**

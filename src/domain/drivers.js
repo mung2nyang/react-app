@@ -1,11 +1,7 @@
 // @ts-check
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// Step 4 도메인 폴더 이동: drivers.js의 순수 계산부. localStorage I/O(loadDrivers/
-// saveDrivers)는 lib/drivers.js에 남아 이 파일을 재수출한다.
-//
-// 2026-09-01 보리 지시: 날짜/기간 겹침 계산 차단(findOverlappingDriverLink 등)은
-// 요구한 적 없는 코드라 제거했다. 남긴 규칙은 "같은 차량번호는 한 기사에게만"
-// 하나뿐이다(기간 무관, 연결 해제된 기사는 제외).
+// 기사 순수 계산부. localStorage I/O는 lib/drivers.js가 재수출하며 맡는다.
+// 겹침 규칙은 "같은 차량번호는 한 기사에게만" 하나뿐(기간 무관, 연결 해제된 기사는 제외).
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {{ number?: string, type?: string }} CarRef */
 /** @typedef {Pick<DriverRecord, 'name'|'phone'|'inviteCode'|'vehicleNumber'|'startDate'|'endDate'> & { assignmentStart?: string, assignmentEnd?: string }} DriverDraft */
@@ -158,7 +154,7 @@ export function isDateWithinAssignment(dateKey, assignmentStart, assignmentEnd) 
 }
 
 /**
- * 할당 기간 기준 UI 상태(바닐라 `getAssignmentState`와 동일).
+ * 할당 기간 기준 UI 상태.
  * @param {{ assignmentStart?: string, assignmentEnd?: string, startDate?: string, endDate?: string }|null|undefined} link
  * @returns {{ key: 'scheduled'|'ended'|'active', label: string }}
  */

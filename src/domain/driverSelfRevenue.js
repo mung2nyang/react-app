@@ -61,7 +61,7 @@ export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLo
   let items = []
 
   if (assigned) {
-    // 로드맵 4-2: 산재보험료·3.3% 원천징수는 차주 화면(driverRevenueShareExpense.js)과 같은
+    // 산재보험료·3.3% 원천징수는 차주 화면(driverRevenueShareExpense.js)과 같은
     // 함수로 계산한다(기사 정산액 기준 월 단위 — 콜 상세 건별 insuranceFee는 더 안 쓴다).
     const links = Array.isArray(settings?.driverLinks) ? settings.driverLinks : []
     const link = links.find((item) => item.id === assigned.driverLinkId || item.vehicleNumber === assigned.number) || null

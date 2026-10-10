@@ -1,10 +1,8 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — finance.js를 200줄 이하로 실제로 쪼갠 조각. 미수(콜상세
-// 단위) 목록·연체 목록만 담는다. 정본은 financeCore.js/financeOwnerDetail.js와
+// 미수(콜상세 단위) 목록·연체 목록. 정본은 financeCore.js/financeOwnerDetail.js와
 // 같은 방식(sources: main + 정산모드가 company/employee인 매출공유 기사차량)으로
 // 소스를 모은다 — 오너 손익 상세(financeOwnerDetail.js)의 unpaidItems 계산도 이
 // 파일의 getReceivableItems를 그대로 가져다 쓴다(중복 구현 없음).
-// 재감사 3차(FAIL 지적 4번) — @ts-check 적용.
 import { getShortCarNum } from './cars.js'
 import { resolveCallDetailId } from './callDetailIds.js'
 import { parseCurrencyValue } from './money.js'

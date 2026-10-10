@@ -1,8 +1,5 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — finance.js를 200줄 이하로 실제로 쪼갠 조각. 오너/기사
-// 월별 손익 상세(getOwnerMonthlyFinanceDetail) 하나만 담는다 — 원래 finance.js에서
-// 가장 큰(약 150줄) 단일 함수였다.
-// 재감사 3차(FAIL 지적 4번) — @ts-check 적용. 이 함수의 반환 모양은
+// 오너/기사 월별 손익 상세(getOwnerMonthlyFinanceDetail). 이 함수의 반환 모양은
 // components/revenue/OwnerMonthlyCards.jsx가 ReturnType으로 그대로 참조하므로,
 // 필드 이름·구조를 바꾸면 그쪽도 같이 깨진다(타입 체크가 잡아 준다).
 import { getShortCarNum, isVehicleRevenueSharedWithOwner } from './cars.js'

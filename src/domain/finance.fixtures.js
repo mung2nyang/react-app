@@ -1,5 +1,4 @@
 // @ts-check
-// 재감사 10차(FAIL 지적 4번) — 이 파일도 이제 // @ts-check 대상이다.
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('./financeTypes.js').WorkDataByLogId} WorkDataByLogId */
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
@@ -117,8 +116,7 @@ export const FIXTURE_WORK = {
           linkedLoadIndex: '0',
         },
       ],
-      // maintItems/fuelItems/miscItems는 더 이상 finance.js가 안 읽는다(재감사 FAIL
-      // 지적 2번 — 비용은 canonical expenses 배열이 정본이다, 아래 FIXTURE_EXPENSES).
+      // maintItems/fuelItems/miscItems는 finance.js가 안 읽는다(비용 정본은 아래 FIXTURE_EXPENSES).
       // 그래도 여기 남겨 둔 이유: hydrateMerge.test.js 등 다른 곳에서 여전히 "클라우드
       // hydrate가 day record에 이 필드를 채워 넣는다"는 별개 계약을 테스트하고,
       // FIXTURE_WORK 자체가 그 계약의 예시 데이터이기도 하다.
@@ -150,7 +148,7 @@ export const FIXTURE_WORK = {
   },
 }
 
-// 재감사(FAIL 지적 2번) — getOwnerMonthlyFinanceDetail이 비용을 읽는 canonical
+// getOwnerMonthlyFinanceDetail이 비용을 읽는 canonical
 // expenses 배열. 위 FIXTURE_WORK.main의 maintItems/fuelItems/miscItems와 같은 날짜·
 // 금액으로 맞춰 뒀다(부기: finance.js는 더 이상 그 필드들을 안 읽는다 — 여기서
 // 값이 같은 건 "합계가 같아야 정상"이라는 걸 테스트가 확인하기 위해서일 뿐,

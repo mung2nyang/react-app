@@ -1,7 +1,5 @@
 // @ts-check
-// 재감사 3차(FAIL 지적 4번) — expenses.js에 @ts-check를 붙이면서 200줄을 살짝
-// 넘겨서(201줄) 타입 선언만 이 파일로 뺐다(clientTypes.js/callDetail.js와 같은
-// 관례). ExpenseItem/ExpenseDraft의 정본은 여기다.
+// ExpenseItem/ExpenseDraft 타입 정본(타입 전용 모듈).
 /**
  * @typedef {Object} ExpenseItem
  * @property {string} id

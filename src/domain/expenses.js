@@ -1,9 +1,5 @@
 // @ts-check
-// Step 4 도메인 폴더 이동: expenses.js의 순수 계산부. localStorage I/O(loadExpenses/
-// saveExpenses)는 lib/expenses.js에 남아 이 파일을 재수출한다.
-// 재감사 3차(FAIL 지적 4번) — @ts-check 적용. ExpenseItem/ExpenseDraft는
-// expenseTypes.js가 정본이다(200줄 제한 때문에 타입만 뺐다) — day-log/dayLogTypes.js도
-// 그걸 alias한다.
+// 지출 순수 계산부. localStorage I/O는 lib/expenses.js, 타입 정본은 expenseTypes.js.
 /** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('./expenseTypes.js').ExpenseDraft} ExpenseDraft */
 
@@ -77,10 +73,7 @@ export function emptyExpenseDraft(kind, date = todayKey(), vehicleNumber) {
   return draft
 }
 
-// Step 6(일지 재작성): DayLogPage.jsx(// @ts-check)가 이 함수를 정확한 타입으로 부를
-// 수 있도록 editingId 매개변수 모양만 문서화했다(로직 변경 없음) — 기본값 null만
-// 있고 타입 주석이 없으면 TS가 이 매개변수를 null만 되는 타입으로 좁힌다(실측
-// 확인, WorkLogPage.jsx의 clients=[] → never[]와 같은 종류의 함정).
+// editingId 타입 설명 필수 — 없으면 기본값 null 때문에 TS가 null만 되는 타입으로 좁힌다.
 /**
  * @param {Array<ExpenseItem>} items
  * @param {ExpenseDraft} draft

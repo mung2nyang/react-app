@@ -1,8 +1,6 @@
 // @ts-check
-// 날짜별 운행 기록(workData[dateKey]) 파생 계산 + 저장 형태 정규화.
-// migration-plan.md의 domain/day-record.ts 자리. DayRecordLike/CallDetailLike
+// 날짜별 운행 기록(workData[dateKey]) 파생 계산 + 저장 형태 정규화. DayRecordLike/CallDetailLike
 // 정본은 각각 dayRecordTypes.js/callDetail.js — 여기선 alias만 한다.
-// 206줄, §6 예외: 날짜별 운행 기록 파생값을 계산하는 서로 독립적인 순수 함수 14개 — 공유하는 자연스러운 분리선이 없어 쪼개면 기계적 절단이 됨.
 import { dedupeCallDetailsById, withCoercedCallDetailId } from './callDetailIds.js'
 import { getDetailPaymentSummary } from './finance.js'
 import { parseCurrencyValue } from './money.js'
@@ -17,20 +15,14 @@ export function getFixedCount(record) {
 }
 
 // 파렛트 회수 횟수. 고정노선 거래처의 palletOn이 켜져 있을 때만 집계에 쓰이지만
-// (Step 7 몫), 값 자체는 항상 정확히 저장해 둔다.
+// 값 자체는 항상 정확히 저장해 둔다.
 /** @param {DayRecordLike|null|undefined} record */
 export function getPalletCount(record) {
   if (record?.isOff) return 0
   return Math.max(0, parseInt(String(record?.palletCount), 10) || 0)
 }
 
-// 재감사 4차(FAIL 지적 4번) — 예전엔 fixedRouteCounts를 unknown으로 받고 런타임에
-// typeof/Array.isArray로 검증했다. 이 함수를 실제로 부르는 두 자리(day-record.js
-// 자신의 DayRecordLike, applyFixedRouteRun이 만드는 { fixedRouteCounts } 리터럴)가
-// 전부 이미 Record<string, number>|undefined로 정확히 타입돼 있어서, unknown으로
-// 받을 이유가 없다 — 그 정확한 타입을 그대로 쓴다. 아래 런타임 방어(typeof/
-// Array.isArray)는 hydrate로 들어온 값처럼 실제로 형태가 어긋날 수 있는 데이터에
-// 대한 방어라 타입을 좁혀도 그대로 남긴다.
+// 아래 typeof/Array.isArray 확인은 hydrate로 들어온 값처럼 모양이 어긋날 수 있는 데이터 방어라 남긴다.
 /** @param {{ fixedRouteCounts?: Record<string, number> }|null|undefined} record */
 export function getFixedRouteCounts(record) {
   const counts = record?.fixedRouteCounts

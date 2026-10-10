@@ -1,10 +1,6 @@
 // @ts-check
-// 재감사 3차(FAIL 지적 4번) — finance*.js 5개 파일 전체를 활성 typecheck 대상으로
-// 만들면서 반복되는 매개변수 모양을 한 곳에 모은 타입 전용 모듈(export {},
-// callDetail.js/dayLogTypes.js와 같은 관례). cars.js/drivers.js는 아직 @ts-check가
-// 없어서(이번 diff가 손대지 않은 기존 파일) 그 함수들의 매개변수를 여기서 명시적으로
-// 좁혀 준다 — 안 그러면 `link = null` 같은 기본값만으로 TS가 매개변수를 "null만
-// 되는 타입"으로 추론해 버린다(Step 5 typedWorkLogPage.js에서 겪은 것과 같은 함정).
+// finance*.js가 함께 쓰는 매개변수 모양 모음(타입 전용 모듈). `link = null` 같은 기본값만 있으면
+// TS가 null만 되는 타입으로 좁히므로 여기서 모양을 밝혀 둔다.
 /** @typedef {import('./day-record.js').DayRecordLike} DayRecordLike */
 /** @typedef {Record<string, Record<string, DayRecordLike>>} WorkDataByLogId logId(차량번호|'main') → 날짜 → 기록 */
 
@@ -86,7 +82,7 @@
  * @property {boolean} [platformOn]
  * @property {boolean} [distanceOn]
  * @property {boolean} [cargoTonnageOn]
- * @property {boolean} [dailyInspectionOn] 일상점검표 사용(9-B-1, 메인 차량 — 기사차량은 subCarSettings)
+ * @property {boolean} [dailyInspectionOn] 일상점검표 사용(메인 차량 — 기사차량은 subCarSettings)
  * @property {Array<string>} [notifOff] 알림 화면에서 끈 알림 종류(NOTIF_KINDS)
  * @property {boolean} [fixedRouteOn]
  * @property {Array<{ id: string, loadLoc: string, unloadLoc: string }>} [fixedRoutePresets]
@@ -97,7 +93,7 @@
  * @property {boolean} [subRunCountToggle]
  * @property {Array<number>} [subRunCountPresets]
  * @property {Array<string>} [pinnedLocations]
- * @property {Record<string, SubCarPracticeSettings>} [subCarSettings] 서브차량 번호별 전용 값(§16 슬라이스 C — 세부입력 5종+달력 표시방식만, 결제/고정노선은 여전히 공용)
+ * @property {Record<string, SubCarPracticeSettings>} [subCarSettings] 서브차량 번호별 전용 값(세부입력 5종+달력 표시방식만, 결제/고정노선은 공용)
  */
 
 /**

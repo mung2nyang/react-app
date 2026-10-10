@@ -1,8 +1,6 @@
 // @ts-check
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 콜상세 한 건의 부분입금 원장(payments[])을 다루는 순수 함수.
-// migration-plan.md의 domain/payments.ts에 대응하는 자리 — Step 4에서 domain/으로
-// 옮길 때까지는 workData.js에서 분리된 파일로 유지한다 (Step 1: 200줄 제한 준수).
 import { findCallDetailIndex } from './callDetailIds.js'
 import { getDetailPaymentSummary, syncDetailPaymentStatus } from './finance.js'
 import { parseCurrencyValue } from './money.js'

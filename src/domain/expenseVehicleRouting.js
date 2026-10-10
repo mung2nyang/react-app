@@ -1,5 +1,5 @@
 // @ts-check
-// 정비/주유/기타를 서버 차량 칸별로 나눈다(로드맵 5-A). 연동 서브차량은 항목 단위 공용 장부(5-B-2).
+// 정비/주유/기타를 서버 차량 칸별로 나눈다. 연동 서브차량은 항목 단위 공용 장부.
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */

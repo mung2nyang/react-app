@@ -1,5 +1,5 @@
 // @ts-check
-// 월간 운송료 정산 공용 순수 계산(이관 계획 ③-1). 화면 연결은 ③-2/③-3.
+// 월간 운송료 정산 공용 순수 계산.
 // §6: 헬퍼+본문이 한 계산 경로라 분리하면 항상 같이 읽게 됨(~210줄 허용).
 import { getShortCarNum } from './cars.js'
 import { countCallTrips, getCallDetails, getFixedCount, getPalletCount } from './day-record.js'

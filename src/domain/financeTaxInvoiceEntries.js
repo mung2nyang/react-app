@@ -1,7 +1,6 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — finance.js를 200줄 이하로 실제로 쪼갠 조각. 세금계산서
-// "레코드" 조립(라벨, id, 당사자 정보, 저장된 발급 상태와의 병합)만 담는다 —
-// 원천 그룹 계산 자체는 financeTaxInvoiceGroups.js. 계산서 종류는 거래처 매출뿐(기사 매입·수수료 발행 삭제, 2026-10-02).
+// 세금계산서 "레코드" 조립(라벨, id, 당사자 정보, 저장된 발급 상태와의 병합)만 담는다 —
+// 원천 그룹 계산 자체는 financeTaxInvoiceGroups.js. 계산서 종류는 거래처 매출뿐.
 import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
@@ -32,7 +31,7 @@ import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
  */
 
 /**
- * 재감사 10차(FAIL 지적 4번) — app-store.js의 invoices 슬라이스가 실제로 담는 값.
+ * app-store.js의 invoices 슬라이스가 실제로 담는 값.
  * domain/taxInvoices.js(mergeTaxInvoiceRecords/applyInsertedTaxInvoiceId)와
  * domain/invoices.js(persistInvoiceRecord)가 실제로 읽고 쓰는 필드만 얹은
  * TaxInvoiceRecord의 상위집합이다 — id는 두 함수 모두 키로 쓰므로 필수.

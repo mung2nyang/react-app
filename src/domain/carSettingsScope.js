@@ -1,5 +1,5 @@
 // @ts-check
-// §16 슬라이스 D: 일지·달력 화면이 차량(logId)별 설정값을 읽게 하는 읽기 전용 스코프.
+// 일지·달력 화면이 차량(logId)별 설정값을 읽게 하는 읽기 전용 스코프.
 import { defaultCarSettings } from './practiceSettings.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */

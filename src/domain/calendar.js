@@ -67,18 +67,11 @@ export function todayWorkLogSelection(date = new Date()) {
   }
 }
 
-// viewDateFromSearchParams/searchParamsForViewDate(달력 월을 URL 쿼리에 두는 왕복
-// 함수)는 calendarViewDate.js로 옮겼다(Step 5 재감사 3번 — 타입 전용 모듈 분리).
-// 재감사 10차(FAIL 지적 4번) — 이 파일도 이제 // @ts-check 대상이다.
+// 달력 월을 URL 쿼리에 두는 왕복 함수는 calendarViewDate.js에 있다.
 
 /**
  * `/app/day/:date` 라우트 파라미터(`YYYY-MM-DD`)를 MainPageRoute의 `selected` 모양으로
- * 바꾼다. Step 3 라우터 도입 — 값이 아니면 null(달력 표시)을 돌려준다. 재감사
- * 9차(FAIL 지적 4번) — 정규식 모양만 보지 않고 domain/dateKey.js의 공용
- * isValidCalendarDateKey로 실제 존재하는 달력 날짜인지까지 확인한다(예:
- * `2026-02-30`은 모양은 맞지만 실존하지 않는 날짜라 거부돼야 한다) — durable
- * 큐(durableStorage.js)가 쓰는 것과 같은 함수라, "URL은 통과시켰는데 durable은
- * 거부한다"처럼 두 경로가 어긋날 수 없다.
+ * 바꾼다. 실제 있는 날짜가 아니면(`2026-02-30` 등) null(달력 표시) — durable 큐와 같은 isValidCalendarDateKey를 쓴다.
  * @param {string | undefined} dateKey
  * @returns {{ dateKey: string, month: number, day: number } | null}
  */

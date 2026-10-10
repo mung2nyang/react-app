@@ -1,8 +1,5 @@
 // @ts-check
-// 재감사 3차(FAIL 지적 4번) — day-record.js에 @ts-check를 붙이면서 200줄을
-// 넘겨서(239줄) 타입 선언만 이 파일로 뺐다(clientTypes.js/callDetail.js와 같은
-// 관례). DayRecordLike의 정본은 여기다 — calendarBadges.js/financeTypes.js가
-// alias한다.
+// DayRecordLike 타입 정본(타입 전용 모듈). calendarBadges.js/financeTypes.js가 이름을 이어 받는다.
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
 
 /**
@@ -22,7 +19,7 @@
  * @property {Array<import('../lib/pendingWorkDataWritesTypes.js').JsonRecord>} [fuelItems]
  * @property {Array<import('../lib/pendingWorkDataWritesTypes.js').JsonRecord>} [maintItems]
  * @property {Array<import('../lib/pendingWorkDataWritesTypes.js').JsonRecord>} [miscItems]
- * @property {string} [assignedVehicleNumber] 연동 해제 때 복사된 날의 배정 차량 번호(로드맵 7-D)
+ * @property {string} [assignedVehicleNumber] 연동 해제 때 복사된 날의 배정 차량 번호
  */
 
 export {}

@@ -1,9 +1,5 @@
 // @ts-check
 // 콜상세(callDetails[]) 한 건을 만들고 배열에 upsert/제거하는 순수 함수.
-// migration-plan.md 3.4 "innerHTML + 인라인 onclick → 리스트 컴포넌트"가 참조하는
-// 자리 — Step 4에서 domain/으로 옮길 때까지는 workData.js에서 분리된 파일로 유지한다.
-// 재감사 3차(FAIL 지적 4번) — 이번 diff가 건드린 프로덕션 JS 전체를 활성 typecheck
-// 대상으로 만들라는 지시로 @ts-check를 붙였다.
 import { parseCurrencyValue } from './money.js'
 import { generateLocalId } from './payments.js'
 
@@ -57,7 +53,7 @@ export function buildCallDetail(draft, existing, dateKey, clients = []) {
 
   return {
     item: /** @type {CallDetailLike} */ ({
-      // Step 6(일지 재작성) — 콜상세 id 부여: 기존 항목은 id를 그대로 이어받고
+      // 콜상세 id 부여: 기존 항목은 id를 그대로 이어받고
       // (레거시라 아직 없으면 여기서 진짜 id를 새로 붙인다 — day-record.js의
       // getCallDetails가 읽을 때 임시로 채워 주는 "legacy-N"은 배열 인덱스 기반이라
       // 편집·삭제로 목록 순서가 바뀌면 안정적이지 않다 — 실제로 손을 댄 항목은

@@ -1,8 +1,5 @@
 // @ts-check
-// 재감사 3차(FAIL 지적 4번) — clients.js에 @ts-check를 붙이면서 200줄을 넘겨서,
-// 서로 다른 관심사인 "결제 주기/입금 예정일 계산"을 이 파일로 뺐다(거래처 CRUD
-// 자체와는 독립적인 순수 계산). clients.js가 그대로 재수출해서 기존
-// `from './clients.js'` import 경로는 안 바뀐다.
+// 결제 주기·입금 예정일 계산(거래처 CRUD와 독립). clients.js가 재수출한다.
 /** @typedef {import('./clientTypes.js').ClientLike} ClientLike */
 
 export const PAYMENT_TERMS = [
