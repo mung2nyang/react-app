@@ -1,7 +1,7 @@
 /* AI 비서 입력 줄(HomeAssistantBar 전용) — 오늘 카드와 할 일 사이 얇은 한 줄.
    .home-card(home.css, 나중에 불러옴)의 display·padding을 이기려고 두 이름을 같이 씀. */
 .home-card.home-assistant {
-  --assistant-tint: #e6f0dd; /* 새싹 잎 색을 아주 연하게 — 비서 자리 표시 */
+  --assistant-tint: var(--hover-bg); /* 앱 다른 아이콘 칸과 같은 회색 */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -10,7 +10,7 @@
 }
 
 [data-theme="dark"] .home-assistant {
-  --assistant-tint: #f3eedf; /* 다크: 검은 테두리가 묻히지 않게 밝은 크림 */
+  --assistant-tint: #d4d4d4; /* 다크: 어두운 회색이면 검은 테두리가 묻혀서 밝은 회색 */
 }
 
 .home-assistant-avatar {
