@@ -50,14 +50,55 @@ test('SkeletonLines: 기본 2줄·기본 문구', async () => {
   }
 })
 
-test('PageSkeleton: 제목 막대 1 + 얇은 막대 묶음 3 + 상태 알림', async () => {
+test('PageSkeleton: 주소 없으면 공용 — 제목 막대 1 + 카드 틀 3 + 상태 알림', async () => {
   const view = await render(React.createElement(PageSkeleton))
   try {
-    assert.ok(view.container.querySelector('.page-skeleton[role="status"]'))
+    assert.ok(view.container.querySelector('.page-skeleton[role="status"][data-shape="common"]'))
     assert.equal(view.container.querySelectorAll('.skeleton-title').length, 1)
-    assert.equal(view.container.querySelectorAll('.skeleton-group').length, 3)
-    assert.equal(view.container.querySelectorAll('.skeleton-card').length, 0)
+    assert.equal(view.container.querySelectorAll('.skeleton-card.skeleton-group').length, 3)
+    assert.equal(view.container.querySelector('.settings-header'), null, '공용 뼈대엔 머리줄 없음')
     assert.equal(view.container.querySelector('.skeleton-sr')?.textContent, '불러오는 중')
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('PageSkeleton: 마이페이지 — 진짜 머리줄 + 개인정보 카드 틀 + 바로가기 6칸 + 목록 3줄, 메뉴 버튼 동작', async () => {
+  let opened = 0
+  const view = await render(React.createElement(PageSkeleton, { path: '/app/me/', onOpenMenu: () => { opened += 1 } }))
+  try {
+    assert.ok(view.container.querySelector('.page-skeleton[data-shape="me"]'))
+    assert.equal(view.container.querySelector('.settings-title')?.textContent, '마이페이지')
+    assert.equal(view.container.querySelectorAll('.skeleton-profile').length, 1)
+    assert.equal(view.container.querySelectorAll('.skeleton-shortcut').length, 6)
+    assert.equal(view.container.querySelectorAll('.skeleton-list-row').length, 3)
+    assert.equal(view.container.querySelectorAll('.skeleton-group').length, 0)
+    const menu = view.container.querySelector('.top-menu-btn')
+    await act(async () => { menu?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    assert.equal(opened, 1)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('PageSkeleton: 매출 — 진짜 머리줄 + 위쪽 카드 틀 + 요약 카드 틀 2', async () => {
+  const view = await render(React.createElement(PageSkeleton, { path: '/app/revenue' }))
+  try {
+    assert.ok(view.container.querySelector('.page-skeleton[data-shape="revenue"]'))
+    assert.equal(view.container.querySelector('.settings-title')?.textContent, '매출')
+    assert.equal(view.container.querySelectorAll('.skeleton-revenue-top').length, 1)
+    assert.equal(view.container.querySelectorAll('.skeleton-revenue-top .skeleton-tab').length, 2)
+    assert.equal(view.container.querySelectorAll('.skeleton-summary').length, 2)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('PageSkeleton: 다른 화면 주소는 공용 모양', async () => {
+  const view = await render(React.createElement(PageSkeleton, { path: '/app/cars' }))
+  try {
+    assert.ok(view.container.querySelector('.page-skeleton[data-shape="common"]'))
+    assert.equal(view.container.querySelectorAll('.skeleton-group').length, 3)
   } finally {
     await view.cleanup()
   }

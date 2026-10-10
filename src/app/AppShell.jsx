@@ -141,7 +141,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
       <HydrationRetryBanner showToast={showToast} />
       <div ref={pageBoxRef} className="page-transition">
         <PageLoadErrorBoundary resetKey={location.pathname}>
-        <Suspense fallback={<PageSkeleton />}>
+        <Suspense fallback={<PageSkeleton path={location.pathname} onOpenMenu={() => setMenuOpen(true)} />}>
           <AppShellRoutes
             ownerKey={ownerKey}
             session={session}
