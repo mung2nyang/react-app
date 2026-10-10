@@ -1,6 +1,6 @@
 // @ts-check
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { formatWon } from '../../lib/money.js'
 import { formatWorkMonth, receivableItemKey } from '../../lib/receivables.js'
 import { receivablesDetailPath } from './receivablesPaths.js'
@@ -23,6 +23,7 @@ import './receivables.css'
  */
 export default function ReceivablesListPage({ ownerKey = 'guest', onBack, showToast, onWorkChanged, onOpenMenu }) {
   const navigate = useNavigate()
+  const { search } = useLocation()
   const [tab, setTab] = useState('monthly')
   const { workDataByLogId, settings, groups, dueItems, hasSubCars } = useReceivablesData(ownerKey)
   const { confirm, confirmDialog } = useConfirm()
@@ -91,7 +92,7 @@ export default function ReceivablesListPage({ ownerKey = 'guest', onBack, showTo
                   <button
                     type="button"
                     className="receivable-detail-btn"
-                    onClick={() => navigate(receivablesDetailPath(group.client, group.monthKey))}
+                    onClick={() => navigate(receivablesDetailPath(group.client, group.monthKey, search))}
                   >
                     미수금 상세
                   </button>

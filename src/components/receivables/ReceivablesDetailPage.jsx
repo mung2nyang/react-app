@@ -1,9 +1,9 @@
 // @ts-check
 import { useMemo } from 'react'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { formatWon } from '../../lib/money.js'
 import { formatWorkMonth, groupItems, receivableItemKey } from '../../lib/receivables.js'
-import { parseClientParam, parseMonthParam } from './receivablesPaths.js'
+import { parseClientParam, parseMonthParam, receivablesListPath } from './receivablesPaths.js'
 import { useReceivablesData } from './useReceivablesData.js'
 import { useReceivablesActions } from './useReceivablesActions.js'
 import { useConfirm } from './useConfirm.jsx'
@@ -21,6 +21,7 @@ import './receivables.css'
  */
 export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, onWorkChanged }) {
   const navigate = useNavigate()
+  const { search } = useLocation()
   const { client: clientParam, month: monthParam } = useParams()
   const monthKey = parseMonthParam(monthParam)
   const clientName = parseClientParam(clientParam)
@@ -37,7 +38,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
   const dueDates = detailItems.map((/** @type {ReceivableItemLike} */ item) => item.paymentDueDate).filter(Boolean).sort()
 
   if (!monthKey || !clientName) {
-    return <Navigate to="/app/receivables" replace />
+    return <Navigate to={receivablesListPath(search)} replace />
   }
 
   /** @param {string} key */
@@ -49,7 +50,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
   return (
     <div className="page receivables-page">
       {confirmDialog}
-      <PageHeader title="미수금 상세" onBack={() => navigate('/app/receivables')} />
+      <PageHeader title="미수금 상세" onBack={() => navigate(receivablesListPath(search))} />
 
       <section className="receivable-detail-summary">
         <div className="receivable-detail-eyebrow">{formatWorkMonth(monthKey)}</div>
@@ -90,7 +91,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
             className="receivable-detail-all-paid"
             onClick={async () => {
               const leave = await actions.payGroup(clientName, monthKey, true)
-              if (leave) navigate('/app/receivables')
+              if (leave) navigate(receivablesListPath(search))
             }}
             disabled={actions.saving}
           >
