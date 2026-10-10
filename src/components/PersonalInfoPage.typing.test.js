@@ -19,6 +19,7 @@ const { commitProfile } = await import('../store/commitHelpers.js')
 const { getState, setHydration } = await import('../store/app-store.js')
 const { beginSessionEpoch, endCloudSession } = await import('../lib/cloudSession.js')
 const { EMPTY_PROFILE } = await import('../lib/profile.js')
+const { SAVE_DELAY_MS } = await import('./usePersonalInfoDraft.js')
 
 const SERVER_DELAY_MS = 150
 
@@ -26,6 +27,11 @@ const SERVER_DELAY_MS = 150
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)) }
 /** @param {number} ms */
 async function wait(ms) { await act(async () => { await sleep(ms) }) }
+/** 정해진 시간 대신 실제로 그 일이 일어날 때까지(최대 3초) 기다림 — 전체 실행 중 느려져도 안 깨지게. @param {() => boolean} ok */
+async function waitUntil(ok, limitMs = 3000) {
+  const end = Date.now() + limitMs
+  await act(async () => { while (!ok() && Date.now() < end) await sleep(5) })
+}
 
 /** @param {ParentNode} container @param {string} selector */
 function input(container, selector) {
@@ -100,7 +106,7 @@ test('로그인+느린 서버: 빠르게 여러 번 쳐도 글자가 즉시 남�
       assert.equal(el.value, value, '친 글자가 바로 보여야 한다')
     }
     assert.equal(stubSupabaseCallCounts.upsert, 0, '입력 중에는 서버 저장을 안 한다')
-    await wait(700 + SERVER_DELAY_MS + 250)
+    await waitUntil(() => stored(owner)?.bizName === '새상호')
     assert.equal(stubSupabaseCallCounts.upsert, 1)
     assert.equal(stored(owner)?.bizName, '새상호')
     assert.equal(el.value, '새상호')
@@ -114,8 +120,10 @@ test('칸을 벗어나면 0.7초를 안 기다리고 바로 저장한다', async
   try {
     const el = input(container, '#bizName')
     await typeInto(el, '즉시저장')
+    const startedAt = Date.now()
     await blur(el)
-    await wait(SERVER_DELAY_MS + 100)
+    await waitUntil(() => stored(owner)?.bizName === '즉시저장')
+    assert.ok(Date.now() - startedAt < SAVE_DELAY_MS, '0.7초를 기다리지 않고 저장돼야 한다')
     assert.equal(stubSupabaseCallCounts.upsert, 1)
     assert.equal(stored(owner)?.bizName, '즉시저장')
   } finally { await unmount(); endCloudSession() }
@@ -132,7 +140,7 @@ test('저장이 진행 중일 때 더 치면 끝난 뒤 최신 값으로 한 번
     await typeInto(el, '첫값추가')
     assert.equal(el.value, '첫값추가')
     await blur(el)
-    await wait(SERVER_DELAY_MS * 2 + 250)
+    await waitUntil(() => stored(owner)?.bizName === '첫값추가')
     assert.equal(stubSupabaseCallCounts.upsert, 2)
     assert.equal(stored(owner)?.bizName, '첫값추가')
     assert.equal(el.value, '첫값추가')
@@ -145,7 +153,7 @@ test('화면을 나가면 남은 입력을 저장한다', async () => {
   const { container, unmount } = await mount(owner)
   await typeInto(input(container, '#bizAddress'), '서울시 강서구 1')
   await unmount()
-  await sleep(SERVER_DELAY_MS + 100)
+  await waitUntil(() => stored(owner)?.bizAddress === '서울시 강서구 1')
   try {
     assert.equal(stubSupabaseCallCounts.upsert, 1)
     assert.equal(stored(owner)?.bizAddress, '서울시 강서구 1')
@@ -168,7 +176,7 @@ test('서버 실패(throw·{data:null,error})면 토스트, 입력칸은 저장 
         const el = input(container, '#bizName')
         await typeInto(el, '실패할값')
         await blur(el)
-        await wait(100)
+        await waitUntil(() => toasts.length > 0)
         assert.deepEqual(toasts, ['저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'], label)
         assert.equal(el.value, '기존상호', label)
         assert.equal(stored(owner)?.bizName, '기존상호', label)
