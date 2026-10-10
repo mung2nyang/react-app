@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 import { todayKey } from './expenses.js'
 import { todayWorkLogSelection } from '../domain/calendar.js'
 import { formatWon } from './money.js'
@@ -16,7 +17,7 @@ import { isCloudSession } from './cloudSession.js'
 
 export const DAILY_INSPECTION_NOTICE_ID = 'daily-inspection-required'
 
-/** 'YYYY-MM-DD…' → 'MM.DD'(알림 날짜 줄). 모양이 아니면 빈 글자. @param {unknown} value */
+/** 'YYYY-MM-DD…' → 'MM.DD'(알림 날짜 줄). 모양이 아니면 빈 글자. @param {JsonValue|undefined} value */
 function shortDate(value) {
   const match = typeof value === 'string' ? /^\d{4}-(\d{2})-(\d{2})/.exec(value) : null
   return match ? `${match[1]}.${match[2]}` : ''
@@ -85,11 +86,11 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
   if (new Date().getHours() >= TODAY_LOG_REMINDER_HOUR) {
     const dateKey = todayKey()
     const todayId = `today:${dateKey}`
-    const workMap = /** @type {Record<string, unknown>} */ (loadWorkData(ownerKey))
+    const workMap = /** @type {Record<string, JsonValue|undefined>} */ (loadWorkData(ownerKey))
     const todayRecord = workMap[dateKey]
-    /** @type {{ isOff?: unknown, callDetails?: unknown, fixedCount?: unknown }|null} */
+    /** @type {{ isOff?: JsonValue, callDetails?: JsonValue, fixedCount?: JsonValue }|null} */
     const record = (todayRecord && typeof todayRecord === 'object' && !Array.isArray(todayRecord))
-      ? /** @type {{ isOff?: unknown, callDetails?: unknown, fixedCount?: unknown }} */ (todayRecord)
+      ? /** @type {{ isOff?: JsonValue, callDetails?: JsonValue, fixedCount?: JsonValue }} */ (todayRecord)
       : null
     const hasEntry = !!record && (
       !!record.isOff

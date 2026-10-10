@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 10 5-2/5-3: 고객센터 문의 — 로컬 캐시 없이 support_inquiries insert·조회(Fail-Fast).
 import { supabase } from '../supabaseClient.js'
 import {
@@ -19,7 +20,7 @@ const LOGIN_REQUIRED_TOAST = '로그인이 필요합니다.'
  */
 
 /**
- * @param {unknown} row
+ * @param {JsonValue|undefined} row
  * @returns {SupportInquiryRow|null}
  */
 function normalizeInquiryRow(row) {

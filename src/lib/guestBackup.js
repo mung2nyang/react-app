@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 import { readLogWorkData } from '../store/persist.js'
 import { readPersistDomain } from '../store/persistDomainRead.js'
 import { replaceOwnerState } from '../store/owner-state.js'
@@ -40,11 +41,11 @@ export function markBackupDone(isoString = new Date().toISOString()) {
 
 /**
  * 게스트 업무 데이터 전체를 내보내기용 단일 객체로 조립한다.
- * @returns {Record<string, unknown>}
+ * @returns {Record<string, JsonValue>}
  */
 export function buildGuestBackupData() {
   const ownerKey = 'guest'
-  /** @type {Record<string, unknown>} */
+  /** @type {Record<string, JsonValue>} */
   const backup = {
     backupType: 'react_practice_backup',
     version: 1,
@@ -64,7 +65,7 @@ export function buildGuestBackupData() {
   /** @type {Record<string, Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>>} */
   const workLogs = { main: mainData }
   for (const car of cars) {
-    if (car && typeof car === 'object' && car.type === 'sub' && car.number && car.number !== 'main') {
+    if (car && typeof car === 'object' && !Array.isArray(car) && car.type === 'sub' && typeof car.number === 'string' && car.number && car.number !== 'main') {
       const subRead = readLogWorkData(ownerKey, car.number)
       if (subRead.ok) workLogs[car.number] = subRead.value
     }
@@ -75,7 +76,7 @@ export function buildGuestBackupData() {
 
 /**
  * 파싱된 백업 데이터의 유효성을 검증하고 게스트 스토어에 복원한다.
- * @param {unknown} parsed
+ * @param {JsonValue|undefined} parsed
  * @returns {{ ok: true } | { ok: false, error: string }}
  */
 export function applyGuestBackupData(parsed) {
@@ -83,7 +84,7 @@ export function applyGuestBackupData(parsed) {
     return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
   }
 
-  const record = /** @type {Record<string, unknown>} */ (parsed)
+  const record = /** @type {Record<string, JsonValue|undefined>} */ (parsed)
   const KNOWN_KEYS = [
     'cars', 'clients', 'settings', 'expenses', 'invoices',
     'drivers', 'profile', 'workData', 'workLogs', 'subWorkData',
@@ -117,7 +118,7 @@ export function applyGuestBackupData(parsed) {
     if (!record.workData || typeof record.workData !== 'object' || Array.isArray(record.workData)) {
       return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
     }
-    for (const day of Object.values(/** @type {Record<string, unknown>} */ (record.workData))) {
+    for (const day of Object.values(/** @type {Record<string, JsonValue|undefined>} */ (record.workData))) {
       if (!day || typeof day !== 'object' || Array.isArray(day)) {
         return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
       }
@@ -127,7 +128,7 @@ export function applyGuestBackupData(parsed) {
     if (!record.workLogs || typeof record.workLogs !== 'object' || Array.isArray(record.workLogs)) {
       return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
     }
-    for (const log of Object.values(/** @type {Record<string, unknown>} */ (record.workLogs))) {
+    for (const log of Object.values(/** @type {Record<string, JsonValue|undefined>} */ (record.workLogs))) {
       if (!log || typeof log !== 'object' || Array.isArray(log)) {
         return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
       }

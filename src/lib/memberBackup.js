@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 회원 데이터 다운로드(B-1): 비회원 백업(guestBackup.js)과 같은 파일 모양을 Store(서버에서 불러온 정본)에서 만들고 일상점검표를 더한다.
 // 회원 업무 기록은 기기에 저장하지 않으므로(batchWrites.js CLOUD_MEMORY_ONLY_DOMAINS) localStorage가 아니라 Store에서 읽는다.
 import {
@@ -28,14 +29,14 @@ export function memberBackupBlockedReason(ownerKey) {
 
 /**
  * @param {string} ownerKey 로그인한 차주·개인 회원 id
- * @returns {Promise<Record<string, unknown>>}
+ * @returns {Promise<Record<string, JsonValue>>}
  */
 export async function buildMemberBackupData(ownerKey) {
   const cars = readOwnerCars(ownerKey)
   const workLogs = readOwnerWorkDataByLogId(ownerKey)
   const vehicleIds = cars.map((car) => car?.supabaseId).filter((id) => id != null && id !== '')
   const byVehicleId = await fetchVehiclesDailyInspections(/** @type {Array<string|number>} */ (vehicleIds))
-  /** @type {Record<string, unknown>} */
+  /** @type {Record<string, JsonValue>} */
   const dailyInspections = {}
   for (const car of cars) {
     const id = car?.supabaseId

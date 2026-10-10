@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 로드맵 9-B-2: 일상점검표 서버 읽기·저장(9-A 표 daily_inspections, 차량+날짜 1장). 로컬 보관·재시도 큐 없음 — 일지를 열 때 읽고 저장은 바로 서버.
 import { supabase } from '../supabaseClient.js'
 import { sanitizeInspectionItems } from '../domain/dailyInspectionItems.js'
@@ -25,7 +26,7 @@ export async function fetchDailyInspection(vehicleId, workDate) {
   return toDailyInspection(data)
 }
 
-/** @param {{ items?: unknown, action_note?: unknown, inspector_name?: unknown }} row @returns {DailyInspection} */
+/** @param {{ items?: JsonValue, action_note?: JsonValue, inspector_name?: JsonValue }} row @returns {DailyInspection} */
 function toDailyInspection(row) {
   return {
     items: sanitizeInspectionItems(row.items),

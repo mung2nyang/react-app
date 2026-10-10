@@ -162,7 +162,7 @@ export async function commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, pr
   /** @type {string[]} */
   const appliedDateKeys = []
   let staleSession = false
-  /** @type {unknown} */
+  /** @type {Error|null} */
   let firstError = null
 
   for (const dateKey of dateKeys) {
@@ -174,7 +174,7 @@ export async function commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, pr
       appliedDateKeys.push(dateKey)
     } catch (error) {
       if (error instanceof StaleSessionError) staleSession = true
-      else if (!firstError) firstError = error
+      else if (!firstError) firstError = error instanceof Error ? error : new Error(String(error))
       break
     }
   }

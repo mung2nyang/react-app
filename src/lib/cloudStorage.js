@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 0-4 감사 보완 4차: cloudSync.js(920줄, 200줄 제한 위반)를 책임별로 분리한 조각
 // 중 하나. 여기엔 "practice 스냅샷 localStorage I/O"만 모은다 — hydrate.js/직접
 // mutation/outbox 실행기가 전부 이 원시 함수들을 공유한다.
@@ -15,8 +16,8 @@ export const KEYS = {
 
 /**
  * @param {string} storageKey
- * @param {unknown} fallback
- * @returns {unknown}
+ * @param {JsonValue|undefined} fallback
+ * @returns {JsonValue|undefined}
  */
 export function readJson(storageKey, fallback) {
   try {
@@ -37,7 +38,7 @@ export function keyFor(prefix, ownerKey) {
 }
 
 /**
- * @param {unknown} value
+ * @param {JsonValue|undefined} value
  * @returns {number}
  */
 export function parseEntityNumber(value) {

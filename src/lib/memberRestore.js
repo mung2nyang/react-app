@@ -47,7 +47,7 @@ function readFileLogs(parsed) {
 
 /** @param {DayRecordLike} record @returns {DayRecordLike|null} 지출 칸을 뺀 기록(남는 게 없으면 null) */
 function withoutExpenseItems(record) {
-  /** @type {Record<string, unknown>} */
+  /** @type {Record<string, JsonValue|undefined>} */
   const copy = { ...record }
   for (const key of EXPENSE_KEYS) delete copy[key]
   return Object.keys(copy).length > 0 ? /** @type {DayRecordLike} */ (copy) : null
