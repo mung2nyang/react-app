@@ -39,14 +39,16 @@
   color: #fff;
 }
 
+/* 바깥 둥근 테두리는 위 카드(.report-top-card)와 같게 — 칸 선을 합치면(collapse) 모서리 선이 안 그려져 separate로. */
 .doc-sheet-head,
 .doc-sheet-table {
   width: 100%;
   margin-top: 10px;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   overflow: hidden;
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 24px;
   background: var(--card-bg);
   color: var(--text-color);
   font-size: var(--fs-floor);
@@ -58,10 +60,15 @@
 .doc-sheet-table th,
 .doc-sheet-table td {
   padding: 7px 4px;
-  border: 1px solid var(--border-color);
+  border: 0;
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   text-align: center;
   word-break: keep-all;
 }
+
+:is(.doc-sheet-head, .doc-sheet-table) tr > :last-child { border-right: 0; }
+:is(.doc-sheet-head, .doc-sheet-table) tbody:last-child > tr:last-child > * { border-bottom: 0; }
 
 .doc-sheet-head th,
 .doc-sheet-table thead th {

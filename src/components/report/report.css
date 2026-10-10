@@ -22,17 +22,17 @@
 .info-table {
   width: 100%;
   margin-bottom: 16px;
-  border-collapse: collapse;
+  border-collapse: separate; border-spacing: 0; /* 둥근 바깥선이 모서리까지 이어지게(위 카드와 같은 24px) */
   overflow: hidden;
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 24px;
   background: var(--card-bg);
 }
 
 .info-table th,
 .info-table td {
   padding: 10px 8px;
-  border: 1px solid var(--border-color);
+  border: 0; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
   font-size: var(--fs-2);
   text-align: left;
 }
@@ -81,19 +81,22 @@
 .report-table {
   width: 100%;
   margin-bottom: 16px;
-  border-collapse: collapse;
+  border-collapse: separate; border-spacing: 0; /* 둥근 바깥선이 모서리까지 이어지게(위 카드와 같은 24px) */
   overflow: hidden;
   border: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 24px;
   background: var(--card-bg);
 }
 
 .report-table th,
 .report-table td {
   padding: 10px 8px;
-  border: 1px solid var(--border-color);
+  border: 0; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
   font-size: var(--fs-2);
 }
+
+:is(.info-table, .report-table) tr > :last-child { border-right: 0; }
+:is(.info-table, .report-table) tbody:last-child > tr:last-child > * { border-bottom: 0; }
 
 .report-table th {
   background: var(--input-bg);
@@ -197,6 +200,7 @@ body.pdf-export-mode .report-page-wrap {
 
 body.pdf-export-mode .info-table {
   border-radius: 0 !important;
+  border-collapse: collapse !important;
 }
 
 body.pdf-export-mode .info-table th {
@@ -215,6 +219,7 @@ body.pdf-export-mode .info-table td {
 
 body.pdf-export-mode .report-table {
   border-radius: 0 !important;
+  border-collapse: collapse !important;
 }
 
 body.pdf-export-mode .report-table th {
