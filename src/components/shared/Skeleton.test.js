@@ -50,12 +50,13 @@ test('SkeletonLines: 기본 2줄·기본 문구', async () => {
   }
 })
 
-test('PageSkeleton: 제목 막대 1 + 카드 상자 3 + 상태 알림', async () => {
+test('PageSkeleton: 제목 막대 1 + 얇은 막대 묶음 3 + 상태 알림', async () => {
   const view = await render(React.createElement(PageSkeleton))
   try {
     assert.ok(view.container.querySelector('.page-skeleton[role="status"]'))
     assert.equal(view.container.querySelectorAll('.skeleton-title').length, 1)
-    assert.equal(view.container.querySelectorAll('.skeleton-card').length, 3)
+    assert.equal(view.container.querySelectorAll('.skeleton-group').length, 3)
+    assert.equal(view.container.querySelectorAll('.skeleton-card').length, 0)
     assert.equal(view.container.querySelector('.skeleton-sr')?.textContent, '불러오는 중')
   } finally {
     await view.cleanup()

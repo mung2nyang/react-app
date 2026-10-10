@@ -17,12 +17,16 @@ export function SkeletonLines({ lines = 2, label = '불러오는 중' }) {
   )
 }
 
-/** 화면 뼈대 — 화면 파일을 처음 받는 동안(AppShell Suspense). 제목 막대 1 + 카드 상자 3. */
+/** 화면 뼈대 — 화면 파일을 처음 받는 동안(AppShell Suspense). 제목 막대 1 + 얇은 막대 묶음 3(일상점검표 대기 모양). */
 export function PageSkeleton() {
   return (
     <div className="page-skeleton" role="status" aria-busy="true">
       <span className="skeleton-bar skeleton-title" aria-hidden="true" />
-      {[0, 1, 2].map((index) => <span key={index} className="skeleton-bar skeleton-card" aria-hidden="true" />)}
+      {[0, 1, 2].map((group) => (
+        <div key={group} className="skeleton-group" aria-hidden="true">
+          {[0, 1, 2].map((index) => <span key={index} className="skeleton-bar" />)}
+        </div>
+      ))}
       <span className="skeleton-sr">불러오는 중</span>
     </div>
   )
