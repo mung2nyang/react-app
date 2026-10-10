@@ -1,6 +1,36 @@
 /* 새 홈 "오늘" 카드 — HomePage.jsx 전용. 색·글씨는 공용 변수만. */
-.home-page .header {
-  margin-bottom: 4px;
+.home-topbar {
+  gap: 12px;
+}
+
+/* 왼쪽 작은 로고(트럭 그림 + 앱 이름) — 그림 칸을 미리 잡아 글자가 밀리지 않게 */
+.home-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.home-brand-logo {
+  width: 50px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.home-brand-text {
+  font-family: 'Jua', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 400;
+  letter-spacing: -0.5px;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+/* 오른쪽 알림 종 + 메뉴 */
+.home-topbar-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .home-today-card {
