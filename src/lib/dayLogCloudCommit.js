@@ -42,7 +42,7 @@ function clientIdByName(ownerKey) {
 }
 
 /**
- * 그 날짜 transport_details를 서버 값과 맞춘다(전량 교체). syncWorkData.js의 루프 내용과 동일.
+ * 그 날짜 transport_details를 서버 값과 맞춘다(전량 교체).
  * @param {string} userId @param {number|string} vehicleId @param {number|string} dailyLogId
  * @param {string} workDate @param {DayRecordLike} record @param {Map<string, number|string>} byName
  */
