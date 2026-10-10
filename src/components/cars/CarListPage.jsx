@@ -110,7 +110,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       await commitSave(drivers)
       return
     }
-    // 연동 중이면 바로 끊지 않고 해제 요청(로드맵 7-C) — 동의·3일 전까지 연동 유지라 차량은 미연동으로 저장하지 않는다.
+    // 연동 중이면 바로 끊지 않고 해제 요청 — 동의·3일 전까지 연동 유지라 차량은 미연동으로 저장하지 않는다.
     if (drivers.find((d) => d.id === driverId)?.status === 'linked') {
       const req = await requestDriverUnlinkAction({ ownerKey, drivers, driverId, action: 'request' })
       showToast?.(req.toast)

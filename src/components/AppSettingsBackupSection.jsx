@@ -1,5 +1,5 @@
 // @ts-check
-// 게스트 전용 데이터 관리(백업/복구) — AppSettingsPage에서 분리(§6 200줄).
+// 게스트 전용 데이터 관리(백업/복구).
 import { useRef, useState } from 'react'
 import { applyGuestBackupData, buildGuestBackupData, getLastBackupAt, markBackupDone } from '../lib/guestBackup.js'
 

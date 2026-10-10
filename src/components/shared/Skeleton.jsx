@@ -1,5 +1,5 @@
 // @ts-check
-// 로드맵 18-D: 불러오는 동안 글자·트럭 그림 대신 회색 뼈대(빛이 지나감). 모양은 skeleton.css.
+// 불러오는 동안 글자·트럭 그림 대신 회색 뼈대(빛이 지나감). 모양은 skeleton.css.
 import PageHeader from '../PageHeader.jsx'
 import './skeleton.css'
 

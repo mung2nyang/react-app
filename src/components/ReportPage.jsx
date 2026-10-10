@@ -1,5 +1,5 @@
 // @ts-check
-// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도). 달 이동은 documents/MonthNavigator.jsx(9-C-1), 보는 달은 서류 발급이 줌(9-C-2)
+// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도). 달 이동은 documents/MonthNavigator.jsx, 보는 달은 서류 발급이 줌
 import { useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { formatWon } from '../lib/money.js'

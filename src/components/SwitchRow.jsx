@@ -1,6 +1,5 @@
 // @ts-check
-// AppSettingsPage.jsx에서 분리 (200줄 제한, migration-audit-plan.md Step 2 부수 조치).
-// "파일만 쪼개면 됨" 대상이라 로직은 그대로다.
+// 앱 설정의 켜기/끄기 줄 한 개.
 /**
  * @param {Object} props
  * @param {string} props.id

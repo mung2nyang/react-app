@@ -1,5 +1,5 @@
 // @ts-check
-// 로드맵 21: 당겨서 새로고침 표시 — 평소엔 화면 위 밖에 숨어 있다가 당긴 만큼 내려옴. 모양은 pull-refresh.css.
+// 당겨서 새로고침 표시 — 평소엔 화면 위 밖에 숨어 있다가 당긴 만큼 내려옴. 모양은 pull-refresh.css.
 import usePullToRefresh, { PULL_TRIGGER } from '../app/usePullToRefresh.js'
 import './pull-refresh.css'
 

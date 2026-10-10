@@ -1,5 +1,5 @@
 // @ts-check
-// 기사 관리 화면 하단 카드 — 기사차량별 사업자정보(세금계산서 공급자)·정산 계좌 입력(이관 감사 11-5·11-6).
+// 기사 관리 화면 하단 카드 — 기사차량별 사업자정보(세금계산서 공급자)·정산 계좌 입력.
 import { useState } from 'react'
 import { carToBusinessForm } from '../../domain/carBusinessInfo.js'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../domain/formatPhone.js'

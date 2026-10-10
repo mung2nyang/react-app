@@ -1,7 +1,6 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 오너 월별 손익 카드 3장
-// (순이익/수입/지출)과 그 안의 접이식 상세 행.
-// D-2: variant='driverSelf' — 소속기사(급여 숨김·유가보조금 숨김·순이익에 정산율).
+// 오너 월별 손익 카드 3장(순이익/수입/지출)과 접이식 상세 행.
+// variant='driverSelf' — 소속기사(급여·유가보조금 숨김, 순이익에 정산율).
 import { useState } from 'react'
 import { dateLabel, driverSelfNetProfitLabel, won } from './revenueFormat.js'
 

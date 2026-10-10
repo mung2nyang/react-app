@@ -1,6 +1,6 @@
 // @ts-check
 // 기사 관리 화면(조회 전용). 연동(linkId)·미연동 서브(logId) 두 모드.
-// 모드 판별은 domain/driverManagementContext.js — AGENTS §6 응집도 ≤250.
+// 모드 판별은 domain/driverManagementContext.js — §6 응집도(≤250).
 // 정산 요약·거래처 세금계산서 JSX는 SettlementSummaryCard·ClientInvoiceGroups로 분리.
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'

@@ -1,7 +1,6 @@
 // @ts-check
 /** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// Step 9 slice C-2: driver self revenue scopes to one assigned vehicle.
-// financeCore.getMonthlyFareRevenue stays unchanged ? callers narrow settings/workData.
+// 소속기사 본인 매출은 배정 차량 1대로 좁힌다 — getMonthlyFareRevenue는 그대로, 부르는 쪽이 settings·workData를 좁힌다.
 
 /** @typedef {import('../../lib/outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../../domain/financeTypes.js').FinanceSettings} FinanceSettings */

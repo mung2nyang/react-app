@@ -1,5 +1,5 @@
 // @ts-check
-// AppSettingsPage.jsx에서 분리 (200줄 제한, migration-audit-plan.md Step 2 부수 조치).
+// 앱 설정의 노선 이름표(프리셋) 편집.
 import { useState } from 'react'
 import { addFixedRoutePreset, FIXED_ROUTE_PRESET_MAX, removeFixedRoutePreset } from '../lib/practiceSettings.js'
 

@@ -1,6 +1,5 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 연/월 이동 네비게이션(DateNav).
-// OwnerRevenueView/DriverRevenueView 둘 다 쓴다. PageShell은 PageHeader로 흡수됨.
+// 연/월 이동(DateNav). OwnerRevenueView·DriverRevenueView가 같이 쓴다.
 import CalendarDateSelect from '../calendar/CalendarDateSelect.jsx'
 import { getYearOptions, setYearMonth } from '../../lib/calendar.js'
 

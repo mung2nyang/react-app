@@ -1,6 +1,5 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — RevenuePage.jsx 분할 조각: 차주(오너) 손익 화면.
-// Step 9 슬라이스 D: 기사 탭에서 개별 기사(차량) 드롭다운 필터.
+// 차주(오너) 손익 화면. 기사 탭에서 개별 기사(차량) 드롭다운 필터.
 import { useEffect, useMemo, useState } from 'react'
 import { isVehicleRevenueSharedWithOwner } from '../../domain/cars.js'
 import { shiftMonth } from '../../lib/calendar.js'

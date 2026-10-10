@@ -1,5 +1,5 @@
 // @ts-check
-// 메인·서브 스코프를 한 화면에서 처리 — AGENTS §6 ≤250.
+// 메인·서브 스코프를 한 화면에서 처리 — §6 예외(≤250).
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import CalendarDateSelect from './calendar/CalendarDateSelect.jsx'

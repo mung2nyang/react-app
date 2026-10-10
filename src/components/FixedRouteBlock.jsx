@@ -1,5 +1,5 @@
 // @ts-check
-// AppSettingsPage.jsx에서 분리 (200줄 제한, migration-audit-plan.md Step 2 부수 조치).
+// 앱 설정의 고정노선 묶음.
 import SwitchRow from './SwitchRow.jsx'
 import RoutePresetEditor from './RoutePresetEditor.jsx'
 import RunCountChips from './RunCountChips.jsx'

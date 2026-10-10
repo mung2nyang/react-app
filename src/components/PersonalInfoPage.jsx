@@ -43,7 +43,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
   /** @param {keyof import('../lib/hydrateMergeTypes.js').LocalProfile} field @param {string} value */
   function update(field, value) { set(field, value) }
 
-  // 연동 중(차주: linked 기사 있음, 기사: employed_driver)이면 탈퇴를 막는다 — 서버 delete_own_account도 거절(로드맵 7-A).
+  // 연동 중(차주: linked 기사 있음, 기사: employed_driver)이면 탈퇴를 막는다 — 서버 delete_own_account도 거절.
   const employed = session?.accountType === 'employed_driver'
   const linked = employed || drivers.some((driver) => driver.status === 'linked')
   function startWithdraw() {

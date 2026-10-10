@@ -1,5 +1,5 @@
 // @ts-check
-// 사이드메뉴 전용 SVG 아이콘(SideMenu.jsx에서 그대로 옮김, 로드맵 15번).
+// 사이드메뉴 전용 SVG 아이콘.
 
 export function CarIcon() {
   return (

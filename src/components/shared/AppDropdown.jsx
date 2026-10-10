@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import './app-dropdown.css'
 
 /**
- * 바닐라 `data-app-dropdown`과 같은 버튼+listbox.
+ * 버튼+목록으로 된 드롭다운.
  * 네이티브 select 색만 바꾸는 방식은 쓰지 않는다.
  *
  * @param {Object} props

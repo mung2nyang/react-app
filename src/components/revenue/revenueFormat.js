@@ -1,7 +1,5 @@
 // @ts-check
-// 재감사 2차(FAIL 지적) — RevenuePage.jsx(352줄)를 "기존 대형 파일이니 예외"로 두지
-// 말라는 지시에 따라 실제로 쪼갰다. 이 파일은 여러 뷰가 같이 쓰는 아주 작은 순수
-// 포맷 함수만 담는다.
+// 여러 매출 화면이 같이 쓰는 작은 순수 포맷 함수.
 /**
  * @param {number} year
  * @param {number} monthIndex

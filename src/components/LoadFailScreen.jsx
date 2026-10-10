@@ -1,5 +1,5 @@
 // @ts-check
-// 로드맵 32: 비회원 기록을 못 읽으면 앱 대신 이 화면 — 빈 화면에서 입력해 기존 기록을 덮어쓰지 않게. 모양은 BootRetryScreen과 같음.
+// 비회원 기록을 못 읽으면 앱 대신 이 화면 — 빈 화면에서 입력해 기존 기록을 덮어쓰지 않게. 모양은 BootRetryScreen과 같음.
 import './boot-retry.css'
 
 export default function LoadFailScreen() {

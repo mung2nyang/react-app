@@ -1,5 +1,5 @@
 // @ts-check
-// 연동/미연동 서브 거래처 화면. 두 모드 한 화면 응집 — AGENTS §6 ≤250.
+// 연동/미연동 서브 거래처 화면. 두 모드 한 화면 응집 — §6 예외(≤250).
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import ConfirmModal from '../ConfirmModal.jsx'

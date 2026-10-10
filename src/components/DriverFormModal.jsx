@@ -1,6 +1,5 @@
 // @ts-check
-// Step 0-4 감사 보완 4차: DriverConnectionPage.jsx(214줄, 200줄 제한 위반)에서 초대
-// 폼 모달만 분리했다. 로직은 한 글자도 안 바꿨다.
+// 기사 초대 폼 모달.
 import { buildDriverInviteSmsHref } from '../lib/driverInviteSms.js'
 import { formatInviteCode, generateInviteCode } from '../lib/drivers.js'
 import { formatPhoneNumber } from '../lib/formatPhone.js'

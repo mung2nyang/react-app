@@ -1,8 +1,5 @@
 // @ts-check
-// Step 0-4 감사 보완 4차: 저장/상태변경/삭제 오케스트레이션을 lib/directMutationActions.js
-// 로 뺐다(사용자 지시 6번) — 이제 durable mutation outbox를 거쳐 로컬+서버가 원자적으로
-// 반영되고, 실패해도 outbox에 남아 자동 재시도된다. 폼 모달은 DriverFormModal.jsx로
-// 분리했다(200줄 제한).
+// 기사 연동 화면. 저장·상태 변경·삭제는 lib/directMutationActions.js, 초대 폼은 DriverFormModal.jsx.
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
 import { useState } from 'react'
@@ -55,11 +52,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
   }
 
   async function save() {
-    // domain/drivers.js는 이번 라운드(Step 0-4 보완) 범위 밖이라 아직 @ts-check 대상이
-    // 아니다 — `editingId = null` 기본값만으로 타입이 추론돼 upsertDriver의 3번째
-    // 매개변수가 실제로는 string도 받는데 `null|undefined`로만 좁게 추론된다. Step 11
-    // (전체 JS→TS 전환)에서 domain/drivers.js에 JSDoc을 달면 이 단언은 필요 없어진다.
-    const result = upsertDriver(drivers, draft, /** @type {null|undefined} */ (editingId), cars)
+    const result = upsertDriver(drivers, draft, editingId, cars)
     if (result.error) {
       showToast?.(result.error)
       return
