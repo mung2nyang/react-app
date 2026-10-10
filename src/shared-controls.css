@@ -108,13 +108,14 @@
 }
 
 /* §8 결제방식·§13 횟수/금액 공용 세그먼트 (expense-form.css에서 이동) */
-/* 보이는 칸은 34px로 납작하게, 누르는 영역은 44px 그대로(위아래 5px씩 투명). */
+/* 차량 등록 선택칩(.car-commission-type)과 같은 모양: 회색 바탕 + 안쪽 둥근 칸, 테두리 없음.
+   보이는 바탕은 36px, 누르는 영역은 44px 그대로(위아래 4px씩 투명). */
 .segment-control {
   position: relative;
   display: flex;
   width: 140px;
 }
-.segment-control::before { content: ''; position: absolute; inset: 5px 0; border: 1px solid var(--border-color); border-radius: 8px; pointer-events: none; }
+.segment-control::before { content: ''; position: absolute; inset: 4px 0; border-radius: 10px; background: color-mix(in srgb, var(--border-color) 55%, transparent); pointer-events: none; }
 
 .segment-btn {
   position: relative;
@@ -131,9 +132,7 @@
   cursor: pointer;
 }
 
-.segment-btn::before { content: ''; position: absolute; inset: 5px 0; z-index: -1; }
-.segment-btn:first-child::before { border-radius: 8px 0 0 8px; }
-.segment-btn:last-child::before { border-radius: 0 8px 8px 0; }
+.segment-btn::before { content: ''; position: absolute; inset: 7px 3px; z-index: -1; border-radius: 8px; }
 .segment-btn.active::before { background: var(--primary-fill); }
 .segment-btn.active {
   color: #fff;
