@@ -7,6 +7,7 @@ import { useOwnerCars } from '../../store/ownerDataHooks.js'
 import useMonthSettlement from '../calendar/useMonthSettlement.js'
 import AppTopBar from '../shared/AppTopBar.jsx'
 import { useReceivablesData } from '../receivables/useReceivablesData.js'
+import HomeAssistantBar from './HomeAssistantBar.jsx'
 import HomeMonthCard from './HomeMonthCard.jsx'
 import HomeTodayCard from './HomeTodayCard.jsx'
 import HomeTodoCard from './HomeTodoCard.jsx'
@@ -54,6 +55,7 @@ export default function HomePage({
         unitPrice={unitPrice}
         onOpenToday={onOpenToday}
       />
+      <HomeAssistantBar />
       <HomeTodoCard
         inspectionMissing={inspectionMissing}
         unpaidCount={unpaidItems.length}

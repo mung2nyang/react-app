@@ -290,3 +290,26 @@ test('바로 수정 — 이번 달 지출이 있으면 정산 합계 아래 "이
     await view.cleanup()
   }
 })
+
+test('AI 비서 1단계 — 오늘 카드와 할 일 사이에 운비서 줄(그림·이름·안내·마이크), 아직 누르는 버튼 아님', async () => {
+  const view = await renderHome('test-home-assistant', () => {})
+  try {
+    const cards = Array.from(view.container.querySelectorAll('.home-card'))
+    const order = cards.map((el) => (
+      el.classList.contains('home-today-card') ? 'today'
+        : el.classList.contains('home-assistant') ? 'assistant'
+          : el.classList.contains('home-todo-empty') || el.classList.contains('home-todo-card') ? 'todo'
+            : el.classList.contains('home-month-card') ? 'month' : 'other'
+    ))
+    assert.deepEqual(order, ['today', 'assistant', 'todo', 'month'])
+    const bar = view.container.querySelector('.home-assistant')
+    assert.ok(bar?.querySelector('img[src$="assistant_unbiseo.png"]'), '비서 얼굴 그림')
+    assert.equal(bar?.querySelector('.home-assistant-name')?.textContent, '운비서')
+    assert.equal(bar?.querySelector('.home-assistant-hint')?.textContent, '무엇이든 물어보세요')
+    assert.ok(bar?.querySelector('svg.home-assistant-mic'), '마이크는 선 그림 SVG')
+    assert.equal(bar?.querySelector('button'), null, '동작 연결 전이라 버튼이 없어야 한다')
+    assert.equal(bar?.tagName, 'SECTION')
+  } finally {
+    await view.cleanup()
+  }
+})
