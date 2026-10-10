@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 로드맵 5-B: 연동 차량 칸은 차주·기사 공용 장부 — 항목 id 기준으로 넣기·고치기·(내가 알던 것만) 지우기.
 import { supabase } from '../supabaseClient.js'
 import { buildFuelRecordRow, expenseFromFuelRecord } from '../domain/fuelRecords.js'
@@ -7,12 +8,12 @@ import { buildMiscExpenseRecordRow, expenseFromMiscRecord } from '../domain/misc
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {{ dailyLogId: string, userId: string, vehicleId: string|number, workDate: string }} RowContext */
-/** @typedef {{ id: string, raw?: Record<string, unknown>, work_date?: string, sequence?: number }} ServerRow */
+/** @typedef {{ id: string, raw?: JsonValue, work_date?: string, sequence?: number }} ServerRow */
 /**
  * @typedef {Object} KindSpec
  * @property {'fuel'|'maint'|'misc'} kind
  * @property {string} table
- * @property {(item: ExpenseItem, index: number, ctx: RowContext) => Record<string, unknown>} buildRow
+ * @property {(item: ExpenseItem, index: number, ctx: RowContext) => Record<string, JsonValue>} buildRow
  * @property {(row: ServerRow, index: number) => ExpenseItem} mapRow
  */
 /**
@@ -21,7 +22,7 @@ import { buildMiscExpenseRecordRow, expenseFromMiscRecord } from '../domain/misc
  * @property {string|number} vehicleId
  * @property {Array<ExpenseItem>} previous
  * @property {Array<ExpenseItem>} next
- * @property {Record<string, unknown>} workData
+ * @property {Record<string, JsonValue|undefined>} workData
  * @property {Map<string, string>} idByDate
  * @property {string|number|null} legacyVehicleId 옛 항목이 잘못 쌓여 있을 수 있는 칸(차주 메인 차량, 5-B-2)
  */
@@ -53,7 +54,7 @@ async function ensureDailyLog(ctx, workDate) {
   const known = ctx.idByDate.get(workDate)
   if (known) return known
   const record = ctx.workData[workDate]
-  const safeRecord = /** @type {Record<string, unknown>} */ (record && typeof record === 'object' ? record : { isOff: false, fixedCount: 0 })
+  const safeRecord = /** @type {Record<string, JsonValue|undefined>} */ (record && typeof record === 'object' ? record : { isOff: false, fixedCount: 0 })
   const { callDetails: _callDetails, fuelItems: _fuelItems, maintItems: _maintItems, miscItems: _miscItems, ...dailyFields } = safeRecord
   const { error } = await supabase.from('daily_logs').upsert({
     user_id: ctx.userId,
@@ -143,7 +144,7 @@ async function syncKind(spec, ctx) {
  * @param {string|number} vehicleId
  * @param {Array<ExpenseItem>} previous
  * @param {Array<ExpenseItem>} next
- * @param {Record<string, unknown>} workData
+ * @param {Record<string, JsonValue|undefined>} workData
  * @param {string|number|null} [legacyVehicleId] 옛 항목을 찾을 칸(차주 메인 차량). 기사 쪽은 없음
  */
 export async function syncExpenseItemsForVehicle(userId, vehicleId, previous, next, workData, legacyVehicleId = null) {

@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // Step 0-4 감사 보완 4차: cloudSync.js 분리 조각 — syncAll이 부르는 일반 동기화 큐의
 // 정비/주유/기타 비용 upsert. 세 함수가 테이블/필드명만 다르고 구조가 동일하지만,
 // 이미 200줄 안에 들어오고("단순히 합치기 위한" 기계적 분할을 피하라는 지시도 있어)
@@ -14,8 +15,8 @@ import { upsertDailyLog } from './syncWorkData.js'
 
 /**
  * 운행기록·항목·정리 날짜를 합친 순회 날짜.
- * @param {Record<string, unknown>} workData
- * @param {Record<string, unknown>} byDate
+ * @param {Record<string, JsonValue|undefined>} workData
+ * @param {Record<string, JsonValue|undefined>} byDate
  * @param {Set<string>} cleanup
  */
 function syncDates(workData, byDate, cleanup) {
@@ -38,7 +39,7 @@ async function dailyLogIdsByDate(vehicleSupabaseId) {
 /**
  * @param {string} userId
  * @param {ExpenseVehicleTarget} target
- * @param {Record<string, unknown>} workData
+ * @param {Record<string, JsonValue|undefined>} workData
  */
 export async function syncFuelRecords(userId, target, workData) {
   const vehicleId = target.vehicleId
@@ -71,7 +72,7 @@ export async function syncFuelRecords(userId, target, workData) {
 /**
  * @param {string} userId
  * @param {ExpenseVehicleTarget} target
- * @param {Record<string, unknown>} workData
+ * @param {Record<string, JsonValue|undefined>} workData
  */
 export async function syncMaintenanceRecords(userId, target, workData) {
   const vehicleId = target.vehicleId
@@ -104,7 +105,7 @@ export async function syncMaintenanceRecords(userId, target, workData) {
 /**
  * @param {string} userId
  * @param {ExpenseVehicleTarget} target
- * @param {Record<string, unknown>} workData
+ * @param {Record<string, JsonValue|undefined>} workData
  */
 export async function syncMiscExpenseRecords(userId, target, workData) {
   const vehicleId = target.vehicleId

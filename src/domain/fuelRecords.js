@@ -1,4 +1,5 @@
 // @ts-check
+/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonRecord} JsonRecord */
 /**
@@ -9,11 +10,11 @@
  * @typedef {Object} FuelRecordRow
  * @property {string} [work_date]
  * @property {number} [sequence]
- * @property {unknown} [cost_amount]
- * @property {unknown} [subsidy_amount]
- * @property {unknown} [mileage_km]
- * @property {unknown} [volume_liter]
- * @property {unknown} [raw]
+ * @property {JsonValue|undefined} [cost_amount]
+ * @property {JsonValue|undefined} [subsidy_amount]
+ * @property {JsonValue|undefined} [mileage_km]
+ * @property {JsonValue|undefined} [volume_liter]
+ * @property {JsonValue|undefined} [raw]
  */
 /**
  * @typedef {Object} FuelRawBlob
@@ -24,16 +25,16 @@
  * @property {string} [name]
  * @property {string} [category]
  * @property {string} [payment]
- * @property {unknown} [cost]
- * @property {unknown} [subsidy]
- * @property {unknown} [mileage]
- * @property {unknown} [liters]
- * @property {unknown} [liter]
+ * @property {JsonValue|undefined} [cost]
+ * @property {JsonValue|undefined} [subsidy]
+ * @property {JsonValue|undefined} [mileage]
+ * @property {JsonValue|undefined} [liters]
+ * @property {JsonValue|undefined} [liter]
  * @property {string} [vehicleNumber]
  */
 
 /**
- * @param {unknown} value
+ * @param {JsonValue|undefined} value
  * @returns {number}
  */
 export function parseEntityNumber(value) {
@@ -42,11 +43,11 @@ export function parseEntityNumber(value) {
 }
 
 /**
- * @param {ExpenseItem|Record<string, unknown>|null|undefined} expense
+ * @param {ExpenseItem|Record<string, JsonValue|undefined>|null|undefined} expense
  * @returns {FuelExpenseShape}
  */
 export function fuelItemFromExpense(expense) {
-  const src = /** @type {FuelExpenseShape|Record<string, unknown>|null|undefined} */ (expense)
+  const src = /** @type {FuelExpenseShape|Record<string, JsonValue|undefined>|null|undefined} */ (expense)
   return /** @type {FuelExpenseShape} */ ({
     ...(expense && typeof expense === 'object' ? expense : {}),
     type: src?.fuelType || src?.type || src?.name || '주유',
@@ -107,13 +108,13 @@ export function replaceFuelExpenses(expenses, fuelExpenses) {
 }
 
 /**
- * @param {ExpenseItem|Record<string, unknown>} item
+ * @param {ExpenseItem|Record<string, JsonValue|undefined>} item
  * @param {number} index
  * @param {{ dailyLogId: number|string, userId: string, vehicleId: number|string, workDate: string }} params
- * @returns {Record<string, unknown>}
+ * @returns {Record<string, JsonValue> & { raw: JsonRecord }}
  */
 export function buildFuelRecordRow(item, index, { dailyLogId, userId, vehicleId, workDate }) {
-  const src = /** @type {FuelExpenseShape|Record<string, unknown>} */ (item)
+  const src = /** @type {FuelExpenseShape|Record<string, JsonValue|undefined>} */ (item)
   const fuelItem = /** @type {FuelExpenseShape} */ (item?.kind === 'fuel' ? fuelItemFromExpense(item) : { ...item, liter: src?.liter ?? src?.liters })
   return {
     daily_log_id: dailyLogId,
