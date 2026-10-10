@@ -24,7 +24,7 @@ export default function HomeTodoCard({ inspectionMissing, unpaidCount, unpaidTot
       )}
       {unpaidCount > 0 && (
         <button type="button" className="home-todo-row" onClick={onOpenReceivables}>
-          <span>미수 {unpaidCount}건 · {formatWon(unpaidTotal)}</span><span className="home-row-arrow" aria-hidden="true">›</span>
+          <span>미수금 {unpaidCount}건 · {formatWon(unpaidTotal)}</span><span className="home-row-arrow" aria-hidden="true">›</span>
         </button>
       )}
     </section>

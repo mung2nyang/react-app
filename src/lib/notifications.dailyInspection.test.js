@@ -17,7 +17,7 @@ test('로그인 계정 + 메인 스위치 꺼짐(처음 값) → 알림 1건, �
   const item = notice('di-owner-1')
   assert.ok(item)
   assert.equal(item.title, '일상점검표가 의무화되었습니다')
-  assert.equal(item.body, '관련 법령에 따라 출발 전 일상점검표 작성이 의무화되었습니다. 아래 버튼을 눌러 일상점검표 기능을 켜 주세요.')
+  assert.equal(item.body, '관련 법령에 따라 출발 전 일상점검표를 작성해야 합니다. [바로 사용하기]를 누르면 켜집니다.')
   assert.equal(item.actionLabel, '바로 사용하기')
   assert.equal(item.dismissLabel, '다시 보지 않기')
 })

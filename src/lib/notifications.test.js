@@ -18,7 +18,7 @@ describe('notifications — 데이터 백업 권장 알림 및 게스트/로그�
     assert.ok(backupNotif, '백업 권장 알림이 있어야 한다')
     assert.equal(backupNotif.id, 'backup:never')
     assert.equal(backupNotif.page, 'settings')
-    assert.equal(backupNotif.title, '데이터 백업 권장')
+    assert.equal(backupNotif.title, '백업 권장')
     assert.equal(backupNotif.body, '아직 백업한 적이 없습니다. 앱을 지우거나 휴대폰을 바꾸면 기록이 사라질 수 있습니다.')
   })
 
@@ -37,7 +37,7 @@ describe('notifications — 데이터 백업 권장 알림 및 게스트/로그�
     const notifs14 = collectNotifications('guest')
     const backup14 = notifs14.find((item) => item.id.startsWith('backup:'))
     assert.ok(backup14, '14일 경과 시 백업 알림이 떠야 한다')
-    assert.equal(backup14.title, '데이터 백업 권장')
+    assert.equal(backup14.title, '백업 권장')
     assert.equal(backup14.body, '마지막 백업 후 14일이 지났습니다. 지금 백업해 주세요.')
 
     // 15일 전: 알림 발생

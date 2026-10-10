@@ -95,19 +95,19 @@ test('목록: 연체 알림에 날짜 줄(운행·입금 예정), 누르면 미�
   }
 })
 
-test('알림이 없으면 "새로운 알림이 없습니다."', async () => {
+test('알림이 없으면 "알림이 없습니다."', async () => {
   const ownerKey = 'np-empty'
   // 오후 6시 이후엔 "오늘 운행일지 비어 있음"이 생기므로 그 종류는 꺼 두고 본다(시간에 따라 흔들리지 않게).
   commitSettings(ownerKey, normalizeSettings({ dailyInspectionOn: true, notifOff: ['today'] }), { syncToCloud: false })
   const view = await renderPage(ownerKey)
   try {
-    assert.equal(view.container.querySelector('.notif-list .empty-state')?.textContent, '새로운 알림이 없습니다.')
+    assert.equal(view.container.querySelector('.notif-list .empty-state')?.textContent, '알림이 없습니다.')
   } finally {
     await view.cleanup()
   }
 })
 
-test('끄기: 미수금 연체 스위치를 끄면 목록·🔔 계산에서 빠지고, 다시 켜면 돌아온다', async () => {
+test('끄기: 연체 미수금 스위치를 끄면 목록·🔔 계산에서 빠지고, 다시 켜면 돌아온다', async () => {
   const ownerKey = 'np-toggle'
   seedOverdue(ownerKey)
   let changed = 0

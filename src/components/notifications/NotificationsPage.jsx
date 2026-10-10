@@ -30,7 +30,7 @@ export default function NotificationsPage({ ownerKey, session, showToast, onBack
   const off = settings.notifOff || []
   const isGuest = ownerKey === 'guest' && !isCloudSession(session)
   const kinds = [
-    { kind: 'overdue', label: '미수금 연체' },
+    { kind: 'overdue', label: '연체 미수금' },
     { kind: 'today', label: '오늘 운행일지 비어 있음', hint: '오후 6시 이후' },
     ...(!isGuest && !session?.linkedOwnerId ? [{ kind: 'driverInvite', label: '기사 초대 대기' }] : []),
     ...(isGuest ? [{ kind: 'backup', label: '백업 권장' }] : []),
@@ -81,7 +81,7 @@ export default function NotificationsPage({ ownerKey, session, showToast, onBack
       </section>
 
       <div className="notif-list">
-        {items.length === 0 && <div className="empty-state">새로운 알림이 없습니다.</div>}
+        {items.length === 0 && <div className="empty-state">알림이 없습니다.</div>}
         {items.map((/** @type {NotificationItem} */ item) => (
           <article key={item.id} className="notif-item">
             <button type="button" className="notif-item-copy" onClick={() => onOpenPage(item.page)}>

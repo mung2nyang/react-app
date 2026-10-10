@@ -184,7 +184,7 @@ test('2단계 — 할 일: 미수 건수·남은 금액(입금 완료 제외), �
   let opened = 0
   const view = await renderHome(ownerKey, () => {}, { onOpenReceivables: () => { opened += 1 } })
   try {
-    assert.deepEqual(texts(view.container, '.home-todo-row'), ['미수 2건 · 130,000원 ›'])
+    assert.deepEqual(texts(view.container, '.home-todo-row'), ['미수금 2건 · 130,000원 ›'])
     await act(async () => {
       view.container.querySelector('.home-todo-row')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
     })

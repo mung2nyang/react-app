@@ -115,7 +115,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
       kind: 'inspectionRequired',
       page: 'settings',
       title: '일상점검표가 의무화되었습니다',
-      body: '관련 법령에 따라 출발 전 일상점검표 작성이 의무화되었습니다. 아래 버튼을 눌러 일상점검표 기능을 켜 주세요.',
+      body: '관련 법령에 따라 출발 전 일상점검표를 작성해야 합니다. [바로 사용하기]를 누르면 켜집니다.',
       dateLabel: '',
       actionLabel: '바로 사용하기',
       dismissLabel: '다시 보지 않기',
@@ -141,7 +141,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
           id: backupId,
           kind: 'backup',
           page: 'settings',
-          title: '데이터 백업 권장',
+          title: '백업 권장',
           body,
           dateLabel: hasValidBackup ? `마지막 백업 ${shortDate(todayWorkLogSelection(new Date(lastBackupTime)).dateKey)}` : '',
         })
