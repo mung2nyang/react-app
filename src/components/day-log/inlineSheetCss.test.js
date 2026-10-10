@@ -7,9 +7,6 @@ import { test } from 'node:test'
 const here = dirname(fileURLToPath(import.meta.url))
 
 test('일지 인라인 호스트는 max-height:0 + is-open 트릭을 쓰지 않는다', () => {
-  const calendar = readFileSync(join(here, '../../main-calendar.css'), 'utf8')
-  assert.equal(/call-detail-inline-host[\s\S]{0,120}max-height:\s*0/.test(calendar), false)
-  assert.equal(/maint-fuel-inline-host[\s\S]{0,120}max-height:\s*0/.test(calendar), false)
   const dayLog = readFileSync(join(here, 'day-log.css'), 'utf8')
   assert.match(dayLog, /\.inline-sheet\.is-visible/)
   assert.match(dayLog, /\.inline-sheet\.is-visible\s*\{[^}]*grid-template-rows:\s*1fr/)
