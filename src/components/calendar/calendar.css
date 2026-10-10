@@ -170,23 +170,6 @@
 
 .cell-date-text { line-height: 1.4; }
 
-.main-practice-note {
-  margin: 12px 0 0;
-  color: var(--sub-text-color);
-  font-size: var(--fs-2);
-}
-
-.main-practice-back {
-  margin-top: 10px;
-  border: none;
-  background: none;
-  color: var(--sub-text-color);
-  text-decoration: underline;
-  font: inherit;
-  font-size: var(--fs-2);
-  cursor: pointer;
-}
-
 /* .unpaid-dot(position:absolute)이 셀 좌상단에 정확히 앉으려면 부모(.date-cell)가
    위치 기준점이어야 한다 — 위 .date-cell 기본 규칙엔 position이 없다. */
 .date-cell {

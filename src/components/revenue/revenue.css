@@ -1,36 +1,6 @@
 /* 매출 화면 전용 스타일 — side-menu.css에서 옮김. RevenuePage.jsx가 직접 import한다. */
-/* 265줄, 매출 화면 전용 스타일 응집도 우선(§6 예외) */
+/* 211줄, 매출 화면 전용 스타일 응집도 우선(§6 예외) */
 
-.revenue-summary-card {
-  padding: 22px 18px 18px;
-  margin-bottom: 14px;
-  border: 1px solid var(--border-color);
-  border-radius: 24px;
-  background: var(--card-bg);
-  box-shadow: var(--shadow-sm);
-  text-align: center;
-}
-
-.revenue-summary-label {
-  color: var(--sub-text-color);
-  font-size: var(--fs-3);
-  font-weight: 700;
-}
-
-.revenue-summary-amount {
-  margin: 8px 0 4px;
-  font-size: 1.7rem;
-  font-weight: 800;
-  letter-spacing: -0.4px;
-}
-
-.revenue-summary-sub {
-  color: var(--sub-text-color);
-  font-size: var(--fs-3);
-  font-weight: 700;
-}
-
-.revenue-vehicle-list,
 .revenue-year-list {
   border: 1px solid var(--border-color);
   border-radius: 24px;
@@ -38,7 +8,6 @@
   overflow: hidden;
 }
 
-.revenue-vehicle-row,
 .revenue-year-row {
   display: flex;
   align-items: center;
@@ -49,16 +18,8 @@
   text-align: left;
 }
 
-.revenue-vehicle-row:first-child,
 .revenue-year-row:first-child {
   border-top: 0;
-}
-
-.revenue-vehicle-meta {
-  margin-top: 2px;
-  color: var(--sub-text-color);
-  font-size: var(--fs-2);
-  font-weight: 700;
 }
 
 .revenue-year-row.total {
@@ -150,27 +111,6 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   padding-right: 40px;
-}
-
-.revenue-driver-select-chevron {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%) rotate(90deg);
-  pointer-events: none;
-  display: inline-flex;
-  color: var(--sub-text-color);
-  flex-shrink: 0;
-}
-
-.revenue-driver-select-chevron svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 .revenue-net-card {

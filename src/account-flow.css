@@ -60,13 +60,6 @@ body.account-flow-active {
   padding-bottom: 4px;
 }
 
-.auth-question-text {
-  margin: 0 0 14px;
-  color: var(--sub-text-color);
-  font-size: var(--fs-3);
-  font-weight: 700;
-}
-
 .auth-btn-stack { display: grid; gap: 12px; }
 
 /* 구글 로그인 버튼 — 로그인 화면은 늘 어두워서 구글 규칙의 어두운 테마 색 사용 */
@@ -91,8 +84,7 @@ body.account-flow-active {
 
 .auth-google-logo { width: 22px; height: 22px; flex-shrink: 0; }
 
-.auth-primary-btn,
-.auth-secondary-btn {
+.auth-primary-btn {
   width: 100%;
   min-height: 60px;
   border-radius: 18px;
@@ -144,12 +136,6 @@ body.account-flow-active {
   to { transform: rotate(360deg); }
 }
 
-.auth-secondary-btn {
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-color);
-}
-
 .auth-guest-btn {
   width: max-content;
   margin: 18px 0 0;
@@ -180,7 +166,6 @@ body.account-flow-active {
   margin: 0 auto;
   align-items: center;
 }
-.auth-intro-view .auth-question-text { text-align: center; }
 .auth-intro-view .auth-btn-stack { width: 100%; }
 
 .auth-topbar {
@@ -244,62 +229,6 @@ body.account-flow-active {
   line-height: 1.6;
 }
 
-.auth-role-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.auth-role-tab {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 68px;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  background: var(--card-bg);
-  color: var(--text-color);
-  font: inherit;
-  font-size: var(--fs-4);
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.auth-role-tab.active {
-  border-color: color-mix(in srgb, var(--primary-color) 40%, var(--border-color));
-  background: color-mix(in srgb, var(--primary-color) 8%, var(--card-bg));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 20%, transparent);
-}
-
-.auth-role-tab-icon {
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: var(--hover-bg);
-  color: var(--primary-color);
-}
-
-.auth-role-tab-icon svg {
-  width: 20px;
-  height: 20px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.auth-role-subtitle {
-  margin: 0 0 20px 4px;
-  color: var(--sub-text-color);
-  font-size: var(--fs-floor);
-  font-weight: 600;
-}
-
 .auth-form-fields { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
 .auth-field { display: flex; flex-direction: column; gap: 8px; }
 .auth-field label { color: var(--text-color); font-size: var(--fs-2); font-weight: 850; }
@@ -325,29 +254,7 @@ body.account-flow-active {
 }
 
 .auth-field-extra { display: flex; justify-content: flex-start; margin-top: 4px; }
-.auth-link-text {
-  padding: 4px 0;
-  border: none;
-  background: none;
-  color: var(--sub-text-color);
-  font: inherit;
-  font-size: var(--fs-floor);
-  font-weight: 700;
-  text-decoration: underline;
-  cursor: pointer;
-}
 
-.auth-invite-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px;
-  align-items: center;
-  gap: 12px;
-  margin-top: 4px;
-}
-
-.auth-invite-text strong { display: block; color: var(--text-color); font-size: var(--fs-2); font-weight: 850; }
-.auth-invite-text p { margin: 4px 0 0; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.45; }
-.auth-code-box { min-width: 0; text-align: center; letter-spacing: .16em; }
 .auth-bottom-sticky { margin-top: auto; padding-top: 24px; }
 
 .onboarding-shell {
@@ -404,22 +311,6 @@ body.account-flow-active {
   background: color-mix(in srgb, var(--primary-color) 8%, var(--card-bg));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 20%, transparent);
 }
-
-.onboarding-sub-toggle-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 14px;
-  padding: 16px 20px;
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
-  background: var(--input-bg);
-}
-
-.onboarding-sub-copy { display: flex; flex-direction: column; gap: 4px; text-align: left; }
-.onboarding-sub-copy strong { color: var(--text-color); font-size: var(--fs-4); font-weight: 750; }
-.onboarding-sub-copy span { color: var(--sub-text-color); font-size: var(--fs-floor); }
 
 .onboarding-bottom-group { display: flex; flex-direction: column; margin-top: auto; padding-top: 24px; }
 .onboarding-skip-link {
@@ -546,27 +437,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   text-align: center;
 }
 
-.practice-home {
-  max-width: 24rem;
-  margin: 4rem auto;
-  padding: 0 1.5rem;
-  line-height: 1.6;
-}
-.practice-home button {
-  margin-top: 1rem;
-  min-height: 48px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 12px;
-  background: var(--primary-fill);
-  color: #fff;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
 @media (max-width: 360px) {
   .account-flow-page { padding-inline: 0; }
   .auth-heading-box h1 { font-size: 1.78rem; }
-  .auth-invite-row { grid-template-columns: minmax(0, 1fr) 112px; }
 }

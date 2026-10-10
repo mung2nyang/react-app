@@ -7,16 +7,6 @@
 }
 
 /* 한 줄 입력(라벨·단위 입력칸) — 일일운행 한 줄 입력과 같은 배치 */
-.client-modal .client-inline-field {
-  display: grid;
-  grid-template-columns: 84px minmax(0, 1fr);
-  align-items: center;
-  gap: 7px;
-}
-
-.client-modal .client-inline-field > label {
-  margin-bottom: 0;
-}
 
 .client-list {
   display: flex;
