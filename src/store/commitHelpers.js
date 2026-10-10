@@ -1,7 +1,5 @@
 // @ts-check
-// Step 1~4 스토어 껍데기: commitBatch를 감싸는 단일 도메인 편의 함수들. app-store.js에서
-// 분리한 이유는 200줄 제한 — 로직은 전혀 없고 전부 commitBatch([{ domain, ... }])의
-// 얇은 래퍼다.
+// commitBatch를 감싸는 단일 도메인 편의 함수들(로직 없는 얇은 래퍼).
 import { commitBatch } from './app-store.js'
 import { storageKeyForLog } from './persist.js'
 import { dedupeCarsById } from '../domain/cars.js'
@@ -38,7 +36,7 @@ export function commitWorkData(ownerKey, data, options = {}) {
 
 /**
  * 서브 차량 로컬 일지. 메인 workData 키는 건드리지 않고 storageKeyForLog만 쓴다.
- * syncWorkData.js가 메인만 동기화하므로 클라우드 예약은 하지 않는다(Step 9).
+ * 클라우드 예약은 하지 않는다.
  * @param {string} ownerKey
  * @param {string} logId
  * @param {Record<string, DayRecordLike>} data
@@ -92,9 +90,7 @@ export function commitProfile(ownerKey, profile, options = {}) {
 }
 
 /**
- * 무시한 알림 id 목록. 바닐라/클라우드 계약(KEYS)에 없는 로컬 전용 값이라
- * 클라우드 동기화는 예약하지 않는다(기존 dismissNotification과 동일한 동작이라
- * syncToCloud 오버라이드를 허용하지 않는다).
+ * 무시한 알림 id 목록. 로컬 전용 값이라 클라우드 동기화는 예약하지 않는다.
  * @param {string} ownerKey
  * @param {Array<string>} ids
  * @returns {Array<string>}
@@ -104,11 +100,7 @@ export function commitDismissedNotifications(ownerKey, ids) {
 }
 
 /**
- * 재감사 3차(FAIL 지적 1번) — "아직 서버에 못 알린 빈 날 삭제" 목록(domain/
- * workDataTombstones.js). lib/workData.js가 workData 삭제와 같은 commitBatch
- * 호출에 이 도메인을 같이 넣어서(원자적) 로컬 삭제+tombstone 기록을 한 트랜잭션으로
- * 묶는다. lib/syncDeletedWorkDates.js는 원격 삭제가 성공한 날짜만 이 함수로(단독,
- * syncToCloud:false) 지운다.
+ * 빈 날 삭제 목록(domain/workDataTombstones.js) 저장. lib/workData.js는 workData 삭제와 같은 commitBatch에 묶어 쓴다.
  * @param {string} ownerKey @param {import('../domain/workDataTombstones.js').WorkDataTombstones} tombstones @param {{ syncToCloud?: boolean }} [options]
  */
 export function commitWorkDataDeletedDates(ownerKey, tombstones, options = {}) {

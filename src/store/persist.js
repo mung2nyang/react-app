@@ -1,9 +1,5 @@
 // @ts-check
-// Step 1 스토어 껍데기: localStorage persist 키 계약을 한 곳에 고정한다.
-// 아래 9개 키 문자열은 기존 src/lib/*.js 각자가 갖고 있던 STORAGE_PREFIX / DISMISS_PREFIX
-// 값과 완전히 동일하다. 이 파일이 유일한 출처가 되며, 값 자체를 바꾸면 기존에 저장된
-// 사용자 데이터와 클라우드 동기화가 갈라지므로 절대 바꾸지 않는다.
-// (migration-plan.md 1.1 저장소 계약 / migration-audit-plan.md Step 1)
+// localStorage 저장 키를 한 곳에 고정한다. 값을 바꾸면 이미 저장된 사용자 데이터를 못 읽으므로 절대 바꾸지 않는다.
 import { parsePersistedWorkDataMap } from './persistDayRecord.js'
 
 /**
@@ -21,9 +17,7 @@ export const PERSIST_KEYS = Object.freeze({
   drivers: 'reactPracticeDrivers',
   profile: 'reactPracticeProfile',
   dismissedNotifications: 'reactPracticeDismissedNotifs',
-  // 재감사 3차(FAIL 지적 1번) — "아직 서버에 못 알린 빈 날 삭제" 목록(domain/
-  // workDataTombstones.js). 기존 9개 키는 위 주석대로 값을 바꾸지 않았고, 이건 그
-  // 9개에 새로 추가하는 10번째 키다(기존 사용자 데이터와 무관한 새 기능).
+  // 빈 날 삭제 목록(domain/workDataTombstones.js).
   workDataDeletedDates: 'reactPracticeWorkDataDeletedDates',
 })
 
@@ -40,8 +34,7 @@ export function storageKeyFor(domain, ownerKey) {
 
 /**
  * 서브 차량 로컬 일지 키. 메인(`workData`) persist 문자열은 그대로 두고
- * 같은 prefix 뒤에 `:log:${차량번호}`만 붙인다. `syncWorkData.js`는 메인
- * 키만 읽으므로 이 키의 클라우드 동기화는 Step 9 범위다.
+ * 같은 prefix 뒤에 `:log:${차량번호}`만 붙인다.
  * @param {string} ownerKey
  * @param {string} logId 차량번호. `main`이면 메인 workData 키.
  */

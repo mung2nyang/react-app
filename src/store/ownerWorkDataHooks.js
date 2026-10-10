@@ -46,7 +46,7 @@ export function useOwnerWorkData(ownerKey) {
 }
 
 /**
- * 손익·계산서·미수용 logId→일지 맵(Step 9 슬라이스 C).
+ * 손익·계산서·미수용 logId→일지 맵.
  * `workLogs[ownerKey]` 전체(main + 서브 차량번호)를 그대로 돌려준다 — 계산 엔진은
  * 이미 logId별 소스를 순회하므로, 여기만 main에 묶여 있으면 매출/미수에 기사가 안 잡힌다.
  * store 참조를 유지해 useSyncExternalStore 스냅샷이 안정적이다.
@@ -67,11 +67,7 @@ export function useOwnerWorkDataByLogId(ownerKey) {
 const EMPTY_TOMBSTONES = /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones} */ ({})
 
 /**
- * 재감사 3차(FAIL 지적 1번) — "아직 서버에 못 알린 빈 날 삭제" 목록을 읽는다.
- * lib/workData.js(원자적 커밋)와 lib/syncDeletedWorkDates.js(실제 원격 삭제)가
- * readOwnerWorkData와 같은 이유로 이 함수 하나를 공유한다 — 둘 다 React 컴포넌트가
- * 아니라 구독이 필요 없어 useX 훅은 따로 두지 않는다(이 값을 렌더에 쓰는 화면이
- * 아직 없다).
+ * 빈 날 삭제 목록을 읽는다(구독 불필요 — 화면에서 쓰지 않음).
  * @param {string} ownerKey
  * @returns {import('../domain/workDataTombstones.js').WorkDataTombstones}
  */

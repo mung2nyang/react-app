@@ -26,10 +26,7 @@ export function hasOnlyKeys(value, allowed) {
   return Object.keys(value).every((key) => set.has(key))
 }
 
-// 재감사(Step 7 후속) — 기존 7개는 businessInfo(사업자정보)와 혼동돼 있었다.
-// personalInfo는 바닐라 정본(ubiquitous-parakeet/car-management.js 저장부 +
-// finance.js 조회부의 합집합)상 phone/bank/account/accountHolder도 함께 쓴다 —
-// 기존 7개를 빼지 않고(하위호환) 4개를 더한다.
+// personalInfo는 phone/bank/account/accountHolder도 쓴다 — 앞의 7개는 옛 저장값 호환으로 남긴다.
 const PERSONAL_INFO_KEYS = [
   'driverName', 'bizNumber', 'name', 'address', 'bizType', 'bizItem', 'email',
   'phone', 'bank', 'account', 'accountHolder',

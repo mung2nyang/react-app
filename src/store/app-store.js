@@ -1,5 +1,4 @@
 // @ts-check
-// Step 1~4 스토어 껍데기 + Step 0-4 감사 보완(1차/2차, 사용자 지시).
 // persist 도메인 반영은 applyDomainToState. 서브 일지는 workLogs[ownerKey][차량번호]
 // 와 storageKeyForLog. initializeOwnerFromPersist는 owner-state.js.
 
@@ -142,7 +141,7 @@ function applyDomainToState(domain, ownerKey, value) {
  */
 export function commitBatch(entries, options = {}) {
   const { persist = true, syncToCloud = true, extraWrites = [], mergeWorkLogs, replaceWorkLogs, replaceDriverExpenses } = options
-  // 슬라이스 E: 로그인 세션이면 업무 도메인은 localStorage·dirty에 안 쓴다(Store 메모리만).
+  // 로그인 세션이면 업무 도메인은 localStorage·dirty에 안 쓴다(Store 메모리만).
   const cloudOwnerKey = state.hydration.userId ? state.hydration.ownerKey : null
   const memoryOnly = allEntriesCloudMemoryOnly(entries, cloudOwnerKey)
   const writes = [...buildBatchWrites(entries, { persist, syncToCloud, cloudOwnerKey })]

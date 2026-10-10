@@ -1,16 +1,6 @@
 // @ts-check
-// Step 0-4 감사 보완 3차: commitBatch가 실제로 쓸 localStorage { key, value } 목록을
-// 계산하는 순수 함수. app-store.js에서 분리한 이유는 (1) 200줄 제한, (2) 도메인 값과
-// dirty journal 값을 "하나의 쓰기 목록"으로 합치는 이 계산 자체를 store 오케스트레이션
-// (state 반영/notify/schedule)과 분리해서 독립적으로 테스트하기 위해서다.
-//
-// 슬라이스 E(2026-09-01): 로그인 세션에서는 업무 도메인을 localStorage에 미러하지
-// 않고 dirty journal로 동기화를 예약하지도 않는다(서버가 정본, 저장은 서버 직접 1회).
-// 아래 CLOUD_MEMORY_ONLY_DOMAINS가 그 owner일 때 persist·dirty 쓰기에서 빠진다.
-// 게스트(cloudOwnerKey null)는 예전과 100% 동일하다.
-//
-// 로그인 업무 도메인은 persist·dirty에서 뺀다. settings는 아래 persist 분기에서
-// theme만 LS에 남긴다.
+// commitBatch가 쓸 localStorage { key, value } 목록을 계산하는 순수 함수(도메인 값 + dirty journal).
+// 로그인 세션은 서버가 정본이라 업무 도메인(CLOUD_MEMORY_ONLY_DOMAINS)을 LS·dirty에 쓰지 않는다. settings는 theme만 남긴다.
 import { storageKeyFor } from './persist.js'
 import { planDirtyWrite } from '../lib/dirtyJournal.js'
 
