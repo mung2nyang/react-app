@@ -138,6 +138,22 @@ describe('buildDetailReport', () => {
     assert.equal(report.clientCommLabels['한진'], '10%')
   })
 
+  test('수수료 표시도 금액과 같은 기준 — 저장된 값(직접 7000)이 거래처 설정(10%)보다 우선', () => {
+    const data = {
+      '2026-05-10': {
+        callDetails: [{
+          id: 'snap-only',
+          client: '한진',
+          fare: '100000',
+          commissionSnapshot: { enabled: true, type: 'direct', value: '7000' },
+        }],
+      },
+    }
+    const report = buildDetailReport(data, 2026, 4, 'ALL', { clients })
+    assert.equal(report.totalCommission, 7000)
+    assert.equal(report.clientCommLabels['한진'], '7,000원')
+  })
+
   test('isOff 레코드는 완전히 제외된다', () => {
     const report = buildDetailReport(workData, 2026, 4, 'ALL', { clients })
     assert.equal(report.items.some((item) => item.fare === 50000 && item.client === '한진'), false)

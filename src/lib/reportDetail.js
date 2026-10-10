@@ -1,7 +1,7 @@
 // @ts-check
 // 리포트 세부 내역서 — 거래처 옵션·콜상세 집계.
 import { getCallDetails, isOffDay } from '../domain/day-record.js'
-import { getCallDetailCommissionAmount } from '../domain/financeCore.js'
+import { getCallDetailCommissionAmount, resolveCallDetailCommission } from '../domain/financeCore.js'
 import { parseCurrencyValue } from '../domain/money.js'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
@@ -43,20 +43,7 @@ export function detailReportClientOptions(workData, year, monthIndex, clients) {
  * @returns {string|null}
  */
 function detailCommissionLabel(detail, settings) {
-  const snapshot = detail?.commissionSnapshot
-  let enabled
-  let type
-  let value
-  if (snapshot) {
-    enabled = snapshot.enabled
-    type = snapshot.type
-    value = snapshot.value
-  } else {
-    const client = (settings.clients || []).find((c) => c.companyName === detail?.client)
-    enabled = !!client?.commEnabled
-    type = client?.commType
-    value = client?.commValue
-  }
+  const { enabled, type, value } = resolveCallDetailCommission(detail, settings)
   if (!enabled) return null
   if (type === 'direct') return `${parseCurrencyValue(value).toLocaleString('ko-KR')}원`
   return `${value}%`

@@ -1,7 +1,7 @@
 // @ts-check
 // finance.js 분할 조각 — 결제·수수료·월 매출(getMonthlyFareRevenue) 등 순수 계산.
 // finance.js는 이 모듈군을 재수출하는 배럴만 남았다.
-// §6 예외(215줄, ~250 한도 내) — 2026-09-17 고정노선 정산액 버그 수정으로 초과,
+// §6 예외(216줄, ~250 한도 내) — 2026-09-17 고정노선 정산액 버그 수정으로 초과,
 // getMonthlyDriverTotals 계산 로직이 한 함수 안에서 응집돼야 해서 추가 분할 안 함.
 import {
   getShortCarNum,
@@ -70,22 +70,21 @@ export function getCallDetailDurationMinutes(detail) {
   return minutes
 }
 
+/**
+ * 수수료 판단 정본 — 저장된 commissionSnapshot 우선, 없으면 현재 거래처 설정.
+ * @param {CallDetailLike|null|undefined} detail @param {FinanceSettings} settings
+ * @returns {{ enabled: boolean, type: string|null|undefined, value: string|number|null|undefined }}
+ */
+export function resolveCallDetailCommission(detail, settings) {
+  const snapshot = detail?.commissionSnapshot
+  if (snapshot) return { enabled: snapshot.enabled, type: snapshot.type, value: snapshot.value }
+  const client = (settings.clients || []).find((c) => c.companyName === detail?.client)
+  return { enabled: !!client?.commEnabled, type: client?.commType, value: client?.commValue }
+}
+
 /** @param {CallDetailLike} detail @param {number} fare @param {FinanceSettings} settings */
 export function getCallDetailCommissionAmount(detail, fare, settings) {
-  const snapshot = detail?.commissionSnapshot
-  let enabled
-  let type
-  let value
-  if (snapshot) {
-    enabled = snapshot.enabled
-    type = snapshot.type
-    value = snapshot.value
-  } else {
-    const client = (settings.clients || []).find((c) => c.companyName === detail?.client)
-    enabled = !!client?.commEnabled
-    type = client?.commType
-    value = client?.commValue
-  }
+  const { enabled, type, value } = resolveCallDetailCommission(detail, settings)
   if (!enabled) return 0
   return type === 'direct' ? parseCurrencyValue(value) : Math.floor(fare * (parseFloat(String(value)) || 0) / 100)
 }
