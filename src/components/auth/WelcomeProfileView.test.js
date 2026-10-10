@@ -79,3 +79,13 @@ test('저장이 실패하면 버튼을 다시 누를 수 있다', async () => {
     assert.equal(view.button.disabled, false)
   } finally { await view.cleanup() }
 })
+
+test('로드맵 16: 이름 칸 제목·예시가 실명, 칸 바로 아래에 실명 안내가 보인다', async () => {
+  const view = await render('구글이름', async () => true)
+  try {
+    const hint = view.nameInput.closest('.auth-field')?.querySelector('.auth-field-hint')
+    assert.equal(hint?.textContent, '서비스 이용 및 본인 확인을 위해 실명이 필요합니다.')
+    assert.equal(view.nameInput.closest('.auth-field')?.querySelector('label')?.textContent, '이름(실명)')
+    assert.equal(view.nameInput.placeholder, '본인 실명')
+  } finally { await view.cleanup() }
+})

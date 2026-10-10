@@ -1,0 +1,7 @@
+/* 로드맵 16: 기본 정보 화면 이름 칸 아래 실명 안내 줄. WelcomeProfileView.jsx가 import. */
+.auth-field-hint {
+  margin: 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.5;
+}

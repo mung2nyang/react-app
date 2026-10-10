@@ -131,3 +131,29 @@ describe('PersonalInfoPage — 회원 탈퇴', () => {
     }
   })
 })
+
+describe('PersonalInfoPage — 성명 칸(로드맵 16)', () => {
+  test('저장된 성명이 없으면 칸은 비어 있고, 가입 이름은 예시 글자로만 보인다', async () => {
+    const { container, root } = await renderPage({ guestMode: true, name: '가입이름' })
+    try {
+      const input = /** @type {HTMLInputElement} */ (container.querySelector('#userName'))
+      assert.equal(input.value, '', '가입 이름이 칸 값으로 다시 채워지면 안 된다')
+      assert.equal(input.placeholder, '가입이름')
+    } finally {
+      await act(async () => { root.unmount() })
+      container.remove()
+    }
+  })
+
+  test('가입 이름이 없으면 예시 글자는 "성명을 입력하세요"', async () => {
+    const { container, root } = await renderPage({ guestMode: true, name: '비회원' })
+    try {
+      const input = /** @type {HTMLInputElement} */ (container.querySelector('#userName'))
+      assert.equal(input.value, '')
+      assert.equal(input.placeholder, '성명을 입력하세요')
+    } finally {
+      await act(async () => { root.unmount() })
+      container.remove()
+    }
+  })
+})

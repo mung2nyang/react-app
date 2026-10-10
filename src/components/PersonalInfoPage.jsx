@@ -132,7 +132,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           </div>
           <div className="form-group">
             <label htmlFor="userName">성명 (대표자)</label>
-            <input id="userName" className="input-box" placeholder="성명을 입력하세요" value={get('name') || sessionName} onChange={(e) => update('name', e.target.value)} />
+            <input id="userName" className="input-box" placeholder={sessionName || '성명을 입력하세요'} value={get('name')} onChange={(e) => update('name', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="userPhone">연락처</label>
