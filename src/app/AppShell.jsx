@@ -7,11 +7,9 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from '../components/BottomNav.jsx'
 import { PageSkeleton } from '../components/shared/Skeleton.jsx'
 import SideMenu, { preloadSideMenuBanner } from '../components/SideMenu.jsx'
-import NotificationPanel from '../components/NotificationPanel.jsx'
 import PullRefreshIndicator from '../components/PullRefreshIndicator.jsx'
-import { collectNotifications, dismissNotification } from '../lib/notifications.js'
+import { collectNotifications } from '../lib/notifications.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
-import { savePracticeSettings } from '../lib/practiceSettings.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
 import PageLoadErrorBoundary from '../components/PageLoadErrorBoundary.jsx'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
@@ -22,7 +20,6 @@ import { withFromLogState } from './fromLogNavigation.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
-/** @typedef {{ id: string, page?: string, title?: string }} NotificationItem */
 
 // 옛 appPage 식별자 → 실제 라우트 경로. SideMenu/MyPage/알림패널이 공유한다.
 /** @type {Record<string, string>} */
@@ -74,7 +71,6 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
     rawNavigate(to, withFromLogState(location.pathname, to, options))
   }
   const [menuOpen, setMenuOpen] = useState(false)
-  const [notifOpen, setNotifOpen] = useState(false)
   const [notifTick, setNotifTick] = useState(0)
   useEffect(() => { preloadSideMenuBanner() }, [])
   useBackToExit(showToast)
@@ -100,7 +96,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick, drivers, settings])
   const bumpNotifTick = () => setNotifTick((n) => n + 1)
 
-  const activeNav = location.pathname === '/app'
+  const activeNav = location.pathname === '/app' || location.pathname === '/app/notifications'
     || (location.pathname.startsWith('/app/logs/') && !location.pathname.includes('/day/'))
     ? 'home'
     : location.pathname === '/app/calendar' || location.pathname.startsWith('/app/day/')
@@ -123,7 +119,6 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   /** @param {string} tab */
   function selectTab(tab) {
     setMenuOpen(false)
-    setNotifOpen(false)
     if (tab === 'work') {
       navigate('/app/calendar')
       return
@@ -148,7 +143,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
             bumpNotifTick={bumpNotifTick}
             notifCount={notifications.length}
             onOpenMenu={() => setMenuOpen(true)}
-            onOpenNotifs={() => { bumpNotifTick(); setNotifOpen(true) }}
+            onOpenNotifs={() => { bumpNotifTick(); navigate('/app/notifications') }}
             onBackToAuth={onBackToAuth}
             onGoAuth={onGoAuth}
             onSessionUpdate={onSessionUpdate}
@@ -171,24 +166,6 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
         subLogItems={subLogItems}
         onOpenSubLog={(/** @type {string} */ vehicleNumber) => {
           navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}/manage`)
-        }}
-      />
-      <NotificationPanel
-        open={notifOpen}
-        items={notifications}
-        onClose={() => setNotifOpen(false)}
-        onOpenItem={(/** @type {NotificationItem} */ item) => {
-          setNotifOpen(false)
-          navigate(pagePath(item.page || 'home'))
-        }}
-        onDismiss={(/** @type {string} */ id) => {
-          dismissNotification(ownerKey, id)
-          bumpNotifTick()
-        }}
-        onAction={() => {
-          savePracticeSettings(ownerKey, { dailyInspectionOn: true })
-            .then(() => showToast?.('일상점검표를 켰습니다.'))
-            .catch(() => showToast?.('저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'))
         }}
       />
     </div>

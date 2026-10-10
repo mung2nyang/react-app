@@ -1048,3 +1048,34 @@ test('새 홈 1단계 — 운행 탭은 달력, 홈 [운행 기록하기] → �
     container.remove()
   }
 })
+
+// 알림 화면 — 🔔를 누르면 옆 창 대신 화면 전체(/app/notifications), 뒤로가기 = 홈, 홈 탭 강조.
+test('알림 화면 — 🔔 → /app/notifications(옆 창 없음) → 뒤로가기 → 홈', async () => {
+  window.history.pushState({}, '', '/app')
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createTrackedRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
+    })
+    await waitUntil(() => !!container.querySelector('.home-today-card'))
+    const bell = Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '알림')
+    assert.ok(bell, '홈 위쪽 알림 종')
+    await act(async () => { bell.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })) })
+    await waitUntil(() => window.location.pathname === '/app/notifications')
+    await waitUntil(() => !!container.querySelector('.notifications-page'))
+    assert.equal(container.querySelector('.notification-panel'), null, '옛 옆 창은 없어야 한다')
+    const homeTab = Array.from(container.querySelectorAll('.bottom-nav-bar .nav-item')).find((btn) => btn.textContent.trim() === '홈')
+    assert.ok(homeTab?.classList.contains('active'), '알림 화면에선 홈 탭 강조')
+
+    const back = Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '뒤로가기')
+    assert.ok(back)
+    await act(async () => { back.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })) })
+    await waitUntil(() => window.location.pathname === '/app')
+    await waitUntil(() => !!container.querySelector('.home-today-card'))
+  } finally {
+    await unmountTracked(root)
+    container.remove()
+  }
+})

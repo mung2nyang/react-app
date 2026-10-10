@@ -21,6 +21,7 @@ const SETTINGS_KEYS = [
   'inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn',
   'fixedRoutePresets', 'runCountToggle', 'runCountPresets', 'subFixedRouteOn', 'subFixedRoutePresets',
   'subRunCountToggle', 'subRunCountPresets', 'pinnedLocations', 'subCarSettings', 'dailyInspectionOn',
+  'notifOff',
 ]
 /** lib/profile.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
 const PROFILE_KEYS = [
@@ -81,6 +82,7 @@ export function isPersistedSettings(value) {
   if ('runCountPresets' in value && (!Array.isArray(value.runCountPresets) || !value.runCountPresets.every(isFiniteNumber))) return false
   if ('subRunCountPresets' in value && (!Array.isArray(value.subRunCountPresets) || !value.subRunCountPresets.every(isFiniteNumber))) return false
   if ('pinnedLocations' in value && (!Array.isArray(value.pinnedLocations) || !value.pinnedLocations.every((loc) => typeof loc === 'string'))) return false
+  if ('notifOff' in value && (!Array.isArray(value.notifOff) || !value.notifOff.every((kind) => typeof kind === 'string'))) return false
   if ('subCarSettings' in value) {
     if (!isPlainObject(value.subCarSettings)) return false
     if (!Object.values(value.subCarSettings).every(isPersistedSubCarSettings)) return false

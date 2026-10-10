@@ -87,6 +87,7 @@
  * @property {boolean} [distanceOn]
  * @property {boolean} [cargoTonnageOn]
  * @property {boolean} [dailyInspectionOn] 일상점검표 사용(9-B-1, 메인 차량 — 기사차량은 subCarSettings)
+ * @property {Array<string>} [notifOff] 알림 화면에서 끈 알림 종류(NOTIF_KINDS)
  * @property {boolean} [fixedRouteOn]
  * @property {Array<{ id: string, loadLoc: string, unloadLoc: string }>} [fixedRoutePresets]
  * @property {boolean} [runCountToggle]

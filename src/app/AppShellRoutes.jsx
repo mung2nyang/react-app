@@ -21,6 +21,7 @@ import {
   CustomerCenterPage,
   NoticePage,
   MessageSettingsPage,
+  NotificationsPage,
 } from './lazyPages.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
@@ -97,6 +98,7 @@ export default function AppShellRoutes({
       <Route path="support" element={<CustomerCenterPage session={session} showToast={showToast} onGoAuth={onGoAuth} onBack={() => navigate('/app')} onOpenMenu={onOpenMenu} />} />
       <Route path="notice" element={<NoticePage onBack={() => navigate(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="message-settings" element={<MessageSettingsPage onBack={() => navigate(backTarget)} showToast={showToast} />} />
+      <Route path="notifications" element={<NotificationsPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} onOpenPage={(/** @type {string} */ page) => goToPage(page)} onChanged={bumpNotifTick} />} />
       <Route path="soon" element={<ComingSoonRoute />} />
     </Routes>
   )

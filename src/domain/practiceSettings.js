@@ -11,6 +11,15 @@ export * from './practicePresets.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 
+/** 알림 화면에서 끌 수 있는 종류(lib/notifications.js kind와 같은 이름). */
+export const NOTIF_KINDS = ['overdue', 'today', 'driverInvite', 'backup']
+
+/** 끈 알림 종류 — 아는 이름만, 겹침 없이. @param {unknown} raw @returns {Array<string>} */
+function normalizeNotifOff(raw) {
+  if (!Array.isArray(raw)) return []
+  return NOTIF_KINDS.filter((kind) => raw.includes(kind))
+}
+
 const defaults = {
   unitPrice: 0,
   theme: 'light',
@@ -78,6 +87,7 @@ export function normalizeSettings(raw = {}) {
     subRunCountPresets: normalizeRunCountPresets(raw.subRunCountPresets),
     pinnedLocations: normalizePinnedLocations(raw.pinnedLocations),
     subCarSettings: normalizeSubCarSettingsMap(raw.subCarSettings, asBool(raw.subFixedOn, fixedOn)),
+    notifOff: normalizeNotifOff(raw.notifOff),
   }
 }
 

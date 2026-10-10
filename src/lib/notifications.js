@@ -1,5 +1,6 @@
 // @ts-check
 import { todayKey } from './expenses.js'
+import { todayWorkLogSelection } from '../domain/calendar.js'
 import { formatWon } from './money.js'
 import { getDdayLabel, overdueItems } from './receivables.js'
 import { loadWorkData } from './workData.js'
@@ -14,6 +15,12 @@ import { isCloudSession } from './cloudSession.js'
 /** @typedef {import('../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 
 export const DAILY_INSPECTION_NOTICE_ID = 'daily-inspection-required'
+
+/** 'YYYY-MM-DD…' → 'MM.DD'(알림 날짜 줄). 모양이 아니면 빈 글자. @param {unknown} value */
+function shortDate(value) {
+  const match = typeof value === 'string' ? /^\d{4}-(\d{2})-(\d{2})/.exec(value) : null
+  return match ? `${match[1]}.${match[2]}` : ''
+}
 
 /** @param {string} ownerKey */
 function loadDismissed(ownerKey) {
@@ -37,7 +44,7 @@ export function dismissNotification(ownerKey, id) {
  */
 export function collectNotifications(ownerKey = 'guest', session = null) {
   const dismissed = loadDismissed(ownerKey)
-  /** @type {Array<{ id: string, page: string, title: string, body: string, actionLabel?: string, dismissLabel?: string }>} */
+  /** @type {Array<{ id: string, kind: string, page: string, title: string, body: string, dateLabel: string, actionLabel?: string, dismissLabel?: string }>} */
   const items = []
   const settings = buildFinanceSettings(ownerKey)
   const workDataByLogId = loadWorkDataByLogId(ownerKey)
@@ -50,9 +57,14 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
     if (dismissed.has(id)) return
     items.push({
       id,
+      kind: 'overdue',
       page: 'receivables',
       title: `연체 미수금 · ${item.client}`,
       body: `${formatWon(item.remainingAmount)} · ${getDdayLabel(item.paymentDueDate)}`,
+      dateLabel: [
+        shortDate(item.workDate || item.dateKey) && `운행 ${shortDate(item.workDate || item.dateKey)}`,
+        shortDate(item.paymentDueDate) && `입금 예정 ${shortDate(item.paymentDueDate)}`,
+      ].filter(Boolean).join(' · '),
     })
   })
 
@@ -61,9 +73,11 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
     if (dismissed.has(id)) return
     items.push({
       id,
+      kind: 'driverInvite',
       page: 'drivers',
       title: `초대 대기 · ${driver.name}`,
       body: `코드 ${driver.inviteCode}${driver.vehicleNumber ? ` · ${driver.vehicleNumber}` : ''}`,
+      dateLabel: '',
     })
   })
 
@@ -85,9 +99,11 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
     if (!hasEntry && !dismissed.has(todayId)) {
       items.push({
         id: todayId,
+        kind: 'today',
         page: 'home',
         title: '오늘 운행일지가 비어 있습니다',
         body: '홈에서 [운행 기록하기]를 눌러 횟수나 휴무를 남겨 주세요.',
+        dateLabel: shortDate(dateKey),
       })
     }
   }
@@ -96,9 +112,11 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
   if (ownerKey !== 'guest' && !readOwnerSettings(ownerKey).dailyInspectionOn && !dismissed.has(DAILY_INSPECTION_NOTICE_ID)) {
     items.push({
       id: DAILY_INSPECTION_NOTICE_ID,
+      kind: 'inspectionRequired',
       page: 'settings',
       title: '일상점검표가 의무화되었습니다',
       body: '관련 법령에 따라 출발 전 일상점검표 작성이 의무화되었습니다. 아래 버튼을 눌러 일상점검표 기능을 켜 주세요.',
+      dateLabel: '',
       actionLabel: '바로 사용하기',
       dismissLabel: '다시 보지 않기',
     })
@@ -121,13 +139,17 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
           : '아직 백업한 적이 없습니다. 앱을 지우거나 휴대폰을 바꾸면 기록이 사라질 수 있습니다.'
         items.push({
           id: backupId,
+          kind: 'backup',
           page: 'settings',
           title: '데이터 백업 권장',
           body,
+          dateLabel: hasValidBackup ? `마지막 백업 ${shortDate(todayWorkLogSelection(new Date(lastBackupTime)).dateKey)}` : '',
         })
       }
     }
   }
 
-  return items
+  // 알림 화면 "알림 받기"에서 끈 종류는 목록·🔔 숫자에서 뺌(일상점검 의무화 안내는 끌 수 없음).
+  const off = readOwnerSettings(ownerKey).notifOff || []
+  return items.filter((item) => !off.includes(item.kind))
 }
