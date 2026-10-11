@@ -1,8 +1,5 @@
 // @ts-check
-// 4차 재작업(사용자 지시 7번) — mutationOutbox.js/outboxFlush.js/outboxRollback.js/
-// directMutations.js/requestDriverInviteSave.js/outboxCommit.js가 공유하는 JSDoc
-// 타입만 모은 파일. 런타임 코드는 없다(200줄 제한과 무관하게, 타입만 한 곳에 둬야
-// 여러 파일이 정확히 같은 모양을 참조한다 — 파일마다 따로 적으면 어긋나기 쉽다).
+// outbox·직접 mutation 파일들이 공유하는 JSDoc 타입(런타임 코드 없음) — 한 곳에 둬야 모양이 어긋나지 않는다.
 
 /** @typedef {'vehicle'|'client'|'driverLink'} OutboxResourceType */
 /** @typedef {'tombstone'|'mutation'} OutboxKind */
@@ -20,7 +17,7 @@
  * @property {string} [inviteCode]
  * @property {'pending'|'linked'} [status]
  * @property {number|string} [supabaseId]
- * @property {string} [unlinkRequestedBy] 연동 해제를 요청한 사람 id(차주 또는 기사, 로드맵 7-C)
+ * @property {string} [unlinkRequestedBy] 연동 해제를 요청한 사람 id(차주 또는 기사)
  * @property {string} [unlinkRequestedAt] 해제 요청 시각(ISO) — 3일 지나면 자동 해제
  */
 

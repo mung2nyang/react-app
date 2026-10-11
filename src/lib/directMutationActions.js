@@ -2,7 +2,7 @@
 // 컴포넌트가 부르는 고수준 서비스 함수들 — 컴포넌트는 이 함수들만 호출하고, 여기서
 // readiness 게이트 → 원격 mutation → 결과 토스트까지 처리한다.
 //
-// 슬라이스 A(기사 초대) · B(기사 상태변경/삭제) · C(차량·거래처 삭제)는 mutation outbox /
+// 기사 초대·상태변경·삭제와 차량·거래처 삭제는 mutation outbox /
 // tombstone / durable / 재시도 큐를 쓰지 않는다: readiness 후 서버에 직접 1회 쓰고,
 // 성공했을 때만 Store를 갱신한다(Fail-Fast). 실패하면 Store/LS/outbox를 더 쌓지 않고
 // 지정 토스트만 띄운다. 차량 삭제는 vehicleDeletion.js.
@@ -28,12 +28,12 @@ import { commitClients, commitDrivers } from '../store/commitHelpers.js'
 export { requestDriverInviteSave } from './requestDriverInviteSave.js'
 export { requestVehicleDeletion } from './vehicleDeletion.js'
 
-// 슬라이스 A~C 공통 문구. 다른 도메인 outbox의 STORAGE_FAIL_TOAST는 건드리지 않는다.
+// 공통 문구. 다른 도메인 outbox의 STORAGE_FAIL_TOAST는 건드리지 않는다.
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
 
 /**
- * 로그인 사용자의 거래처 삭제. 슬라이스 C: outbox/tombstone 없이 clients.delete 직접 1회.
+ * 로그인 사용자의 거래처 삭제. outbox/tombstone 없이 clients.delete 직접 1회.
  * @param {{ ownerKey: string, userId: string|null, clients: Array<import('../domain/clientTypes.js').ClientLike>, clientId: string }} params
  * @returns {Promise<{ clients: Array<import('../domain/clientTypes.js').ClientLike>, blocked: string|null, toast: string|null, failed: boolean, closeModal: boolean }>}
  */
@@ -66,7 +66,7 @@ export async function requestClientDeletion({ ownerKey, userId, clients, clientI
 }
 
 /**
- * 로그인 사용자의 기사 연동 상태변경. 슬라이스 B: outbox 없이 driver_links.update 직접 1회.
+ * 로그인 사용자의 기사 연동 상태변경. outbox 없이 driver_links.update 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록만 바꾼다.
  * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('./outboxTypes.js').DriverRecord>, driverId: string, status: 'pending'|'linked', cloud: boolean }} params
  * @returns {Promise<{ drivers: Array<import('./outboxTypes.js').DriverRecord>, blocked: string|null, toast: string }>}
@@ -96,7 +96,7 @@ export async function requestDriverStatusChange({ ownerKey, drivers, driverId, s
 }
 
 /**
- * 로그인 사용자의 기사 초대 삭제. 슬라이스 B: outbox 없이 driver_links.delete 직접 1회.
+ * 로그인 사용자의 기사 초대 삭제. outbox 없이 driver_links.delete 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록에서만 제거한다.
  * @param {{ ownerKey: string, userId?: string|null, drivers: Array<import('./outboxTypes.js').DriverRecord>, driverId: string, cloud: boolean }} params
  * @returns {Promise<{ drivers: Array<import('./outboxTypes.js').DriverRecord>, blocked: string|null, toast: string|null|undefined }>}

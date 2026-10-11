@@ -41,9 +41,9 @@ async function fetchTaggedExpensesForVehicle(vehicleId, vehicleNumber, throwIfAn
 
 /**
  * 서브 차량 supabaseId로 비용 3종을 모아 vehicleNumber 태그를 붙여 차주 목록(expenses)에 id 중복 제거로 합친다.
- * 로드맵 5-B-2: 연동 서브도 차주·기사 공용 장부라 차주 목록으로(읽기 전용 driverExpenses는 빈 배열).
+ * 연동 서브도 차주·기사 공용 장부라 차주 목록으로(읽기 전용 driverExpenses는 빈 배열).
  * @param {Array<CarLike>} cars
- * @param {Array<DriverRecord>} _drivers 5-B-2부터 연동 여부로 나누지 않음(호출부 hydrate.js 유지용)
+ * @param {Array<DriverRecord>} _drivers 연동 여부로 나누지 않음(호출부 모양 유지용)
  * @param {Array<JsonRecord>} ownerExpenses
  * @param {(labeled: Record<string, SupabaseQueryError>) => void} throwIfAnyHydrateError
  * @returns {Promise<{ expenses: Array<JsonRecord>, driverExpenses: Array<DriverExpenseItem> }>}

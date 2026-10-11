@@ -1,10 +1,6 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// Step 0-4 감사 보완 4차: cloudSync.js 분리 조각 — syncAll이 부르는 일반 동기화 큐의
-// 정비/주유/기타 비용 upsert. 세 함수가 테이블/필드명만 다르고 구조가 동일하지만,
-// 이미 200줄 안에 들어오고("단순히 합치기 위한" 기계적 분할을 피하라는 지시도 있어)
-// 기존 동작을 한 글자도 안 바꾸는 쪽을 택해 그대로 옮겼다.
-// 로드맵 5-A: 차량은 호출부가 planExpenseVehicleTargets로 나눠 넘긴다.
+// 정비/주유/기타 비용 서버 저장(세 함수가 표·칸 이름만 다르다). 차량은 호출부가 planExpenseVehicleTargets로 나눠 넘긴다.
 import { supabase } from '../supabaseClient.js'
 import { buildFuelRecordRow, groupFuelExpensesByDate } from '../domain/fuelRecords.js'
 import { buildMaintenanceRecordRow, groupMaintExpensesByDate } from '../domain/maintenanceRecords.js'

@@ -1,16 +1,6 @@
 // @ts-check
-// 재감사 4차(FAIL 지적 4번) — hydrateMerge.js에 @ts-check를 붙이면서 200줄을
-// 넘겨서(216줄) 타입 선언만 이 파일로 뺐다(clientTypes.js/dayRecordTypes.js와 같은
-// 관례, export {}뿐인 타입 전용 모듈). 각 타입은 hydrateMerge.js의 함수가 실제로
-// 읽고 쓰는 필드만 적은, "실제로 소비하는 upstream(Supabase row/로컬 값) 모양"에
-// 대한 느슨하지만 정직한 인터페이스다 — any/unknown/object 중간단언은 안 썼다.
-// 재감사 10차(FAIL 지적 4번) — [key: string]: unknown 인덱스 시그니처(LocalCar/
-// RawCarBackup/LocalClient/RawClientBackup)와 raw?: object(DailyLogRow/DetailRow)를
-// 걷어냈다. 실제로 이름으로 읽는 필드만 남기고, "JSON.parse가 실제로 돌려줄 수 있는
-// 모양"이 필요한 자리(raw 컬럼 — Supabase JSONB, 테이블마다 레거시 모양이 달라
-// 컴파일타임에 정확한 필드셋을 모른다)는 pendingWorkDataWritesTypes.js의 JsonRecord
-// (durablePatchSchema.js가 이미 쓰는, any/unknown 없이 "미확인 JSON 값"을 표현하는
-// 재귀 타입)를 그대로 재사용한다 — 새 회피 수단을 만들지 않는다.
+// hydrateMerge*.js가 실제로 읽고 쓰는 upstream(Supabase 행·로컬 값) 모양(타입 전용 모듈).
+// raw(JSONB) 자리는 모양을 미리 알 수 없어 JsonRecord를 쓴다.
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonRecord} JsonRecord */
 
 /** @typedef {{ message: string, code?: string }|Error|null} SupabaseQueryError */
@@ -19,13 +9,7 @@
 /** @typedef {{ name?: string, phone?: string, bizName?: string, bizRepresentative?: string, bizNumber?: string, bizAddress?: string, bizType?: string, bizItem?: string, bizEmail?: string, bankName?: string, accountNumber?: string, accountHolder?: string }} LocalProfile */
 /** @typedef {{ name?: string, phone?: string, business_name?: string, business_number?: string, business_address?: string, business_type?: string, business_item?: string, business_email?: string, business_representative?: string, bank_name?: string, account_number?: string, account_holder?: string }|null|undefined} ProfileRow */
 
-// Step 7 후속(hydrate producer 정규화, 2026-08-31) — LocalCar/LocalClient/LocalDriver는 이제
-// 각 도메인의 정본 타입(CarLike/ClientLike/DriverRecord — persistDomainRecords.js의
-// CAR_KEYS/CLIENT_KEYS/DRIVER_KEYS와 1:1)을 그대로 재사용한다. RawCarBackup/
-// RawClientBackup은 Supabase raw(JSONB) 컬럼 — 같은 필드 구성이지만 전부 "있을 수도,
-// 틀린 타입일 수도 있는 미확인 JSON"이라 Partial로 전부 optional화한다(hydrateMergeCars.js/
-// hydrateMergeClients.js가 필드마다 typeof로 다시 방어한다 — JSDoc 선언을 무조건
-// 신뢰하지 않는다).
+// LocalCar/LocalClient는 도메인 정본 타입 그대로, RawCarBackup/RawClientBackup은 raw(JSONB)라 Partial — 병합 쪽이 필드마다 typeof로 다시 확인한다.
 /** @typedef {import('../domain/financeTypes.js').CarLike} LocalCar */
 /** @typedef {Partial<LocalCar>} RawCarBackup */
 /** @typedef {import('../domain/clientTypes.js').ClientLike} LocalClient */

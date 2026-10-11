@@ -1,18 +1,6 @@
 // @ts-check
-// 재감사 6차(FAIL 지적 1번) — pendingWorkDataWrites.js가 durable(localStorage) 저장소에
-// 직접 접근하던 저수준 읽기/쓰기 함수를 이 파일로 뺐다. 이유는 200줄 제한(단순
-// 추출)만이 아니다 — 여기서 "읽기 실패"와 "정상적으로 비어 있음"을 명시적으로
-// 구분해서 돌려주는 계약(DurableReadResult) 자체가 이 파일의 존재 이유다. 예전엔
-// localStorage.getItem 실패든 JSON.parse 실패든 모양이 안 맞든 전부 `{}`로 뭉뚱그려
-// 돌려줬는데, 그걸 "진짜로 비어 있다"고 믿고 그 위에 새 값 하나만 있는 객체를
-// 통째로 다시 써서 다른 날짜 원문을 파괴할 수 있었다(재감사 6차 실측).
-// 재감사 7차(FAIL 지적 1번, P0) — 최상위가 객체인지만 보고 끝내지 않는다.
-// durablePatchSchema.js로 dateKey/patch/callDetails 내부 값까지 전부 런타임
-// 검증한다(`{ "2026-08-31": [] }` 같은 값이 정상 pending으로 통과해 기존 일지를
-// 지워 버리는 P0가 실측됐다). 타입은 pendingWorkDataWritesTypes.js가 정본이다.
-// 재감사 9차(FAIL 지적 4번) — dateKey 검증은 이 파일 전용 함수가 아니라
-// domain/dateKey.js의 공용 정본을 쓴다 — domain/calendar.js(parseDateKeySelection,
-// 실제 라우팅)도 같은 함수를 써서 durable과 URL 양쪽이 절대 어긋나지 않는다.
+// durable(localStorage) 저수준 읽기·쓰기. "읽기 실패"와 "정상적으로 비어 있음"을 구분해 돌려주는 게 핵심이다 —
+// 섞으면 빈 객체 위에 다시 써서 다른 날짜 원문을 지운다. 내부 값은 durablePatchSchema.js, dateKey는 domain/dateKey.js로 검증한다.
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
 import { isValidPatch } from './durablePatchSchema.js'
 
@@ -50,7 +38,7 @@ export function readDurable(ownerKey) {
     return { ok: false }
   }
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return { ok: false }
-  // 재감사 7차(FAIL 지적 1번) — dateKey 하나하나가 허용된 날짜 키 형식인지, patch
+  // dateKey 하나하나가 허용된 날짜 키 형식인지, patch
   // 하나하나가 실제 EffectivePatch 계약에 맞는지 전부 검증한다. 하나라도 어긋나면
   // 이 owner 전체를 읽기 실패로 취급한다(부분 신뢰 금지 — registerPendingDayWrite/
   // clearPendingDayWrite가 이 계약에 기대 원문을 보존한다).
@@ -67,7 +55,7 @@ export function writeDurable(ownerKey, value) {
 }
 
 /**
- * 재감사 7차(FAIL 지적 2번) — localStorage.length/localStorage.key() 접근 자체가
+ * localStorage.length/localStorage.key() 접근 자체가
  * 실패할 수 있다(브라우저 storage 전체가 막힌 극단 상황). 이걸 "owner가 하나도
  * 없다"로 오인하면 실제로 있는 durable 큐를 통째로 못 본 채 "pending 없음"으로
  * 거짓 판정한다 — 명시적으로 열거 실패를 구분해 돌려준다.

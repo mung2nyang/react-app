@@ -71,7 +71,7 @@ async function fetchExpensesForAssignedVehicle(vehicleId, throwIfAnyHydrateError
   nextExpenses = mergeExpenseKind({ kind: 'fuel', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: fuelRes.data || [], mapRow: expenseFromFuelRecord, replace: replaceFuelExpenses })
   nextExpenses = mergeExpenseKind({ kind: 'maint', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: maintRes.data || [], mapRow: expenseFromMaintenanceRecord, replace: replaceMaintExpenses })
   nextExpenses = mergeExpenseKind({ kind: 'misc', currentExpenses: nextExpenses, snapshotExpenses: [], previousExpenses: [], rows: miscRes.data || [], mapRow: expenseFromMiscRecord, replace: replaceMiscExpenses })
-  // 로드맵 5-B-1: 차주가 넣은 항목의 차량 표시를 떼어 기사 본인 목록·매출에 포함한다.
+  // 차주가 넣은 항목의 차량 표시를 떼어 기사 본인 목록·매출에 포함한다.
   return /** @type {Array<ExpenseItem>} */ (nextExpenses.map(({ vehicleNumber: _vehicleNumber, ...item }) => item))
 }
 
@@ -99,7 +99,7 @@ export async function buildEmployedDriverSnapshot({
     profiles_self: selfProfileRes.error,
   })
 
-  // 9-B-0(docs/sot.md §0 "연동 기사 앱의 개인정보·설정"): 설정은 기사 자기 것, 개인정보 이름·연락처는 기사 본인,
+  // docs/sot.md §0(연동 기사 앱의 개인정보·설정): 설정은 기사 자기 것, 개인정보 이름·연락처는 기사 본인,
   // 사업자 정보·정산 계좌는 차주가 입력한 값(화면에선 보기만, 저장 때 기사 행에 안 씀).
   const selfSettings = selfProfileRes.data?.settings
   const nextSettings = normalizeSettings(selfSettings && typeof selfSettings === 'object' && !Array.isArray(selfSettings) ? selfSettings : {})

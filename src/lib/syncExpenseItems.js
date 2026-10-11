@@ -1,6 +1,6 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// 로드맵 5-B: 연동 차량 칸은 차주·기사 공용 장부 — 항목 id 기준으로 넣기·고치기·(내가 알던 것만) 지우기.
+// 연동 차량 칸은 차주·기사 공용 장부 — 항목 id 기준으로 넣기·고치기·(내가 알던 것만) 지우기.
 import { supabase } from '../supabaseClient.js'
 import { buildFuelRecordRow, expenseFromFuelRecord } from '../domain/fuelRecords.js'
 import { buildMaintenanceRecordRow, expenseFromMaintenanceRecord, parseEntityNumber } from '../domain/maintenanceRecords.js'

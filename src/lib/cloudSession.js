@@ -1,8 +1,5 @@
 // @ts-check
-// Step 0-4 감사 보완 4차: cloudSync.js 분리 조각 — 로그인 세션/세대(epoch) 상태와
-// 그 상태를 근거로 한 판정 함수들만 모은다. hydrate.js/outboxFlush.js/
-// directMutationActions.js가 전부 이 모듈의 getSessionEpoch()로 "내가 시작했을 때와
-// 지금이 같은 세션인지"를 재확인한다(사용자 지시 11번 — async 세대/세션 무효화 규칙).
+// 로그인 세션·세대(epoch) 상태와 그 판정 함수. hydrate·outboxFlush·directMutationActions가 getSessionEpoch()로 "시작 때와 같은 세션인지" 재확인한다.
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
 /** @typedef {import('./outboxTypes.js').AppSession} AppSession */
 import { getState, setHydration } from '../store/app-store.js'
@@ -63,12 +60,7 @@ export function isSessionStillCurrent(captured) {
 }
 
 /**
- * 4차 재작업(사용자 지시 2/3번) — 다단계 원격 작업(차량/거래처 삭제의 자식 테이블
- * 순차 삭제, 기사 upsert의 syncVehicles→upsert 순서) 중간의 매 await 직후 여기를
- * 부른다. 세션이 바뀌었으면 이 에러를 던져 남은 단계를 실행하지 않는다 —
- * outboxFlush.js/syncQueue.js가 `instanceof StaleSessionError`로 이 에러를 구분해
- * op을 그대로 보존한다(permanent 실패처럼 제거하지도, 그냥 콘솔만 찍고 재시도
- * 남기지도 않는다). 재감사 3번: `.staleSession` 표시 + 캐스팅 대신 전용 클래스를 쓴다.
+ * 다단계 원격 작업 중 매 await 직후 부른다. 세션이 바뀌었으면 StaleSessionError를 던져 남은 단계를 멈추고, outboxFlush·syncQueue는 이 에러면 op를 그대로 보존한다.
  * @param {SessionCapture} captured
  */
 export function assertSessionStillCurrent(captured) {
@@ -87,18 +79,7 @@ export function isCloudSession(session) {
 }
 
 /**
- * 로그아웃. 커밋 전 자체 교차검증(2차)에서 발견: 세대를 안 올리면 로그아웃 시점에
- * 아직 응답을 기다리던 이전 계정의 hydrate/outbox flush가 로그아웃 *이후*에 끝나도
- * "최신 세대"로 통과해 로그아웃한 계정의 데이터를 store/localStorage에 다시 반영할
- * 수 있었다.
- *
- * 감사 보완 4차 재작업(사용자 지시 6번): 세대만 올리는 걸로는 부족했다 — 로그아웃
- * 시점에 같은 owner의 hydrate가 아직 singleFlight에 걸려 있는 채였다면, 바로 이어지는
- * 재로그인(같은 owner)의 hydrateFromSupabase 호출이 그 오래된 in-flight Promise에
- * "합류"해서 새 factory를 아예 실행하지 않았다 — 그 결과 재로그인의 hydrate가 세대
- * 불일치로 조용히 버려지고, status는 영영 'ready'가 되지 못한 채 멈췄다. 로그아웃
- * 시점에 그 owner의 singleFlight 항목을 강제로 지워서, 재로그인이 항상 진짜 새
- * hydrate를 시작하게 한다.
+ * 로그아웃. 세대를 올려 이전 계정의 늦게 끝난 hydrate·flush 결과를 버리고, 그 owner의 singleFlight 항목을 지워 재로그인이 옛 요청에 합류하지 않고 새 hydrate를 시작하게 한다.
  */
 export function endCloudSession() {
   const outgoingOwnerKey = cloudOwnerKey

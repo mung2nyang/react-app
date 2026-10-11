@@ -1,9 +1,6 @@
 // @ts-check
-// Step 0-4 감사 보완 4차: hydrate가 서버 병합 결과에 outbox(아직 반영 안 된 로컬 의도)를
-// 겹쳐 적용하는 순수 함수들. "서버 삭제가 아직 완료되지 않은 레코드는 hydrate 응답에
-// 존재하더라도 활성 tombstone을 적용해 로컬에 부활시키지 마라"(사용자 지시 4번)와
-// "pending 상태변경도 hydrate 서버값으로 덮어쓰지 말고 로컬 의도를 다시 적용하라"를
-// 구현한다.
+// hydrate 서버 병합 결과에 아직 반영 안 된 outbox 의도를 겹쳐 적용하는 순수 함수 — 서버 삭제가 덜 끝난 레코드는 tombstone으로 부활을 막고,
+// pending 상태변경은 서버값 대신 로컬 의도를 다시 적용한다.
 import { getPendingMutation, isTombstoned } from './mutationOutbox.js'
 
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */

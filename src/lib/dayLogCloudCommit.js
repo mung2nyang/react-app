@@ -1,9 +1,9 @@
 // @ts-check
-// 슬라이스 D + Step 9 슬라이스 A: 로그인 일지를 durable/retry 없이 그 날짜
+// 로그인 일지를 durable/retry 없이 그 날짜
 // daily_logs(+transport_details)에 직접 1회 쓰고 성공 시에만 Store 반영(Fail-Fast).
 // vehicleSupabaseIdForLog로 main·기사 차량을 고르고, Store는 commitLogWorkData로 logId별 반영.
 // 게스트·미동기화(supabaseId 없음)는 { cloud: false } → 호출부가 로컬 경로를 탄다.
-// §6: 단건/복수건 커밋이 헬퍼 4개(writeDayKeyToServer 등)를 공유하는 응집 단위. 빈 날 서버 삭제 규칙은 dailyLogRemoval.js(0-3-A).
+// §6: 단건/복수건 커밋이 헬퍼 4개(writeDayKeyToServer 등)를 공유하는 응집 단위. 빈 날 서버 삭제 규칙은 dailyLogRemoval.js.
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
 import { supabase } from '../supabaseClient.js'

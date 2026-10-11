@@ -1,21 +1,7 @@
 // @ts-check
-// Step 0-4 감사 보완 4차(+재작업): mutation outbox 실제 재시도 엔진. owner별
-// running/dirty 큐(single-flight, 실행 중 새 op가 추가되면 한 번 더 돈 뒤에만
-// resolve)로 flushMutationOutbox가 안전하게 여러 번 겹쳐 불려도 된다.
-//
-// 세션 재검증(사용자 지시 2/4번): flush 시작 시, 각 op 실행 *직전*, 그리고 모든
-// 원격 await 직후(directMutations.js 내부까지) — 전부 isSessionStillCurrent()로
-// 재확인한다. 하나라도 달라졌으면 남은 op/현재 op의 로컬 반영을 전부 건너뛰고
-// 조용히 멈춘다. `.staleSession` 표시가 된 에러(cloudSession.assertSessionStillCurrent)
-// 하나로 이 판단을 통일한다 — 어디서 감지됐든 flushOnce가 같은 방식으로 처리한다.
-//
-// 명시적 결과(사용자 지시 1번): flushOnce가 "outbox에 남아 있는지"로 성공을 간접
-// 추론하지 않고, op마다 OUTBOX_RESULT 값을 담은 Map을 돌려준다. flushMutationOutbox가
-// 이걸 그대로 호출부(outboxCommit.js)에 전달한다.
-//
-// 확정 실패(사용자 지시 3번): 기사 배정 기간 겹침처럼 재시도해도 결과가 똑같은
-// 에러는 createPermanentFailure로 표시돼 있다 — outbox에서 제거하고 포기하며,
-// 기사 upsert라면 낙관적으로 반영했던 로컬 값도 원래대로 되돌린다(outboxRollback.js).
+// mutation outbox 재시도 엔진. owner별 single-flight라 여러 번 겹쳐 불려도 안전하다.
+// 세션은 flush 시작·op 실행 직전·원격 await 직후마다 재확인하고, 바뀌었으면 조용히 멈춘다.
+// op마다 OUTBOX_RESULT를 담은 Map을 돌려준다. 확정 실패(재시도해도 같은 결과)는 outbox에서 빼고, 기사 upsert면 낙관적 로컬 값을 되돌린다(outboxRollback.js).
 /** @typedef {import('./outboxTypes.js').OutboxOp} OutboxOp */
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
 /** @typedef {import('./outboxTypes.js').CarRecord} CarRecord */
@@ -45,14 +31,14 @@ async function executeDriverUpsertOp(op, captured) {
   // 하던 대로, 기사 배정을 실제로 시도하기 전에 차량부터 먼저 반영해 supabaseId를 확보한다.
   await syncVehicles(op.userId, op.ownerKey)
   assertSessionStillCurrent(captured)
-  // 슬라이스 E: 로그인 cars는 LS 미러가 없다 — syncVehicles가 병합한 supabaseId는 Store에만.
+  // 로그인 cars는 LS 미러가 없다 — syncVehicles가 병합한 supabaseId는 Store에만.
   // Store를 우선 읽고, 이 owner가 Store에 없을 때만(게스트/미부트) 예전처럼 LS 폴백.
   const cars = /** @type {Array<CarRecord>} */ (getState().cars[op.ownerKey] ?? readJson(keyFor(KEYS.cars, op.ownerKey), []))
   const car = cars.find((item) => item.number === op.payload.vehicleNumber)
   if (!car?.supabaseId) throw new Error('방금 등록한 차량이 아직 저장 중입니다. 잠시 후 다시 시도해 주세요.')
 
   if (!op.payload.supabaseId) {
-    // 사용자 지시 8번: 재시도 전에 "이미 내가 성공시켰을 수도 있는" 동일한 삽입이
+    // 재시도 전에 "이미 내가 성공시켰을 수도 있는" 동일한 삽입이
     // 있는지 먼저 확인한다 — 있으면 겹침 검사/삽입 없이 그 행을 그대로 쓴다.
     const ownPrior = await findExistingDriverLinkInsert(car.supabaseId, op.payload.startDate ?? '', op.payload.inviteCode ?? '')
     assertSessionStillCurrent(captured)
@@ -135,8 +121,8 @@ async function flushOnce(ownerKey) {
         return results
       }
       if (error instanceof PermanentFailureError) {
-        // 사용자 지시 3번: 확정 validation 실패는 재시도 대상이 아니다 — 제거하고
-        // 포기한다. 기사 upsert라면 낙관적으로 반영했던 로컬 값도 되돌린다(1번).
+        // 확정 validation 실패는 재시도 대상이 아니다 — 제거하고
+        // 포기한다. 기사 upsert라면 낙관적으로 반영했던 로컬 값도 되돌린다.
         if (op.resourceType === 'driverLink' && op.operation === 'upsert') {
           rollbackDriverUpsertAndRemoveOp(op)
         } else {

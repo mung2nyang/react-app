@@ -9,15 +9,8 @@ import {
 /** @typedef {import('./hydrateMergeTypes.js').RawCarBackup} RawCarBackup */
 /** @typedef {import('./hydrateMergeTypes.js').VehicleRow} VehicleRow */
 
-// Step 7 후속(재감사) — `...raw` 스프레드는 Supabase vehicles.raw(JSONB 백업)의
-// 필드를 전부 그대로 들여왔다. raw는 sync 시점의 로컬 car 객체 전체를 그대로 저장한
-// 것(lib/cloudStorage.js buildVehicleRow의 `raw: car`)이라, persist 스키마
-// (store/persistDomainRecords.js의 CAR_KEYS + 각 필드 타입)와 다른 값이 하나만 섞여도
-// `isPersistedCar`가 그 차량을 거부하고, cars 배열은 전부 아니면 전무(hasOnlyKeys +
-// every)라서 hydrate 직후엔 멀쩡히 저장됐다가 다음 새로고침(initialize) 때 cars
-// 도메인 전체가 통째로 사라지는 사고로 이어진다. 아래는 CAR_KEYS에 있는 필드만
-// 정본 타입으로 정규화해서 만든다 — 검증기(persistDomainRecords.js)는 건드리지 않고
-// 그대로 둔 채(느슨하게 만들지 않는다), producer만 스키마에 맞춘다.
+// CAR_KEYS에 있는 필드만 정본 타입으로 정규화한다 — raw(JSONB)를 통째로 펼치면 스키마와 다른 값 하나로
+// 다음 새로고침 때 cars 전체가 사라진다. 검증기는 느슨하게 하지 않고 producer만 맞춘다.
 
 /** @param {string|undefined} value */
 function stringOrEmpty(value) {
@@ -29,15 +22,8 @@ function boolOrFalse(value) {
   return typeof value === 'boolean' ? value : false
 }
 
-// 재감사(불리언 기본값) — insuranceOn/logEnabled/driverLinkEnabled/
-// shareRevenueWithOwner/archived는 여기서 false를 심으면 안 된다. 바닐라 정본상
-// "값이 아예 없음"과 "명시적으로 false"는 의미가 다르다 — 특히
-// shareRevenueWithOwner는 "없음 = 공유(true)"다(car-management.js의
-// `document.getElementById('newCarShareRevenueToggle')?.checked ?? true`,
-// domain/cars.js의 `isVehicleRevenueSharedWithOwner`도 `!== false`로 읽는다 —
-// 기본은 true). raw에 실제 boolean이 없으면 이 필드들은 키 자체를 생략해서
-// "정본 소비 쪽 기본값"이 그대로 적용되게 한다 — producer가 임의로 false를
-// 채워 넣지 않는다.
+// insuranceOn/logEnabled/driverLinkEnabled/shareRevenueWithOwner/archived는 false를 심지 않는다 — "없음"과 "false"는 뜻이 다르다
+// (shareRevenueWithOwner는 없음 = 공유). raw에 boolean이 없으면 키를 생략해 소비 쪽 기본값이 적용되게 한다.
 /** @param {boolean|undefined} value */
 function boolOrOmit(value) {
   return typeof value === 'boolean' ? value : undefined
@@ -55,7 +41,7 @@ function enumOrDefault(value, allowed, fallback) {
 
 /** @param {Array<LocalCar>} localCars @param {Array<VehicleRow>|null|undefined} vehicleRows */
 export function mergeCarsFromRows(localCars, vehicleRows) {
-  // 슬라이스 C(2026-09-01): vehicleRows가 배열이면(빈 배열 포함) 서버가 정본이다.
+  // vehicleRows가 배열이면(빈 배열 포함) 서버가 정본이다.
   // 빈 배열을 로컬로 되돌리면 방금 삭제한 차량이 hydrate 뒤 부활한다 — 아래 map을
   // 그대로 통과시키면 서버 목록(빈 배열이면 [])에 미동기화 로컬 차량만 덧붙는다.
   // fallback은 조회 실패로 배열이 아닐 때만.

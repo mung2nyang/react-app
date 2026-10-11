@@ -1,9 +1,6 @@
 // @ts-check
-// 4차 재작업(사용자 지시 1/5번): outboxFlush.js에서 분리(200줄 제한) — 기사 upsert
-// op 하나의 "로컬 drivers 도메인 쓰기 + outbox 제거"를 원자적으로 묶는 두 경로만
-// 담당한다. 성공(reconcile)과 확정 실패(rollback) 둘 다 같은 모양(writeAllOrNothing
-// + commitBatch)이라 여기 함께 둔다 — hydrate 시점 재적용은 outboxReconcile.js가
-// 별도로 맡는다(책임이 다르다: 여긴 outbox flush 응답 처리, 그쪽은 hydrate 병합).
+// 기사 upsert op 하나의 "로컬 drivers 쓰기 + outbox 제거"를 원자적으로 묶는 두 경로(성공 반영·확정 실패 롤백).
+// hydrate 때 재적용은 outboxReconcile.js가 맡는다.
 /** @typedef {import('./outboxTypes.js').OutboxOp} OutboxOp */
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('./outboxTypes.js').DriverLinkRow} DriverLinkRow */
@@ -33,8 +30,7 @@ function writeDriversAndRemoveOp(ownerKey, opId, nextDrivers) {
 
 /**
  * upsert 성공 후 로컬 drivers 배열에 서버가 확정한 supabaseId/inviteCode 등을
- * 되반영하고, 그 쓰기와 outbox 제거를 하나의 원자적 쓰기로 묶는다(사용자 지시
- * 5번). localStorage뿐 아니라 Store(app-store.js) 상태도 갱신한다.
+ * 되반영하고, 그 쓰기와 outbox 제거를 하나의 원자적 쓰기로 묶는다. localStorage뿐 아니라 Store(app-store.js) 상태도 갱신한다.
  * @param {OutboxOp} op
  * @param {DriverLinkRow} savedRow
  */
@@ -53,7 +49,7 @@ export function reconcileDriverAfterUpsertAndRemoveOp(op, savedRow) {
 }
 
 /**
- * 4차 재작업(사용자 지시 1번) — 기사 upsert가 확정 실패(예: 배정 기간 겹침)로
+ * 기사 upsert가 확정 실패(예: 배정 기간 겹침)로
  * 끝나면, 커밋 시점에 낙관적으로 반영했던 drivers 값을 원래 상태로 되돌린다.
  * `op.payload.previousDriverSnapshot`이 있으면(기존 기사 수정) 그 스냅샷으로
  * 되돌리고, 없으면(신규 초대 생성) 이 리소스 자체를 배열에서 제거한다 — 둘 다

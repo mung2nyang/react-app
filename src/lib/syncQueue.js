@@ -1,5 +1,5 @@
 // @ts-check
-// 슬라이스 E: 로그인 업무 저장은 각 창구가 서버 직접 1회다. 이 큐는 mutation
+// 로그인 업무 저장은 각 창구가 서버 직접 1회다. 이 큐는 mutation
 // outbox(삭제 등 기존 op)만 디바운스/즉시 플러시한다. LS 스냅샷 syncAll은 쓰지 않는다.
 import { getCloudOwnerKey, getCloudUserId, isHydrationReady } from './cloudSession.js'
 import { flushMutationOutbox } from './outboxFlush.js'

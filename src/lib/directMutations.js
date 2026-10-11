@@ -1,15 +1,6 @@
 // @ts-check
-// Step 0-4 감사 보완 4차(+재작업): cloudSync.js 분리 조각 — Supabase를 직접 호출하는 "실행기"
-// 함수들. outboxFlush.js가 이 함수들을 재시도 대상으로 호출하고, 사용자가 즉시 시도할
-// 때도 같은 함수를 쓴다(실행기가 하나뿐이라 "즉시 시도"와 "재시도"가 항상 같은 코드
-// 경로를 탄다). 전부 삭제는 delete-of-already-deleted-row가 에러 없이 성공하는
-// Supabase 기본 동작에 기대어 자연히 idempotent하다 — 중간에 실패한 테이블 뒤부터
-// 다시 실행돼도 안전하다.
-//
-// 4차 재작업(사용자 지시 2번): 다단계 삭제/upsert의 모든 원격 await 직후
-// assertSessionStillCurrent(captured)로 세션을 재검증한다 — 그 사이 로그아웃/owner
-// 전환이 있었으면 `.staleSession` 표시가 된 에러를 던져 남은 단계를 실행하지 않는다.
-// 모든 함수가 `captured`(cloudSession.captureSession()의 결과)를 필수로 받는다.
+// Supabase를 직접 부르는 실행기 함수. 즉시 시도와 outbox 재시도가 같은 함수를 쓴다. 삭제는 이미 없는 행 삭제도 성공이라 중간부터 다시 돌아도 안전하다.
+// 모든 함수는 captured를 받아 원격 await마다 assertSessionStillCurrent로 세션을 재확인한다.
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
 import { supabase } from '../supabaseClient.js'
 import { assertCloudWriteReady, assertSessionStillCurrent, getCloudUserId } from './cloudSession.js'
@@ -34,11 +25,11 @@ export async function deleteVehicleFromSupabase(vehicleSupabaseId, captured) {
   const { error: dailyLogsError } = await supabase.from('daily_logs').delete().eq('vehicle_id', vehicleSupabaseId)
   assertSessionStillCurrent(captured)
   if (dailyLogsError) throw dailyLogsError
-  // 슬라이스 C(2026-09-01): 본체 0행 삭제(이미 없음/RLS로 안 보임)를 성공으로 치면
+  // 본체 0행 삭제(이미 없음/RLS로 안 보임)를 성공으로 치면
   // Store만 비고 서버 행이 남아 hydrate가 다시 그린다 — 실제로 지운 행이 0이면
   // throw로 Fail-Fast. 자식 테이블 0행은 "이미 없음"이라 허용한다. (Supabase의
   // delete().select()는 항상 배열을 준다. 배열이 아니면 이 정보가 없는 것이라
-  // 예전처럼 통과시킨다.)
+  // 통과시킨다.)
   const { data, error } = await supabase.from('vehicles').delete().eq('id', vehicleSupabaseId).select('id')
   assertSessionStillCurrent(captured)
   if (error) throw error
@@ -61,7 +52,7 @@ export async function deleteClientFromSupabase(clientSupabaseId, captured) {
   assertSessionStillCurrent(captured)
   const unlinkError = unlinkResults.find((result) => result.error)?.error
   if (unlinkError) throw unlinkError
-  // 슬라이스 C: 본체 0행 삭제는 성공이 아니다 — throw로 Fail-Fast(차량과 동일 계약).
+  // 본체 0행 삭제는 성공이 아니다 — throw로 Fail-Fast(차량과 동일 계약).
   const { data, error } = await supabase.from('clients').delete().eq('id', clientSupabaseId).select('id')
   assertSessionStillCurrent(captured)
   if (error) throw error
@@ -92,17 +83,17 @@ export async function findOverlappingDriverLinkOnSupabase(vehicleId, start, end,
 }
 
 /**
- * 사용자 지시 8번(4차 재작업에서 오류 처리 보강) — 신규 insert의 서버 응답이 유실된
+ * 신규 insert의 서버 응답이 유실된
  * 뒤 재시도해도 진짜로 수렴하게 하는 idempotency 조회. "같은 차량 + 같은 시작일 +
  * 같은 초대코드"로 이미 pending 행이 있으면, 그건 방금 응답만 못 받은 내 이전
  * 시도가 실제로는 성공했다는 뜻이다 — 다시 insert하는 대신 그 행을 그대로 쓴다.
  *
- * 4차 재작업 정정: 조회 자체가 실패하면(네트워크 등) "없다"로 삼키고 insert로
+ * 조회 자체가 실패하면(네트워크 등) "없다"로 삼키고 insert로
  * 넘어가면 안 된다 — 실제로는 있는데 조회만 실패한 경우 중복 insert로 이어질 수
  * 있다. 이제는 그대로 던져 retryable 실패로 처리되게 한다(outboxFlush.js가 이걸
  * outbox에 남겨 다음 flush가 다시 조회부터 시도하게 한다).
  *
- * 알려진 한계(마이그레이션 필요, 이번 라운드에서 적용하지 않음): 이 자연키(vehicle_id
+ * 알려진 한계(DB 변경 필요): 이 자연키(vehicle_id
  * + assignment_start + invite_code) 조회는 "응답 유실"과 "그 사이 invite_code가
  * 23505 충돌로 재발급됨"이 동시에 일어나면 같은 시도를 못 알아본다 — 재발급된
  * 코드는 이 outbox op의 payload에 없기 때문이다. 완전히 닫으려면 driver_links에
@@ -182,7 +173,7 @@ export async function updateDriverLinkStatusOnSupabase(supabaseId, status, captu
 }
 
 /**
- * 슬라이스 B 보완(2026-09-01): 0행 삭제(이미 없음/RLS로 안 보임)를 성공으로 치면
+ * 0행 삭제(이미 없음/RLS로 안 보임)를 성공으로 치면
  * Store만 비고 서버 행이 남아 hydrate가 다시 그린다. .select()로 실제로 지워진 행을
  * 받아 0행이면 throw — 호출부가 Fail-Fast 토스트를 띄우고 로컬을 건드리지 않는다.
  * @param {number|string|null|undefined} supabaseId

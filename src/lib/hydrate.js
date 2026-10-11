@@ -1,7 +1,5 @@
 // @ts-check
-// Step 0-4 감사 보완 4차: cloudSync.js 분리 조각 — hydrate 전체. all-or-nothing 조회
-// 판정(2차) + dirty journal 재적용(2차) + single-flight/세대 보호(2차, cloudSession.js로
-// 이전) + outbox tombstone/pending 재적용(4차, 신규)까지 전부 여기서 합친다.
+// hydrate 전체 — 조회 전부 성공 판정, dirty journal 재적용, single-flight/세대 보호, outbox tombstone·pending 재적용.
 import { supabase } from '../supabaseClient.js'
 import { getState, setHydration } from '../store/app-store.js'
 import { replaceOwnerState } from '../store/owner-state.js'
@@ -125,8 +123,8 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     const localDrivers = getState().drivers[ownerKey] || []
     nextDrivers = reconcileDrivers(ownerKey, mergeDriversFromRows(localDrivers, nextCars, linksRes.data || []), localDrivers)
 
-    // Step 9 슬라이스 A: supabaseId 있는 전 차량(main+기사) daily_logs/transport 병합.
-    // 메인 tombstone만 적용(서브는 Fail-Fast라 tombstone 미사용 — 착수지시 확인 1·2).
+    // supabaseId 있는 전 차량(main+기사) daily_logs/transport 병합.
+    // tombstone은 메인만 적용(서브는 서버 직접 저장이라 tombstone을 쓰지 않는다).
     const mainTombstoneKeys = Object.keys(readOwnerWorkDataTombstones(ownerKey))
     const { workLogs, mainCar } = await mergeVehicleDayLogsFromServer({
       cars: nextCars,

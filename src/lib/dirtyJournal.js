@@ -1,10 +1,6 @@
 // @ts-check
 
-// Step 0-4 감사 보완 2차: pendingWhileBlocked(boolean, 메모리 전용)를 owner별·슬라이스별
-// durable journal로 교체한다. localStorage에 저장하므로 새로고침해도 "이 owner의 이
-// 슬라이스는 아직 서버에 못 보낸 로컬 변경이 있다"는 사실이 안 지워진다. revision은
-// commit할 때마다 올라가는 카운터 — 지금은 "0보다 크면 dirty"로만 쓰지만, 나중에
-// 낙관적 동시성/충돌 감지에도 쓸 수 있게 값 자체를 남겨 둔다.
+// owner별·도메인별 dirty journal(localStorage) — 새로고침해도 "아직 서버에 못 보낸 변경"이 남는다. revision은 commit마다 오르는 카운터.
 
 const JOURNAL_PREFIX = 'reactPracticeDirtyJournal'
 
@@ -59,12 +55,7 @@ export function markDirty(ownerKey, domain) {
 }
 
 /**
- * Step 0-4 감사 보완 3차: commitBatch가 도메인 값 쓰기와 저널 쓰기를 하나의
- * writeAllOrNothing 호출로 묶을 수 있도록, "다음 저널 값"만 메모리에서 계산해
- * { key, value } 쌍으로 돌려준다 — 여기서는 아무것도 쓰지 않는다. 이전엔 markDirty가
- * 도메인 값 쓰기와 별도로 자기 localStorage.setItem을 호출해서, 그 호출이 도중에
- * 실패하면(용량 초과 등) 도메인은 이미 새 값으로 남았는데 저널은 갱신 안 된(혹은 그
- * 반대) 불일치가 생길 수 있었다.
+ * commitBatch가 도메인 값과 저널을 한 번의 writeAllOrNothing으로 묶도록, 다음 저널 값만 계산해 { key, value }로 돌려준다(여기서는 쓰지 않는다).
  * @param {string} ownerKey
  * @param {Array<string>} domains 이번 배치에서 dirty로 표시할 domain들(중복 가능)
  * @returns {{ key: string, value: Record<string, number> }}

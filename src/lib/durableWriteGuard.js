@@ -1,9 +1,6 @@
 // @ts-check
-// 재감사 4차(FAIL 지적 2번) — 이전 버전은 전역 boolean 하나라 owner A의 fallback이
-// 남은 동안 owner B 성공이 전체를 healthy로 만들었다. 지금은 pending의 fallback과
-// unsafe 맵을 owner/date 키로 본다.
-// 재감사 16차 — unsafe는 invalid dateKey/patch(register false)만 들어가며, 자동
-// promote/retry 대상이 아니다. beforeunload·화면 이동 방어와 재진입 overlay용.
+// pending의 fallback·unsafe를 owner/date 키로 본다(owner 하나 성공이 전체를 정상으로 만들지 않게).
+// unsafe는 잘못된 dateKey/patch라 자동 재시도 대상이 아니고, 화면 이동 경고와 다시 들어올 때 덮어 보여 주기용이다.
 import { hasUnsafePendingWrites } from './pendingWorkDataWrites.js'
 import { pulsePendingRetry } from './pendingRetryPulse.js'
 

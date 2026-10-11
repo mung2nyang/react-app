@@ -1,5 +1,5 @@
 // @ts-check
-// Step 9 slice A: hydrate merges daily_logs per vehicle into logId maps.
+// hydrate가 차량별 daily_logs를 logId 맵으로 합친다.
 import { findMainCar, mergeWorkDataFromRows } from './hydrateMerge.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */

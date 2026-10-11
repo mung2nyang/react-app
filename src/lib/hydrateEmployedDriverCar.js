@@ -1,5 +1,5 @@
 // @ts-check
-// hydrateEmployedDriver.js에서 분리(200줄 제한, 로드맵 4-2 슬라이스 2 부수 조치).
+// hydrateEmployedDriver.js에서 분리.
 // 서버 RPC 행 → 화면용 차량 정보로 바꾸는 순수 변환만 담는다(네트워크 호출 없음).
 import { driverIncomeFieldsFromDraft } from '../domain/driverIncomeDeductions.js'
 

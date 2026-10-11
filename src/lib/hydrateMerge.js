@@ -1,9 +1,6 @@
 // @ts-check
 import { dedupeExpensesById } from '../domain/expenses.js'
-// Step 0-4 감사 보완 2차: hydrateFromSupabase가 쓰는 순수 병합 함수들 — "조회 → 검증 →
-// 병합(여기) → 커밋"의 병합 단계만 담당하고, localStorage/store 쓰기는 전혀 하지
-// 않는다(호출부인 cloudSync.js가 전부 성공적으로 병합된 뒤에만 한 번에 커밋한다).
-// 타입 선언은 hydrateMergeTypes.js가 정본이다(200줄 제한 때문에 타입만 뺐다).
+// hydrateFromSupabase의 순수 병합 함수(조회 → 검증 → 병합 → 커밋 중 병합만). localStorage/store는 쓰지 않는다. 타입 정본은 hydrateMergeTypes.js.
 /**
  * @typedef {import('./hydrateMergeTypes.js').SupabaseQueryError} SupabaseQueryError
  * @typedef {import('./hydrateMergeTypes.js').HydrateError} HydrateError
@@ -62,13 +59,8 @@ export { mergeClientsFromRows } from './hydrateMergeClients.js'
 export { mergeWorkDataFromRows } from './hydrateMergeWork.js'
 
 /**
- * Step 7 후속(재감사) — 예전엔 `...local`(로컬 Store의 기존 드라이버 객체)을 통째로
- * 스프레드했다. Store 드라이버는 이미 DRIVER_KEYS로 정규화돼 있는 게 보통이지만,
- * 스프레드는 "혹시 남아있을 정본 밖 필드"까지 그대로 들여와 다음 initialize에서
- * drivers 도메인 전체를 스키마 실패로 만들 수 있었다 — 이제 DRIVER_KEYS 9개 필드만
- * 명시적으로 채운다. `id: local.id || row.id`도 함께 고쳤다: row.id는 Supabase
- * bigint(number)일 수 있는데 isPersistedDriver는 id를 string으로 요구한다 —
- * local.id가 없으면 String(row.id)로 문자열화한다.
+ * DRIVER_KEYS 9개 필드만 명시적으로 채운다 — 로컬 객체를 통째로 펼치면 정본 밖 필드가 섞여 다음 initialize에서 drivers 전체가 스키마 실패한다.
+ * row.id(숫자일 수 있음)는 String으로 바꾼다(isPersistedDriver는 문자열 id 요구).
  * @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars
  * @param {Array<DriverLinkRow>|null|undefined} linkRows 조회 실패 시 배열이 아닐 수 있다
  * @returns {Array<import('./outboxTypes.js').DriverRecord>} 조회 실패 시엔 이미 정규화된 로컬 목록을 그대로 통과시킨다
@@ -93,7 +85,7 @@ export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
       unlinkRequestedAt: row.unlink_requested_at || '',
     }
   })
-  // 슬라이스 B 보완(2026-09-01): linkRows가 배열이면(빈 배열 포함) 서버가 정본이다.
+  // linkRows가 배열이면(빈 배열 포함) 서버가 정본이다.
   // merged가 비었다는 건 "서버에 활성 기사 연동이 없다"는 뜻 — 로컬 스냅샷으로
   // 되돌리면 방금 삭제한 기사가 hydrate ~0.6초 뒤 부활한다. localDrivers fallback은
   // linkRows가 배열이 아닐 때(위 early return)만. 서버에 아직 없는 pending 생성 건은

@@ -1,8 +1,5 @@
 // @ts-check
-// Step 7 후속(재감사) — mergeCarsFromRows와 같은 이유(hydrateMergeCars.js 상단 주석
-// 참고)로 hydrateMerge.js에서 뺐다: `...raw` 스프레드가 정본 밖 필드/타입을 그대로
-// 들여오면 다음 initialize에서 clients 도메인 전체가 스키마 실패로 사라진다. 여기서도
-// CLIENT_KEYS(store/persistDomainRecords.js)에 있는 필드만 정본 타입으로 정규화한다.
+// CLIENT_KEYS에 있는 필드만 정본 타입으로 정규화한다(이유는 hydrateMergeCars.js 상단과 같다).
 import { COMM_TYPES, PAYMENT_TERM_VALUES, isAllowedEnum } from '../store/persistDomainEnums.js'
 import { isStringOrFiniteNumber } from '../store/persistDomainRecords.js'
 
@@ -27,7 +24,7 @@ function numericOrEmpty(value) {
 
 /** @param {Array<LocalClient>} localClients @param {Array<ClientRow>|null|undefined} clientRows */
 export function mergeClientsFromRows(localClients, clientRows) {
-  // 슬라이스 C(2026-09-01): clientRows가 배열이면(빈 배열 포함) 서버가 정본이다.
+  // clientRows가 배열이면(빈 배열 포함) 서버가 정본이다.
   // 빈 배열을 로컬로 되돌리면 방금 삭제한 거래처가 hydrate 뒤 부활한다. fallback은
   // 조회 실패로 배열이 아닐 때만. 빈 배열은 map을 통과해 []가 되고 미동기화 로컬만 덧붙는다.
   if (!Array.isArray(clientRows)) return Array.isArray(localClients) ? localClients : []

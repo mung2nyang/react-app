@@ -19,7 +19,7 @@ import {
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 
 /**
- * 재감사 9차 — durable/fallback/callback을 건드리기 전에 dateKey/patch를 readDurable과
+ * durable/fallback/callback을 건드리기 전에 dateKey/patch를 readDurable과
  * 같은 정본 검증기로 확인한다. 잘못됐으면 아무 것도 안 건드리고 `false`를 돌려준다.
  * @param {string} ownerKey
  * @param {string} dateKey
@@ -51,7 +51,7 @@ export function registerPendingDayWrite(ownerKey, dateKey, patch, onSettled) {
 
 /**
  * store 커밋이 이미 성공한 뒤 이 함수가 durable 큐에서 그 항목을 정리한다. durable을
- * 못 읽거나(재감사 6차) 지우는 쓰기가 실패하면(재감사 5차) fallback을 지우는 대신
+ * 못 읽거나 지우는 쓰기가 실패하면 fallback을 지우는 대신
  * effectivePatch로 다시 채운다 — "fallback이 durable을 덮어쓴다" 규칙 덕분에 다음
  * 조회/재시도가 stale 값이 아니라 이 값을 본다. callback은 반환값을 본 호출부가
  * "논리적 pending이 실제로 정리됐을 때만" 부른다.
@@ -111,7 +111,7 @@ export function hasUnsafePendingWrites() {
   return ownerEnumerationFailed || unreadableOwners.size > 0
 }
 
-// 읽지 못한 owner가 있거나(재감사 6차) owner 열거 자체가 실패했으면(재감사 7차)
+// 읽지 못한 owner가 있거나 owner 열거 자체가 실패했으면
 // entries가 0이어도 "pending 없음"으로 거짓 판정하지 않는다.
 export function hasPendingDayWrites() {
   const { entries, unreadableOwners, ownerEnumerationFailed } = computeEffectivePendingEntries()
@@ -142,7 +142,7 @@ export function retryPendingDayWrites() {
 
   entries.forEach(({ ownerKey, dateKey, patch }) => {
     // 이 owner의 durable을 못 읽었으면 fallback도 이번엔 통째로 건너뛴다(부분 커밋
-    // 금지, 재감사 8차). 읽기가 복구되면 다음 호출에서 자연히 다시 포함된다.
+    // 금지). 읽기가 복구되면 다음 호출에서 자연히 다시 포함된다.
     if (unreadableOwners.has(ownerKey)) return
     try {
       const parsed = parsePendingOwner(ownerKey)
