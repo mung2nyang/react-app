@@ -151,15 +151,22 @@
   z-index: 95;
   right: max(20px, calc((100vw - 480px) / 2 + 20px));
   bottom: 88px;
-  min-height: 44px;
-  padding: 8px 13px;
-  border: 1px solid var(--border-color);
-  border-radius: 999px;
-  background: var(--input-bg);
-  color: var(--sub-text-color);
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  /* 글자("+ 추가")는 화면 읽기용으로만 두고 눈에는 큰 + 만 그린다 */
+  background:
+    linear-gradient(#fff, #fff) center / 22px 3px no-repeat,
+    linear-gradient(#fff, #fff) center / 3px 22px no-repeat,
+    var(--primary-fill);
+  color: transparent;
   box-shadow: var(--shadow-md);
-  font: inherit;
-  font-size: var(--fs-2);
-  font-weight: 800;
+  font-size: 0;
   cursor: pointer;
+}
+
+.management-add-fab:active {
+  transform: scale(0.94);
 }
