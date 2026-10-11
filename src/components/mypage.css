@@ -82,10 +82,15 @@
 
 .mypage-shortcut-section {
   margin-top: 12px;
+  padding: 16px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-sm);
 }
 
 .mypage-section-heading {
-  margin-bottom: 12px;
+  margin: 0 8px 12px;
 }
 
 .mypage-section-heading h3,
@@ -108,7 +113,7 @@
 .mypage-shortcut-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 4px;
 }
 
 /* 아이콘 위·이름 아래, 배경 카드 없음 */
@@ -118,7 +123,7 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  padding: 8px 4px;
+  padding: 8px 0;
   border: 0;
   background: transparent;
   color: var(--text-color);
@@ -131,16 +136,7 @@
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  /* 라이트: 회색 바탕에 묻혀서 흰 카드 모양으로 */
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  box-shadow: var(--shadow-sm);
-}
-
-[data-theme="dark"] .mypage-shortcut-icon {
-  border-color: transparent;
   background: var(--hover-bg);
-  box-shadow: none;
 }
 
 .mypage-shortcut-icon svg {
