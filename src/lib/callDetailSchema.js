@@ -66,16 +66,8 @@ function isValidCommissionSnapshot(value) {
 }
 
 /**
- * 재감사 10차(FAIL 지적 1번, P0) — 9차는 payments.js(addPartialPayment 등)가 "새로"
- * 만드는 값만 보고 id/amount를 필수·amount를 숫자 전용으로 강제했다. 하지만
- * domain/callDetail.js의 Payment 타입(`{ id?: string, amount?: string|number,
- * paidAt?: string, note?: string }`, 전부 optional)과 financeCore.js의
- * `getDetailPaymentSummary`(`parseCurrencyValue(payment.amount)` — 통화 문자열도
- * 그대로 받는다)가 실제로 보존·계산하는 값은 훨씬 넓다 — id가 아예 없는 레거시
- * payment(day-record.js/backfillCallDetailIds는 콜상세 자신의 id만 채우지, 중첩된
- * payments[] 항목의 id는 손대지 않는다), amount가 통화 문자열(`"1,000"`)인 값 전부
- * 실제로 존재하고 정상 작동한다. 이 검증기는 도메인 타입 그대로 전부 optional로
- * 되돌린다 — 있는 필드만 타입을 검사하고, 없는 필드는 통과시킨다.
+ * payments[] 항목은 도메인 타입(callDetail.js)대로 전부 선택 필드 — id 없는 옛 항목·금액이 통화 글자("1,000")인 값도 실제로 있고 정상 계산된다.
+ * 있는 필드만 타입을 검사하고, 없는 필드는 통과시킨다.
  * @param {JsonValue} value @returns {boolean}
  */
 function isValidPayment(value) {

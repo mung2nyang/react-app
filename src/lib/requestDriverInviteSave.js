@@ -1,16 +1,7 @@
 // @ts-check
-// 슬라이스 A (보리 승인, 2026-08-31 / 2026-09-01 보완): 로그인 사용자의 기사 초대
-// 생성/수정(차량·기간이 있어 서버에 올려야 하는 경우)을 mutation outbox / durable /
-// fallback / 재시도 큐에 넣지 않고 upsert_driver_link_idempotent RPC를 클라이언트가
-// 직접 1회 호출한다. 성공하면 Store의 drivers를 갱신하고, 실패하면 지정 토스트만
-// 띄우고 즉시 중단한다(Fail-Fast). 게스트/불완전 입력은 로컬만 저장한다.
-//
-// 기간 겹침 서버 조회는 보리 지시로 제거했다 — "같은 차량번호 1명" 규칙은
-// domain/drivers.js upsertDriver가 저장 전에 본다(페이지에서 먼저 호출).
-//
-// 세션 무효화(AGENTS §9): RPC를 시작하기 전에 세션을 캡처하고, 각 await 직후와
-// Store 반영 직전에 재검증한다 — 그 사이 로그아웃/owner 전환이 있었으면 로컬/원격
-// 부작용을 남기지 않고 조용히 중단한다.
+// 로그인 사용자의 기사 초대 생성·수정을 outbox·재시도 큐 없이 upsert_driver_link_idempotent RPC 1회로 저장한다 — 성공하면 Store 갱신,
+// 실패하면 토스트만 띄우고 중단. 게스트·불완전 입력은 로컬만. 같은 차량번호 1명 규칙은 upsertDriver가 저장 전에 본다.
+// 세션은 RPC 전에 캡처하고 각 await 직후·Store 반영 직전에 재검증한다 — 바뀌었으면 부작용 없이 조용히 중단.
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('./outboxTypes.js').CarRecord} CarRecord */
 /** @typedef {import('./outboxTypes.js').DriverLinkRow} DriverLinkRow */
@@ -51,7 +42,7 @@ export async function requestDriverInviteSave({ ownerKey, items, editingId, cars
   const driver = items[idx]
 
   if (!driver?.vehicleNumber || !driver.startDate) {
-    // 사용자 지시 2번: 차량/기간이 아직 안 정해졌으면 클라우드 시도만 건너뛰고
+    // 차량/기간이 아직 안 정해졌으면 클라우드 시도만 건너뛰고
     // 로컬 편집은 게스트와 동일하게 저장한다(게스트 JSON 백업과 충돌하지 않는다).
     const successToast = editingId ? '초대를 수정했습니다.' : '초대를 저장했습니다.'
     const { value, toast, failed } = commitLocalOnly({ domain: 'drivers', ownerKey, value: items, successToast })

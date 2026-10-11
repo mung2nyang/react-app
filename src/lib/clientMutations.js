@@ -1,9 +1,8 @@
 // @ts-check
-// Step 7: 거래처 추가/수정/순서 변경. readiness 전에 Store/localStorage를 바꾸지 않는다.
+// 거래처 추가/수정/순서 변경. readiness 전에 Store/localStorage를 바꾸지 않는다.
 // 거래처 단일 진실원: 단가·세무정보 부분 수정도 이 파일의 request*만 쓴다(saveClients 우회 금지).
 //
-// 슬라이스 E Phase 1: 로그인(getCloudOwnerKey()===ownerKey)이면 LS·dirty·syncAll 없이
-// 서버 직접 1회(바뀐 행만) 후 Store(메모리)만. 게스트는 예전과 100% 동일(commitOrToast).
+// 로그인이면 서버 직접 1회(바뀐 행만) 후 Store(메모리)만 바꾼다. 게스트는 commitOrToast로 로컬 저장.
 import {
   reorderClients,
   updateClientFixedUnitPrice,
@@ -72,7 +71,7 @@ export async function requestClientSave({ ownerKey, clients, draft, editingId, u
   const okToast = editingId ? '거래처를 수정했습니다.' : '거래처를 등록했습니다.'
   const savedFrom = (/** @type {Array<ClientLike>} */ list) => list.find((item) => item.id === result.id) || null
   if (isCloudClientOwner(ownerKey)) {
-    // 1곳 규칙으로 자동 해제된 거래처도 서버에 함께 저장해야 새로고침 때 되살아나지 않는다(로드맵 6).
+    // 1곳 규칙으로 자동 해제된 거래처도 서버에 함께 저장해야 새로고침 때 되살아나지 않는다.
     const changedIds = result.id ? [result.id, ...unlinkedFixedRouteIds(clients, result.clients, result.id)] : []
     const out = await saveClientsToCloud({
       ownerKey, userId, previous: clients, next: result.clients, changedIds, okToast,

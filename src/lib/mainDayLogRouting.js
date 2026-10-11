@@ -1,7 +1,5 @@
 // @ts-check
-// 슬라이스 D(2026-09-01): "이 일지 저장이 클라우드 Fail-Fast 경로인가"를 한 곳에서
-// 판정한다. useDayDraft / dayLogCloudCommit / pendingWriteRetryListeners가 공유한다.
-// Step 9 슬라이스 A(2026-09-03): main 전용 → logId(메인·기사 차량번호)로 일반화.
+// "이 일지 저장이 클라우드 직접 저장 경로인가"를 logId(메인·기사 차량번호)별로 한 곳에서 판정한다(useDayDraft·dayLogCloudCommit·pendingWriteRetryListeners 공유).
 // 무거운 supabase 실행기를 끌어오지 않도록 app-store·cloudSession만 의존한다.
 import { getState } from '../store/app-store.js'
 import { getCloudUserId } from './cloudSession.js'

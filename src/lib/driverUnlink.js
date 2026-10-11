@@ -1,5 +1,5 @@
 // @ts-check
-// 로드맵 7-C: 연동 해제는 양쪽 동의 또는 요청 후 3일 — 서버 함수만 호출하고, 성공했을 때만 기사 목록(store)을 갱신한다.
+// 연동 해제는 양쪽 동의 또는 요청 후 3일 — 서버 함수만 호출하고, 성공했을 때만 기사 목록(store)을 갱신한다.
 import { supabase } from '../supabaseClient.js'
 import { assertSessionStillCurrent, blockedReasonForCloudWrite, captureSession } from './cloudSession.js'
 import { StaleSessionError } from './outboxErrors.js'

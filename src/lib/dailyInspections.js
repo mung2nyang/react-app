@@ -1,6 +1,6 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// 로드맵 9-B-2: 일상점검표 서버 읽기·저장(9-A 표 daily_inspections, 차량+날짜 1장). 로컬 보관·재시도 큐 없음 — 일지를 열 때 읽고 저장은 바로 서버.
+// 일상점검표 서버 읽기·저장(daily_inspections 표, 차량+날짜 1장). 로컬 보관·재시도 큐 없음 — 일지를 열 때 읽고 저장은 바로 서버.
 import { supabase } from '../supabaseClient.js'
 import { sanitizeInspectionItems } from '../domain/dailyInspectionItems.js'
 import { assertSessionStillCurrent, blockedReasonForCloudWrite, captureSession, getCloudUserId } from './cloudSession.js'
@@ -105,7 +105,7 @@ export async function fetchVehiclesDailyInspections(vehicleIds) {
 }
 
 /**
- * 탭 숨김 판단(9-C-1, 로드맵 9번 ⑨): 그 차량 점검표가 1장이라도 있는지.
+ * 탭 숨김 판단: 그 차량 점검표가 1장이라도 있는지.
  * @param {string|number} vehicleId
  */
 export async function hasAnyDailyInspection(vehicleId) {

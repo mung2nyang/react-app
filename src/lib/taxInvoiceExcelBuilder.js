@@ -1,6 +1,6 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// 원본 finance.js:525-697 세금계산서 엑셀 양식 — 셀 주소·병합이 한 덩어라 §6 응집도 우선(~250+ 허용).
+// 세금계산서 엑셀 양식 — 셀 주소·병합이 한 덩어리라 §6 응집도 우선(~250+ 허용).
 import { getTaxInvoiceFlowMeta, getTaxInvoiceSupplierBiz } from '../domain/financeTaxInvoiceEntries.js'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */

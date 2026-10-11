@@ -1,5 +1,5 @@
 // @ts-check
-// 슬라이스 C(2026-09-01): 로그인 사용자의 차량 삭제를 mutation outbox / tombstone /
+// 로그인 사용자의 차량 삭제를 mutation outbox / tombstone /
 // 재시도 큐 없이 deleteVehicleFromSupabase 직접 1회로 끝낸다(Fail-Fast). 성공했을
 // 때만 Store(cars + 서브 일지 키)를 원자적으로 반영하고, 실패하면 로컬을 건드리지
 // 않고 지정 토스트만 띄운다. supabaseId 없는 로컬 전용 차량은 예전처럼 commitLocalOnly.

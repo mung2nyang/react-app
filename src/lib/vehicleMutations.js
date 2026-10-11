@@ -1,5 +1,5 @@
 // @ts-check
-// Step 7: 차량 추가/수정 + 서브 번호 변경 시 로컬 일지 키·pending 큐 이동.
+// 차량 추가/수정 + 서브 번호 변경 시 로컬 일지 키·pending 큐 이동.
 import { upsertCar } from '../domain/cars.js'
 import { applyBusinessForm } from '../domain/carBusinessInfo.js'
 import {

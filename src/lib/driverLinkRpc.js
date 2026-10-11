@@ -1,10 +1,6 @@
 // @ts-check
-// 슬라이스 A (보리 승인, 2026-08-31 / 2026-09-01 보완): 로그인 사용자의 기사 초대
-// 저장을 mutation outbox / durable / 재시도 큐 없이 upsert_driver_link_idempotent
-// RPC 1회로 끝낸다. 이 파일은 그 RPC 호출과, RPC no-op update로는 못 바꾸는 기존
-// 서버 행의 필드 보정 update만 담는다. 기간 겹침 조회는 보리 지시로 제거했다
-// (같은 차량번호 1명 규칙은 domain/drivers.js upsertDriver가 저장 전에 본다).
-// requestDriverInviteSave.js가 유일한 호출부다.
+// 로그인 사용자의 기사 초대 저장을 upsert_driver_link_idempotent RPC 1회로 끝낸다(outbox·재시도 큐 없음) — 그 RPC 호출과,
+// RPC no-op update로는 못 바꾸는 기존 행 필드 보정만 담는다. 같은 차량번호 1명 규칙은 domain/drivers.js upsertDriver가 저장 전에 본다.
 /** @typedef {import('./outboxTypes.js').DriverLinkRow} DriverLinkRow */
 import { supabase } from '../supabaseClient.js'
 import { assertCloudWriteReady } from './cloudSession.js'
@@ -96,7 +92,7 @@ export async function redeemDriverInviteCode(inviteCode) {
 
 /**
  * 로그인 사용자가 이미 linked인 driver_links 행(자기 행만 — RLS). 확인 실패와 "연동 없음"을 구별한다
- * (로드맵 19: 실패를 "없음"으로 보면 기사가 차주 칸 대신 본인 칸으로 들어감).
+ * (실패를 "없음"으로 보면 기사가 차주 칸 대신 본인 칸으로 들어감).
  * @param {string} userId
  * @returns {Promise<{ ok: true, link: DriverLinkRow|null } | { ok: false }>}
  */

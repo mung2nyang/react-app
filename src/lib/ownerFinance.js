@@ -1,6 +1,4 @@
 // @ts-check
-// 재감사 3차(FAIL 지적 4번) — 이번 diff가 건드린 프로덕션 JS 전체를 활성 typecheck
-// 대상으로 만들라는 지시로 @ts-check를 붙였다.
 import { getReceivableItems } from './finance.js'
 import { markReceivableItemPaid, saveWorkData } from './workData.js'
 import { resolveFixedUnitPrice } from '../domain/clients.js'

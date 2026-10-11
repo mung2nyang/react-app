@@ -93,7 +93,7 @@ export function applyGuestBackupData(parsed) {
     return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
   }
 
-  // 중첩 구조 및 타입 런타임 검증 (AGENTS §6)
+  // 중첩 구조 및 타입 런타임 검증
   const arrayDomains = ['cars', 'clients', 'drivers', 'expenses', 'invoices']
   for (const domain of arrayDomains) {
     if (domain in record) {
