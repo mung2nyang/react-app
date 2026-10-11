@@ -150,14 +150,13 @@ export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMont
           </button>
         </div>
         {issuerReady && <p className="tax-invoice-issuer-line">{`${settings.bizName} · ${settings.bizNumber} · ${flowMeta.label}`}</p>}
+        {!issuerReady && (
+          <div className="tax-invoice-guide">
+            <p className="tax-invoice-guide-title">세금계산서를 발급받으려면 사업자 정보 입력이 필요합니다.</p>
+            <p className="tax-invoice-guide-desc">마이페이지 → 개인정보에서 사업자 정보를 등록해 주세요.</p>
+          </div>
+        )}
       </div>
-
-      {!issuerReady && (
-        <div className="tax-invoice-guide">
-          <p className="tax-invoice-guide-title">세금계산서를 발급받으려면 사업자 정보 입력이 필요합니다.</p>
-          <p className="tax-invoice-guide-desc">마이페이지 → 개인정보에서 사업자 정보를 등록해 주세요.</p>
-        </div>
-      )}
 
       <div className="summary-card">
         <SummaryInfoToggle

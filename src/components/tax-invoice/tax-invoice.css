@@ -37,11 +37,9 @@
   color: var(--text-color);
 }
 
+/* 위 카드 안, [작성 전][발급 완료] 아래 사업자 정보 안내 두 줄 */
 .tax-invoice-guide {
-  margin: 0 0 12px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: var(--input-bg);
+  margin: 14px 2px 0;
   color: var(--sub-text-color);
   font-size: var(--fs-2);
 }
