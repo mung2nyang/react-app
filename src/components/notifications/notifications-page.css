@@ -54,6 +54,16 @@
   border-top: 1px solid var(--border-color);
 }
 
+/* 알림이 없을 때는 위쪽 선·카드 모양 없이 문구만 */
+.notif-list:has(> .empty-state) {
+  border-top: 0;
+}
+
+.notif-list .empty-state {
+  border: 0;
+  background: transparent;
+}
+
 .notif-item {
   display: flex;
   align-items: flex-start;
