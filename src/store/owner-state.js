@@ -94,8 +94,7 @@ export function initializeOwnerFromPersist(ownerKey) {
  */
 
 /**
- * owner 전체 슬라이스를 스냅샷으로 원자적으로 교체한다(cloudSync.js의
- * collectPracticeSnapshot과 같은 모양). 각 필드는 있을 때만 반영 — 부분 스냅샷도
+ * owner 전체 상태를 스냅샷으로 원자적으로 교체한다. 각 필드는 있을 때만 반영 — 부분 스냅샷도
  * 안전하다. commitBatch 한 번으로 localStorage 쓰기 + state 갱신 + notify(1회)가 전부
  * 끝난다 — 중간에 구독자가 절반만 반영된 snapshot을 볼 일이 없다.
  * @param {string} ownerKey

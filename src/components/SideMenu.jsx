@@ -11,7 +11,7 @@ export function sideMenuBannerSrc() {
   return document.documentElement.getAttribute('data-theme') === 'dark' ? BANNER_DARK : BANNER_LIGHT
 }
 
-/** 메뉴를 처음 열 때 그림 칸이 비지 않게 앱이 뜬 뒤 미리 받아 둔다(로드맵 15번). */
+/** 메뉴를 처음 열 때 그림 칸이 비지 않게 앱이 뜬 뒤 미리 받아 둔다. */
 export function preloadSideMenuBanner() {
   const img = document.createElement('img')
   img.src = sideMenuBannerSrc()

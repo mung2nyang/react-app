@@ -4,7 +4,7 @@ import { formatInviteCode, generateInviteCode } from '../../lib/drivers.js'
 import '../drivers/driver-connection.css'
 
 /**
- * Sub-car "기사 연동 / 운행일지" panel (slice F mockup).
+ * 서브차량 "기사 연동 / 운행일지" 패널.
  * @param {Object} props
  * @param {'link'|'log'} props.tab
  * @param {(tab: 'link'|'log') => void} props.onTab

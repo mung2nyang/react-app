@@ -6,7 +6,7 @@
 // 소속기사 일지 키: UI·일일운행은 workLogs.main 만 쓴다. mergeVehicleDayLogsFromServer
 // 는 sub 차량을 번호판 키로 넣으므로, 여기서 main 으로 재매핑한다.
 // TODO(multi-vehicle): 배정 차량 2대+ 이면 현재는 cars[0]만 main·expenses 에 쓰고
-// 나머지는 버린다(나중 슬라이스에서 다중 배정 UI·집계와 함께 처리).
+// 나머지는 버린다(다중 배정 화면·집계를 만들 때 함께 처리).
 import { expenseFromFuelRecord, replaceFuelExpenses } from '../domain/fuelRecords.js'
 import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/maintenanceRecords.js'
 import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpenseRecords.js'

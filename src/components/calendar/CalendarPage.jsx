@@ -40,7 +40,7 @@ export default function CalendarPage({
     ownerKey, logId, clientScopeKey, year, month,
   })
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
-  // 서브차량 실거리: react-app에 subDistanceOn 설정이 없어 이번 슬라이스는 메인만.
+  // 서브차량 실거리: subDistanceOn 설정이 없어 메인만.
   const distanceOn = isMain && !!settings.distanceOn
 
   const cells = useMemo(() => buildCalendarCells(viewDate), [viewDate])

@@ -36,7 +36,7 @@ function rateOf(/** @type {string|number|null|undefined} */ value, /** @type {st
 }
 
 /**
- * 기사차량 폼 draft → 저장 필드(이 슬라이스의 새 필드 4개 + 기존 insuranceOn).
+ * 기사차량 폼 draft → 저장 필드(새 필드 4개 + 기존 insuranceOn).
  * @param {DriverIncomeDraft} draft
  * @returns {DriverIncomeFields}
  */
