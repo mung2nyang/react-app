@@ -74,30 +74,40 @@
 }
 
 .revenue-scope-tabs {
+  position: relative;
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
+  gap: 4px;
+  margin-top: 25px;
+  padding: 3px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--border-color) 55%, transparent);
+}
+
+/* 서류 발급 탭처럼 회색 막대 바깥(위 12px)에 가로줄 */
+.revenue-scope-tabs::before {
+  content: '';
+  position: absolute;
+  inset: -13px 0 auto;
   border-top: 1px solid var(--border-color);
 }
 
 .revenue-scope-tab {
   flex: 1;
-  border: 1px solid var(--border-color);
-  background-color: var(--input-bg);
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
   color: var(--sub-text-color);
-  border-radius: 10px;
-  padding: 10px 6px;
   font: inherit;
-  font-size: var(--fs-2);
+  font-size: var(--fs-floor);
   font-weight: 700;
   cursor: pointer;
 }
 
 .revenue-scope-tab.active {
-  background-color: var(--primary-fill);
-  border-color: var(--primary-fill);
-  color: #ffffff;
+  background: var(--primary-fill);
+  color: #fff;
 }
 
 .revenue-driver-select {
