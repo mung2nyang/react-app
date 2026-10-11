@@ -1014,16 +1014,16 @@ test('새 홈 1단계 — 운행 탭은 달력, 홈 [운행 기록하기] → �
     assert.equal(container.querySelector('.calendar-grid'), null, '홈에는 달력이 없어야 한다')
     assert.deepEqual(
       Array.from(container.querySelectorAll('.bottom-nav-bar .nav-item')).map((btn) => btn.textContent.trim()),
-      ['홈', '운행', '매출', '마이페이지'],
+      ['홈', '달력', '매출', '마이페이지'],
     )
     assert.ok(navButton('홈')?.classList.contains('active'), '홈에서는 홈 탭이 켜져야 한다')
 
     await act(async () => {
-      navButton('운행')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
+      navButton('달력')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
     })
     await waitUntil(() => window.location.pathname === '/app/calendar')
     await waitUntil(() => !!container.querySelector('.calendar-grid'))
-    assert.ok(navButton('운행')?.classList.contains('active'), '달력에서는 운행 탭이 켜져야 한다')
+    assert.ok(navButton('달력')?.classList.contains('active'), '달력에서는 달력 탭이 켜져야 한다')
 
     await act(async () => {
       navButton('홈')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true }))
@@ -1034,7 +1034,7 @@ test('새 홈 1단계 — 운행 탭은 달력, 홈 [운행 기록하기] → �
     })
     await waitUntil(() => window.location.pathname === `/app/day/${dateKey}`)
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
-    assert.ok(navButton('운행')?.classList.contains('active'), '일지에서는 운행 탭이 켜져야 한다')
+    assert.ok(navButton('달력')?.classList.contains('active'), '일지에서는 달력 탭이 켜져야 한다')
 
     const backButton = Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '뒤로가기')
     assert.ok(backButton, '홈에서 연 일지에는 뒤로가기가 있어야 한다')

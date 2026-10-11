@@ -49,7 +49,6 @@
 .skeleton-heading { width: 28%; height: 16px; margin: 14px 0 15px; }
 .skeleton-shortcuts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .skeleton-shortcut { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px; box-sizing: border-box; }
-.skeleton-shortcut:nth-child(-n + 4) { min-height: 101px; } /* 첫 줄은 "미수금/정산 관리"가 두 줄이라 더 높다 */
 .skeleton-label { width: 70%; height: 12px; margin: 2px 0; }
 .skeleton-list { margin-top: 16px; }
 .skeleton-list-row { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 4px; box-sizing: border-box; }

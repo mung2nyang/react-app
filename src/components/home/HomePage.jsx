@@ -1,5 +1,5 @@
 // @ts-check
-// 새 홈: 위쪽 줄(작은 로고·알림·메뉴) + 오늘 카드 + 할 일 카드 + 이번 달 정산 합계. 달력은 하단 "운행" 탭(/app/calendar).
+// 새 홈: 위쪽 줄(작은 로고·알림·메뉴) + 오늘 카드 + 할 일 카드 + 이번 달 정산 합계. 달력은 하단 "달력" 탭(/app/calendar).
 import { resolveLogSettings } from '../../domain/carSettingsScope.js'
 import { todayWorkLogSelection } from '../../domain/calendar.js'
 import { isOffDay } from '../../domain/day-record.js'
