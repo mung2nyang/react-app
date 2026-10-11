@@ -10,7 +10,7 @@ const TAB_PATHS = new Set(['/app', '/app/calendar', '/app/revenue', '/app/me'])
 const ENTER_CLASSES = ['page-enter-forward', 'page-enter-back', 'page-enter-fade']
 
 /**
- * 하단 탭 화면인가 — 홈·운행(달력)·매출·마이페이지.
+ * 하단 탭 화면인가 — 홈·달력·매출·마이페이지.
  * @param {string} pathname
  */
 export function isTabSpot(pathname) {

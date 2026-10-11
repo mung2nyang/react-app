@@ -28,7 +28,7 @@ test('판단: 새 화면 = 들어감, 뒤로 = 뒤로, 탭끼리 = 서서히, �
   assert.equal(decidePageTransition({ prev: spot('/app', true), next: spot('/app', true), navigationType: 'PUSH' }), 'none', '보던 달만 바뀜·17번 붙잡기 기록')
 })
 
-test('탭 화면: 홈·운행(달력)·매출·마이페이지만', () => {
+test('탭 화면: 홈·달력·매출·마이페이지만', () => {
   assert.equal(isTabSpot('/app'), true)
   assert.equal(isTabSpot('/app/calendar'), true)
   assert.equal(isTabSpot('/app/me'), true)

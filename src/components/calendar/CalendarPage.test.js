@@ -499,7 +499,7 @@ test('연동기사 본인 달력: clientScopeKey로 배정 차량 스코프 고�
   }
 })
 
-test('새 홈 3단계 — 운행 탭 달력 위쪽은 홈과 같은 한 줄(작은 로고 + 메뉴), 알림 종·큰 로고 없음, 달 이동 그대로', async () => {
+test('새 홈 3단계 — 달력 탭 위쪽은 홈과 같은 한 줄(작은 로고 + 메뉴), 알림 종·큰 로고 없음, 달 이동 그대로', async () => {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)

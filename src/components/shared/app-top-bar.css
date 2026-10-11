@@ -1,4 +1,4 @@
-/* 홈·운행 탭 위쪽 한 줄(AppTopBar 전용) — home.css 위쪽 줄 + calendar-header.css 알림 버튼·배지에서 옮김. */
+/* 홈·달력 탭 위쪽 한 줄(AppTopBar 전용) — home.css 위쪽 줄 + calendar-header.css 알림 버튼·배지에서 옮김. */
 .app-topbar {
   gap: 12px;
 }

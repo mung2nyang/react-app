@@ -225,7 +225,7 @@ test('2단계 — 할 일: 일상점검 켜짐·서버에 오늘 점검표 없�
   }
 })
 
-test('2단계 — 이번 달 정산 합계 = 운행 탭 달력 "합계", 거래처 단가가 바뀌면 둘 다 같이 바뀜', async () => {
+test('2단계 — 이번 달 정산 합계 = 달력 탭 "합계", 거래처 단가가 바뀌면 둘 다 같이 바뀜', async () => {
   const ownerKey = 'test-home-month'
   const now = new Date()
   const { dateKey } = todayWorkLogSelection(now)

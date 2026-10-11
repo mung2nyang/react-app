@@ -993,9 +993,9 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 저장은 성공�
   }
 })
 
-// 새 홈 1단계 — 하단 탭 홈·운행·매출·마이페이지: 운행 탭은 달력(/app/calendar),
+// 새 홈 1단계 — 하단 탭 홈·달력·매출·마이페이지: 달력 탭은 달력(/app/calendar),
 // 홈 "오늘" 카드 버튼은 오늘 일지, 그 일지의 뒤로가기는 홈으로 돌아간다.
-test('새 홈 1단계 — 운행 탭은 달력, 홈 [운행 기록하기] → 오늘 일지 → 뒤로가기 → 홈', async () => {
+test('새 홈 1단계 — 달력 탭은 달력 화면, 홈 [운행 기록하기] → 오늘 일지 → 뒤로가기 → 홈', async () => {
   const { dateKey } = todayWorkLogSelection()
   window.history.pushState({}, '', '/app')
   const container = document.createElement('div')
