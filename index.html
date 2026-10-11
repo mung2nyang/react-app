@@ -5,7 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- 로드맵 11번 1단계: 홈 화면 앱(주소창 없이 열기). 상태바 색은 아래 테마 스크립트가 다크일 때 바꿈. -->
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#f4f7f6" />
+    <meta name="theme-color" content="#eef1f5" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -35,12 +35,12 @@
     </script>
     <style>
       /* 10-L 로딩 표시 "🚚 운행일지 ● ● ●" — 모양 정의는 여기 한 곳(LoadingScreen.jsx도 같은 클래스). 색은 variables.css 값과 같게. */
-      html { background: #f4f7f6; }
+      html { background: #eef1f5; }
       html[data-theme="dark"] { background: #121212; }
       .boot-loading {
         position: fixed; inset: 0; z-index: 50;
         display: flex; align-items: center; justify-content: center; gap: 8px;
-        background: #f4f7f6; color: #2d3748;
+        background: #eef1f5; color: #2d3748;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       }
       html[data-theme="dark"] .boot-loading { background: #121212; color: #fff; }

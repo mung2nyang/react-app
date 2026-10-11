@@ -34,7 +34,7 @@ test('설정 파일의 아이콘 그림이 실제로 있고 크기가 적힌 것
 test('index.html이 설정 파일·상태바 색·아이폰 아이콘을 연결한다', () => {
   const html = readFileSync('index.html', 'utf8')
   assert.match(html, /<link rel="manifest" href="\/manifest\.webmanifest" \/>/)
-  assert.match(html, /<meta name="theme-color" content="#f4f7f6" \/>/)
+  assert.match(html, /<meta name="theme-color" content="#eef1f5" \/>/)
   assert.match(html, /<link rel="apple-touch-icon" href="\/icons\/icon-192\.png" \/>/)
   assert.match(html, /setAttribute\('content', '#121212'\)/, '다크 테마면 상태바 색도 어둡게')
 })
