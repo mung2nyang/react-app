@@ -46,16 +46,7 @@
 }
 
 .maint-management-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 7px;
   margin-bottom: 0;
-}
-
-.maint-management-tabs .toggle-btn {
-  min-height: 44px;
-  border-radius: 12px;
-  font-size: var(--fs-2);
 }
 
 /* 항목 카드 제목 앞 kind별 아이콘 — 원본 style.css:4345-4369 */
