@@ -170,3 +170,15 @@
 .management-add-fab:active {
   transform: scale(0.94);
 }
+
+/* 화면이 밀려 들어오는 동안엔 제자리를 못 잡아(가운데에 뜸) 숨겼다가, 끝나면 서서히 */
+.management-add-fab {
+  transition: opacity 0.15s ease-out;
+}
+
+.page-enter-forward .management-add-fab,
+.page-enter-back .management-add-fab {
+  visibility: hidden;
+  opacity: 0;
+  transition: none;
+}
