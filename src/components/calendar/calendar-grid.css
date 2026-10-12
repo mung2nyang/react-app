@@ -132,9 +132,17 @@
 .date-cell.sunday, .day-header.sunday { color: var(--sunday-color); }
 .date-cell.saturday, .day-header.saturday { color: var(--saturday-color); }
 
-.date-cell.today {
-  background-color: color-mix(in srgb, var(--primary-color) 18%, transparent);
-  color: var(--primary-color) !important;
+/* 오늘: 숫자만 파란 동그라미(칸 바탕 없음 — 배지 안 가림). 높이 차이는 음수 여백으로 메워 옆 칸 숫자와 줄 맞춤 */
+.date-cell.today .cell-date-text {
+  display: inline-grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  margin: -3px 0;
+  padding: 0 4px;
+  border-radius: 999px;
+  background-color: var(--primary-fill);
+  color: #fff;
   font-weight: 800;
 }
 
