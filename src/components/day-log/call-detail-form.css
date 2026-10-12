@@ -128,21 +128,6 @@
   font-size: var(--fs-floor);
 }
 
-.work-log-page .call-vat-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 40px;
-  margin: 8px 0;
-}
-
-.work-log-page .call-vat-row > label:first-child {
-  padding-left: 4px;
-  color: var(--text-color);
-  font-size: 0.85rem;
-  font-weight: 750;
-}
-
 .work-log-page .payment-due-date-box {
   margin: 9px 0 0;
   padding: 10px 0 0;
@@ -300,9 +285,5 @@
 
 .input-box.input-error {
   border-color: var(--sunday-color);
-}
-
-.call-vat-row {
-  margin: 4px 0 14px;
 }
 
