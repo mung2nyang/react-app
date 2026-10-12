@@ -98,3 +98,14 @@
   cursor: default;
   opacity: 0.5;
 }
+
+/* 횟수 버튼 설정: 좁은 화면에서도 한 줄 5칸 유지(칸 최소 폭 50px 때문에 줄바꿈되던 것) */
+.app-settings-page .run-count-preset-chips {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.app-settings-page .run-count-preset-chip-wrap {
+  width: auto;
+  min-width: 0;
+}
