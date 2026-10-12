@@ -52,6 +52,7 @@
 
 .date-cell {
   width: 100%;
+  align-self: stretch; /* 같은 주 칸 위쪽을 맞춤 — 배지 많은 날만 튀어나오지 않게 */
   min-height: 76px;
   display: flex;
   flex-direction: column;
