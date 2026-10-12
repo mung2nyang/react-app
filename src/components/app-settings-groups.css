@@ -41,12 +41,19 @@
   text-align: left;
 }
 
+/* 두 줄 고정(운행 시간·계기판·화물 톤수 / 플랫폼·결제·수금), 각 줄 가운데 */
 .settings-chip-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
+.settings-chip-row {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
-  padding-bottom: 4px;
 }
 
 .settings-chip {

@@ -59,12 +59,16 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
   const isDark = settings.theme === 'dark'
   const activeSettings = logId ? carSettings : settings
   // 세부 입력 하위 항목은 토글 대신 칩(체크박스) — 토글이 줄지어 보이지 않게
-  const detailChips = [
-    ...(!logId ? [{ id: 'paymentToggle', label: '결제·수금', checked: !!settings.paymentOn, onChange: (/** @type {boolean} */ v) => patch({ paymentOn: v }) }] : []),
-    { id: 'timeToggle', label: '운행 시간', checked: !!activeSettings.timeOn, onChange: (/** @type {boolean} */ v) => patchActive({ timeOn: v }) },
-    { id: 'platformToggle', label: '플랫폼', checked: !!activeSettings.platformOn, onChange: (/** @type {boolean} */ v) => patchActive({ platformOn: v }) },
-    { id: 'distanceToggle', label: '계기판', checked: !!activeSettings.distanceOn, onChange: (/** @type {boolean} */ v) => patchActive({ distanceOn: v }) },
-    { id: 'cargoTonnageToggle', label: '화물 톤수', checked: !!activeSettings.cargoTonnageOn, onChange: (/** @type {boolean} */ v) => patchActive({ cargoTonnageOn: v }) },
+  const detailChipRows = [
+    [
+      { id: 'timeToggle', label: '운행 시간', checked: !!activeSettings.timeOn, onChange: (/** @type {boolean} */ v) => patchActive({ timeOn: v }) },
+      { id: 'distanceToggle', label: '계기판', checked: !!activeSettings.distanceOn, onChange: (/** @type {boolean} */ v) => patchActive({ distanceOn: v }) },
+      { id: 'cargoTonnageToggle', label: '화물 톤수', checked: !!activeSettings.cargoTonnageOn, onChange: (/** @type {boolean} */ v) => patchActive({ cargoTonnageOn: v }) },
+    ],
+    [
+      { id: 'platformToggle', label: '플랫폼', checked: !!activeSettings.platformOn, onChange: (/** @type {boolean} */ v) => patchActive({ platformOn: v }) },
+      ...(!logId ? [{ id: 'paymentToggle', label: '결제·수금', checked: !!settings.paymentOn, onChange: (/** @type {boolean} */ v) => patch({ paymentOn: v }) }] : []),
+    ],
   ]
 
   return (
@@ -139,11 +143,15 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
             <div className="tree-line-group">
               <p className="settings-chip-guide">입력할 항목을 고르세요</p>
               <div className="settings-chip-group" role="group" aria-label="세부 입력 항목">
-                {detailChips.map((chip) => (
-                  <label key={chip.id} className={`settings-chip${chip.checked ? ' on' : ''}`}>
-                    <input id={chip.id} type="checkbox" checked={chip.checked} onChange={(e) => chip.onChange(e.target.checked)} />
-                    {chip.label}
-                  </label>
+                {detailChipRows.map((row, i) => (
+                  <div key={i} className="settings-chip-row">
+                    {row.map((chip) => (
+                      <label key={chip.id} className={`settings-chip${chip.checked ? ' on' : ''}`}>
+                        <input id={chip.id} type="checkbox" checked={chip.checked} onChange={(e) => chip.onChange(e.target.checked)} />
+                        {chip.label}
+                      </label>
+                    ))}
+                  </div>
                 ))}
               </div>
             </div>
