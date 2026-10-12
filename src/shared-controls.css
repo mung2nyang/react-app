@@ -83,6 +83,11 @@
   font-family: inherit;
 }
 
+/* 다크: 입력칸 안내 글자가 브라우저 기본 회색이라 흐림 — 앱 전체 입력칸(따로 정한 곳은 그쪽 우선) */
+:where([data-theme="dark"]) ::placeholder {
+  color: var(--placeholder-color);
+}
+
 .input-box:-webkit-autofill,
 .input-box:-webkit-autofill:hover,
 .input-box:-webkit-autofill:focus {

@@ -57,4 +57,5 @@
   --maint-badge-bg: #e53e3e;
   --maint-badge-text: #ffffff;
   --switch-off-bg: #4a4a4a;
+  --placeholder-color: #949494; /* 입력칸 #2a2a2a 위 대비 4.7 */
 }
