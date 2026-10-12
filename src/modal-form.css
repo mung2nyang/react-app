@@ -71,13 +71,19 @@
   font-size: var(--fs-floor);
 }
 
+/* 선택 칸은 흰 칸 + 파란 글씨 — 꽉 찬 파랑은 [저장] 버튼에만 남겨 실행 버튼과 헷갈리지 않게 */
 .car-commission-type button.active {
-  background: var(--primary-fill);
-  color: #fff;
+  background: var(--card-bg);
+  color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .car-commission-type button.active {
+  background: var(--hover-bg);
 }
 
 .car-commission-type button.active span {
-  background: color-mix(in srgb, #fff 20%, transparent);
+  background: color-mix(in srgb, var(--primary-color) 14%, transparent);
 }
 
 .car-commission-value {
