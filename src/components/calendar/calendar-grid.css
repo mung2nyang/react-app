@@ -1,0 +1,158 @@
+/* 달력 판(요일 줄·날짜 칸·배지·오늘 표시) — calendar.css에서 나눔. */
+
+.main-page .header {
+  margin-bottom: 10px;
+}
+
+/* 년·월 선택을 달력 판 위에 붙여 한 카드처럼 */
+.main-page .header:has(+ .calendar-grid) {
+  margin-bottom: 0;
+  padding: 14px 10px 6px;
+  border: 1px solid var(--border-color);
+  border-bottom: 0;
+  border-radius: 24px 24px 0 0;
+  background-color: var(--card-bg);
+  box-shadow: var(--shadow-sm);
+  clip-path: inset(-12px -12px 0 -12px);
+}
+
+.main-page .header + .calendar-grid {
+  margin-top: -1px; /* 소수점 경계에 생기는 실선 틈 메움 */
+  border-top: 0;
+  border-radius: 0 0 24px 24px;
+  padding-top: 10px;
+  clip-path: inset(0 -12px -12px -12px); /* 위로 번지는 그림자가 이음새 선처럼 보여 자름 */
+}
+
+.calendar-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 8px;
+  column-gap: 6px;
+  align-items: center;
+  justify-items: center;
+  margin: 0 auto 10px;
+  background-color: var(--card-bg);
+  padding: 16px 10px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.day-header {
+  width: 100%;
+  text-align: center;
+  font-size: var(--fs-3);
+  font-weight: 700;
+  color: var(--sub-text-color);
+  padding-bottom: 8px;
+  position: relative;
+}
+
+.date-cell {
+  width: 100%;
+  min-height: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 6px 2px;
+  font-size: var(--fs-4);
+  font-weight: 600;
+  border-radius: 16px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.date-cell.empty,
+.date-cell:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
+@media (hover: hover) { .date-cell:hover:not(.empty):not(:disabled) { background-color: var(--hover-bg); } }
+.date-cell:not(:disabled):active { background-color: var(--hover-bg); scale: none; } /* 누르는 동안 색으로 표시(18-C) */
+
+/* 요일 줄 아래·주 사이 옅은 가로선(칸 사이 틈 가운데) */
+.day-header::after,
+.date-cell::before {
+  content: '';
+  position: absolute;
+  left: -3px;
+  right: -3px;
+  pointer-events: none;
+}
+
+.day-header::after {
+  bottom: -4.5px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.date-cell::before {
+  top: -4.5px;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 60%, transparent);
+}
+
+.calendar-grid > .date-cell:nth-child(-n + 14)::before {
+  content: none;
+}
+
+.work-badge,
+.off-badge,
+.maint-badge {
+  padding: 4px 6px;
+  border-radius: 8px;
+  margin-top: 4px;
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.work-badge {
+  background-color: var(--work-badge-bg);
+  color: var(--work-badge-text);
+}
+
+.off-badge {
+  background-color: var(--off-badge-bg);
+  color: var(--off-badge-text);
+}
+
+.maint-badge {
+  background-color: var(--maint-badge-bg);
+  color: var(--maint-badge-text);
+}
+
+.date-cell.sunday, .day-header.sunday { color: var(--sunday-color); }
+.date-cell.saturday, .day-header.saturday { color: var(--saturday-color); }
+
+.date-cell.today {
+  background-color: color-mix(in srgb, var(--primary-color) 18%, transparent);
+  color: var(--primary-color) !important;
+  font-weight: 800;
+}
+
+.cell-date-text { line-height: 1.4; }
+
+/* .unpaid-dot(position:absolute)이 셀 좌상단에 정확히 앉으려면 부모(.date-cell)가
+   위치 기준점이어야 한다 — 위 .date-cell 기본 규칙엔 position이 없다. */
+.date-cell {
+  position: relative;
+}
+
+/* 바닐라 style.css의 .unpaid-dot을 그대로 옮긴다 — 당일에 미수 콜상세가 있으면
+   셀 좌상단에 표시하는 점. */
+.unpaid-dot {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 6px;
+  height: 6px;
+  background-color: var(--sunday-color);
+  border-radius: 50%;
+}

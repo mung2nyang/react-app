@@ -11,6 +11,7 @@ import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
 import CalendarSubLogBanner from './CalendarSubLogBanner.jsx'
 import useMonthSettlement from './useMonthSettlement.js'
+import './calendar-grid.css'
 import './calendar.css'
 
 const YEAR_OPTIONS = getYearOptions()
