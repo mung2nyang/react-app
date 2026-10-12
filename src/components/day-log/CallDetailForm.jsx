@@ -1,5 +1,5 @@
 // @ts-check
-// §6 예외: 상/하차지 onFocus·칩 배선은 폼 응집 유지. 칩·거래처+추가는 별도 컴포넌트.
+// 순서: 경로·톤수 → 거래처 → 운송료·부가세 → 계산서·입금일 → 시간·계기판·플랫폼 → 산재보험료·비고.
 import { useState } from 'react'
 import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
@@ -9,10 +9,10 @@ import LocationShortcuts from './LocationShortcuts.jsx'
 import CallClientQuickAdd from './CallClientQuickAdd.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
 import TemporalInput from '../shared/TemporalInput.jsx'
+import CallDetailPaymentFields, { CallInsuranceFeeField, CallVatExemptRow } from './CallDetailPaymentFields.jsx'
 import './call-detail-form.css'
 
 const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전국화물콜', '카카오T트럭커']
-const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
@@ -93,6 +93,42 @@ export default function CallDetailForm({
           onTogglePin={(location) => onTogglePinnedLocation?.(location)}
         />
       </div>
+      {settings.cargoTonnageOn && (
+        <div className="call-detail-panel">
+          <div className="call-inline-field">
+            <label htmlFor="callCargoTonnage">화물 톤수</label>
+            <div className="input-with-suffix">
+              <input id="callCargoTonnage" type="number" className="input-box" inputMode="decimal" min="0" step="0.1" placeholder="선택 입력" value={draft.cargoTonnage} onChange={(e) => setDraft({ ...draft, cargoTonnage: e.target.value })} />
+              <span className="suffix">톤</span>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="call-detail-panel call-client-panel">
+        <label htmlFor="callClient">거래처</label>
+        <div className="call-client-row">
+          <ClearableInput id="callClient" className="input-box" list="callClientOptions" placeholder="직접 입력 또는 선택" value={draft.client} onChange={(e) => applyClient(e.target.value)} />
+          <datalist id="callClientOptions">
+            {scopedClients.map((client) => <option key={client.id} value={client.companyName} />)}
+          </datalist>
+          {ownerKey && (
+            <CallClientQuickAdd
+              ownerKey={ownerKey}
+              clients={clients}
+              logId={scopeKey}
+              showToast={showToast}
+              onClientAdded={applyClient}
+            />
+          )}
+        </div>
+        {shortcuts.length > 0 && (
+          <div className="call-client-shortcuts">
+            {shortcuts.map((client) => (
+              <button key={client.id} type="button" className={`dark-pill-btn${draft.client === client.companyName ? ' active' : ''}`} onClick={() => applyClient(draft.client === client.companyName ? '' : client.companyName)}>{client.companyName}</button>
+            ))}
+          </div>
+        )}
+      </div>
       <div className="call-detail-panel call-money-panel">
         <div className="call-inline-field">
           <label htmlFor="callFare">운송료<br />(부가세{' '}별도)</label>
@@ -103,16 +139,9 @@ export default function CallDetailForm({
         </div>
         <p className="billing-settings-note">부가세 포함 금액이면 1.1로 나눈 금액을 입력해 주세요. (예: 110,000원 → 100,000원)</p>
         {vatPreview && <p className="billing-settings-note vat-preview">{vatPreview}</p>}
-        {settings.cargoTonnageOn && (
-          <div className="call-inline-field">
-            <label htmlFor="callCargoTonnage">화물 톤수</label>
-            <div className="input-with-suffix">
-              <input id="callCargoTonnage" type="number" className="input-box" inputMode="decimal" min="0" step="0.1" placeholder="선택 입력" value={draft.cargoTonnage} onChange={(e) => setDraft({ ...draft, cargoTonnage: e.target.value })} />
-              <span className="suffix">톤</span>
-            </div>
-          </div>
-        )}
+        <CallVatExemptRow draft={draft} setDraft={setDraft} />
       </div>
+      {settings.paymentOn && <CallDetailPaymentFields draft={draft} setDraft={setDraft} paymentGuide={paymentGuide} />}
       {settings.timeOn && (
         <div className="call-detail-panel call-two-column-panel">
           <div className="form-group">
@@ -157,73 +186,7 @@ export default function CallDetailForm({
           </div>
         </div>
       )}
-      <div className="call-detail-panel call-client-panel">
-        <label htmlFor="callClient">거래처</label>
-        <div className="call-client-row">
-          <ClearableInput id="callClient" className="input-box" list="callClientOptions" placeholder="직접 입력 또는 선택" value={draft.client} onChange={(e) => applyClient(e.target.value)} />
-          <datalist id="callClientOptions">
-            {scopedClients.map((client) => <option key={client.id} value={client.companyName} />)}
-          </datalist>
-          {ownerKey && (
-            <CallClientQuickAdd
-              ownerKey={ownerKey}
-              clients={clients}
-              logId={scopeKey}
-              showToast={showToast}
-              onClientAdded={applyClient}
-            />
-          )}
-        </div>
-        {shortcuts.length > 0 && (
-          <div className="call-client-shortcuts">
-            {shortcuts.map((client) => (
-              <button key={client.id} type="button" className={`dark-pill-btn${draft.client === client.companyName ? ' active' : ''}`} onClick={() => applyClient(draft.client === client.companyName ? '' : client.companyName)}>{client.companyName}</button>
-            ))}
-          </div>
-        )}
-      </div>
-      {settings.paymentOn && (
-        <div className="call-detail-panel call-receipt-panel">
-          <label>계산서</label>
-          <div className="call-receipt-group">
-            {RECEIPT_PRESETS.map((name) => (
-              <button key={name} type="button" className={`dark-pill-btn${draft.receipt === name ? ' active' : ''}`} onClick={() => setDraft({ ...draft, receipt: draft.receipt === name ? '' : name })}>{name}</button>
-            ))}
-          </div>
-          <div className="call-vat-row">
-            <label htmlFor="callVatExempt">부가세 없음</label>
-            <label className="switch">
-              <input id="callVatExempt" type="checkbox" checked={draft.vatExempt} onChange={(e) => setDraft({ ...draft, vatExempt: e.target.checked })} />
-              <span className="slider"></span>
-            </label>
-          </div>
-          {!isEmployedDriver && (
-            <div className="call-inline-field">
-              <label htmlFor="callInsuranceFee">산재보험료</label>
-              <div className="input-with-suffix">
-                <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액 입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
-                <span className="suffix">원</span>
-              </div>
-            </div>
-          )}
-          <div className="payment-due-date-box">
-            <div className="form-group">
-              <label htmlFor="callPaymentDueDate">입금 예정일</label>
-              <TemporalInput type="date" id="callPaymentDueDate" value={draft.paymentDueDate} centered onChange={(e) => setDraft({ ...draft, paymentDueDate: e.target.value })} />
-            </div>
-            <p className="payment-term-guide">{paymentGuide}</p>
-          </div>
-        </div>
-      )}
-      {!settings.paymentOn && (
-        <div className="call-vat-row">
-          <label htmlFor="callVatExempt">부가세 없음</label>
-          <label className="switch">
-            <input id="callVatExempt" type="checkbox" checked={draft.vatExempt} onChange={(e) => setDraft({ ...draft, vatExempt: e.target.checked })} />
-            <span className="slider"></span>
-          </label>
-        </div>
-      )}
+      {settings.paymentOn && !isEmployedDriver && <CallInsuranceFeeField draft={draft} setDraft={setDraft} />}
       <div className="call-detail-panel form-group call-remarks-panel">
         <label htmlFor="callRemarks">비고</label>
         <ClearableInput id="callRemarks" className="input-box" placeholder="특이사항 입력" value={draft.remarks} onChange={(e) => setDraft({ ...draft, remarks: e.target.value })} />
