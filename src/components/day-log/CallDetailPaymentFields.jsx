@@ -6,7 +6,7 @@ import './call-detail-payment.css'
 
 const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
 
-/** @typedef {import('../../domain/call-details.js').CallDetailDraft} CallDetailDraft */
+/** @typedef {typeof import('./callDetailFormHelpers.js').emptyDraft} CallDetailDraft 폼 입력 중 초안(CallDetailForm 상태와 같은 모양) */
 
 /**
  * @param {Object} props
