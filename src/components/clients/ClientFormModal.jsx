@@ -5,6 +5,7 @@ import AppDropdown from '../shared/AppDropdown.jsx'
 import BizNumberHint from '../shared/BizNumberHint.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
 import ClientTradeFields from './ClientTradeFields.jsx'
+import { StarIcon } from '../day-log/icons.jsx'
 import './client-management.css'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
@@ -26,7 +27,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
         <div className="client-modal-header">
           <div className="modal-title">{editingId ? '거래처 수정' : '거래처 등록'}</div>
           <button type="button" className={`client-favorite-star${draft.isPinned ? ' active' : ''}`} aria-pressed={draft.isPinned} aria-label="즐겨찾기" onClick={() => setDraft({ ...draft, isPinned: !draft.isPinned })}>
-            {draft.isPinned ? '★' : '☆'}
+            <StarIcon filled={!!draft.isPinned} />
           </button>
         </div>
         <div className="form-group">

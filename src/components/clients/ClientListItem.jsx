@@ -1,6 +1,7 @@
 // @ts-check
 import { getPaymentTermLabel } from '../../lib/clients.js'
 import CardActionButtons from '../shared/CardActionButtons.jsx'
+import { StarIcon } from '../day-log/icons.jsx'
 
 /**
  * @param {Object} props
@@ -28,7 +29,7 @@ export default function ClientListItem({
       <div className="management-card-copy">
         <div className="client-card-title">
           <strong>{client.companyName}</strong>
-          {client.isPinned && <span className="client-pinned-star" role="img" aria-label="즐겨찾기">★</span>}
+          {client.isPinned && <span className="client-pinned-star" role="img" aria-label="즐겨찾기"><StarIcon filled /></span>}
         </div>
         {(client.fixedRouteLinked || client.commEnabled || client.palletOn) && (
           <div className="client-card-badges">

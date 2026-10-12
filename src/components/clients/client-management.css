@@ -66,12 +66,10 @@
   flex-shrink: 0;
   width: 38px;
   height: 38px;
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  background: var(--input-bg);
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: var(--sub-text-color);
-  font-size: 20px;
-  line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -79,14 +77,34 @@
 }
 
 .client-favorite-star.active {
-  border-color: #f0ad2b;
   color: #f0ad2b;
-  background: color-mix(in srgb, #f0ad2b 12%, var(--input-bg));
 }
 
 .client-card-title .client-pinned-star {
+  display: inline-flex;
   color: #f0ad2b;
-  font-size: var(--fs-4);
+}
+
+/* 별 모양은 운행일지 상·하차지 즐겨찾기와 같은 선 그림(StarIcon) */
+.client-favorite-star .star-icon,
+.client-pinned-star .star-icon {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.client-pinned-star .star-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.client-favorite-star .star-icon.is-filled,
+.client-pinned-star .star-icon.is-filled {
+  fill: currentColor;
 }
 
 .client-list-card {
