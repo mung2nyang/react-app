@@ -49,9 +49,7 @@ export default function CarDriverIncomeFields({ draft, setDraft }) {
       <div className="setting-item">
         <div className="car-option-copy">
           <label htmlFor="newCarInsuranceOn">산재보험 적용</label>
-          <p>{isEmployee
-            ? '켜면 산재보험료를 계산하고, 4대보험 근로자는 차주가 전액 부담합니다.'
-            : '켜면 산재보험료를 계산하고, 3.3% 사업소득자는 차주와 기사가 반반 부담합니다(기사 몫은 정산액에서 뺌).'}</p>
+          <p>켜면 산재보험료를 계산합니다.</p>
         </div>
         <label className="switch">
           <input id="newCarInsuranceOn" type="checkbox" checked={!!draft.insuranceOn} onChange={(e) => setInsuranceOn(e.target.checked)} />

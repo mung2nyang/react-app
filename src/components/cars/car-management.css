@@ -34,19 +34,30 @@
   line-height: 1.45;
 }
 
+/* 설명 → 탭 → 초대 코드 순서. 몸통 상자를 풀어(contents) 설명만 탭 위로 올림 — 다른 항목처럼 설명이 위 */
 .car-driver-connect {
+  display: flex;
+  flex-direction: column;
   margin: 0 0 16px;
+}
+
+.car-driver-connect-body {
+  display: contents;
 }
 
 .car-driver-connect-tabs {
   margin-bottom: 12px;
 }
 
-.car-driver-connect-copy {
+.car-driver-connect-copy,
+.car-driver-connect .car-type-hint {
+  order: -1;
   margin: 0 0 12px;
-  color: var(--text-color);
-  font-size: var(--fs-2);
-  line-height: 1.55;
+  padding: 0 4px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+  line-height: 1.45;
+  text-align: left;
 }
 
 /* 산재보험료율 | 필요경비율 반반 한 줄, 이름 옆 (i)(CarDriverIncomeFields 전용). */

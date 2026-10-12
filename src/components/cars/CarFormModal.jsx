@@ -136,17 +136,21 @@ export default function CarFormModal({
                 </span>
               </div>
             </div>
+            <hr className="car-modal-divider" />
             <CarDriverIncomeFields draft={draft} setDraft={setDraft} />
           </>
         )}
         {showConnect ? (
-          <CarDriverConnectPanel
-            tab={draft.connectMode || 'link'}
-            onTab={(mode) => setDraft({ ...draft, connectMode: mode })}
-            inviteCode={draft.inviteCode || ''}
-            onInviteCode={(code) => setDraft({ ...draft, inviteCode: code })}
-            drivers={drivers}
-          />
+          <>
+            <hr className="car-modal-divider" />
+            <CarDriverConnectPanel
+              tab={draft.connectMode || 'link'}
+              onTab={(mode) => setDraft({ ...draft, connectMode: mode })}
+              inviteCode={draft.inviteCode || ''}
+              onInviteCode={(code) => setDraft({ ...draft, inviteCode: code })}
+              drivers={drivers}
+            />
+          </>
         ) : (
           <p className="car-type-hint">{isSub ? '기사 차량으로 등록됩니다.' : '메인 차량으로 등록됩니다.'}</p>
         )}
