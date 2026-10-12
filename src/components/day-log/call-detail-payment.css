@@ -11,10 +11,35 @@
   cursor: pointer;
 }
 
+/* 브라우저 기본 네모는 다크에서 흰색으로 튀어서 직접 그림(입력칸 색 + 테두리, 켜면 파랑 + ✓) */
 .call-vat-check input {
+  display: grid;
+  place-items: center;
   width: 18px;
   height: 18px;
   margin: 0;
-  accent-color: var(--primary-fill);
+  border: 1.5px solid var(--sub-text-color);
+  border-radius: 5px;
+  background: var(--input-bg);
+  appearance: none;
+  -webkit-appearance: none;
   cursor: pointer;
+}
+
+.call-vat-check input:checked {
+  border-color: var(--primary-fill);
+  background: var(--primary-fill);
+}
+
+.call-vat-check input:checked::after {
+  content: '✓';
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.call-vat-check input:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
