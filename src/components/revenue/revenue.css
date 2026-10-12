@@ -1,5 +1,4 @@
-/* 매출 화면 전용 스타일 — side-menu.css에서 옮김. RevenuePage.jsx가 직접 import한다. */
-/* 211줄, 매출 화면 전용 스타일 응집도 우선(§6 예외) */
+/* 매출 화면 전용 스타일(년 목록·순이익·항목 펼치기) — 위 카드는 revenue-controls.css. */
 
 .revenue-year-list {
   border: 1px solid var(--border-color);
@@ -54,73 +53,6 @@
   color: var(--primary-color);
   font-size: var(--fs-5);
   font-weight: 850;
-}
-
-.revenue-top-card {
-  background-color: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 24px;
-  padding: 18px;
-  margin-bottom: 12px;
-  box-shadow: var(--shadow-sm);
-}
-
-.revenue-top-card .maint-fuel-nav {
-  margin-bottom: 14px;
-}
-
-.revenue-top-card .maint-fuel-tabs {
-  margin-bottom: 8px;
-}
-
-.revenue-scope-tabs {
-  position: relative;
-  display: flex;
-  gap: 4px;
-  margin-top: 25px;
-  padding: 3px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--border-color) 55%, transparent);
-}
-
-/* 서류 발급 탭처럼 회색 막대 바깥(위 12px)에 가로줄 */
-.revenue-scope-tabs::before {
-  content: '';
-  position: absolute;
-  inset: -13px 0 auto;
-  border-top: 1px solid var(--border-color);
-}
-
-.revenue-scope-tab {
-  flex: 1;
-  min-height: 40px;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--sub-text-color);
-  font: inherit;
-  font-size: var(--fs-floor);
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.revenue-scope-tab.active {
-  background: var(--primary-fill);
-  color: #fff;
-}
-
-.revenue-driver-select {
-  position: relative;
-  margin-top: 10px;
-}
-
-.revenue-driver-select .input-box {
-  width: 100%;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding-right: 40px;
 }
 
 .revenue-net-card {

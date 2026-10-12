@@ -5,6 +5,7 @@ import OwnerRevenueView from './revenue/OwnerRevenueView.jsx'
 import DriverRevenueView from './revenue/DriverRevenueView.jsx'
 import PageHeader from './PageHeader.jsx'
 import './revenue/revenue.css'
+import './revenue/revenue-controls.css'
 
 /**
  * @param {Object} props

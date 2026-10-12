@@ -6,6 +6,7 @@ import InviteRedeemModal from './InviteRedeemModal.jsx'
 import DataDownloadModal from './DataDownloadModal.jsx'
 import PageHeader from './PageHeader.jsx'
 import './mypage.css'
+import './mypage-shortcuts.css'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 
