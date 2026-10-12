@@ -906,7 +906,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 2, '실패 시 localStorage도 저장 전 값')
     assert.equal(pendingDayWriteCount(), 0, '로그인 Fail-Fast는 durable 큐에 새 항목을 넣지 않는다')
     assert.equal(getPendingDayWrite(ownerKey, dateKey), undefined)
-    assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false)
+    assert.equal(hasUnsafeRegistration(ownerKey, dateKey), true, '로드맵 35: 실패한 날짜는 나가기 전 확인 목록에 올라가야 한다')
     const toastText = container.querySelector('.toast-message')?.textContent || ''
     assert.match(toastText, /네트워크 상태를 확인해 주세요/)
     assert.equal(toastText.includes('저장 공간'), false, '로그인 원격 실패에 quota 문구를 쓰면 안 된다')
@@ -919,10 +919,85 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     await waitUntil(() => committedRecord(ownerKey, dateKey)?.fixedCount === 9, { timeoutMs: 2000 })
     assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 9)
     assert.equal(dailyLogs.forDate(dateKey).length > upsertsBefore, true, '재편집이 그 날짜 daily_logs upsert를 냈어야 한다')
+    assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false, '재저장 성공 뒤엔 확인 목록에서 내려가야 한다')
     assert.equal(pendingDayWriteCount(), 0)
     assert.equal(errSpy.count(), 1, '복구 성공 뒤 console.error가 늘면 안 된다')
     await waitUntil(() => !hasDirty(ownerKey), { timeoutMs: 5000 })
   } finally {
+    errSpy.restore()
+    dailyLogs.restore()
+    handlers.daily_logs = prevDailyLogs
+    if (prevTransport) handlers.transport_details = prevTransport
+    else delete handlers.transport_details
+    if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
+    await flushCloudSync()
+  }
+})
+
+test('로드맵 35 — 로그인 일지 서버 저장 실패 중 뒤로가기: 확인 창이 뜨고 [취소]면 남고 [확인]이면 나간 뒤 표시가 남지 않는다', async () => {
+  const ownerKey = 'user-boot-nav'
+  const dateKey = '2026-10-04'
+  window.history.pushState({}, '', '/app/day/' + dateKey)
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createTrackedRoot(container)
+  const prevDailyLogs = handlers.daily_logs
+  const prevTransport = handlers.transport_details
+  handlers.daily_logs = {
+    ...(prevDailyLogs || {}),
+    select: () => ({ data: [{ work_date: dateKey, vehicle_id: 501, is_off: false, fixed_count: 2, raw: { palletCount: 0, fixedRouteCounts: {} } }], error: null }),
+  }
+  let serverShouldFail = false
+  handlers.transport_details = {
+    delete: () => {
+      if (serverShouldFail) throw new Error('transport_details down (simulated)')
+      return { data: [{ id: 1 }], error: null }
+    },
+  }
+  const dailyLogs = captureDailyLogUpserts()
+  const errSpy = spyConsoleError('[commitMainDayLogToCloud] 일지 저장 실패:')
+  const prevConfirm = window.confirm
+  /** @type {Array<string>} */
+  const confirmCalls = []
+  let confirmAnswer = false
+  window.confirm = (message) => { confirmCalls.push(String(message)); return confirmAnswer }
+  const clickBack = async () => {
+    const backButton = Array.from(container.querySelectorAll('button')).find((btn) => btn.title === '뒤로가기')
+    assert.ok(backButton, '일지의 뒤로가기 버튼을 찾아야 한다')
+    await act(async () => { backButton.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })) })
+  }
+
+  try {
+    await act(async () => {
+      seedPalletClient(ownerKey)
+      seedMainCar(ownerKey)
+      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+    })
+    await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(App))) })
+    await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
+
+    serverShouldFail = true
+    await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '8') })
+    await waitUntil(() => (container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), { timeoutMs: 2000 })
+    assert.equal(isDurableWriteBroken(), true, '저장 실패 중엔 나가기 전 확인 대상이어야 한다')
+
+    await clickBack()
+    assert.equal(confirmCalls.length, 1, '뒤로가기에서 확인 창이 1번 떠야 한다')
+    assert.match(confirmCalls[0], /아직 저장되지 않았습니다/)
+    assert.equal(window.location.pathname, '/app/day/' + dateKey, '[취소]면 일지 화면에 남아야 한다')
+    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '8', '[취소] 뒤에도 고친 값이 화면에 남아야 한다')
+
+    confirmAnswer = true
+    await clickBack()
+    await waitUntil(() => window.location.pathname === '/app/calendar')
+    await waitUntil(() => errSpy.count() === 2, { timeoutMs: 2000 })
+    assert.equal(confirmCalls.length, 2)
+    assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false, '나간 뒤 마지막 시도가 실패해도 표시가 다시 올라가면 안 된다')
+    assert.equal(isDurableWriteBroken(), false, '나간 뒤 다른 화면 이동에 확인 창이 또 뜨면 안 된다')
+    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 2, '서버 실패라 Store는 저장 전 값')
+    assert.equal(pendingDayWriteCount(), 0, '재시도 큐는 없다')
+  } finally {
+    window.confirm = prevConfirm
     errSpy.restore()
     dailyLogs.restore()
     handlers.daily_logs = prevDailyLogs

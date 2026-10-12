@@ -11,7 +11,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { backfillCallDetailIds, saveDayRecord } from '../../domain/day-record.js'
 import { saveLogWorkDataWithTombstoneCheck } from '../../lib/workData.js'
 import { pendingOwnerForLog } from '../../lib/pendingLogOwner.js'
-import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../../lib/durableWriteGuard.js'
+import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch, markUnsafeRegistrationFailure } from '../../lib/durableWriteGuard.js'
 import { clearPendingDayWrite, getPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
 import { commitMainDayLogToCloud } from '../../lib/dayLogCloudCommit.js'
 import { shouldCommitDayLogToCloud } from '../../lib/mainDayLogRouting.js'
@@ -125,14 +125,16 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
       void commitMainDayLogToCloud({ ownerKey, logId, dateKey, previousData: latest, nextData: next }).then((result) => {
         if (!result.cloud) { commitLocal(latest, next, patch); return }
         if (result.ok) { markSaved(patch); return }
-        if (mountedRef.current) setAutoSaveStatus('failed')
         if (result.toast) showToastRef.current?.(result.toast)
-        // draft는 화면에 남는다. 재시도 큐 없음.
+        if (!mountedRef.current) return
+        setAutoSaveStatus('failed')
+        // draft는 화면에 남는다. 나가기 전 확인에 걸리도록 표시만 하고 재시도 큐는 없다.
+        markUnsafeRegistrationFailure(pendingOwner, dateKey, patch)
       })
       return
     }
     commitLocal(latest, next, patch)
-  }, [ownerKey, dateKey, logId, commitLocal, markSaved, mountedRef])
+  }, [ownerKey, dateKey, logId, pendingOwner, commitLocal, markSaved, mountedRef])
 
   // draft가 바뀔 때마다 디바운스를 다시 건다 — 이전 타이머가 남아 있으면 취소하고
   // 새로 건다(연타 입력 중에는 계속 미뤄지다가, 입력이 멈춘 뒤에만 실제로 쓴다).
@@ -179,8 +181,10 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   // 이유(timerRef가 아니라)는 위 hasPendingRef 선언부 주석 참고 — 마지막 시도가 실패로
   // 끝났어도(quota 등) 여기서 한 번 더 시도한다.
   useEffect(() => () => {
+    // 로그인 갈래: 화면이 닫히면 draft도 사라지므로 표시를 내린 뒤 마지막으로 한 번 더 시도한다.
+    if (shouldCommitDayLogToCloud(ownerKey, logId)) clearUnsafeRegistrationFailure(pendingOwner, dateKey)
     if (hasPendingRef.current) commitNow()
-  }, [commitNow])
+  }, [commitNow, ownerKey, logId, pendingOwner, dateKey])
 
   return { draft: state.draft, editingCallId: state.editingCallId, callFormOpen: state.callFormOpen, dispatch, commitNow, autoSaveStatus }
 }
