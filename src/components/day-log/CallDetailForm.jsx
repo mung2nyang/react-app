@@ -137,9 +137,9 @@ export default function CallDetailForm({
             <span className="suffix">원</span>
           </div>
         </div>
+        <CallVatExemptRow draft={draft} setDraft={setDraft} />
         <p className="billing-settings-note">부가세 포함 금액이면 1.1로 나눈 금액을 입력해 주세요. (예: 110,000원 → 100,000원)</p>
         {vatPreview && <p className="billing-settings-note vat-preview">{vatPreview}</p>}
-        <CallVatExemptRow draft={draft} setDraft={setDraft} />
       </div>
       {settings.paymentOn && <CallDetailPaymentFields draft={draft} setDraft={setDraft} paymentGuide={paymentGuide} />}
       {settings.timeOn && (

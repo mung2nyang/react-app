@@ -2,6 +2,7 @@
 // 콜상세 입력의 돈 관련 칸(계산서·입금 예정일, 부가세 없음, 산재보험료) — CallDetailForm에서 분리.
 import { formatCurrencyInput } from '../../lib/money.js'
 import TemporalInput from '../shared/TemporalInput.jsx'
+import './call-detail-payment.css'
 
 const RECEIPT_PRESETS = ['전자', '일반', '카드', '현금', '송금']
 
@@ -53,19 +54,16 @@ export function CallInsuranceFeeField({ draft, setDraft }) {
 }
 
 /**
- * 운송료 바로 아래 "부가세 없음" 줄.
+ * 운송료 바로 아래 작은 "부가세 없음(면세)" 체크 칸 — 드물게 쓰는 설정이라 토글 대신 작게.
  * @param {Object} props
  * @param {CallDetailDraft} props.draft
  * @param {(next: CallDetailDraft) => void} props.setDraft
  */
 export function CallVatExemptRow({ draft, setDraft }) {
   return (
-    <div className="call-vat-row">
-      <label htmlFor="callVatExempt">부가세 없음</label>
-      <label className="switch">
-        <input id="callVatExempt" type="checkbox" checked={draft.vatExempt} onChange={(e) => setDraft({ ...draft, vatExempt: e.target.checked })} />
-        <span className="slider"></span>
-      </label>
-    </div>
+    <label className="call-vat-check" htmlFor="callVatExempt">
+      <input id="callVatExempt" type="checkbox" checked={draft.vatExempt} onChange={(e) => setDraft({ ...draft, vatExempt: e.target.checked })} />
+      <span>부가세 없음(면세)</span>
+    </label>
   )
 }

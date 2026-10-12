@@ -1,0 +1,20 @@
+/* 콜상세 돈 관련 칸 중 새로 만든 모양 — 운송료 아래 작은 "부가세 없음(면세)" 체크 칸. */
+.call-vat-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  margin: 4px 0 2px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.call-vat-check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--primary-fill);
+  cursor: pointer;
+}
