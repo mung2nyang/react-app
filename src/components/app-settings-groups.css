@@ -121,3 +121,15 @@
 .fixed-route-client-setting .run-count-preset-copy > p {
   padding-right: 72px;
 }
+
+/* 좁은 휴대폰: 달력 일일 표시는 설명 위·[횟수|금액] 아래로 쌓아 설명이 4줄로 꺾이지 않게 */
+@media (max-width: 380px) {
+  .settings-calendar-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-calendar-row .segment-control {
+    align-self: flex-end;
+  }
+}
