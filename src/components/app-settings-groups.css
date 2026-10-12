@@ -13,10 +13,10 @@
   margin-top: 4px;
 }
 
-/* 하위 설정: 위아래 구분선 대신 왼쪽 들여쓰기 */
+/* 하위 설정: 위아래 구분선 없이 */
 .app-settings-page .tree-line-group {
-  margin: 6px 0 0 4px;
-  padding-left: 14px;
+  margin: 6px 0 0;
+  padding-left: 0;
   border-top: 0;
 }
 
