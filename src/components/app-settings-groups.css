@@ -44,6 +44,7 @@
 .settings-chip-group {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
   padding-bottom: 4px;
 }
