@@ -10,6 +10,7 @@ import FixedRouteBlock from './FixedRouteBlock.jsx'
 import PageHeader from './PageHeader.jsx'
 import AppSettingsBackupSection from './AppSettingsBackupSection.jsx'
 import './app-settings.css'
+import './app-settings-groups.css'
 
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../domain/financeTypes.js').SubCarPracticeSettings} SubCarPracticeSettings */
@@ -57,6 +58,14 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
 
   const isDark = settings.theme === 'dark'
   const activeSettings = logId ? carSettings : settings
+  // 세부 입력 하위 항목은 토글 대신 칩(체크박스) — 토글이 줄지어 보이지 않게
+  const detailChips = [
+    ...(!logId ? [{ id: 'paymentToggle', label: '결제·수금', checked: !!settings.paymentOn, onChange: (/** @type {boolean} */ v) => patch({ paymentOn: v }) }] : []),
+    { id: 'timeToggle', label: '운행 시간', checked: !!activeSettings.timeOn, onChange: (/** @type {boolean} */ v) => patchActive({ timeOn: v }) },
+    { id: 'platformToggle', label: '플랫폼', checked: !!activeSettings.platformOn, onChange: (/** @type {boolean} */ v) => patchActive({ platformOn: v }) },
+    { id: 'distanceToggle', label: '계기판', checked: !!activeSettings.distanceOn, onChange: (/** @type {boolean} */ v) => patchActive({ distanceOn: v }) },
+    { id: 'cargoTonnageToggle', label: '화물 톤수', checked: !!activeSettings.cargoTonnageOn, onChange: (/** @type {boolean} */ v) => patchActive({ cargoTonnageOn: v }) },
+  ]
 
   return (
     <div className="page app-settings-page">
@@ -69,6 +78,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
       )}
 
       <fieldset disabled={locked} style={{ border: 0, margin: 0, padding: 0 }}>
+        <h3 className="settings-group-title">화면 표시</h3>
         <section className="setting-section settings-theme-card">
           {!logId && (
             <div className="setting-item settings-theme-row">
@@ -84,13 +94,10 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
               <label>달력 일일 표시</label>
               <p className="settings-row-guide">
                 달력에 하루 운행 횟수 또는 운송료를 표시합니다.
-                {activeSettings.inputMode === 'fare' && (
-                  <>
-                    <br />금액은 만 원 단위로 줄여서 표시합니다.
-                    <br />(예: 111,000원 → 11.1만 / 115,500원 → 11.5만)
-                  </>
-                )}
               </p>
+              {activeSettings.inputMode === 'fare' && (
+                <p className="settings-row-note">만 원 단위로 줄여 표시 (예: 115,500원 → 11.5만)</p>
+              )}
             </div>
             <div className="segment-control">
               <button
@@ -111,6 +118,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
           </div>
         </section>
 
+        <h3 className="settings-group-title">운행일지 입력</h3>
         <section className="setting-section">
           {ownerKey !== 'guest' && (
             <div className="daily-inspection-switch">
@@ -129,17 +137,20 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
           )}
           {activeSettings.callDetail && (
             <div className="tree-line-group">
-              {!logId && (
-                <SwitchRow id="paymentToggle" label="결제 및 수금 입력" checked={!!settings.paymentOn} onChange={(checked) => patch({ paymentOn: checked })} />
-              )}
-              <SwitchRow id="timeToggle" label="운행 시간 입력" checked={!!activeSettings.timeOn} onChange={(checked) => patchActive({ timeOn: checked })} />
-              <SwitchRow id="platformToggle" label="플랫폼 입력" checked={!!activeSettings.platformOn} onChange={(checked) => patchActive({ platformOn: checked })} />
-              <SwitchRow id="distanceToggle" label="계기판 입력" checked={!!activeSettings.distanceOn} onChange={(checked) => patchActive({ distanceOn: checked })} />
-              <SwitchRow id="cargoTonnageToggle" label="화물 톤수 입력" checked={!!activeSettings.cargoTonnageOn} onChange={(checked) => patchActive({ cargoTonnageOn: checked })} />
+              <p className="settings-chip-guide">입력할 항목을 고르세요</p>
+              <div className="settings-chip-group" role="group" aria-label="세부 입력 항목">
+                {detailChips.map((chip) => (
+                  <label key={chip.id} className={`settings-chip${chip.checked ? ' on' : ''}`}>
+                    <input id={chip.id} type="checkbox" checked={chip.checked} onChange={(e) => chip.onChange(e.target.checked)} />
+                    {chip.label}
+                  </label>
+                ))}
+              </div>
             </div>
           )}
         </section>
 
+        <h3 className="settings-group-title">고정 노선</h3>
         <section className="setting-section">
           <FixedRouteBlock scope={logId ? 'sub' : 'main'} ownerKey={ownerKey} clientScopeKey={clientScopeKey} settings={settings} onPatch={patch} showToast={showToast} />
         </section>
