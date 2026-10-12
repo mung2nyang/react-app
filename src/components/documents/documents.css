@@ -164,3 +164,14 @@
   text-align: center;
   word-break: keep-all;
 }
+
+/* 좁은 휴대폰: 서류 종류 탭 3개가 두 줄로 꺾이지 않게 */
+@media (max-width: 380px) {
+  .doc-tab,
+  .doc-scope-tab {
+    padding: 8px 4px;
+    font-size: 0.7rem;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+}

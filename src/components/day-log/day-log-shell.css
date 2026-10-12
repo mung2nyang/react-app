@@ -82,6 +82,11 @@
   min-width: 0;
 }
 
+/* 좁은 휴대폰: [+ 정비 추가] 3개가 "가"만 다음 줄로 넘어가지 않게 */
+@media (max-width: 380px) {
+  .work-log-page .maint-fuel-add-btn { padding: 8px 4px; letter-spacing: -0.03em; white-space: nowrap; }
+}
+
 .work-log-page .maint-add-direct-btn { color: var(--sunday-color); }
 .work-log-page .fuel-add-direct-btn { color: var(--primary-color); }
 .work-log-page .misc-add-direct-btn { color: #d97706; }

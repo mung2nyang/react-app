@@ -27,7 +27,7 @@
 .calendar-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr)); /* 배지 있는 날 줄만 넓어지지 않게 7칸 같은 폭 */
   row-gap: 8px;
   column-gap: 6px;
   align-items: center;
@@ -164,4 +164,15 @@
   height: 6px;
   background-color: var(--sunday-color);
   border-radius: 50%;
+}
+
+/* 좁은 휴대폰: 배지를 줄여 칸(약 33px) 안에 들어가게 */
+@media (max-width: 380px) {
+  .work-badge,
+  .off-badge,
+  .maint-badge {
+    padding: 3px;
+    font-size: 0.68rem;
+    letter-spacing: -0.02em;
+  }
 }
