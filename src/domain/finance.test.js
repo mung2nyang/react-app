@@ -304,7 +304,7 @@ describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
     }, FIXTURE_WORK, [])
     assert.equal(detail.expense.salary.total, revenueShareAmount + kimInsuranceOwner)
     assert.equal(detail.expense.salary.items.length, 2)
-    assert.deepEqual(detail.expense.salary.items.map((i) => i.label), ['김기사', '김기사 산재보험(차주 부담)'])
+    assert.deepEqual(detail.expense.salary.items.map((i) => i.label), ['김기사 (5/1~5/31)', '김기사 (5/1~5/31) 산재보험(차주 부담)'])
   })
 
   test('급여액이 0 이하면 월급 항목은 제외된다(매출제 정산은 유지)', () => {
@@ -322,7 +322,7 @@ describe('getOwnerMonthlyFinanceDetail — 월급제 기사 급여', () => {
     const detail = getOwnerMonthlyFinanceDetail(MONTH_KEY, 'driver', FIXTURE_SETTINGS, FIXTURE_WORK, [])
     assert.equal(detail.expense.salary.items.length, 4)
     const labels = detail.expense.salary.items.map((i) => i.label).sort()
-    assert.deepEqual(labels, ['김기사', '김기사 산재보험(차주 부담)', '박기사', '박기사 산재보험(차주 부담)'])
+    assert.deepEqual(labels, ['김기사 (5/1~5/31)', '김기사 (5/1~5/31) 산재보험(차주 부담)', '박기사', '박기사 산재보험(차주 부담)'])
   })
 })
 

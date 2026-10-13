@@ -10,8 +10,28 @@ import {
 } from './financeCore.js'
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
+/** @typedef {import('./financeTypes.js').DriverLinkLike} DriverLinkLike */
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('./financeTypes.js').WorkDataByLogId} WorkDataByLogId */
+
+// 기사 급여는 연동 중(linked) 계약 기간 안 운행만 센다(보리 결정 2026-10-13, 로드맵 41). 기간과 계약 밖 운송료를 줄 이름에 보여 준다.
+/** @param {Array<DriverLinkLike>} links @param {CarLike} car @returns {DriverLinkLike|null} */
+function activeLinkForCar(links, car) {
+  return links.find((item) => item.status === 'linked' && (item.id === car.driverLinkId || item.vehicleNumber === car.number)) || null
+}
+
+/** @param {string|undefined} dateKey `YYYY-MM-DD` → `M/D` */
+function shortDate(dateKey) {
+  const [, m, d] = String(dateKey || '').split('-').map(Number)
+  return m && d ? `${m}/${d}` : ''
+}
+
+/** @param {CarLike} car @param {DriverLinkLike|null} link */
+function driverLabel(car, link) {
+  const name = car.driverName || getShortCarNum(car.number)
+  if (!link) return name
+  return `${name} (${shortDate(link.assignmentStart)}~${shortDate(link.assignmentEnd)})`
+}
 
 /**
  * 매출제 기사 월 정산액(기사 몫) — 기사 정산액 전체가 차주 지출이다. 산재 기사 몫·3.3%는 기사에게 줄 돈에서
@@ -34,14 +54,17 @@ export function getMonthlyDriverRevenueShareExpense(monthKey, settings, subCars,
     if (car.driverPayMode === 'salary') continue
     if (car.driverPayMode && car.driverPayMode !== 'revenue') continue
 
-    const link = links.find((item) => item.id === car.driverLinkId || item.vehicleNumber === car.number) || null
-    const totals = getMonthlyDriverTotals(getDriverCarWorkData(car, workDataByLogId), monthKey, link, settings)
+    const link = activeLinkForCar(links, car)
+    const carData = getDriverCarWorkData(car, workDataByLogId)
+    const totals = getMonthlyDriverTotals(carData, monthKey, link, settings)
     const amount = calculateDriverVehicleCommission(car, totals.grossAmount, totals.count)
     if (amount <= 0) continue
 
+    const outside = link ? getMonthlyDriverTotals(carData, monthKey, null, settings).grossAmount - totals.grossAmount : 0
+    const outsideNote = outside > 0 ? ` · 계약 밖 운송료 ${outside.toLocaleString('ko-KR')}원 제외` : ''
     items.push({
       date: monthStart,
-      label: car.driverName || getShortCarNum(car.number),
+      label: `${driverLabel(car, link)}${outsideNote}`,
       amount,
     })
     total += amount
@@ -68,13 +91,13 @@ export function getMonthlyDriverInsuranceOwnerShare(monthKey, settings, subCars,
   for (const car of subCars || []) {
     if (car.driverPayMode && car.driverPayMode !== 'salary' && car.driverPayMode !== 'revenue') continue
 
-    const link = links.find((item) => item.id === car.driverLinkId || item.vehicleNumber === car.number) || null
+    const link = activeLinkForCar(links, car)
     const totals = getMonthlyDriverTotals(getDriverCarWorkData(car, workDataByLogId), monthKey, link, settings)
     const commission = calculateDriverVehicleCommission(car, totals.grossAmount, totals.count)
     const amount = getDriverIncomeDeductions(car, getDriverSettlementAmount(car, commission)).insuranceOwnerShare
     if (amount <= 0) continue
 
-    items.push({ date: monthStart, label: `${car.driverName || getShortCarNum(car.number)} 산재보험(차주 부담)`, amount })
+    items.push({ date: monthStart, label: `${driverLabel(car, link)} 산재보험(차주 부담)`, amount })
     total += amount
   }
 

@@ -182,7 +182,7 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
       { main: {}, '서울12가3456': plateWork },
       [],
     )
-    const ownerKim = ownerAll.expense.salary.items.find((item) => item.label === '김기사')
+    const ownerKim = ownerAll.expense.salary.items.find((item) => item.label === '김기사 (5/1~5/31)')
     assert.equal(self.income.settlement.total, SHARE_NET)
     assert.equal(ownerKim?.amount, SHARE_GROSS, '차주 손익의 기사 급여는 산재를 빼지 않은 정산액 전체')
     assert.equal(self.income.settlement.total, SHARE_GROSS - 422, '기사 본인 실수령 = 정산액 − 산재 기사 몫')

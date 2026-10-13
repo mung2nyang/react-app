@@ -25,7 +25,7 @@ describe('getMonthlyDriverRevenueShareExpense', () => {
     const result = getMonthlyDriverRevenueShareExpense(MONTH_KEY, FIXTURE_SETTINGS, subCars, FIXTURE_WORK)
     assert.equal(result.total, REVENUE_SHARE)
     assert.equal(result.items.length, 1)
-    assert.equal(result.items[0].label, '김기사')
+    assert.equal(result.items[0].label, '김기사 (5/1~5/31)')
     assert.equal(result.items[0].amount, REVENUE_SHARE)
   })
 
@@ -56,7 +56,7 @@ describe('getMonthlyDriverInsuranceOwnerShare — 산재보험료 차주 부담�
     const result = getMonthlyDriverInsuranceOwnerShare(MONTH_KEY, FIXTURE_SETTINGS, subCars, FIXTURE_WORK)
     assert.deepEqual(
       result.items.map((item) => [item.label, item.amount]),
-      [['김기사 산재보험(차주 부담)', KIM_INSURANCE_OWNER_ON], ['박기사 산재보험(차주 부담)', PARK_INSURANCE_OWNER]],
+      [['김기사 (5/1~5/31) 산재보험(차주 부담)', KIM_INSURANCE_OWNER_ON], ['박기사 산재보험(차주 부담)', PARK_INSURANCE_OWNER]],
     )
     assert.equal(result.total, KIM_INSURANCE_OWNER_ON + PARK_INSURANCE_OWNER)
   })
@@ -64,7 +64,7 @@ describe('getMonthlyDriverInsuranceOwnerShare — 산재보험료 차주 부담�
   test('매출제도 4대보험 근로자면 총액 전부가 차주 몫', () => {
     const cars = subCars.map((car) => (car.number === '서울12가3456' ? { ...car, driverIncomeType: /** @type {'employee'} */ ('employee') } : car))
     const result = getMonthlyDriverInsuranceOwnerShare(MONTH_KEY, FIXTURE_SETTINGS, cars, FIXTURE_WORK)
-    assert.equal(result.items.find((item) => item.label.startsWith('김기사'))?.amount, KIM_INSURANCE_OWNER_EMPLOYEE)
+    assert.equal(result.items.find((item) => item.label.startsWith('김기사 (5/1~5/31)'))?.amount, KIM_INSURANCE_OWNER_EMPLOYEE)
   })
 
   test('산재 적용을 끄면 산재보험료가 없다 — 항목이 생기지 않는다', () => {
@@ -94,7 +94,7 @@ describe('getOwnerMonthlyFinanceDetail — C-3 월급제+매출제 합산', () =
       assert.equal(detail.expense.salary.total, SALARY_AMOUNT + REVENUE_SHARE + KIM_INSURANCE_OWNER_ON + PARK_INSURANCE_OWNER, scope)
       assert.equal(detail.expense.salary.items.length, 4, scope)
       const labels = detail.expense.salary.items.map((i) => i.label).sort()
-      assert.deepEqual(labels, ['김기사', '김기사 산재보험(차주 부담)', '박기사', '박기사 산재보험(차주 부담)'])
+      assert.deepEqual(labels, ['김기사 (5/1~5/31)', '김기사 (5/1~5/31) 산재보험(차주 부담)', '박기사', '박기사 산재보험(차주 부담)'])
     }
   })
 
@@ -113,10 +113,50 @@ describe('getOwnerMonthlyFinanceDetail — C-3 월급제+매출제 합산', () =
       )),
     }, FIXTURE_WORK, [])
     const find = (/** @type {typeof withIns} */ detail, /** @type {string} */ label) => detail.expense.salary.items.find((i) => i.label === label)?.amount
-    assert.equal(find(withIns, '김기사'), REVENUE_SHARE)
-    assert.equal(find(withoutIns, '김기사'), REVENUE_SHARE)
-    assert.equal(find(withIns, '김기사 산재보험(차주 부담)'), KIM_INSURANCE_OWNER_ON)
-    assert.equal(find(withoutIns, '김기사 산재보험(차주 부담)'), KIM_INSURANCE_OWNER_EMPLOYEE)
+    assert.equal(find(withIns, '김기사 (5/1~5/31)'), REVENUE_SHARE)
+    assert.equal(find(withoutIns, '김기사 (5/1~5/31)'), REVENUE_SHARE)
+    assert.equal(find(withIns, '김기사 (5/1~5/31) 산재보험(차주 부담)'), KIM_INSURANCE_OWNER_ON)
+    assert.equal(find(withoutIns, '김기사 (5/1~5/31) 산재보험(차주 부담)'), KIM_INSURANCE_OWNER_EMPLOYEE)
     assert.equal(withIns.expense.salary.total + (KIM_INSURANCE_OWNER_EMPLOYEE - KIM_INSURANCE_OWNER_ON), withoutIns.expense.salary.total)
   })
 })
+
+describe('기사 급여 계약 기간 — 연동 중 계약만, 기간·계약 밖 운송료를 이름에(로드맵 41-A)', () => {
+  /** @type {import('./financeTypes.js').CarLike} */
+  const car = { type: 'sub', number: '22가2222', driverName: '테스트2', driverPayMode: 'revenue', commEnabled: true, commType: 'percent', commission: '20', shareRevenueWithOwner: true }
+  const work = {
+    '22가2222': {
+      '2026-10-05': { callDetails: [{ id: 'a', client: 'A', fare: 400000 }] },
+      '2026-10-12': { callDetails: [{ id: 'b', client: 'A', fare: 300000 }] },
+    },
+  }
+  /** @param {Array<import('./financeTypes.js').DriverLinkLike>} driverLinks */
+  const run = (driverLinks) => getMonthlyDriverRevenueShareExpense('2026-10', { cars: [car], driverLinks }, [car], work)
+
+  test('연동 중 계약(10/12~)이면 기간 안 30만원분만, 이름에 기간과 계약 밖 운송료', () => {
+    const result = run([{ id: 'l1', vehicleNumber: '22가2222', assignmentStart: '2026-10-12', status: 'linked' }])
+    assert.equal(result.total, 60000)
+    assert.equal(result.items[0].label, '테스트2 (10/12~) · 계약 밖 운송료 400,000원 제외')
+  })
+
+  test('종료일이 있으면 시작~종료를 붙인다', () => {
+    const result = run([{ id: 'l1', vehicleNumber: '22가2222', assignmentStart: '2026-10-01', assignmentEnd: '2026-10-31', status: 'linked' }])
+    assert.equal(result.total, 140000)
+    assert.equal(result.items[0].label, '테스트2 (10/1~10/31)')
+  })
+
+  test('대기 중(pending) 초대는 기간을 자르지 않는다 — 그 달 전부, 이름만', () => {
+    const result = run([{ id: 'p1', vehicleNumber: '22가2222', assignmentStart: '2026-10-12', status: 'pending' }])
+    assert.equal(result.total, 140000)
+    assert.equal(result.items[0].label, '테스트2')
+  })
+
+  test('대기 중 초대가 앞에 있어도 연동 중 계약을 쓴다', () => {
+    const result = run([
+      { id: 'p1', vehicleNumber: '22가2222', assignmentStart: '2026-10-20', status: 'pending' },
+      { id: 'l1', vehicleNumber: '22가2222', assignmentStart: '2026-10-12', status: 'linked' },
+    ])
+    assert.equal(result.total, 60000)
+  })
+})
+
