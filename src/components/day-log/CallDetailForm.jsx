@@ -2,7 +2,7 @@
 // 순서: 경로·톤수 → 거래처 → 운송료·부가세 → 계산서·입금일 → 시간·계기판·플랫폼 → 산재보험료·비고.
 import { useState } from 'react'
 import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
-import { formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
+import { parseCurrencyValue } from '../../lib/money.js'
 import { computeDistanceKm } from '../../lib/workData.js'
 import { draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
@@ -160,14 +160,14 @@ export default function CallDetailForm({
           <div className="form-group">
             <label htmlFor="callStartOdometer">출발 계기판</label>
             <div className="input-with-suffix">
-              <input id="callStartOdometer" className="input-box" inputMode="numeric" placeholder="출발 계기판" value={draft.startOdometer} onChange={(e) => setDraft({ ...draft, startOdometer: formatCurrencyInput(e.target.value) })} />
+              <CurrencyInput id="callStartOdometer" className="input-box" placeholder="출발 계기판" value={draft.startOdometer} onValueChange={(startOdometer) => setDraft({ ...draft, startOdometer })} />
               <span className="suffix">km</span>
             </div>
           </div>
           <div className="form-group">
             <label htmlFor="callEndOdometer">마감 계기판</label>
             <div className="input-with-suffix">
-              <input id="callEndOdometer" className={`input-box${odometerError ? ' input-error' : ''}`} inputMode="numeric" placeholder="마감 계기판" value={draft.endOdometer} onChange={(e) => setDraft({ ...draft, endOdometer: formatCurrencyInput(e.target.value) })} />
+              <CurrencyInput id="callEndOdometer" className={`input-box${odometerError ? ' input-error' : ''}`} placeholder="마감 계기판" value={draft.endOdometer} onValueChange={(endOdometer) => setDraft({ ...draft, endOdometer })} />
               <span className="suffix">km</span>
             </div>
           </div>

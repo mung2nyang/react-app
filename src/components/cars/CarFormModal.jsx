@@ -4,6 +4,7 @@ import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
 import CarDriverIncomeFields from './CarDriverIncomeFields.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
+import CurrencyInput from '../shared/CurrencyInput.jsx'
 
 /**
  * @typedef {Object} CarFormDraft
@@ -116,12 +117,11 @@ export default function CarFormModal({
                 </div>
                 <span className="car-commission-input">
                   {isSalary ? (
-                    <input
+                    <CurrencyInput
                       id="newCarSettlementValue"
-                      inputMode="numeric"
                       placeholder="0"
                       value={formatCurrencyInput(draft.driverSalaryAmount)}
-                      onChange={(e) => setDraft({ ...draft, driverSalaryAmount: e.target.value.replace(/\D/g, '') })}
+                      onValueChange={(next) => setDraft({ ...draft, driverSalaryAmount: next.replace(/\D/g, '') })}
                     />
                   ) : (
                     <input

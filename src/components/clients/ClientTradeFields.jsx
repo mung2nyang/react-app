@@ -1,5 +1,6 @@
 // @ts-check
-import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
+import { formatPercentInput } from '../../lib/money.js'
+import CurrencyInput from '../shared/CurrencyInput.jsx'
 
 /**
  * @param {Object} props
@@ -40,16 +41,17 @@ export default function ClientTradeFields({ draft, setDraft }) {
             <button type="button" className={draft.commType === 'direct' ? 'active' : ''} aria-pressed={draft.commType === 'direct'} onClick={() => setCommType('direct')}>금액</button>
           </div>
           <span className="car-commission-input">
-            <input
-              id="clientCommValue"
-              inputMode={draft.commType === 'direct' ? 'numeric' : 'decimal'}
-              placeholder="0"
-              value={String(draft.commValue || '')}
-              onChange={(e) => setDraft({
-                ...draft,
-                commValue: draft.commType === 'direct' ? formatCurrencyInput(e.target.value) : formatPercentInput(e.target.value),
-              })}
-            />
+            {draft.commType === 'direct' ? (
+              <CurrencyInput id="clientCommValue" placeholder="0" value={String(draft.commValue || '')} onValueChange={(commValue) => setDraft({ ...draft, commValue })} />
+            ) : (
+              <input
+                id="clientCommValue"
+                inputMode="decimal"
+                placeholder="0"
+                value={String(draft.commValue || '')}
+                onChange={(e) => setDraft({ ...draft, commValue: formatPercentInput(e.target.value) })}
+              />
+            )}
             <b>{draft.commType === 'direct' ? '원' : '%'}</b>
           </span>
         </div>

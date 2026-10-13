@@ -77,3 +77,30 @@ test('점 없이 치면 지금 금액 칸과 같다', async () => {
     await cleanup()
   }
 })
+
+test('clearable이면 X 버튼 칸으로 그리고, X를 누르면 비워진다(로드맵 43-B)', async () => {
+  /** @type {Array<string>} */
+  const seen = []
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  function ClearHarness() {
+    const [value, setValue] = useState('1,001')
+    return React.createElement(CurrencyInput, { id: 'partial', clearable: true, value, onValueChange: (next) => { seen.push(next); setValue(next) } })
+  }
+  try {
+    await act(async () => { root.render(React.createElement(ClearHarness)) })
+    const input = /** @type {HTMLInputElement} */ (container.querySelector('input#partial'))
+    assert.ok(input)
+    await act(async () => { input.dispatchEvent(new window.FocusEvent('focusin', { bubbles: true })) })
+    const clear = /** @type {HTMLButtonElement|null} */ (container.querySelector('button[aria-label="입력 지우기"]'))
+    assert.ok(clear, 'X 버튼이 있다')
+    await act(async () => { clear.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    assert.equal(seen.at(-1), '')
+    assert.equal(input.value, '')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+

@@ -7,6 +7,7 @@ import {
 import { formatCurrencyInput, parseCurrencyValue } from '../lib/money.js'
 import TemporalInput from './shared/TemporalInput.jsx'
 import ClearableInput from './shared/ClearableInput.jsx'
+import CurrencyInput from './shared/CurrencyInput.jsx'
 import './expense-form.css'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
@@ -53,13 +54,12 @@ export default function ExpenseFormModal({
           <div className="form-group">
             <label htmlFor="expenseMileage">누적거리</label>
             <div className="input-with-suffix">
-              <input
+              <CurrencyInput
                 id="expenseMileage"
                 className="input-box"
-                inputMode="numeric"
                 placeholder="0"
                 value={formatCurrencyInput(draft.mileage)}
-                onChange={(e) => onChange({ ...draft, mileage: parseCurrencyValue(e.target.value) })}
+                onValueChange={(next) => onChange({ ...draft, mileage: parseCurrencyValue(next) })}
               />
               <span className="suffix">km</span>
             </div>
@@ -111,13 +111,12 @@ export default function ExpenseFormModal({
         <div className="form-group expense-inline-field">
           <label htmlFor="expenseCost">비용</label>
           <div className="input-with-suffix">
-            <input
+            <CurrencyInput
               id="expenseCost"
               className="input-box"
-              inputMode="numeric"
               placeholder="비용을 입력하세요"
               value={formatCurrencyInput(draft.cost)}
-              onChange={(e) => onChange({ ...draft, cost: parseCurrencyValue(e.target.value) })}
+              onValueChange={(next) => onChange({ ...draft, cost: parseCurrencyValue(next) })}
             />
             <span className="suffix">원</span>
           </div>
@@ -128,13 +127,12 @@ export default function ExpenseFormModal({
             <div className="form-group">
               <label htmlFor="expenseSubsidy">유가보조금</label>
               <div className="input-with-suffix">
-                <input
+                <CurrencyInput
                   id="expenseSubsidy"
                   className="input-box"
-                  inputMode="numeric"
                   placeholder="0"
                   value={formatCurrencyInput(draft.subsidy)}
-                  onChange={(e) => onChange({ ...draft, subsidy: parseCurrencyValue(e.target.value) })}
+                  onValueChange={(next) => onChange({ ...draft, subsidy: parseCurrencyValue(next) })}
                 />
                 <span className="suffix">원</span>
               </div>

@@ -6,6 +6,7 @@ import AppDropdown from './shared/AppDropdown.jsx'
 import ConfirmModal from './ConfirmModal.jsx'
 import { clientToDraft } from '../domain/clientDraft.js'
 import { formatCurrencyInput } from '../lib/money.js'
+import CurrencyInput from './shared/CurrencyInput.jsx'
 import { requestClientSave } from '../lib/clientMutations.js'
 import { getCloudUserId } from '../lib/cloudSession.js'
 
@@ -77,7 +78,7 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
         <div className="form-group fixed-route-client-row">
           <label htmlFor="fixedRouteClientPrice">1회 단가</label>
           <span className="car-commission-input">
-            <input id="fixedRouteClientPrice" inputMode="numeric" placeholder="0" value={price} onChange={(e) => setPrice(formatCurrencyInput(e.target.value))} />
+            <CurrencyInput id="fixedRouteClientPrice" placeholder="0" value={price} onValueChange={setPrice} />
             <b>원</b>
           </span>
         </div>
@@ -90,7 +91,7 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
         </div>
         {palletOn && (
           <span className="car-commission-input fixed-route-client-pallet-price">
-            <input id="fixedRoutePalletPrice" aria-label="파렛트 단가" inputMode="numeric" placeholder="0" value={palletPrice} onChange={(e) => setPalletPrice(formatCurrencyInput(e.target.value))} />
+            <CurrencyInput id="fixedRoutePalletPrice" aria-label="파렛트 단가" placeholder="0" value={palletPrice} onValueChange={setPalletPrice} />
             <b>원</b>
           </span>
         )}

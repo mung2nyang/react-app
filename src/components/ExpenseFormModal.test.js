@@ -114,3 +114,34 @@ test('주유(fuel): 결제 방식 세그먼트가 있다', async () => {
     container.remove()
   }
 })
+
+test('비용 칸에 12345.6을 치면 비용은 반올림한 12346(로드맵 43-B)', async () => {
+  const { container, root } = mountTarget()
+  /** @type {Array<{ cost?: number }>} */
+  const seen = []
+  try {
+    await act(async () => {
+      root.render(React.createElement(ExpenseFormModal, {
+        draft: { kind: 'maint', date: '2026-09-14' },
+        kindLabel: '정비',
+        inline: true,
+        onChange: (/** @type {{ cost?: number }} */ next) => { seen.push(next) },
+        onClose: () => {},
+        onSave: () => {},
+      }))
+    })
+    const input = /** @type {HTMLInputElement} */ (container.querySelector('#expenseCost'))
+    assert.ok(input)
+    const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value')?.set
+    assert.ok(setter)
+    await act(async () => {
+      setter.call(input, '12345.6')
+      input.dispatchEvent(new window.Event('input', { bubbles: true }))
+    })
+    assert.equal(seen.at(-1)?.cost, 12346)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
