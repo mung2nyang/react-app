@@ -65,6 +65,11 @@
   font-weight: 650;
 }
 
+.home-trip-row > span:last-child {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .home-trip-route {
   min-width: 0;
   overflow: hidden;

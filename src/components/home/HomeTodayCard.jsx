@@ -21,9 +21,9 @@ export default function HomeTodayCard({ record, today, weekday, inputMode, unitP
   const label = dayWorkBadgeLabel(record, { inputMode, unitPrice })
   const fare = dayFareTotal(record, unitPrice)
   const showFare = inputMode === 'count' && fare > 0
-  const status = off
-    ? '오늘은 휴무입니다'
-    : label ? `오늘 ${label}${showFare ? ` · ${formatWon(fare)}` : ''}` : '아직 기록이 없습니다'
+  // 금액 입력 계정은 달력 짧은 표기 대신 원 단위 전체 금액.
+  const title = inputMode === 'fare' ? formatWon(fare) : `${label}${showFare ? ` · ${formatWon(fare)}` : ''}`
+  const status = off ? '오늘은 휴무입니다' : label ? `오늘 ${title}` : '아직 기록이 없습니다'
   const fixedCount = off ? 0 : getFixedCount(record)
   const calls = off ? [] : getCallDetails(record)
 
