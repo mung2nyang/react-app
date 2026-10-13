@@ -112,6 +112,7 @@ export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwne
     fareByClient: settled.fareByClient,
     commissionByClient: settled.commissionByClient,
     commissionLabelByClient: settled.commissionLabelByClient,
+    insuranceTotal: settled.insuranceTotal,
     vat: settled.vat,
     total: settled.total,
   }

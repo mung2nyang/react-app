@@ -109,6 +109,12 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
           </div>
         )}
 
+        {summary.insuranceTotal > 0 && (
+          <div className="summary-row">
+            <span>산재보험료</span>
+            <span className="summary-value">- {formatWon(summary.insuranceTotal)}</span>
+          </div>
+        )}
         <div className="summary-row">
           <span>부가세 (공급가액 기준 10%)</span>
           <span className="summary-value">{formatWon(summary.vat)}</span>

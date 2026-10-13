@@ -274,3 +274,22 @@ describe('monthSettlementSummary — 부가세는 매출과 같은 규칙(로드
     assert.equal(result.vat, 2470 + 248)
   })
 })
+
+describe('monthSettlementSummary — 콜 상세 산재보험료는 합계에서 뺀다(로드맵 40)', () => {
+  test('산재보험료 합을 insuranceTotal로 내고 total에서 뺀다, 휴무 날은 0', () => {
+    const workData = {
+      '2026-09-01': day({ callDetails: [{ fare: 100000, insuranceFee: '1,000' }, { fare: 50000, insuranceFee: 500 }] }),
+      '2026-09-02': day({ isOff: true, callDetails: [{ fare: 100000, insuranceFee: '9,999' }] }),
+    }
+    const result = monthSettlementSummary(workData, YEAR, MONTH, { clients: [] })
+    assert.equal(result.insuranceTotal, 1500)
+    assert.equal(result.total, 150000 + 15000 - 1500)
+  })
+
+  test('산재보험료가 없으면 0이고 합계는 그대로', () => {
+    const result = monthSettlementSummary({ '2026-09-01': day({ callDetails: [{ fare: 100000 }] }) }, YEAR, MONTH, { clients: [] })
+    assert.equal(result.insuranceTotal, 0)
+    assert.equal(result.total, 110000)
+  })
+})
+

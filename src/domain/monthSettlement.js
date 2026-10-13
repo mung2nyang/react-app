@@ -6,6 +6,7 @@ import { countCallTrips, getCallDetails, getFixedCount, getPalletCount } from '.
 import { monthTotal } from './expenses.js'
 import { calculateDriverVehicleCommission, getCallDetailCommissionAmount } from './financeCore.js'
 import { getFixedRouteCommissionAmount } from './fixedRouteCommission.js'
+import { callInsuranceTotal } from './call-details.js'
 import { parseCurrencyValue } from './money.js'
 
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
@@ -73,6 +74,7 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
   let distanceKm = 0
   // 부가세는 매출(financeOwnerDetail.js)과 같은 규칙: 고정노선·파렛트는 날마다, 콜 상세는 건마다 반올림하고 면세면 0.
   let vat = 0
+  let insuranceTotal = 0
   /** @type {Record<string, number>} */
   const fareByClient = {}
   /** @type {Record<string, number>} */
@@ -86,6 +88,7 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
     trips += fixedCount
     callTrips += countCallTrips(record)
     distanceKm += getRecordTotalDistance(record)
+    insuranceTotal += callInsuranceTotal(record)
 
     if (fixedCount > 0) {
       const fAmount = fixedCount * unitPrice
@@ -146,11 +149,12 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
   const maint = monthTotal(vehicleExpenses, 'maint', year, month)
   const fuel = monthTotal(vehicleExpenses, 'fuel', year, month)
   const misc = monthTotal(vehicleExpenses, 'misc', year, month)
-  const total = fare + palletFare - commissionTotal - subCarComm + vat
+  // 콜 상세 산재보험료도 합계에서 뺀다(로드맵 40, 달력·홈·운송비 내역서 같음).
+  const total = fare + palletFare - commissionTotal - subCarComm - insuranceTotal + vat
 
   return {
     trips, callTrips, fixedBaseFare, defaultBaseFare, fareByClient, commissionByClient,
     commissionLabelByClient, palletFare, subCarComm, subCarCommLabel, distanceKm, fare,
-    commissionTotal, vat, total, maint, fuel, misc,
+    commissionTotal, insuranceTotal, vat, total, maint, fuel, misc,
   }
 }

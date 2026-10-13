@@ -1,7 +1,7 @@
 // @ts-check
 import { callFareTotal, callVatTotal } from '../../domain/day-record.js'
+import { callInsuranceTotal } from '../../domain/call-details.js'
 import { getDetailPaymentSummary } from '../../lib/finance.js'
-import { parseCurrencyValue } from '../../lib/money.js'
 import { commissionInfo } from './callDetailFormHelpers.js'
 import CallDetailCard from './CallDetailCard.jsx'
 import './call-detail-list.css'
@@ -30,7 +30,7 @@ export default function CallDetailList({ details, settings, clients, canAdd = tr
   const callVat = callVatTotal({ isOff: false, callDetails: details })
   const totalDistance = details.reduce((sum, item) => sum + (parseFloat(item.distanceKm || '') || 0), 0)
   const totalCommission = details.reduce((sum, item) => sum + commissionInfo(item).amount, 0)
-  const totalInsuranceFee = details.reduce((sum, item) => sum + parseCurrencyValue(item.insuranceFee || ''), 0)
+  const totalInsuranceFee = callInsuranceTotal({ isOff: false, callDetails: details })
   const grandTotal = callFare - totalCommission - totalInsuranceFee + callVat
 
   return (

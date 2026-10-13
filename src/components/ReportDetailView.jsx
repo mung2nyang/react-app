@@ -22,6 +22,7 @@ import './report/report.css'
  * @property {Record<string, number>} monthCommByClient
  * @property {Record<string, string>} clientCommLabels
  * @property {number} vat
+ * @property {number} [insuranceTotal]
  * @property {number} grandTotal
  */
 
@@ -157,6 +158,12 @@ export default function ReportDetailContent({ report, clientFilter, showClientCo
             )}
           </div>
         ))}
+        {(report.insuranceTotal || 0) > 0 && (
+          <div className="summary-row">
+            <span>산재보험료</span>
+            <span className="summary-value">- {formatWon(report.insuranceTotal || 0)}</span>
+          </div>
+        )}
         <div className="summary-row">
           <span>부가세 (공급가액 기준 10%)</span>
           <span className="summary-value">{formatWon(report.vat)}</span>

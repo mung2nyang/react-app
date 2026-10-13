@@ -132,3 +132,10 @@ export function upsertCallDetail(details, draft, editingIndex, dateKey, clients 
 export function removeCallDetail(details, index) {
   return (details || []).filter((_, i) => i !== index)
 }
+
+// 콜 상세 산재보험료(1인 차주가 건마다 적는 칸) 하루 합 — 하루 화면·달력·내역서가 같이 쓴다(로드맵 40, 모든 화면에서 뺀다).
+/** @param {{ isOff?: boolean, callDetails?: Array<CallDetailLike> }|null|undefined} record */
+export function callInsuranceTotal(record) {
+  if (!record || record.isOff || !Array.isArray(record.callDetails)) return 0
+  return record.callDetails.reduce((sum, detail) => sum + parseCurrencyValue(detail?.insuranceFee), 0)
+}

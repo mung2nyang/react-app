@@ -100,6 +100,7 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
  *   commissionByClient: Record<string, number>,
  *   commissionLabelByClient: Record<string, string>,
  *   vat: number,
+ *   insuranceTotal?: number,
  *   total: number,
  * }} props.report
  * @param {(value: JsonValue|undefined) => string} props.dash
@@ -178,6 +179,12 @@ export function ReportSummaryContent({ profile, car, report, dash, formatWon, di
             )}
           </div>
         ))}
+        {(report.insuranceTotal || 0) > 0 && (
+          <div className="summary-row">
+            <span>산재보험료</span>
+            <span className="summary-value">- {formatWon(report.insuranceTotal || 0)}</span>
+          </div>
+        )}
         <div className="summary-row">
           <span>부가세 (공급가액 기준 10%)</span>
           <span className="summary-value">{formatWon(report.vat)}</span>
