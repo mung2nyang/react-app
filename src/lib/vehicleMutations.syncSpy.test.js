@@ -121,7 +121,7 @@ test('로컬 차량 삭제는 scheduleCloudSync 1회·Supabase 0회다', async (
   assert.equal(stubSupabaseCallCounts.update || 0, apiBefore.update || 0)
 })
 
-test('Supabase 차량 삭제 성공은 scheduleCloudSync 0회·delete 6회다', async () => {
+test('Supabase 차량 삭제 성공은 scheduleCloudSync 0회·delete 1회다(37-B: vehicles 한 줄만)', async () => {
   resetStubSupabaseCallCounts()
   beginSessionEpoch('user-sync-del', 'veh-sync-remote-del')
   setHydration({ status: 'ready', userId: 'user-sync-del', ownerKey: 'veh-sync-remote-del' })
@@ -134,14 +134,14 @@ test('Supabase 차량 삭제 성공은 scheduleCloudSync 0회·delete 6회다', 
   assert.equal(result.failed, false)
   assert.match(String(result.toast), /삭제했습니다/)
   assert.equal(scheduleCloudSyncCallCount, before)
-  assert.equal(stubSupabaseCallCounts.delete, 6)
+  assert.equal(stubSupabaseCallCounts.delete, 1)
   assert.equal(stubSupabaseCallCounts.select || 0, 0)
   assert.equal(stubSupabaseCallCounts.upsert || 0, 0)
   assert.equal(stubSupabaseCallCounts.insert || 0, 0)
   assert.equal(stubSupabaseCallCounts.update || 0, 0)
 })
 
-test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 scheduleCloudSync 0회, 자식 delete만 나간다', async () => {
+test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 scheduleCloudSync 0회, vehicles delete 1회만 나간다', async () => {
   resetStubSupabaseCallCounts()
   stubSupabaseMethodImpls.delete = async () => { throw new Error('network down') }
   beginSessionEpoch('user-sync-retry', 'veh-sync-retry-del')
@@ -162,7 +162,7 @@ test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 sch
     assert.equal(String(result.toast), '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
     assert.deepEqual(getState().cars[owner].map((c) => c.id), ['car-r'], 'Store는 저장 전 값이어야 한다')
     assert.equal(scheduleCloudSyncCallCount, before)
-    assert.equal(stubSupabaseCallCounts.delete, 4)
+    assert.equal(stubSupabaseCallCounts.delete, 1)
     assert.equal(stubSupabaseCallCounts.select || 0, 0)
     assert.equal(stubSupabaseCallCounts.upsert || 0, 0)
     assert.equal(stubSupabaseCallCounts.insert || 0, 0)

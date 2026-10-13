@@ -82,6 +82,9 @@ export async function requestVehicleDeletion({ ownerKey, userId, cars, vehicleId
       return { cars, blocked: null, toast: SESSION_CHANGED_TOAST, failed: true, closeModal: false }
     }
     console.error('[requestVehicleDeletion] 삭제 실패:', error)
-    return { cars, blocked: SAVE_FAIL_TOAST, toast: SAVE_FAIL_TOAST, failed: true, closeModal: false }
+    // 서버가 연동 중 삭제를 거절하면(P0001, 0020) 그 문구를 그대로 보여 준다.
+    const serverReason = error && typeof error === 'object' && 'code' in error && error.code === 'P0001' && 'message' in error && typeof error.message === 'string' ? error.message : null
+    const toast = serverReason || SAVE_FAIL_TOAST
+    return { cars, blocked: toast, toast, failed: true, closeModal: false }
   }
 }

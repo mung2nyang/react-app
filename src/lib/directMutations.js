@@ -13,23 +13,10 @@ import { rangesOverlap } from './cloudStorage.js'
 export async function deleteVehicleFromSupabase(vehicleSupabaseId, captured) {
   if (!vehicleSupabaseId) return
   assertCloudWriteReady()
-  const childResults = await Promise.all([
-    supabase.from('transport_details').delete().eq('vehicle_id', vehicleSupabaseId),
-    supabase.from('maintenance_records').delete().eq('vehicle_id', vehicleSupabaseId),
-    supabase.from('fuel_records').delete().eq('vehicle_id', vehicleSupabaseId),
-    supabase.from('misc_expense_records').delete().eq('vehicle_id', vehicleSupabaseId),
-  ])
-  assertSessionStillCurrent(captured)
-  const childError = childResults.find((result) => result.error)?.error
-  if (childError) throw childError
-  const { error: dailyLogsError } = await supabase.from('daily_logs').delete().eq('vehicle_id', vehicleSupabaseId)
-  assertSessionStillCurrent(captured)
-  if (dailyLogsError) throw dailyLogsError
-  // 본체 0행 삭제(이미 없음/RLS로 안 보임)를 성공으로 치면
-  // Store만 비고 서버 행이 남아 hydrate가 다시 그린다 — 실제로 지운 행이 0이면
-  // throw로 Fail-Fast. 자식 테이블 0행은 "이미 없음"이라 허용한다. (Supabase의
-  // delete().select()는 항상 배열을 준다. 배열이 아니면 이 정보가 없는 것이라
-  // 통과시킨다.)
+  // 딸린 표는 전부 vehicles ON DELETE CASCADE라 차량 한 줄만 지운다 — 서버가 거절하면 아무것도 안 지워진다(로드맵 37-B).
+  // 0행 삭제(이미 없음/RLS로 안 보임)를 성공으로 치면 Store만 비고 서버 행이 남아
+  // hydrate가 다시 그린다 — 실제로 지운 행이 0이면 throw로 Fail-Fast. (Supabase의
+  // delete().select()는 항상 배열을 준다. 배열이 아니면 이 정보가 없는 것이라 통과시킨다.)
   const { data, error } = await supabase.from('vehicles').delete().eq('id', vehicleSupabaseId).select('id')
   assertSessionStillCurrent(captured)
   if (error) throw error

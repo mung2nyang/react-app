@@ -278,6 +278,61 @@ describe('슬라이스 E — 로그인 차량 삭제는 cars를 localStorage에 
   })
 })
 
+describe('requestVehicleDeletion — 37-B: vehicles 한 줄만 지우고, 서버 연동 거절(P0001)은 그 문구로 안내', () => {
+  test('성공 시 딸린 표 delete는 0회, vehicles delete 1회', async () => {
+    const ownerKey = 'dma-vehicle-only-row'
+    beginReady('user-1', ownerKey)
+    const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 911 }]
+    writeJsonKey('cars', ownerKey, cars)
+    handlers.vehicles = { delete: () => ({ data: [{ id: 911 }], error: null }) }
+
+    const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
+
+    assert.equal(result.failed, false)
+    assert.equal(countOf('vehicles', 'delete'), 1)
+    for (const table of ['transport_details', 'maintenance_records', 'fuel_records', 'misc_expense_records', 'daily_logs']) {
+      assert.equal(countOf(table, 'delete'), 0, `${table}는 서버 CASCADE가 지운다`)
+    }
+    endCloudSession()
+  })
+
+  test('서버가 P0001로 거절하면 서버 문구를 안내하고 Store·localStorage·알림은 그대로', async () => {
+    const ownerKey = 'dma-vehicle-linked-reject'
+    beginReady('user-1', ownerKey)
+    const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 912 }]
+    writeJsonKey('cars', ownerKey, cars)
+    const reason = '기사가 연동된 차량은 삭제할 수 없습니다. 기사 관리에서 연동을 먼저 해제해 주세요.'
+    handlers.vehicles = { delete: () => ({ data: null, error: { code: 'P0001', message: reason } }) }
+
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
+    const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
+    unsubscribe()
+
+    assert.equal(result.toast, reason)
+    assert.equal(result.failed, true)
+    assert.equal(result.closeModal, false)
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), cars)
+    assert.equal(getState().cars[ownerKey], undefined)
+    assert.equal(notifyCount, 0)
+    assert.equal(countOf('daily_logs', 'delete'), 0, '거절되면 딸린 기록도 안 지워진다')
+    endCloudSession()
+  })
+
+  test('P0001이 아닌 서버 오류는 지금 문구 그대로', async () => {
+    const ownerKey = 'dma-vehicle-other-error'
+    beginReady('user-1', ownerKey)
+    const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 913 }]
+    writeJsonKey('cars', ownerKey, cars)
+    handlers.vehicles = { delete: () => ({ data: null, error: { code: '42501', message: 'permission denied' } }) }
+
+    const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
+
+    assert.equal(result.toast, FAIL_FAST_TOAST)
+    endCloudSession()
+  })
+})
+
 describe('requestClientDeletion — 사용자 지시 10번 필수 시나리오', () => {
   test('failed 상태: Store 유지, localStorage 유지, 서버 호출 0회, 성공 토스트 없음', async () => {
     const ownerKey = 'dma-client-failed'

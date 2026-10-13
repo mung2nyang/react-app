@@ -84,23 +84,26 @@ describe('실패 주입 — Supabase가 { data:null, error }를 반환해도 out
   })
 })
 
-describe('멱등성 — 중간 테이블만 성공한 뒤 재시도해도 안전하다', () => {
-  test('daily_logs.delete만 실패했다가 재시도로 성공하면, 앞서 이미 지워진 자식 테이블 delete가 다시 불려도(0행 삭제) 에러 없이 끝난다', async () => {
+describe('멱등성 — 차량 삭제는 vehicles 한 줄만 부르고 재시도해도 안전하다(37-B)', () => {
+  test('vehicles.delete가 실패했다가 재시도로 성공하면 딸린 표 delete는 한 번도 안 부르고 op이 사라진다', async () => {
     resetHandlers()
     resetOutboxQueuesForTests()
     const ownerKey = 'outboxflush-partial-retry'
     beginReadySession('user-1', ownerKey)
-    handlers.daily_logs = { delete: () => ({ data: null, error: { message: 'timeout' } }) }
+    handlers.vehicles = { delete: () => ({ data: null, error: { message: 'timeout' } }) }
     seedOp(ownerKey, buildTombstoneOp({ ownerKey, userId: 'user-1', resourceType: 'vehicle', resourceId: 504, operation: 'delete', sessionEpoch: 1 }))
 
     await flushMutationOutbox(ownerKey)
     assert.equal(hasPendingOps(ownerKey), true)
-    assert.equal(countOf('transport_details', 'delete'), 1, '자식 테이블은 이미 지워졌다(재시도 시 다시 불려도 안전해야 한다)')
+    assert.equal(countOf('vehicles', 'delete'), 1)
 
-    handlers.daily_logs = {}
+    handlers.vehicles = { delete: () => ({ data: [{ id: 504 }], error: null }) }
     await flushMutationOutbox(ownerKey)
     assert.equal(hasPendingOps(ownerKey), false)
-    assert.equal(countOf('transport_details', 'delete'), 2, '재시도가 자식 테이블 delete를 다시 불러도(이미 빈 테이블) 에러 없이 통과해야 한다')
+    assert.equal(countOf('vehicles', 'delete'), 2)
+    for (const table of ['transport_details', 'maintenance_records', 'fuel_records', 'misc_expense_records', 'daily_logs']) {
+      assert.equal(countOf(table, 'delete'), 0, `${table}는 서버 CASCADE가 지우므로 앱이 부르지 않는다`)
+    }
     endCloudSession()
   })
 })
@@ -283,25 +286,25 @@ describe('사용자 지시 1번(4차 재작업) — 미동기화 차량이 뒤�
 })
 
 describe('실패 주입 — 다단계 삭제 도중 로그아웃 (사용자 지시 2번)', () => {
-  test('차량 삭제 자식 테이블 처리 중 로그아웃하면, 이후 단계(daily_logs/vehicles) 원격 호출이 0회이고 op이 보존된다', async () => {
+  test('차량 삭제(vehicles) 응답 전 로그아웃하면 op이 보존되고 딸린 표 delete는 0회다(37-B)', async () => {
     resetHandlers()
     resetOutboxQueuesForTests()
     const ownerKey = 'outboxflush-delete-midstep-logout'
     beginReadySession('user-1', ownerKey)
 
-    let releaseChildren
-    const gate = new Promise((resolve) => { releaseChildren = resolve })
-    handlers.transport_details = { delete: () => gate.then(() => ({ data: null, error: null })) }
+    let releaseVehicle
+    const gate = new Promise((resolve) => { releaseVehicle = resolve })
+    handlers.vehicles = { delete: () => gate.then(() => ({ data: [{ id: 510 }], error: null })) }
     const op = seedOp(ownerKey, buildTombstoneOp({ ownerKey, userId: 'user-1', resourceType: 'vehicle', resourceId: 510, operation: 'delete', sessionEpoch: 1 }))
 
     const flushPromise = flushMutationOutbox(ownerKey)
     await wait(10)
-    endCloudSession() // 자식 테이블 delete(Promise.all)가 아직 안 끝난 상태에서 로그아웃한다.
-    releaseChildren()
+    endCloudSession() // vehicles delete 응답이 오기 전에 로그아웃한다.
+    releaseVehicle()
     await flushPromise
 
-    assert.equal(countOf('daily_logs', 'delete'), 0, '로그아웃 이후 단계는 원격 호출조차 나가면 안 된다')
-    assert.equal(countOf('vehicles', 'delete'), 0, '마지막 단계(vehicles 본체 삭제)도 절대 나가면 안 된다')
+    assert.equal(countOf('vehicles', 'delete'), 1)
+    assert.equal(countOf('daily_logs', 'delete'), 0, '딸린 표는 앱이 부르지 않는다')
     assert.equal(hasPendingOps(ownerKey), true, 'op이 그대로 보존돼야 한다(제거되면 안 된다)')
     assert.equal(getPendingOps(ownerKey)[0].id, op.id)
   })
