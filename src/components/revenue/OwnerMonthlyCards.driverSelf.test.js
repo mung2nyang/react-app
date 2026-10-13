@@ -50,6 +50,7 @@ describe('OwnerMonthlyCards variant=driverSelf', () => {
         total: 450000,
         fare: { total: 450000, items: [{ label: '대한', amount: 200000 }] },
         commission: { total: 0, items: [] },
+        insurance: { total: 0, items: [] },
         fuelSubsidy: { total: 5000, items: [{ date: '2026-05-10', label: '주유', amount: 5000 }] },
         settlement: {
           total: 64500,
@@ -108,6 +109,30 @@ describe('OwnerMonthlyCards variant=driverSelf', () => {
       })
       assert.ok(container.textContent?.includes('이번 달 월급'))
       assert.equal(container.textContent?.includes('당월 순이익'), false)
+    } finally {
+      root.unmount()
+      container.remove()
+    }
+  })
+  test('산재보험료가 0원이면 줄이 없고, 있으면 "산재보험료" 줄과 금액이 보인다(로드맵 40-B)', async () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    try {
+      await act(async () => {
+        root.render(React.createElement(OwnerMonthlyCards, { detail: sampleDetail(), variant: 'driverSelf' }))
+      })
+      assert.equal((container.textContent || '').includes('산재보험료'), false, '0원이면 줄을 숨긴다')
+      const detail = sampleDetail()
+      detail.income.insurance = { total: 1000, items: [{ label: '대한', amount: 1000 }] }
+      detail.income.total = 449000
+      await act(async () => {
+        root.render(React.createElement(OwnerMonthlyCards, { detail, variant: 'driverSelf' }))
+      })
+      const text = container.textContent || ''
+      assert.ok(text.includes('산재보험료'), text.slice(0, 300))
+      assert.ok(text.includes('-1,000원'), '금액 앞에 - 표시')
+      assert.ok(text.includes('449,000원'), '합계는 산재보험료만큼 줄어든 값')
     } finally {
       root.unmount()
       container.remove()

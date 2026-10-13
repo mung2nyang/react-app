@@ -91,6 +91,13 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
           amount={-detail.income.commission.total}
           items={detail.income.commission.items.map((item) => ({ label: item.label, amount: -item.amount }))}
         />
+        {detail.income.insurance.total > 0 && (
+          <RevenueDetailRow
+            label="산재보험료"
+            amount={-detail.income.insurance.total}
+            items={detail.income.insurance.items.map((item) => ({ label: item.label, amount: -item.amount }))}
+          />
+        )}
         {!isDriverSelf && (
           <RevenueDetailRow
             label="당월 유가보조금 환급"

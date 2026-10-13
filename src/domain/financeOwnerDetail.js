@@ -53,6 +53,8 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
   const fareByClient = new Map()
   /** @type {Map<string, number>} */
   const commissionByClient = new Map()
+  /** @type {Map<string, number>} */
+  const insuranceByClient = new Map()
 
   sources.forEach((source) => {
     const isMain = source.logId === 'main'
@@ -104,6 +106,10 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
           const commission = getCallDetailCommissionAmount(detail, fare, settings)
           if (commission > 0) commissionByClient.set(clientLabel, (commissionByClient.get(clientLabel) || 0) + commission)
 
+          // 콜 상세 산재보험료는 수입에서 뺀다(로드맵 40, 달력 callInsuranceTotal과 같은 값).
+          const insurance = parseCurrencyValue(detail?.insuranceFee)
+          if (insurance > 0) insuranceByClient.set(clientLabel, (insuranceByClient.get(clientLabel) || 0) + insurance)
+
           distanceKm += parseCurrencyValue(detail?.distanceKm)
           durationMinutes += getCallDetailDurationMinutes(detail)
         })
@@ -123,14 +129,16 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
 
   const fareItems = Array.from(fareByClient.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => b.amount - a.amount)
   const commissionItems = Array.from(commissionByClient.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => b.amount - a.amount)
+  const insuranceItems = Array.from(insuranceByClient.entries()).map(([label, amount]) => ({ label, amount })).sort((a, b) => b.amount - a.amount)
 
   const fareTotal = fareItems.reduce((sum, i) => sum + i.amount, 0)
   const commissionTotal = commissionItems.reduce((sum, i) => sum + i.amount, 0)
+  const insuranceTotal = insuranceItems.reduce((sum, i) => sum + i.amount, 0)
   const maintTotal = maintItems.reduce((sum, i) => sum + i.amount, 0)
   const fuelTotal = fuelItems.reduce((sum, i) => sum + i.amount, 0)
   const miscTotal = miscItems.reduce((sum, i) => sum + i.amount, 0)
 
-  const incomeTotal = fareTotal - commissionTotal + fuelSubsidyTotal
+  const incomeTotal = fareTotal - commissionTotal - insuranceTotal + fuelSubsidyTotal
   const expenseTotal = maintTotal + fuelTotal + miscTotal + salaryTotal
 
   const unpaidItems = getReceivableItems(settings, workDataByLogId).filter((item) => {
@@ -152,6 +160,7 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
       total: incomeTotal,
       fare: { total: fareTotal, items: fareItems },
       commission: { total: commissionTotal, items: commissionItems },
+      insurance: { total: insuranceTotal, items: insuranceItems },
       fuelSubsidy: { total: fuelSubsidyTotal, items: fuelSubsidyItems },
     },
     expense: {

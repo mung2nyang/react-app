@@ -85,6 +85,7 @@ export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLo
     income: {
       fare: base.income.fare,
       commission: base.income.commission,
+      insurance: base.income.insurance,
       fuelSubsidy: EMPTY_BUCKET,
       settlement: {
         total: settlementTotal,
@@ -92,8 +93,8 @@ export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLo
         label,
         payMode: assigned?.driverPayMode || null,
       },
-      // 화면에 보이는 운송료·운임수수료 두 줄의 합(유가보조금은 driverSelf에서 숨김)
-      total: (Number(base.income.fare.total) || 0) - (Number(base.income.commission.total) || 0),
+      // 화면에 보이는 운송료·운임수수료·산재보험료 줄의 합(유가보조금은 driverSelf에서 숨김)
+      total: (Number(base.income.fare.total) || 0) - (Number(base.income.commission.total) || 0) - (Number(base.income.insurance.total) || 0),
     },
     expense: base.expense,
   }

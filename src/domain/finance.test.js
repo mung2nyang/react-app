@@ -17,6 +17,7 @@ import {
 } from './finance.js'
 import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
 import { parseCurrencyValue } from './money.js'
+import { monthSettlementSummary } from './monthSettlement.js'
 
 /** @template T @param {T} a @param {T} b */
 function same(a, b) {
@@ -413,3 +414,32 @@ describe('getLinkedDriverClientInvoiceGroups — 거래처 미지정 운행', ()
     assert.deepEqual(result.unassignedTrips.map((t) => [t.dateKey, t.fare]), [['2026-05-03', 70000]])
   })
 })
+
+describe('매출 — 콜 상세 산재보험료는 수입에서 뺀다(로드맵 40-B)', () => {
+  const workData = {
+    '2026-10-01': { callDetails: [{ client: '한진', fare: 100000, insuranceFee: '1,000' }, { client: '대한', fare: 50000, insuranceFee: 500 }] },
+    '2026-10-02': { isOff: true, callDetails: [{ client: '한진', fare: 100000, insuranceFee: '9,999' }] },
+  }
+
+  test('거래처별로 모으고 수입 합계·순이익에서 뺀다(휴무 날 제외)', () => {
+    const detail = getOwnerMonthlyFinanceDetail('2026-10', 'owner', { clients: [], cars: [] }, { main: workData }, [])
+    assert.equal(detail.income.insurance.total, 1500)
+    assert.deepEqual(detail.income.insurance.items, [{ label: '한진', amount: 1000 }, { label: '대한', amount: 500 }])
+    assert.equal(detail.income.total, 150000 - 1500)
+    assert.equal(detail.netProfit, 150000 - 1500)
+  })
+
+  test('달력 산재보험료 줄과 같은 금액', () => {
+    const detail = getOwnerMonthlyFinanceDetail('2026-10', 'owner', { clients: [], cars: [] }, { main: workData }, [])
+    const calendar = monthSettlementSummary(workData, 2026, 9, { clients: [] })
+    assert.equal(detail.income.insurance.total, calendar.insuranceTotal)
+  })
+
+  test('산재보험료가 없으면 0이고 합계는 그대로', () => {
+    const detail = getOwnerMonthlyFinanceDetail('2026-10', 'owner', { clients: [], cars: [] }, { main: { '2026-10-01': { callDetails: [{ client: '한진', fare: 100000 }] } } }, [])
+    assert.equal(detail.income.insurance.total, 0)
+    assert.deepEqual(detail.income.insurance.items, [])
+    assert.equal(detail.income.total, 100000)
+  })
+})
+

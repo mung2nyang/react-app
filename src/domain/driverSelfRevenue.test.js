@@ -46,10 +46,11 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     assert.equal(detail.tripCount, TRIP_COUNT)
     assert.equal(detail.income.settlement.total, SHARE_NET)
     assert.equal(detail.netProfit, SHARE_NET)
+    assert.equal(detail.income.insurance.total, 3000, '콜 상세 산재보험료 3,000원(로드맵 40)')
     assert.equal(
       detail.income.total,
-      detail.income.fare.total - detail.income.commission.total,
-      '합계는 화면에 보이는 운송료−수수료',
+      detail.income.fare.total - detail.income.commission.total - detail.income.insurance.total,
+      '합계는 화면에 보이는 운송료−수수료−산재보험료',
     )
     assert.notEqual(detail.income.total, detail.netProfit, '합계와 정산액(순이익)은 다른 값')
     assert.equal(detail.income.settlement.label, '기사 정산(15%)')
@@ -113,7 +114,7 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     const ownerShare = FARE_TOTAL - SHARE_NET
     assert.ok(ownerShare > 0)
     assert.ok(!detail.income.settlement.items.some((i) => i.amount === ownerShare))
-    assert.equal(detail.income.total, detail.income.fare.total - detail.income.commission.total)
+    assert.equal(detail.income.total, detail.income.fare.total - detail.income.commission.total - detail.income.insurance.total)
     assert.equal(detail.income.settlement.total, SHARE_NET)
   })
 
@@ -127,7 +128,7 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
     const withExp = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK, expenses)
     assert.equal(withExp.netProfit, SHARE_NET)
     assert.equal(withExp.netProfit, without.netProfit)
-    assert.equal(withExp.income.total, withExp.income.fare.total - withExp.income.commission.total)
+    assert.equal(withExp.income.total, withExp.income.fare.total - withExp.income.commission.total - withExp.income.insurance.total)
     assert.ok(withExp.expense.total > 0)
     assert.equal(withExp.expense.maint.total, 50000)
     assert.equal(withExp.expense.fuel.total, 80000)
