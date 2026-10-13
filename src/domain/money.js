@@ -28,6 +28,20 @@ export function formatCurrencyInput(value) {
 }
 
 /**
+ * 금액 칸에 친 글자(소수점 포함)를 반올림한 쉼표 정수 글자로 — 첫 점만 소수점으로 본다(로드맵 43).
+ * @param {string|undefined} text
+ * @returns {string}
+ */
+export function roundCurrencyText(text) {
+  const raw = String(text ?? '').replace(/[^0-9.]/g, '')
+  const dot = raw.indexOf('.')
+  const intPart = dot >= 0 ? raw.slice(0, dot) : raw
+  const fracPart = dot >= 0 ? raw.slice(dot + 1).replace(/\./g, '') : ''
+  const n = Math.round(Number(`${intPart || '0'}.${fracPart || '0'}`))
+  return n ? n.toLocaleString('ko-KR') : ''
+}
+
+/**
  * @param {JsonValue|undefined} value
  * @returns {string}
  */

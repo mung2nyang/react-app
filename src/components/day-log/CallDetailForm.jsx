@@ -8,6 +8,7 @@ import { draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
 import CallClientQuickAdd from './CallClientQuickAdd.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
+import CurrencyInput from '../shared/CurrencyInput.jsx'
 import TemporalInput from '../shared/TemporalInput.jsx'
 import CallDetailPaymentFields, { CallInsuranceFeeField, CallVatExemptRow } from './CallDetailPaymentFields.jsx'
 import './call-detail-form.css'
@@ -133,7 +134,7 @@ export default function CallDetailForm({
         <div className="call-inline-field">
           <label htmlFor="callFare">운송료<br />(부가세{' '}별도)</label>
           <div className="input-with-suffix">
-            <input id="callFare" className="input-box" inputMode="numeric" placeholder="운송료 입력" value={draft.fare} onChange={(e) => setDraft({ ...draft, fare: formatCurrencyInput(e.target.value) })} />
+            <CurrencyInput id="callFare" className="input-box" placeholder="운송료 입력" value={draft.fare} onValueChange={(fare) => setDraft({ ...draft, fare })} />
             <span className="suffix">원</span>
           </div>
         </div>

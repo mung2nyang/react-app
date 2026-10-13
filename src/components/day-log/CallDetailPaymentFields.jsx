@@ -1,6 +1,6 @@
 // @ts-check
 // 콜상세 입력의 돈 관련 칸(계산서·입금 예정일, 부가세 없음, 산재보험료) — CallDetailForm에서 분리.
-import { formatCurrencyInput } from '../../lib/money.js'
+import CurrencyInput from '../shared/CurrencyInput.jsx'
 import TemporalInput from '../shared/TemporalInput.jsx'
 import './call-detail-payment.css'
 
@@ -45,7 +45,7 @@ export function CallInsuranceFeeField({ draft, setDraft }) {
       <div className="call-inline-field">
         <label htmlFor="callInsuranceFee">산재보험료</label>
         <div className="input-with-suffix">
-          <input id="callInsuranceFee" className="input-box" inputMode="numeric" placeholder="금액 입력" value={draft.insuranceFee} onChange={(e) => setDraft({ ...draft, insuranceFee: formatCurrencyInput(e.target.value) })} />
+          <CurrencyInput id="callInsuranceFee" className="input-box" placeholder="금액 입력" value={draft.insuranceFee} onValueChange={(insuranceFee) => setDraft({ ...draft, insuranceFee })} />
           <span className="suffix">원</span>
         </div>
       </div>
