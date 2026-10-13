@@ -4,6 +4,7 @@ import { calculatePaymentDueDate } from './clients.js'
 import {
   buildTaxInvoiceEntry,
   getDetailPaymentSummary,
+  getOwnerMonthlyFinanceDetail,
   getReceivableItems,
   getTaxInvoicePartyInfo,
   getTaxInvoiceRecordId,
@@ -36,11 +37,12 @@ function groupSnapshot(items) {
 // 아래 기대값은 확정 규칙 기준 직접 값이다(2026-09에 원본 앱 대조에서 전환 — 그때 원본과 일치 확인된 값).
 describe('미수금 — 운행 픽스처 확정 금액', () => {
   test('거래처+월 묶음 금액과 미수 행', () => {
+    // 0원 운행은 미수 아님(로드맵 42, 보리 결정 2026-10-13) — 원본 앱과 달라짐.
     const ours = getReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK)
-    assert.equal(ours.length, 7)
+    assert.equal(ours.length, 6)
     same(groupSnapshot(ours), [
       { client: '대한', monthKey: '2026-04', total: 999999, count: 1 },
-      { client: '한진', monthKey: '2026-05', total: 130000, count: 4 },
+      { client: '한진', monthKey: '2026-05', total: 130000, count: 3 },
       { client: '대한', monthKey: '2026-05', total: 200000, count: 1 },
       // 기사차량 부산33나1111 운행분도 늘 포함(옛 "기사 직접 정산" 거름 삭제, 2026-10-02)
       { client: '직접', monthKey: '2026-05', total: 80000, count: 1 },
@@ -49,7 +51,6 @@ describe('미수금 — 운행 픽스처 확정 금액', () => {
       ours.map((item) => [item.client, item.workDate, item.remainingAmount, item.paymentDueDate]),
       [
         ['한진', '2026-05-10', 100000, '2026-04-01'],
-        ['한진', '2026-05-10', 0, ''],
         ['한진', '2026-05-10', 20000, ''],
         ['한진', '2026-05-10', 10000, ''],
         ['대한', '2026-05-12', 200000, ''],
@@ -67,7 +68,7 @@ describe('미수금 — 운행 픽스처 확정 금액', () => {
 
   test('상세 목록은 같은 거래처·월의 미수 건만 날짜순으로 둔다', () => {
     const ours = groupItems(getReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK), '한진', '2026-05')
-    same(ours.map((item) => item.fare), [100000, 0, 20000, 10000])
+    same(ours.map((item) => item.fare), [100000, 20000, 10000])
   })
 })
 
@@ -154,3 +155,32 @@ test('세금계산서 정리 ②: logKey를 넘기면 그 차량 묶음만, 안 
   })
   assert.deepEqual(byVehicle.map((group) => group.partyKey).sort(), all.map((group) => group.partyKey).sort())
 })
+
+describe('미수 목록 — 받을 돈이 남은 운행만(로드맵 42)', () => {
+  const settings = { paymentOn: true, cars: [], clients: [] }
+  const work = {
+    main: {
+      '2026-10-01': {
+        callDetails: [
+          { id: 'zero', client: 'A', fare: 0 },
+          { id: 'unpaid', client: 'A', fare: 100000 },
+          { id: 'partial', client: 'A', fare: 100000, payments: [{ id: 'p1', amount: 30000, paidAt: '2026-10-02' }] },
+          { id: 'paid', client: 'A', fare: 50000, payments: [{ id: 'p2', amount: 50000, paidAt: '2026-10-02' }] },
+        ],
+      },
+    },
+  }
+
+  test('0원·다 받은 운행은 빼고, 안 받은 운행·일부 받은 운행은 남은 돈으로 담는다', () => {
+    const items = getReceivableItems(settings, work)
+    assert.deepEqual(items.map((item) => [item.detailId, item.remainingAmount]), [['unpaid', 100000], ['partial', 70000]])
+  })
+
+  test('매출 미입금과 건수·금액이 같다', () => {
+    const items = getReceivableItems(settings, work)
+    const detail = getOwnerMonthlyFinanceDetail('2026-10', 'owner', settings, work, [])
+    assert.equal(detail.unpaid.count, items.length)
+    assert.equal(detail.unpaid.total, items.reduce((sum, item) => sum + item.remainingAmount, 0))
+  })
+})
+

@@ -138,7 +138,7 @@ describe('같은 운행 픽스처 — 확정 금액', () => {
 
   test('미수금 잔액', () => {
     const ours = getReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK)
-    assert.deepEqual(ours.map((item) => item.remainingAmount), [100000, 0, 20000, 10000, 200000, 999999, 80000])
+    assert.deepEqual(ours.map((item) => item.remainingAmount), [100000, 20000, 10000, 200000, 999999, 80000])
     // 기준일 2026-08-25에 입금 예정일이 지난 미수 건수(옛 "숫자 비교표" 테스트에서 옮겨 옴)
     assert.equal(getOverdueReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK, new Date('2026-08-25')).length, 1)
   })
