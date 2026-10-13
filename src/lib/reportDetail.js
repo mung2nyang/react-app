@@ -63,6 +63,7 @@ export function buildDetailReport(workData, year, monthIndex, clientFilter, sett
   let totalFare = 0
   let totalCommission = 0
   let defaultBaseFare = 0
+  let vat = 0
   /** @type {Record<string, number>} */
   const monthFareByClient = {}
   /** @type {Record<string, number>} */
@@ -99,11 +100,11 @@ export function buildDetailReport(workData, year, monthIndex, clientFilter, sett
         fare,
       })
       totalFare += fare
+      if (!detail?.vatExempt) vat += Math.round(fare * 0.1) // 매출과 같이 건마다 반올림, 면세면 0
       totalCommission += commission
     })
   }
 
-  const vat = Math.round(totalFare * 0.1)
   return {
     items,
     totalFare,

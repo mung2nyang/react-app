@@ -388,3 +388,17 @@ describe('buildReportDayRows', () => {
     assert.equal(report.days[0].amount, 22000)
   })
 })
+
+describe('buildDetailReport — 부가세는 콜 상세 건마다 반올림, 면세면 0(로드맵 38)', () => {
+  test('면세 건은 빼고 건마다 반올림한다', () => {
+    const workData = {
+      '2026-09-01': { callDetails: [{ client: '한진', fare: 100000, vatExempt: true }, { client: '한진', fare: 100000 }] },
+      '2026-09-02': { callDetails: [{ client: '한진', fare: 12345 }] },
+      '2026-09-03': { callDetails: [{ client: '한진', fare: 12345 }] },
+    }
+    const report = buildDetailReport(workData, 2026, 8, 'ALL', {})
+    assert.equal(report.totalFare, 224690)
+    assert.equal(report.vat, 10000 + 1235 + 1235)
+  })
+})
+

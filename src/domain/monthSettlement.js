@@ -70,6 +70,8 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
   let fare = 0
   let commissionTotal = 0
   let distanceKm = 0
+  // 부가세는 매출(financeOwnerDetail.js)과 같은 규칙: 고정노선·파렛트는 날마다, 콜 상세는 건마다 반올림하고 면세면 0.
+  let vat = 0
   /** @type {Record<string, number>} */
   const fareByClient = {}
   /** @type {Record<string, number>} */
@@ -87,6 +89,7 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
     if (fixedCount > 0) {
       const fAmount = fixedCount * unitPrice
       fare += fAmount
+      vat += Math.round(fAmount * 0.1)
       const name = fixedRouteClient?.companyName || ''
       if (name) {
         fareByClient[name] = (fareByClient[name] || 0) + fAmount
@@ -109,12 +112,15 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
 
     const palletCount = getPalletCount(record)
     if (palletCount > 0 && activeFixedOn && fixedRouteClient?.palletOn) {
-      palletFare += palletCount * parseCurrencyValue(fixedRouteClient.palletPrice)
+      const pAmount = palletCount * parseCurrencyValue(fixedRouteClient.palletPrice)
+      palletFare += pAmount
+      vat += Math.round(pAmount * 0.1)
     }
 
     getCallDetails(record).forEach((detail) => {
       const gross = parseCurrencyValue(detail?.fare)
       fare += gross
+      if (!detail?.vatExempt) vat += Math.round(gross * 0.1)
       const clientName = detail?.client ? String(detail.client).trim() : ''
       const registered = !!(clientName && clients.some((c) => c.companyName === clientName))
       const comm = getCallDetailCommissionAmount(detail, gross, { clients })
@@ -144,7 +150,6 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
   const maint = monthTotal(vehicleExpenses, 'maint', year, month)
   const fuel = monthTotal(vehicleExpenses, 'fuel', year, month)
   const misc = monthTotal(vehicleExpenses, 'misc', year, month)
-  const vat = Math.round((fare + palletFare) * 0.1)
   const total = fare + palletFare - commissionTotal - subCarComm + vat
 
   return {
