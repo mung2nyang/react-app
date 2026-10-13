@@ -3,7 +3,7 @@ import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
 
-const { commitCars, commitClients, commitLogWorkData } = await import('../store/commitHelpers.js')
+const { commitCars, commitClients, commitDrivers, commitLogWorkData } = await import('../store/commitHelpers.js')
 const { getState, setHydration, subscribe } = await import('../store/app-store.js')
 const { requestVehicleSave } = await import('./vehicleMutations.js')
 const { requestClientSave, requestClientReorder, requestClientFixedUnitPrice, requestClientTaxInfo } = await import('./clientMutations.js')
@@ -933,5 +933,51 @@ describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 
     assert.equal(result.failed, false)
     const persisted = readJsonKey('cars', owner, /** @type {Array<{ number: string }>} */ ([]))
     assert.equal(persisted.some((c) => c.number === '22게2222'), true, '게스트는 LS 정본 유지')
+  })
+})
+
+describe('requestVehicleDeletion — 연동 기사가 있는 차량은 삭제 거절(로드맵 37)', () => {
+  /** @param {string} owner @param {string} num @param {'pending'|'linked'|'disconnected'} status */
+  function seed(owner, num, status) {
+    commitCars(owner, [{ id: 'car-link', type: 'sub', number: num, driverName: '연', driverPhone: '010-3737-3737' }], { syncToCloud: false })
+    commitDrivers(owner, [{ id: 'drv-link', name: '연', status, vehicleNumber: num }], { syncToCloud: false })
+  }
+
+  test('linked면 지우지 않는다 — Store·localStorage·알림·서버 호출 모두 그대로', async () => {
+    const owner = 'veh-del-linked'
+    seed(owner, '37가3701', 'linked')
+    const carsBefore = getState().cars[owner]
+    const storedBefore = localStorage.getItem(storageKeyFor('cars', owner))
+    let notifyCount = 0
+    const unsubscribe = subscribe(() => { notifyCount += 1 })
+    const apiBefore = totalStubCalls()
+    const result = await requestVehicleDeletion({ ownerKey: owner, userId: null, cars: carsBefore, vehicleId: 'car-link' })
+    unsubscribe()
+    assert.equal(result.failed, true)
+    assert.equal(result.closeModal, false)
+    assert.match(result.toast || '', /기사가 연동된 차량은 삭제할 수 없습니다/)
+    assert.equal(getState().cars[owner], carsBefore)
+    assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), storedBefore)
+    assert.equal(notifyCount, 0)
+    assert.equal(totalStubCalls(), apiBefore)
+  })
+
+  test('pending·disconnected는 지금처럼 삭제된다', async () => {
+    for (const status of /** @type {const} */ (['pending', 'disconnected'])) {
+      const owner = `veh-del-${status}`
+      seed(owner, '37가3702', status)
+      const result = await requestVehicleDeletion({ ownerKey: owner, userId: null, cars: getState().cars[owner], vehicleId: 'car-link' })
+      assert.match(result.toast || '', /삭제했습니다/, status)
+      assert.equal(getState().cars[owner].length, 0, status)
+    }
+  })
+
+  test('다른 차량 번호에 연동된 기사는 이 차량 삭제를 막지 않는다', async () => {
+    const owner = 'veh-del-other-link'
+    seed(owner, '37가3703', 'linked')
+    commitCars(owner, [...getState().cars[owner], { id: 'car-free', type: 'sub', number: '37가3704', driverName: '빈', driverPhone: '010-3704-3704' }], { syncToCloud: false })
+    const result = await requestVehicleDeletion({ ownerKey: owner, userId: null, cars: getState().cars[owner], vehicleId: 'car-free' })
+    assert.match(result.toast || '', /삭제했습니다/)
+    assert.deepEqual(getState().cars[owner].map((car) => car.id), ['car-link'])
   })
 })

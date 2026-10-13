@@ -21,6 +21,7 @@ import { StaleSessionError } from './outboxErrors.js'
 
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const LINKED_VEHICLE_TOAST = '기사가 연동된 차량은 삭제할 수 없습니다. 기사 관리에서 연동을 먼저 해제해 주세요.'
 
 /**
  * @param {{ ownerKey: string, userId: string|null, cars: Array<CarLike>, vehicleId: string }} params
@@ -30,6 +31,11 @@ export async function requestVehicleDeletion({ ownerKey, userId, cars, vehicleId
   if (ownerBlocked) return { cars, blocked: ownerBlocked, toast: ownerBlocked, failed: true, closeModal: false }
   const car = cars.find((item) => item.id === vehicleId)
   if (!car) return { cars, blocked: null, toast: null, failed: true, closeModal: false }
+  // 연동 중인 차량을 지우면 서버에서 연동 기록이 같이 지워지므로 먼저 막는다(로드맵 37).
+  const drivers = getState().drivers[ownerKey] || []
+  if (drivers.some((driver) => driver.status === 'linked' && driver.vehicleNumber === car.number)) {
+    return { cars, blocked: LINKED_VEHICLE_TOAST, toast: LINKED_VEHICLE_TOAST, failed: true, closeModal: false }
+  }
 
   /** @type {Array<import('../store/atomicPersist.js').KeyedWrite>} */
   const extraWrites = []
