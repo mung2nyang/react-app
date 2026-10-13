@@ -89,9 +89,9 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
 
   // durable 기록조차 실패한 상태(durableWriteGuard.js)로 나가면 편집이 사라질 수
   // 있다 — beforeunload는 pendingWriteRetryListeners.js가 막지만, 화면 안 이동
-  // (뒤로가기)은 데이터 라우터가 아니라 useBlocker를 못 써서(main.jsx) 여기서 직접 확인.
+  // (뒤로가기)은 데이터 라우터가 아니라 useBlocker를 못 써서(main.jsx) 여기서 직접 확인. 열린 입력 칸 확인도 같이 한다.
   function handleClose() {
-    if (confirmLeaveIfUnsafe()) onClose?.()
+    if (confirmLeaveIfUnsafe() && confirmLeaveOpenPanel()) onClose?.()
   }
 
   /** @param {Partial<DayDraft>} patch */
@@ -101,7 +101,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
 
   // 콜상세/비용 인라인 패널이 서로 다른 state라 하나를 열어도 안 닫히던 문제 —
   // inlinePanelActions.js 참고(200줄 제한 때문에 로직을 옮겼다).
-  const { openCallForm, openExpenseAdd, openExpenseEdit, openExpenseKindPick } = bindInlinePanelActions(dispatch, expenseForm, { callFormOpen, editingCallId })
+  const { openCallForm, openExpenseAdd, openExpenseEdit, openExpenseKindPick, confirmLeaveOpenPanel } = bindInlinePanelActions(dispatch, expenseForm, { callFormOpen, editingCallId })
 
   /** @param {string} routeId @param {number} delta */
   function handleRouteRun(routeId, delta) {

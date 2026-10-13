@@ -56,7 +56,7 @@ export default function MainPageRoute({
   }, [rawLogId, knownLog, navigate])
 
   function closeWorkLog() {
-    const target = resolveWorkLogCloseTarget(location.state, logId)
+    const target = resolveWorkLogCloseTarget(location.state, logId, selected?.dateKey)
     if (target.mode === 'back') navigate(-1)
     else navigate(target.to, { replace: true })
   }

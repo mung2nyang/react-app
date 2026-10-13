@@ -47,3 +47,21 @@ test('정비·주유·기타 추가: 같은 종류 새 칸이 열려 있으면 �
   closed.actions.openExpenseAdd('misc')
   assert.deepEqual(closed.log, ['call:closeCallForm', 'expense:open:misc'])
 })
+
+test('나가기 확인(로드맵 36): 세부·정비 입력 칸이 열려 있으면 확인 창 답을 따르고, 닫혀 있으면 묻지 않고 나간다', () => {
+  /** @type {Array<string>} */
+  const asked = []
+  let answer = false
+  Reflect.set(globalThis, 'window', { confirm: (/** @type {string} */ message) => { asked.push(message); return answer } })
+  try {
+    assert.equal(setup({ callFormOpen: true }).actions.confirmLeaveOpenPanel(), false, '세부 입력 칸 열림 + 취소 → 머문다')
+    assert.equal(setup({ modalOpen: true }).actions.confirmLeaveOpenPanel(), false, '정비 입력 칸 열림 + 취소 → 머문다')
+    answer = true
+    assert.equal(setup({ callFormOpen: true }).actions.confirmLeaveOpenPanel(), true, '확인 → 나간다')
+    assert.equal(asked.length, 3)
+    assert.equal(setup({}).actions.confirmLeaveOpenPanel(), true, '닫혀 있으면 나간다')
+    assert.equal(asked.length, 3, '닫혀 있으면 확인 창을 띄우지 않는다')
+  } finally {
+    Reflect.deleteProperty(globalThis, 'window')
+  }
+})

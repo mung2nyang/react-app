@@ -27,3 +27,20 @@ describe('resolveWorkLogCloseTarget — 일지 닫기 후 Back 비재진입', ()
     assert.deepEqual(resolveWorkLogCloseTarget({ from: 'notification' }), { mode: 'replace', to: '/app/calendar' })
   })
 })
+
+describe('resolveWorkLogCloseTarget — 교체 이동은 일지 날짜의 달로(로드맵 36)', () => {
+  test('직접 진입한 2027-01-31 일지를 닫으면 2027년 1월 달력', () => {
+    assert.deepEqual(resolveWorkLogCloseTarget(null, 'main', '2027-01-31'), { mode: 'replace', to: '/app/calendar?y=2027&m=0' })
+  })
+
+  test('서브 차량 일지도 그 달 달력', () => {
+    assert.deepEqual(
+      resolveWorkLogCloseTarget(null, '서울12가3456', '2026-12-05'),
+      { mode: 'replace', to: `/app/logs/${encodeURIComponent('서울12가3456')}?y=2026&m=11` },
+    )
+  })
+
+  test('달력에서 들어왔으면 날짜와 무관하게 뒤로가기(-1) 그대로', () => {
+    assert.deepEqual(resolveWorkLogCloseTarget({ from: 'calendar' }, 'main', '2027-01-31'), { mode: 'back' })
+  })
+})

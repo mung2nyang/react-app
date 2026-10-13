@@ -35,5 +35,11 @@ export function bindInlinePanelActions(dispatch, expenseForm, callPanel) {
       dispatch({ type: 'closeCallForm' })
       expenseForm.openKindPick()
     },
+    // 입력 칸이 열린 채 나가면 [저장] 전 입력이 사라지므로 먼저 확인한다(로드맵 36).
+    /** @returns {boolean} true면 나가도 된다. */
+    confirmLeaveOpenPanel() {
+      if (!callPanel.callFormOpen && !expenseForm.modalOpen) return true
+      return window.confirm('입력 중인 내용이 아직 저장되지 않았습니다. 그래도 나가시겠습니까?')
+    },
   }
 }

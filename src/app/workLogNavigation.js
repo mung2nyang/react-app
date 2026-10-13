@@ -1,3 +1,4 @@
+// @ts-check
 // `/app/day/:date`를 닫을 때 어디로 갈지 정하는 순수 함수.
 // MainPageRoute.jsx가 이 함수만 쓰고, 로직은 여기 있어서 React 없이 테스트할 수 있다.
 
@@ -11,14 +12,18 @@
  * 진입했으면 -1은 앱 밖으로 나갈 수 있으니 대신 달력(`/app/calendar`)으로 교체 이동한다 — 뒤로가기를
  * 다시 눌러도 일지로 재진입하지 않는다(replace라 히스토리에 일지 엔트리가 없다).
  * 서브 차량 일지(`logId !== 'main'`)는 `/app/logs/:번호` 달력으로 복귀한다.
+ * 교체 이동은 일지 날짜의 달(`?y=&m=`, calendarViewDate.js)로 간다 — 없으면 오늘 달이 된다(로드맵 36).
  * @param {{ from?: string } | null | undefined} locationState
  * @param {string} [logId]
+ * @param {string} [dateKey] `YYYY-MM-DD`
  * @returns {WorkLogCloseTarget}
  */
-export function resolveWorkLogCloseTarget(locationState, logId = 'main') {
+export function resolveWorkLogCloseTarget(locationState, logId = 'main', dateKey = '') {
   if (locationState?.from === 'calendar' || locationState?.from === 'home') return { mode: 'back' }
+  const [year, month] = dateKey.split('-').map(Number)
+  const monthQuery = year && month ? `?y=${year}&m=${month - 1}` : ''
   if (logId && logId !== 'main') {
-    return { mode: 'replace', to: `/app/logs/${encodeURIComponent(logId)}` }
+    return { mode: 'replace', to: `/app/logs/${encodeURIComponent(logId)}${monthQuery}` }
   }
-  return { mode: 'replace', to: '/app/calendar' }
+  return { mode: 'replace', to: `/app/calendar${monthQuery}` }
 }
