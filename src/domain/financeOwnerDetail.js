@@ -11,6 +11,7 @@ import {
 } from './financeCore.js'
 import { getMonthlyDriverInsuranceOwnerShare, getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.js'
 import { getReceivableItems } from './financeReceivables.js'
+import { getFixedRouteCommissionAmount } from './fixedRouteCommission.js'
 import { selectExpensesForScope, sweepExpenseItems } from './financeOwnerExpenseSweep.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
@@ -74,6 +75,9 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
           const amount = count * fixedUnitPrice
           fareByClient.set(fixedClientLabel, (fareByClient.get(fixedClientLabel) || 0) + amount)
           vatAmount += Math.round(amount * 0.1)
+          // 고정노선도 거래처 수수료를 뗀다(달력 monthSettlement와 같은 함수, 로드맵 39).
+          const fixedComm = getFixedRouteCommissionAmount(fixedRouteClientForTotals, amount, count)
+          if (fixedComm > 0) commissionByClient.set(fixedClientLabel, (commissionByClient.get(fixedClientLabel) || 0) + fixedComm)
         }
         if (Number(record.palletCount) > 0 && activeFixedOn && activePalletOn) {
           const amount = (Number(record.palletCount) || 0) * palletUnitPrice

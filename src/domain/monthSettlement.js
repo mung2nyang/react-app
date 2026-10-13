@@ -5,6 +5,7 @@ import { getShortCarNum } from './cars.js'
 import { countCallTrips, getCallDetails, getFixedCount, getPalletCount } from './day-record.js'
 import { monthTotal } from './expenses.js'
 import { calculateDriverVehicleCommission, getCallDetailCommissionAmount } from './financeCore.js'
+import { getFixedRouteCommissionAmount } from './fixedRouteCommission.js'
 import { parseCurrencyValue } from './money.js'
 
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
@@ -94,14 +95,9 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
       if (name) {
         fareByClient[name] = (fareByClient[name] || 0) + fAmount
         if (fixedRouteClient?.commEnabled) {
-          let fixedComm = 0
-          if (fixedRouteClient.commType === 'percent' || !fixedRouteClient.commType) {
-            fixedComm = Math.floor(fAmount * (parseFloat(String(fixedRouteClient.commValue)) / 100))
-            commissionLabelByClient[name] = formatCommLabel(fixedRouteClient.commValue, 'percent')
-          } else {
-            fixedComm = parseCurrencyValue(fixedRouteClient.commValue) * Math.max(1, fixedCount)
-            commissionLabelByClient[name] = formatCommLabel(fixedRouteClient.commValue, 'direct')
-          }
+          const fixedComm = getFixedRouteCommissionAmount(fixedRouteClient, fAmount, fixedCount)
+          const isPercent = fixedRouteClient.commType === 'percent' || !fixedRouteClient.commType
+          commissionLabelByClient[name] = formatCommLabel(fixedRouteClient.commValue, isPercent ? 'percent' : 'direct')
           commissionByClient[name] = (commissionByClient[name] || 0) + fixedComm
           commissionTotal += fixedComm
         }
