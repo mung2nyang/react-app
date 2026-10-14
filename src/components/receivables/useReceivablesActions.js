@@ -10,6 +10,9 @@ import {
   markReceivableItemPaid,
   undoLastPayment,
 } from '../../lib/workData.js'
+import { getReceivableItems } from '../../lib/finance.js'
+import { groupItems } from '../../lib/receivables.js'
+import { formatWon } from '../../lib/money.js'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 /** @typedef {import('../../domain/financeTypes.js').WorkDataByLogId} WorkDataByLogId */
@@ -84,6 +87,12 @@ export function useReceivablesActions({
   /** @param {string} clientName @param {string} monthKey @param {boolean} stay */
   async function payGroup(clientName, monthKey, stay) {
     if (saving) return false
+    // 한 달치를 한 번에 바꾸고 되돌리기는 한 건씩이라 먼저 묻는다(로드맵 44).
+    const items = groupItems(getReceivableItems(settings, workDataByLogId), clientName, monthKey)
+    const amount = items.reduce((sum, item) => sum + item.remainingAmount, 0)
+    const month = parseInt(monthKey.slice(5, 7), 10)
+    const ok = await confirm(`${clientName} ${month}월분 미수 ${items.length}건, ${formatWon(amount)}을 모두 입금 완료로 처리할까요? 되돌리기는 한 건씩만 할 수 있어요.`, { confirmLabel: '입금 완료' })
+    if (!ok) return false
     const next = markMonthlyReceivablesPaid(workDataByLogId, settings, clientName, monthKey)
     setSaving(true)
     try {
