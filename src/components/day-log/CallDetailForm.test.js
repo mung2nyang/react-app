@@ -6,7 +6,7 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 
 import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { test } from 'node:test'
+import { describe, test } from 'node:test'
 import { normalizeSettings } from '../../domain/practiceSettings.js'
 
 /** DOM 노드가 없는지 boolean으로만 비교한다 — assert.equal(node, null)은 실패 시 노드 전체를 직렬화하려다 OOM이 난다. */
@@ -85,3 +85,47 @@ test('결제 및 수금 입력이 꺼져 있으면 기사연동 여부와 무관
     assertMissing(view.container.querySelector('#callInsuranceFee'), '결제 스위치가 꺼지면 칸이 없어야 한다')
   } finally { await view.cleanup() }
 })
+
+describe('운송료 1,000만원 초과 저장 확인(로드맵 43-C)', () => {
+  /** @param {string} fare @param {boolean} answer */
+  async function clickSave(fare, answer) {
+    /** @type {Array<string>} */
+    const asked = []
+    let saved = 0
+    const original = window.confirm
+    window.confirm = (/** @type {string|undefined} */ message) => { asked.push(String(message)); return answer }
+    const view = await mount({
+      value: { id: 'c1', loadLoc: 'A', unloadLoc: '', fare, client: '' },
+      onSave: () => { saved += 1 },
+    })
+    try {
+      const saveBtn = /** @type {HTMLButtonElement} */ (view.container.querySelector('.modal-btn.confirm'))
+      assert.ok(saveBtn)
+      await act(async () => { saveBtn.click() })
+      return { asked, saved, stillOpen: !!view.container.querySelector('#callFare') }
+    } finally {
+      window.confirm = original
+      await view.cleanup()
+    }
+  }
+
+  test('초과 + 취소 → 저장 안 함, 입력 창 그대로', async () => {
+    const result = await clickSave('20,000,000', false)
+    assert.deepEqual(result.asked, ['운송료가 20,000,000원으로 1,000만원을 넘어요. 금액이 맞나요?'])
+    assert.equal(result.saved, 0)
+    assert.equal(result.stillOpen, true)
+  })
+
+  test('초과 + 확인 → 저장', async () => {
+    const result = await clickSave('20,000,000', true)
+    assert.equal(result.asked.length, 1)
+    assert.equal(result.saved, 1)
+  })
+
+  test('딱 1,000만원이면 확인 창 없이 저장', async () => {
+    const result = await clickSave('10,000,000', false)
+    assert.equal(result.asked.length, 0)
+    assert.equal(result.saved, 1)
+  })
+})
+

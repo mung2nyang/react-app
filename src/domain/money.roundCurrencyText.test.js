@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { roundCurrencyText } from './money.js'
+import { isLargeFare, roundCurrencyText } from './money.js'
 
 test('소수점은 반올림한 쉼표 정수 글자로(로드맵 43)', () => {
   assert.equal(roundCurrencyText('12345.6'), '12,346')
@@ -22,3 +22,12 @@ test('빈 값·0은 빈 글자', () => {
   assert.equal(roundCurrencyText('0.4'), '')
   assert.equal(roundCurrencyText('abc'), '')
 })
+
+test('isLargeFare: 1,000만원 초과만 true(로드맵 43-C)', () => {
+  assert.equal(isLargeFare('10,000,001'), true)
+  assert.equal(isLargeFare('350,000,000,000'), true)
+  assert.equal(isLargeFare('10,000,000'), false)
+  assert.equal(isLargeFare(''), false)
+  assert.equal(isLargeFare(undefined), false)
+})
+

@@ -41,6 +41,14 @@ export function roundCurrencyText(text) {
   return n ? n.toLocaleString('ko-KR') : ''
 }
 
+// 운송료가 이 금액을 넘으면 저장 전에 한 번 묻는다(로드맵 43-C, 보리 결정 2026-10-14 — 운송료만).
+export const LARGE_FARE_LIMIT = 10000000
+
+/** @param {JsonValue|undefined} text 쉼표 금액 글자 @returns {boolean} */
+export function isLargeFare(text) {
+  return parseCurrencyValue(text) > LARGE_FARE_LIMIT
+}
+
 /**
  * @param {JsonValue|undefined} value
  * @returns {string}
