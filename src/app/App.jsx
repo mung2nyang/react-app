@@ -1,10 +1,11 @@
 // @ts-check
 // 라우터 최상위. 세션·부트·토스트 상태만 두고 화면별 로직은 AuthRoute/AppShell이 맡는다.
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../components/OnboardingPage.jsx'
 import WelcomeProfileView from '../components/auth/WelcomeProfileView.jsx'
 import BootRetryScreen from '../components/BootRetryScreen.jsx'
 import LoadFailScreen from '../components/LoadFailScreen.jsx'
+import PageLoadErrorBoundary from '../components/PageLoadErrorBoundary.jsx'
 import { ensureProfileRow } from '../supabaseClient.js'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
@@ -30,6 +31,7 @@ import '../modal-form.css'
 
 export default function App() {
   const navigate = useNavigate()
+  const location = useLocation()
   const {
     session,
     setSession,
@@ -54,6 +56,8 @@ export default function App() {
       <PendingWriteRetryBridge />
       <AccountFlowBodyClass active={inAccountFlow} />
 
+      {/* 로그인·처음 정보 입력 화면도 그리다 오류가 나면 빈 화면 대신 안내(로드맵 55). 로그인 뒤 화면은 AppShell 안쪽 안내가 먼저 잡는다. */}
+      <PageLoadErrorBoundary resetKey={location.pathname}>
       <Routes>
         <Route
           path="/auth"
@@ -144,6 +148,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/auth" replace />} />
       </Routes>
+      </PageLoadErrorBoundary>
 
 
       {toast && <div className="toast-message" role="status">{toast}</div>}
