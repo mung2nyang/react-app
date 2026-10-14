@@ -17,6 +17,7 @@ const { beginSessionEpoch, endCloudSession } = await import('../../lib/cloudSess
 const { setHydration } = await import('../../store/app-store.js')
 const { commitCars, commitWorkData } = await import('../../store/commitHelpers.js')
 const { readOwnerWorkData } = await import('../../store/ownerDataHooks.js')
+const { hasBusyDayDraft } = await import('../../lib/dayDraftActivity.js')
 
 const DK = '2026-10-21'
 const FAIL_FAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
@@ -170,4 +171,21 @@ test('S-4 첫 저장이 실패해도 뒤에 고친 내용은 이어서 저장, �
     await view.unmount()
     endCloudSession()
   }
+})
+
+test('72-7 로그인 저장 중에는 "저장 중", 화면을 닫아도 서버 응답 전까지 남고 끝나면 빠진다', async () => {
+  beginLoggedIn('u-72', 'own-72')
+  const server = holdUpserts({ gated: 1 })
+  const view = await mount('own-72')
+  await view.edit(5)
+  assert.equal(hasBusyDayDraft(), true, '0.6초 대기 중')
+  await act(async () => { await wait(700) })
+  assert.deepEqual(server.fixedCounts, [5])
+  assert.equal(hasBusyDayDraft(), true, '서버 저장 중')
+  await view.unmount()
+  assert.equal(hasBusyDayDraft(), true, '화면을 닫아도 응답 전까지 남는다')
+  await act(async () => { server.releases[0]?.(); await wait(50) })
+  assert.equal(hasBusyDayDraft(), false)
+  assert.equal(readOwnerWorkData('own-72')[DK]?.fixedCount, 5)
+  endCloudSession()
 })

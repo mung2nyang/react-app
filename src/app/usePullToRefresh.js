@@ -2,7 +2,7 @@
 // 설치 앱에서 화면 맨 위를 당기면 우리 표시가 내려오고, 충분히 당겼다 놓으면(저장 확인 후) 화면 전체 다시 불러오기.
 // 상태는 표시 부품(PullRefreshIndicator) 안에서만 바뀌게 — 손가락 움직임마다 앱 전체가 다시 그려지지 않게.
 import { useEffect, useRef, useState } from 'react'
-import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
+import { confirmReloadIfUnsaved } from '../lib/durableWriteGuard.js'
 
 export const PULL_MAX = 90 // 표시가 내려오는 최대 거리(px)
 export const PULL_TRIGGER = 70 // 이만큼 내려오면 "놓으면 새로고침"
@@ -85,7 +85,7 @@ export default function usePullToRefresh() {
       const distance = distanceRef.current
       startYRef.current = null
       distanceRef.current = 0
-      if (releasePull(distance, confirmLeaveIfUnsafe, () => { window.location.reload() })) {
+      if (releasePull(distance, confirmReloadIfUnsaved, () => { window.location.reload() })) {
         setPull({ distance: PULL_TRIGGER, dragging: false, refreshing: true })
       } else {
         setPull({ distance: 0, dragging: false, refreshing: false })

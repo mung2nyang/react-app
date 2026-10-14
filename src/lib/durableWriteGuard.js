@@ -3,6 +3,7 @@
 // unsafe는 잘못된 dateKey/patch라 자동 재시도 대상이 아니고, 화면 이동 경고와 다시 들어올 때 덮어 보여 주기용이다.
 import { hasUnsafePendingWrites } from './pendingWorkDataWrites.js'
 import { pulsePendingRetry } from './pendingRetryPulse.js'
+import { flushDayDrafts, hasBusyDayDraft } from './dayDraftActivity.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 
@@ -64,7 +65,9 @@ export function isDurableWriteBroken() {
  * @param {{ preventDefault: () => void, returnValue?: boolean }} event
  */
 export function guardBeforeUnload(event) {
-  if (!isDurableWriteBroken()) return
+  // 기다리던 일지 저장을 먼저 시작한다 — 기기 저장은 여기서 끝나고, 서버 저장 중이면 막는다.
+  flushDayDrafts()
+  if (!isDurableWriteBroken() && !hasBusyDayDraft()) return
   event.preventDefault()
   event.returnValue = true
 }
@@ -73,4 +76,11 @@ export function guardBeforeUnload(event) {
 export function confirmLeaveIfUnsafe() {
   if (!isDurableWriteBroken()) return true
   return window.confirm('방금 고친 내용이 아직 저장되지 않았습니다. 그래도 나가시겠습니까?')
+}
+
+/** 새로고침·로그아웃처럼 앱을 떠나는 이동. 앱 안 이동은 confirmLeaveIfUnsafe(닫히는 화면이 저장을 마저 한다). @returns {boolean} */
+export function confirmReloadIfUnsaved() {
+  flushDayDrafts()
+  if (hasBusyDayDraft()) return window.confirm('방금 고친 내용을 아직 저장하는 중입니다. 그래도 나가시겠습니까?')
+  return confirmLeaveIfUnsafe()
 }

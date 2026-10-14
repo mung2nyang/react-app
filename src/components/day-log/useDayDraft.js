@@ -9,14 +9,14 @@
 // 아님+횟수 0+파렛트 0+콜상세 0이면 그 날짜 키를 지운다)을 재사용한다.
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { backfillCallDetailIds, saveDayRecord } from '../../domain/day-record.js'
-import { saveLogWorkDataWithTombstoneCheck } from '../../lib/workData.js'
 import { pendingOwnerForLog } from '../../lib/pendingLogOwner.js'
 import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../../lib/durableWriteGuard.js'
 import { clearPendingDayWrite, getPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
 import { commitMainDayLogToCloud } from '../../lib/dayLogCloudCommit.js'
 import { shouldCommitDayLogToCloud } from '../../lib/mainDayLogRouting.js'
 import { readOwnerLogWorkData } from '../../store/ownerDataHooks.js'
-import { queueFailedDayWrite, settleCloudDayWrite, settlePendingDayWrite, useMountedRef } from './dayDraftLifecycle.js'
+import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../lib/dayDraftActivity.js'
+import { commitLocalDayWrite, settleCloudDayWrite, useMountedRef } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
 
 const DEBOUNCE_MS = 600
@@ -78,6 +78,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   const savingRef = useRef(false)
   const againRef = useRef(false)
   const mountedRef = useMountedRef()
+  const activityRef = useRef(/** @type {symbol|null} */ (null))
 
   const markSaved = useCallback((/** @type {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
     hasPendingRef.current = false
@@ -87,22 +88,9 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
     onCommittedRef.current?.()
   }, [pendingOwner, dateKey, mountedRef])
 
-  // 게스트·서브·미동기화 메인: 예전 로컬 경로 그대로 — 로컬 persist + tombstone,
-  // quota 실패면 durable 큐에 등록해 online·5초 재시도.
+  // 게스트·서브·미동기화 메인: 로컬 persist + tombstone, quota 실패면 durable 큐(dayDraftLifecycle.js).
   const commitLocal = useCallback((/** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ latest, /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ next, /** @type {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
-    try {
-      saveLogWorkDataWithTombstoneCheck(ownerKey, logId, dateKey, latest, next)
-    } catch (error) {
-      if (mountedRef.current) setAutoSaveStatus('failed')
-      showToastRef.current?.('자동 저장에 실패했습니다. 저장 공간을 확인해 주세요.')
-      console.error('일지 자동 저장 실패:', error)
-      const attemptRev = draftRevRef.current
-      queueFailedDayWrite(pendingOwner, dateKey, patch, (ok) => {
-        settlePendingDayWrite(hasPendingRef, mountedRef, setAutoSaveStatus, onCommittedRef, draftRevRef, attemptRev, ok)
-      })
-      return
-    }
-    markSaved(patch)
+    commitLocalDayWrite({ ownerKey, logId, dateKey, pendingOwner, latest, next, patch, mountedRef, setAutoSaveStatus, showToastRef, draftRevRef, hasPendingRef, onCommittedRef, markSaved })
   }, [ownerKey, dateKey, logId, pendingOwner, mountedRef, markSaved])
 
   const commitNow = useCallback(() => {
@@ -139,6 +127,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
           againRef.current = false
           commitNow()
         }
+        if (activityRef.current) pruneDayDraft(activityRef.current)
       })
       return
     }
@@ -194,6 +183,13 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
     if (shouldCommitDayLogToCloud(ownerKey, logId)) clearUnsafeRegistrationFailure(pendingOwner, dateKey)
     if (hasPendingRef.current) commitNow()
   }, [commitNow, ownerKey, logId, pendingOwner, dateKey])
+
+  // 새로고침·앱 닫기 확인과 숨김 때 바로 저장(lib/dayDraftActivity.js). 위 flush 뒤에 내려야 저장 중이 남는다.
+  useEffect(() => {
+    const token = registerDayDraft(() => timerRef.current !== null || savingRef.current, () => { if (timerRef.current) commitNow() })
+    activityRef.current = token
+    return () => releaseDayDraft(token)
+  }, [commitNow])
 
   return { draft: state.draft, editingCallId: state.editingCallId, callFormOpen: state.callFormOpen, dispatch, commitNow, autoSaveStatus }
 }

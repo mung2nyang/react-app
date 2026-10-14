@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { applyTheme } from '../lib/practiceSettings.js'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { flushCloudSync } from '../lib/syncQueue.js'
-import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
+import { confirmReloadIfUnsaved } from '../lib/durableWriteGuard.js'
 import { buzz } from '../lib/haptic.js'
 import { supabase } from '../supabaseClient.js'
 import { restoreSessionOnBoot, ownerKeyFromSession } from './boot.js'
@@ -116,7 +116,7 @@ export function useAppSession() {
 
   async function handleLogout({ signOut = false } = {}) {
     // 로그아웃도 전역 이동 경로다 — DayLogPage를 안 거치므로 여기서 직접 가드한다.
-    if (!confirmLeaveIfUnsafe()) return
+    if (!confirmReloadIfUnsaved()) return
     try { await flushCloudSync() } catch { /* ignore */ }
     if (signOut) {
       try { await supabase.auth.signOut() } catch { /* ignore */ }

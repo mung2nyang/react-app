@@ -4,6 +4,7 @@
 import { useEffect, useRef } from 'react'
 import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../lib/durableWriteGuard.js'
 import { registerPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
+import { saveLogWorkDataWithTombstoneCheck } from '../../lib/workData.js'
 
 /** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 
@@ -66,4 +67,30 @@ export function settlePendingDayWrite(hasPendingRef, mountedRef, setAutoSaveStat
   if (attemptRev !== draftRevRef.current) return
   hasPendingRef.current = false
   if (mountedRef.current) setAutoSaveStatus('saved')
+}
+
+/**
+ * 게스트·서브·미동기화 메인 일지 저장: 로컬 persist + tombstone, quota 실패면 durable 큐에 등록해 online·5초 재시도.
+ * @param {{ ownerKey: string, logId: string, dateKey: string, pendingOwner: string,
+ *   latest: Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>,
+ *   next: Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>, patch: EffectivePatch,
+ *   mountedRef: { current: boolean }, setAutoSaveStatus: (status: 'idle'|'pending'|'saved'|'failed') => void,
+ *   showToastRef: { current: ((message: string) => void)|undefined }, draftRevRef: { current: number },
+ *   hasPendingRef: { current: boolean }, onCommittedRef: { current: (() => void)|undefined },
+ *   markSaved: (patch: EffectivePatch) => void }} ctx
+ */
+export function commitLocalDayWrite(ctx) {
+  try {
+    saveLogWorkDataWithTombstoneCheck(ctx.ownerKey, ctx.logId, ctx.dateKey, ctx.latest, ctx.next)
+  } catch (error) {
+    if (ctx.mountedRef.current) ctx.setAutoSaveStatus('failed')
+    ctx.showToastRef.current?.('자동 저장에 실패했습니다. 저장 공간을 확인해 주세요.')
+    console.error('일지 자동 저장 실패:', error)
+    const attemptRev = ctx.draftRevRef.current
+    queueFailedDayWrite(ctx.pendingOwner, ctx.dateKey, ctx.patch, (ok) => {
+      settlePendingDayWrite(ctx.hasPendingRef, ctx.mountedRef, ctx.setAutoSaveStatus, ctx.onCommittedRef, ctx.draftRevRef, attemptRev, ok)
+    })
+    return
+  }
+  ctx.markSaved(ctx.patch)
 }
