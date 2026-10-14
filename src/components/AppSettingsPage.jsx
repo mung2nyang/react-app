@@ -37,7 +37,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
   const clientScopeKey = logId || (session?.linkedOwnerId ? (cars[0]?.number || 'main') : '')
 
   /**
-   * @param {Partial<FinanceSettings>} nextPatch
+   * @param {import('../lib/practiceSettings.js').SettingsPatch} nextPatch
    */
   async function patch(nextPatch) {
     try {
@@ -52,8 +52,9 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
   /** @param {Partial<SubCarPracticeSettings>} nextPatch 차량별(logId) 전용 항목만 — 결제/고정노선은 patch() 그대로 */
   function patchActive(nextPatch) {
     if (!logId) return patch(nextPatch)
-    const nextCar = { ...carSettings, ...nextPatch }
-    return patch({ subCarSettings: { ...(settings.subCarSettings || {}), [logId]: nextCar } })
+    return patch((current) => ({
+      subCarSettings: { ...(current.subCarSettings || {}), [logId]: { ...(current.subCarSettings?.[logId] || defaultCarSettings()), ...nextPatch } },
+    }))
   }
 
   const isDark = settings.theme === 'dark'

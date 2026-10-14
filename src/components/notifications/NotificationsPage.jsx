@@ -38,9 +38,11 @@ export default function NotificationsPage({ ownerKey, session, showToast, onBack
 
   /** @param {string} kind @param {boolean} on */
   async function toggle(kind, on) {
-    const next = on ? off.filter((name) => name !== kind) : [...off, kind]
     try {
-      await savePracticeSettings(ownerKey, { notifOff: next })
+      await savePracticeSettings(ownerKey, (current) => {
+        const now = current.notifOff || []
+        return { notifOff: on ? now.filter((name) => name !== kind) : [...now.filter((name) => name !== kind), kind] }
+      })
       onChanged?.()
     } catch {
       showToast?.(SAVE_FAIL)

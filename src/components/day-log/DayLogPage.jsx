@@ -127,7 +127,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
     const result = togglePinnedLocation(settings, location)
     if (result.error) { showToast?.(result.error); return }
     try {
-      await savePracticeSettings(ownerKey, { pinnedLocations: result.settings.pinnedLocations })
+      await savePracticeSettings(ownerKey, (current) => ({ pinnedLocations: togglePinnedLocation(current, location).settings.pinnedLocations }))
     } catch {
       showToast?.('고정 장소 저장에 실패했습니다.')
     }

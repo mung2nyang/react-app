@@ -18,12 +18,36 @@ export function loadPracticeSettings(ownerKey = 'guest') {
   return normalizeSettings(readJsonKey('settings', ownerKey, {}))
 }
 
+/** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {FinanceSettings | ((current: FinanceSettings) => FinanceSettings)} SettingsPatch 목록·묶음 설정은 최신 설정을 받아 바꿀 값을 돌려주는 함수로 */
+
+// 계정별로 한 번에 하나씩, 앞 저장이 끝난 최신 설정 위에 얹는다 — 연달아 눌러도 앞 변경이 되돌아가지 않게.
+/** @type {Map<string, Promise<void>>} */
+const saveTails = new Map()
+
 /**
  * @param {string} ownerKey
- * @param {import('../domain/financeTypes.js').FinanceSettings} [patch]
+ * @param {SettingsPatch} [patch]
+ * @returns {Promise<FinanceSettings>}
  */
-export async function savePracticeSettings(ownerKey, patch) {
-  const next = normalizeSettings({ ...readOwnerSettings(ownerKey), ...(patch || {}) })
+export function savePracticeSettings(ownerKey, patch) {
+  const previous = saveTails.get(ownerKey) || Promise.resolve()
+  const run = previous.then(() => saveSettingsNow(ownerKey, patch))
+  /** @type {Promise<void>} */
+  const tail = run.then(() => undefined, () => undefined)
+  saveTails.set(ownerKey, tail)
+  void tail.then(() => { if (saveTails.get(ownerKey) === tail) saveTails.delete(ownerKey) })
+  return run
+}
+
+/**
+ * @param {string} ownerKey
+ * @param {SettingsPatch} [patch]
+ */
+async function saveSettingsNow(ownerKey, patch) {
+  const current = readOwnerSettings(ownerKey)
+  const changes = typeof patch === 'function' ? patch(current) : patch
+  const next = normalizeSettings({ ...current, ...(changes || {}) })
   if (getCloudOwnerKey() !== ownerKey) return commitSettings(ownerKey, next)
   const userId = getCloudUserId()
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
