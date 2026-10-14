@@ -11,12 +11,12 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { backfillCallDetailIds, saveDayRecord } from '../../domain/day-record.js'
 import { saveLogWorkDataWithTombstoneCheck } from '../../lib/workData.js'
 import { pendingOwnerForLog } from '../../lib/pendingLogOwner.js'
-import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch, markUnsafeRegistrationFailure } from '../../lib/durableWriteGuard.js'
+import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../../lib/durableWriteGuard.js'
 import { clearPendingDayWrite, getPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
 import { commitMainDayLogToCloud } from '../../lib/dayLogCloudCommit.js'
 import { shouldCommitDayLogToCloud } from '../../lib/mainDayLogRouting.js'
 import { readOwnerLogWorkData } from '../../store/ownerDataHooks.js'
-import { queueFailedDayWrite, settlePendingDayWrite, useMountedRef } from './dayDraftLifecycle.js'
+import { queueFailedDayWrite, settleCloudDayWrite, settlePendingDayWrite, useMountedRef } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
 
 const DEBOUNCE_MS = 600
@@ -75,6 +75,8 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   // commitNow를 시도한다.
   const hasPendingRef = useRef(false)
   const draftRevRef = useRef(0)
+  const savingRef = useRef(false)
+  const againRef = useRef(false)
   const mountedRef = useMountedRef()
 
   const markSaved = useCallback((/** @type {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
@@ -122,14 +124,21 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
     // 로그인 메인 일지는 그 날짜 daily_logs(+transport_details)에 직접 1회
     // 쓰고 성공 시에만 Store 반영(Fail-Fast). durable/fallback/tombstone/전체맵 재sync 없음.
     if (shouldCommitDayLogToCloud(ownerKey, logId)) {
+      // 같은 날짜 서버 저장은 한 번에 하나 — 도는 중에 고치면 끝난 뒤 최신 draft로 한 번 더.
+      if (savingRef.current) { againRef.current = true; return }
+      savingRef.current = true
+      const attemptRev = draftRevRef.current
       void commitMainDayLogToCloud({ ownerKey, logId, dateKey, previousData: latest, nextData: next }).then((result) => {
-        if (!result.cloud) { commitLocal(latest, next, patch); return }
-        if (result.ok) { markSaved(patch); return }
-        if (result.toast) showToastRef.current?.(result.toast)
-        if (!mountedRef.current) return
-        setAutoSaveStatus('failed')
-        // draft는 화면에 남는다. 나가기 전 확인에 걸리도록 표시만 하고 재시도 큐는 없다.
-        markUnsafeRegistrationFailure(pendingOwner, dateKey, patch)
+        savingRef.current = false
+        if (!result.cloud) commitLocal(latest, next, patch)
+        else settleCloudDayWrite(result, {
+          attemptRev, draftRevRef, mountedRef, onCommittedRef, showToast: showToastRef.current,
+          setAutoSaveStatus, pendingOwner, dateKey, patch, onSaved: () => markSaved(patch),
+        })
+        if (againRef.current) {
+          againRef.current = false
+          commitNow()
+        }
       })
       return
     }
