@@ -21,10 +21,11 @@ import './drivers/driver-connection.css'
  * @param {Array<CarLike>} props.assignableCars
  * @param {string} [props.ownerDisplayName]
  * @param {(message: string) => void} [props.showToast]
+ * @param {boolean} [props.required] 로그인 회원이면 true — 배정 차량·시작일이 꼭 필요하다
  * @param {() => void} props.onCancel
  * @param {() => void} props.onSave
  */
-export default function DriverFormModal({ draft, setDraft, editingId, drivers, assignableCars, ownerDisplayName, showToast, onCancel, onSave }) {
+export default function DriverFormModal({ draft, setDraft, editingId, drivers, assignableCars, ownerDisplayName, showToast, required = false, onCancel, onSave }) {
   function sendInviteSms() {
     const result = buildDriverInviteSmsHref({
       name: draft.name,
@@ -42,6 +43,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
   }
 
   const linked = drivers.find((d) => d.id === editingId)?.status === 'linked'
+  const requiredMark = required ? ' (필수)' : ''
 
   return (
     <div className="modal-overlay">
@@ -70,7 +72,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
           )}
         </div>
         <div className="form-group">
-          <label htmlFor="drvCar">배정 차량</label>
+          <label htmlFor="drvCar">배정 차량{requiredMark}</label>
           <ClearableInput id="drvCar" className="input-box driver-car-input" list="drvCarOptions" placeholder="차량번호" value={draft.vehicleNumber} onChange={(e) => setDraft({ ...draft, vehicleNumber: e.target.value })} />
           <datalist id="drvCarOptions">
             {assignableCars.map((car, index) => (
@@ -80,7 +82,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         </div>
         <div className="personal-inline-fields">
           <div className="form-group">
-            <label htmlFor="drvStart">계약 시작일</label>
+            <label htmlFor="drvStart">계약 시작일{requiredMark}</label>
             <TemporalInput type="date" id="drvStart" value={draft.startDate || ''} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
           </div>
           <div className="form-group">

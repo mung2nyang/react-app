@@ -109,6 +109,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
           <div>
             <h3>기사 연결 현황</h3>
             <p>연동 상태와 차량 계약기간을 관리합니다.</p>
+            {!cloud && <p>기사 초대는 로그인 후 쓸 수 있습니다. 로그인하면 배정 차량과 시작일을 넣어 초대할 수 있습니다.</p>}
           </div>
         </div>
         <div className="driver-summary-counts">
@@ -178,6 +179,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
           assignableCars={assignableCars}
           ownerDisplayName={profile.bizName || profile.name || '운송사'}
           showToast={showToast}
+          required={cloud}
           onCancel={() => setModalOpen(false)}
           onSave={save}
         />

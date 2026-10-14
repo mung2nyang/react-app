@@ -1,12 +1,11 @@
 // @ts-check
 // 로그인 사용자의 기사 초대 생성·수정을 outbox·재시도 큐 없이 upsert_driver_link_idempotent RPC 1회로 저장한다 — 성공하면 Store 갱신,
-// 실패하면 토스트만 띄우고 중단. 게스트·불완전 입력은 로컬만. 같은 차량번호 1명 규칙은 upsertDriver가 저장 전에 본다.
+// 실패하면 토스트만 띄우고 중단. 차량·시작일이 없으면 저장하지 않는다(원본과 같음). 같은 차량번호 1명 규칙은 upsertDriver가 저장 전에 본다.
 // 세션은 RPC 전에 캡처하고 각 await 직후·Store 반영 직전에 재검증한다 — 바뀌었으면 부작용 없이 조용히 중단.
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('./outboxTypes.js').CarRecord} CarRecord */
 /** @typedef {import('./outboxTypes.js').DriverLinkRow} DriverLinkRow */
 import { assertCloudWriteReady, assertSessionStillCurrent, captureSession } from './cloudSession.js'
-import { commitLocalOnly } from './outboxCommit.js'
 import { commitDrivers } from '../store/commitHelpers.js'
 import { StaleSessionError } from './outboxErrors.js'
 import {
@@ -17,6 +16,9 @@ import {
 
 const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 const SESSION_CHANGED_MESSAGE = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const MISSING_FIELDS_MESSAGE = '기사 이름, 배정 차량, 시작일을 입력해 주세요.'
+const UNKNOWN_CAR_MESSAGE = '등록된 기사 차량 번호를 입력해 주세요.'
+const UNSYNCED_CAR_MESSAGE = '선택한 차량이 아직 저장되지 않았습니다. 잠시 후 다시 시도해 주세요.'
 
 /**
  * 서버가 확정한 행을 해당 로컬 driver 항목에 반영한다(순수).
@@ -42,11 +44,7 @@ export async function requestDriverInviteSave({ ownerKey, items, editingId, cars
   const driver = items[idx]
 
   if (!driver?.vehicleNumber || !driver.startDate) {
-    // 차량/기간이 아직 안 정해졌으면 클라우드 시도만 건너뛰고
-    // 로컬 편집은 게스트와 동일하게 저장한다(게스트 JSON 백업과 충돌하지 않는다).
-    const successToast = editingId ? '초대를 수정했습니다.' : '초대를 저장했습니다.'
-    const { value, toast, failed } = commitLocalOnly({ domain: 'drivers', ownerKey, value: items, successToast })
-    return { items: failed ? items : value, blocked: null, toast }
+    return { items, blocked: MISSING_FIELDS_MESSAGE, toast: MISSING_FIELDS_MESSAGE }
   }
 
   /** @type {string|null} */
@@ -55,10 +53,9 @@ export async function requestDriverInviteSave({ ownerKey, items, editingId, cars
   if (blocked) return { items, blocked, toast: blocked }
 
   const car = (cars || []).find((item) => item.number === driver.vehicleNumber)
-  if (!car || !car.supabaseId) {
-    // 배정 차량이 아직 서버에 동기화되지 않았다 — 차량 동기화 큐를 새로 돌리지 않고 즉시 중단.
-    return { items, blocked: SAVE_FAIL_TOAST, toast: SAVE_FAIL_TOAST }
-  }
+  if (!car) return { items, blocked: UNKNOWN_CAR_MESSAGE, toast: UNKNOWN_CAR_MESSAGE }
+  // 배정 차량이 아직 서버에 없다 — 차량 동기화 큐를 새로 돌리지 않고 즉시 중단.
+  if (!car.supabaseId) return { items, blocked: UNSYNCED_CAR_MESSAGE, toast: UNSYNCED_CAR_MESSAGE }
 
   const vehicleId = String(car.supabaseId)
   const inviteCode = driver.inviteCode || ''

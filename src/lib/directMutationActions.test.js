@@ -720,35 +720,42 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
     endCloudSession()
   })
 
-  test('불완전 입력(차량/시작일 없음): 기존 로컬 저장 유지, rpc 0', async () => {
+  /** @param {string} ownerKey @param {Array<import('./outboxTypes.js').DriverRecord>} items @param {Array<import('./outboxTypes.js').CarRecord>} cars @param {string} message */
+  async function expectInviteRejected(ownerKey, items, cars, message) {
+    const before = getState().drivers[ownerKey]
+    const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars })
+    assert.equal(result.toast, message)
+    assert.equal(result.blocked, message, '창을 닫지 않게 blocked로 돌려준다')
+    assert.equal(getState().drivers[ownerKey], before, 'Store는 그대로')
+    assert.equal(countOf('rpc', RPC_FN), 0, '서버에 보내지 않는다')
+    assert.equal(countOf('driver_links', 'insert'), 0)
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), [])
+  }
+
+  test('71-1: 배정 차량이 없으면 안내만, 서버 0회·Store 그대로(예전엔 메모리에만 저장되고 "저장했습니다")', async () => {
     const ownerKey = 'dma-invite-incomplete'
     beginReady('user-1', ownerKey)
-    const items = [{ id: 'drv-incomplete', name: '박기사' }]
-    const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars: [] })
-    assert.match(result.toast, /초대를 저장했습니다/, '차량 미할당이라도 로컬 저장 자체는 성공 토스트를 보여줘야 한다(예전 동작)')
-    assert.deepEqual(getState().drivers[ownerKey], items)
-    assert.equal(countOf('rpc', RPC_FN), 0, '클라우드 시도 자체를 안 해야 한다')
-    assert.equal(countOf('driver_links', 'insert'), 0)
-    assert.deepEqual(readJsonKey('drivers', ownerKey, []), [], '로그인 불완전 초대도 LS 미러를 쓰지 않는다')
+    await expectInviteRejected(ownerKey, [{ id: 'drv-incomplete', name: '박기사', startDate: '2026-08-01' }], [], '기사 이름, 배정 차량, 시작일을 입력해 주세요.')
     endCloudSession()
   })
 
-  test('불완전 입력인데 로컬 저장 자체가 실패하면(AGENTS §10) 예외를 던지지 않고 실패 토스트를 돌려준다', async () => {
-    const ownerKey = 'dma-invite-incomplete-storage-fail'
+  test('71-2: 시작일이 없으면 안내만, 서버 0회·Store 그대로', async () => {
+    const ownerKey = 'dma-invite-incomplete-start'
     beginReady('user-1', ownerKey)
-    const items = [{ id: 'drv-incomplete-2', name: '박기사' }]
-    const domainKey = storageKeyFor('drivers', ownerKey)
-
-    let result
-    await assert.doesNotReject(async () => {
-      result = await withFailingSetItem((key) => key === domainKey, () => requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars: [] }))
-    })
-    assert.match(result.toast, /초대를 저장했습니다/)
-    assert.deepEqual(getState().drivers[ownerKey], items, '로그인 불완전 초대는 LS quota와 무관하게 Store에 남는다')
+    const cars = [{ id: 'car-1', number: '77가7777', type: 'sub', supabaseId: 802 }]
+    await expectInviteRejected(ownerKey, [{ id: 'drv-incomplete-2', name: '박기사', vehicleNumber: '77가7777', startDate: '' }], cars, '기사 이름, 배정 차량, 시작일을 입력해 주세요.')
     endCloudSession()
   })
 
-  test('배정 차량이 아직 서버에 없으면(car.supabaseId 없음): Fail-Fast 토스트, rpc 0, 차량 동기화 큐 안 돌림', async () => {
+  test('71-3: 등록된 차량이 아닌 번호면 "등록된 기사 차량 번호" 안내(예전엔 네트워크 안내)', async () => {
+    const ownerKey = 'dma-invite-unknown-car'
+    beginReady('user-1', ownerKey)
+    const cars = [{ id: 'car-1', number: '77가7777', type: 'sub', supabaseId: 802 }]
+    await expectInviteRejected(ownerKey, [{ id: 'drv-u', name: '박기사', vehicleNumber: '00가0000', startDate: '2026-08-01', inviteCode: '111111' }], cars, '등록된 기사 차량 번호를 입력해 주세요.')
+    endCloudSession()
+  })
+
+  test('71-4: 배정 차량이 아직 서버에 없으면(car.supabaseId 없음): 차량 미저장 안내, rpc 0, 차량 동기화 큐 안 돌림', async () => {
     const ownerKey = 'dma-invite-car-unsynced'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '77가7777', type: 'sub' }]
@@ -757,7 +764,7 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
 
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars })
 
-    assert.equal(result.toast, FAIL_FAST_TOAST)
+    assert.equal(result.toast, '선택한 차량이 아직 저장되지 않았습니다. 잠시 후 다시 시도해 주세요.')
     assert.equal(countOf('rpc', RPC_FN), 0)
     assert.equal(countOf('driver_links', 'insert'), 0)
     assert.equal(countOf('vehicles', 'insert'), 0, '차량 동기화 큐를 새로 돌리면 안 된다')
