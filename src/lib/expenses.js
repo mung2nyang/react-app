@@ -11,7 +11,6 @@ import {
   getCloudOwnerKey,
   getCloudUserId,
 } from './cloudSession.js'
-import { syncFuelRecords, syncMaintenanceRecords, syncMiscExpenseRecords } from './syncExpenseRecords.js'
 import { syncExpenseItemsForVehicle } from './syncExpenseItems.js'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
@@ -39,26 +38,20 @@ export async function saveExpenses(ownerKey, items) {
     commitExpenses(ownerKey, next, { syncToCloud: false })
     return
   }
-  const targets = planExpenseVehicleTargets(getState().cars[ownerKey], getState().drivers[ownerKey], next)
+  const cars = getState().cars[ownerKey]
+  const drivers = getState().drivers[ownerKey]
+  const targets = planExpenseVehicleTargets(cars, drivers, next)
   const previousAll = /** @type {Array<ExpenseItem>} */ (getState().expenses[ownerKey] || [])
+  const previousByLog = new Map(planExpenseVehicleTargets(cars, drivers, previousAll).map((target) => [target.logId, target.expenses]))
   const mainVehicleId = targets.find((target) => target.logId === 'main')?.vehicleId ?? null
   // 서브 칸 먼저·메인 나중 — 중간 실패 시 유실 대신 중복(불러올 때 id로 정리).
   for (const target of targets) {
-    const workData = logs[target.logId] || {}
-    if (target.mode === 'items') {
-      // 연동 서브(5-B-2): 기사와 공용 칸이라 항목 단위, 메인 칸의 옛 항목은 옮겨 넣는다.
-      const previous = previousAll.filter((item) => String(item.vehicleNumber || '').trim() === target.logId)
-      await syncExpenseItemsForVehicle(/** @type {string} */ (userId), target.vehicleId, previous, target.expenses, workData, mainVehicleId)
-      continue
-    }
-    // 미연동 서브: 지운 항목의 날짜도 다시 써야 서버에서 사라진다(마지막 항목 삭제 포함).
-    const removedDates = target.logId === 'main' ? [] : previousAll
-      .filter((item) => String(item.vehicleNumber || '').trim() === target.logId && item.date)
-      .map((item) => item.date)
-    const dateTarget = { ...target, cleanupDates: [...target.cleanupDates, ...removedDates] }
-    await syncFuelRecords(/** @type {string} */ (userId), dateTarget, workData)
-    await syncMaintenanceRecords(/** @type {string} */ (userId), dateTarget, workData)
-    await syncMiscExpenseRecords(/** @type {string} */ (userId), dateTarget, workData)
+    const ownIds = new Set(target.expenses.map((item) => item.id))
+    // 내가 알던 항목 = 저장 전 이 칸 항목 + 이번에 다른 칸으로 간 항목(이 칸에 남은 옛 줄을 지운다).
+    const previous = [...(previousByLog.get(target.logId) || []), ...next.filter((item) => !ownIds.has(item.id))]
+    const linked = target.mode === 'items'
+    // 연동 서브(5-B-2)는 메인 칸의 옛 항목을 옮겨 넣고, 차주만 쓰는 칸은 서버에서 빠진 항목을 다시 넣는다.
+    await syncExpenseItemsForVehicle(/** @type {string} */ (userId), target.vehicleId, previous, target.expenses, logs[target.logId] || {}, linked ? mainVehicleId : null, !linked)
   }
   assertSessionStillCurrent(captured)
   commitExpenses(ownerKey, next, { syncToCloud: false })

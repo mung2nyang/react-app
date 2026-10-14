@@ -10,8 +10,7 @@
  * @property {string|number} vehicleId
  * @property {string} logId 'main' 또는 서브 차량번호(workLogs 키)
  * @property {Array<ExpenseItem>} expenses
- * @property {Array<string>} cleanupDates 이 칸에서 다른 칸으로 옮겨 간 항목의 날짜
- * @property {'dates'|'items'} mode dates = 날짜별 다시 쓰기(차주만 쓰는 칸), items = 항목 단위(연동 공용 칸)
+ * @property {'dates'|'items'} mode dates = 차주만 쓰는 칸, items = 연동 공용 칸
  */
 
 /**
@@ -44,13 +43,11 @@ export function planExpenseVehicleTargets(cars, drivers, expenses) {
   const subTargets = new Map()
   /** @type {Array<ExpenseItem>} */
   const mainItems = []
-  /** @type {Set<string>} */
-  const movedDates = new Set()
   for (const car of carList) {
     const plate = String(car.number || '').trim()
     if (car === mainCar || car.type !== 'sub' || !car.supabaseId || !plate) continue
     const mode = isLinkedPlate(plate, drivers) ? 'items' : 'dates'
-    subTargets.set(plate, { vehicleId: car.supabaseId, logId: plate, expenses: [], cleanupDates: [], mode })
+    subTargets.set(plate, { vehicleId: car.supabaseId, logId: plate, expenses: [], mode })
   }
 
   for (const item of expenses || []) {
@@ -64,15 +61,14 @@ export function planExpenseVehicleTargets(cars, drivers, expenses) {
     }
     let target = subTargets.get(plate)
     if (!target) {
-      target = { vehicleId: subCar.supabaseId, logId: plate, expenses: [], cleanupDates: [], mode: 'dates' }
+      target = { vehicleId: subCar.supabaseId, logId: plate, expenses: [], mode: 'dates' }
       subTargets.set(plate, target)
     }
     target.expenses.push(item)
-    if (item.date) movedDates.add(item.date)
   }
 
   return [
     ...subTargets.values(),
-    { vehicleId: mainCar.supabaseId, logId: 'main', expenses: mainItems, cleanupDates: [...movedDates], mode: 'dates' },
+    { vehicleId: mainCar.supabaseId, logId: 'main', expenses: mainItems, mode: 'dates' },
   ]
 }

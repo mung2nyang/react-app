@@ -8,7 +8,7 @@ mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } }
 
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { setHydration, getState } = await import('../store/app-store.js')
-const { commitCars, commitClients, commitDrivers, commitExpenses, commitInvoices, commitProfile } = await import('../store/commitHelpers.js')
+const { commitCars, commitClients, commitDrivers, commitExpenses, commitInvoices, commitProfile, commitWorkData } = await import('../store/commitHelpers.js')
 const { saveProfile, EMPTY_PROFILE } = await import('./profile.js')
 const { savePracticeSettings } = await import('./practiceSettings.js')
 const { saveExpenses } = await import('./expenses.js')
@@ -199,11 +199,12 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   }
 
   /**
-   * 로드맵 5-A: 메인 501·서브 802. 메인 칸 2026-08-03에 옛 서브 항목이 있던 상황.
+   * 로드맵 5-A: 메인 501·서브 802. 70번부터 항목 단위 — fuelRows는 차량 칸별 서버 주유 줄.
    * @param {string} ownerKey
    * @param {Array<import('./outboxTypes.js').DriverRecord>} drivers
+   * @param {Record<string, Array<import('../store/atomicPersist.js').JsonValue>>} [fuelRows]
    */
-  function seedSubVehicleSave(ownerKey, drivers) {
+  function seedSubVehicleSave(ownerKey, drivers, fuelRows = {}) {
     beginReady(ownerKey, ownerKey)
     commitCars(ownerKey, [
       { id: 'car-main', type: 'main', number: '11가1111', supabaseId: 501 },
@@ -224,7 +225,8 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
       },
     }
     handlers.fuel_records = {
-      delete: (filters) => { events.push(`fuel.delete:${filterValue(filters, 'daily_log_id')}`); return { data: null, error: null } },
+      select: (filters) => ({ data: fuelRows[filterValue(filters, 'vehicle_id')] || [], error: null }),
+      delete: (filters) => { events.push(`fuel.delete:${filterValue(filters, 'id')}`); return { data: null, error: null } },
       insert: (rows) => {
         const list = Array.isArray(rows) ? rows : [rows]
         list.forEach((row) => {
@@ -238,42 +240,107 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     return events
   }
 
-  test('5-A 미연동 서브 표시 항목: 서브차량 칸에 먼저 넣고, 메인 칸 그 날짜는 그다음 비운다', async () => {
+  test('5-A·70 미연동 서브 표시 항목: 서브차량 칸에 먼저 넣고, 메인 칸에 남은 그 항목 줄은 그다음 지운다', async () => {
     const ownerKey = 'cms-exp-sub-unlinked'
-    const events = seedSubVehicleSave(ownerKey, [])
+    const events = seedSubVehicleSave(ownerKey, [], { 501: [{ id: 'srv-main-1', work_date: '2026-08-03', sequence: 0, raw: { id: 'fuel-sub-1' } }] })
     /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */
     const next = [{ id: 'fuel-sub-1', kind: 'fuel', date: '2026-08-03', name: '주유', cost: 3000, vehicleNumber: '22나2222' }]
     await saveExpenses(ownerKey, next)
     assert.deepEqual(events, [
       'daily_logs.upsert:802',
-      'fuel.delete:20',
       'fuel.insert:802:20',
-      'fuel.delete:10',
+      'fuel.delete:srv-main-1',
     ])
     assert.equal(firstItemId(getState().expenses[ownerKey]), 'fuel-sub-1')
     endCloudSession()
   })
 
-  test('5-B-2 연동 서브 표시 항목: 그 서브 칸에 항목 단위로 넣고 메인 칸 그 날짜는 정리한다', async () => {
+  test('5-B-2·70 연동 서브 표시 항목: 그 서브 칸에 항목 단위로 넣고 메인 칸의 옛 줄은 지운다', async () => {
     const ownerKey = 'cms-exp-sub-linked'
-    const events = seedSubVehicleSave(ownerKey, [{ id: 'drv-1', status: 'linked', vehicleNumber: '22나2222' }])
+    const events = seedSubVehicleSave(ownerKey, [{ id: 'drv-1', status: 'linked', vehicleNumber: '22나2222' }], { 501: [{ id: 'srv-main-2', work_date: '2026-08-03', sequence: 0, raw: { id: 'fuel-sub-2' } }] })
     /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */
     const next = [{ id: 'fuel-sub-2', kind: 'fuel', date: '2026-08-03', name: '주유', cost: 3000, vehicleNumber: '22나2222' }]
     await saveExpenses(ownerKey, next)
-    assert.deepEqual(events, ['daily_logs.upsert:802', 'fuel.insert:802:20', 'fuel.delete:10'])
+    assert.deepEqual(events, ['daily_logs.upsert:802', 'fuel.insert:802:20', 'fuel.delete:srv-main-2'])
     endCloudSession()
   })
 
-  test('5-B-2 미연동 서브의 마지막 항목을 지우면 그 날짜 서브 칸을 비운다(화면 일지에 그 날짜가 없어도)', async () => {
+  test('5-B-2·70 미연동 서브의 마지막 항목을 지우면 서브 칸 그 줄을 지운다(화면 일지에 그 날짜가 없어도)', async () => {
     const ownerKey = 'cms-exp-sub-last-delete'
-    const events = seedSubVehicleSave(ownerKey, [])
+    const events = seedSubVehicleSave(ownerKey, [], { 802: [{ id: 'srv-sub-last', work_date: '2026-08-05', sequence: 0, raw: { id: 'fuel-sub-last' } }] })
     commitExpenses(ownerKey, [{ id: 'fuel-sub-last', kind: 'fuel', date: '2026-08-05', name: '주유', cost: 1, vehicleNumber: '22나2222' }], { syncToCloud: false })
-    const baseSelect = handlers.daily_logs.select
-    handlers.daily_logs.select = (filters) => (filterValue(filters, 'vehicle_id') === '802' && filterValue(filters, 'work_date') === 'undefined'
-      ? { data: [{ id: 21, work_date: '2026-08-05' }], error: null }
-      : baseSelect(filters))
     await saveExpenses(ownerKey, [])
-    assert.ok(events.includes('fuel.delete:21'), `서브 칸 2026-08-05 행이 지워져야 한다: ${events.join(',')}`)
+    assert.deepEqual(events, ['fuel.delete:srv-sub-last'], `서브 칸 2026-08-05 줄만 지워져야 한다: ${events.join(',')}`)
+    endCloudSession()
+  })
+
+  /** @param {string} id @param {string} date @param {number} cost @param {string} [vehicleNumber] @returns {import('../domain/expenseTypes.js').ExpenseItem} */
+  function fuelItem(id, date, cost, vehicleNumber) {
+    return vehicleNumber ? { id, kind: 'fuel', date, name: '주유', cost, vehicleNumber } : { id, kind: 'fuel', date, name: '주유', cost }
+  }
+
+  /** @param {import('../domain/expenseTypes.js').ExpenseItem} item @param {string} srvId */
+  function fuelRow(item, srvId) {
+    return { id: srvId, work_date: item.date, sequence: 0, raw: { ...item } }
+  }
+
+  test('70-1: 운행 30일·주유 3건 중 1건을 고치면 고치기 1번, 운행 날짜 지우기·넣기 0번', async () => {
+    const ownerKey = 'cms-70-edit'
+    const events = seedSubVehicleSave(ownerKey, [])
+    /** @type {Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>} */
+    const days = {}
+    for (let d = 1; d <= 30; d += 1) days[`2026-09-${String(d).padStart(2, '0')}`] = { fixedCount: 1 }
+    commitWorkData(ownerKey, days, { syncToCloud: false })
+    const before = [fuelItem('f1', '2026-09-01', 1000), fuelItem('f2', '2026-09-02', 2000), fuelItem('f3', '2026-09-03', 3000)]
+    commitExpenses(ownerKey, before, { syncToCloud: false })
+    handlers.fuel_records.select = (filters) => ({ data: filterValue(filters, 'vehicle_id') === '501' ? before.map((item, i) => fuelRow(item, `srv-${i}`)) : [], error: null })
+    handlers.fuel_records.update = (_row, filters) => { events.push(`fuel.update:${filterValue(filters, 'id')}`); return { data: null, error: null } }
+    const baseSelect = handlers.daily_logs.select
+    handlers.daily_logs.select = (filters) => (filterValue(filters, 'vehicle_id') === '501' && filterValue(filters, 'work_date') === 'undefined'
+      ? { data: Object.keys(days).map((workDate, i) => ({ id: 100 + i, work_date: workDate })), error: null }
+      : baseSelect(filters))
+
+    await saveExpenses(ownerKey, [before[0], fuelItem('f2', '2026-09-02', 2500), before[2]])
+
+    assert.deepEqual(events, ['fuel.update:srv-1'])
+    assert.equal(countOf('maintenance_records', 'delete') + countOf('misc_expense_records', 'delete'), 0)
+    assert.equal(getState().expenses[ownerKey]?.[1]?.cost, 2500)
+    endCloudSession()
+  })
+
+  test('70-2: 메인 주유를 미연동 서브로 옮기면 서브에 넣고 메인 줄을 지운다', async () => {
+    const ownerKey = 'cms-70-move'
+    const item = fuelItem('f-move', '2026-08-03', 4000)
+    const events = seedSubVehicleSave(ownerKey, [], { 501: [fuelRow(item, 'srv-main-move')] })
+    commitExpenses(ownerKey, [item], { syncToCloud: false })
+
+    await saveExpenses(ownerKey, [{ ...item, vehicleNumber: '22나2222' }])
+
+    assert.deepEqual(events, ['daily_logs.upsert:802', 'fuel.insert:802:20', 'fuel.delete:srv-main-move'])
+    endCloudSession()
+  })
+
+  test('70-3: 차주 칸(메인)에서 서버에 빠진 안 바뀐 항목은 다시 넣는다', async () => {
+    const ownerKey = 'cms-70-restore'
+    const events = seedSubVehicleSave(ownerKey, [])
+    const keep = fuelItem('f-keep', '2026-08-03', 5000)
+    commitExpenses(ownerKey, [keep], { syncToCloud: false })
+
+    await saveExpenses(ownerKey, [keep])
+
+    assert.deepEqual(events, ['fuel.insert:501:10'])
+    endCloudSession()
+  })
+
+  test('70-4: 연동 칸에서 서버에 없는 안 바뀐 항목은 지금처럼 되살리지 않는다', async () => {
+    const ownerKey = 'cms-70-linked'
+    const events = seedSubVehicleSave(ownerKey, [{ id: 'drv-1', status: 'linked', vehicleNumber: '22나2222' }])
+    const gone = fuelItem('f-gone', '2026-08-03', 6000, '22나2222')
+    commitExpenses(ownerKey, [gone], { syncToCloud: false })
+
+    await saveExpenses(ownerKey, [gone])
+
+    assert.deepEqual(events, [])
     endCloudSession()
   })
 

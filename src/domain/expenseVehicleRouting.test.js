@@ -27,7 +27,7 @@ describe('isLinkedPlate', () => {
 })
 
 describe('planExpenseVehicleTargets — 로드맵 5-A', () => {
-  test('표시 없음 → 메인, 미연동 서브 표시 → 서브 칸(앞), 메인 칸은 옮긴 날짜를 정리 대상으로 받는다', () => {
+  test('표시 없음 → 메인, 미연동 서브 표시 → 서브 칸(앞), 메인 칸은 맨 뒤', () => {
     const targets = planExpenseVehicleTargets([MAIN, SUB], [], [
       fuel('m1', '2026-08-01'),
       fuel('s1', '2026-08-03', '22나2222'),
@@ -36,14 +36,12 @@ describe('planExpenseVehicleTargets — 로드맵 5-A', () => {
     assert.equal(targets[0].vehicleId, 802)
     assert.equal(targets[0].logId, '22나2222')
     assert.deepEqual(targets[0].expenses.map((item) => item.id), ['s1'])
-    assert.deepEqual(targets[0].cleanupDates, [])
     assert.equal(targets[1].vehicleId, 501)
     assert.equal(targets[1].logId, 'main')
     assert.deepEqual(targets[1].expenses.map((item) => item.id), ['m1'])
-    assert.deepEqual(targets[1].cleanupDates, ['2026-08-03'])
   })
 
-  test('5-B-2: 연동 서브 표시 항목은 그 서브 칸 항목 단위 대상, 메인 칸은 그 날짜를 정리한다', () => {
+  test('5-B-2: 연동 서브 표시 항목은 그 서브 칸 연동 대상, 메인 칸은 차주 칸', () => {
     const targets = planExpenseVehicleTargets([MAIN, SUB], [{ id: 'd1', status: 'linked', vehicleNumber: '22나2222' }], [
       fuel('s1', '2026-08-03', '22나2222'),
     ])
@@ -54,10 +52,9 @@ describe('planExpenseVehicleTargets — 로드맵 5-A', () => {
     assert.equal(targets[1].vehicleId, 501)
     assert.equal(targets[1].mode, 'dates')
     assert.deepEqual(targets[1].expenses, [])
-    assert.deepEqual(targets[1].cleanupDates, ['2026-08-03'])
   })
 
-  test('5-B-2: 미연동 서브도 남은 항목이 없어도 날짜별 대상에 들어간다(마지막 항목 삭제 반영)', () => {
+  test('5-B-2: 미연동 서브도 남은 항목이 없어도 차주 칸 대상에 들어간다(마지막 항목 삭제 반영)', () => {
     const targets = planExpenseVehicleTargets([MAIN, SUB], [], [])
     assert.equal(targets.length, 2)
     assert.equal(targets[0].vehicleId, 802)

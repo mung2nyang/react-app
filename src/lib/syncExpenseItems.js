@@ -1,6 +1,6 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// 연동 차량 칸은 차주·기사 공용 장부 — 항목 id 기준으로 넣기·고치기·(내가 알던 것만) 지우기.
+// 지출 칸 저장 — 항목 id 기준으로 넣기·고치기·(내가 알던 것만) 지우기. 연동 차량 칸은 차주·기사 공용 장부.
 import { supabase } from '../supabaseClient.js'
 import { fetchAllRows } from './fetchAllRows.js'
 import { buildFuelRecordRow, expenseFromFuelRecord } from '../domain/fuelRecords.js'
@@ -26,6 +26,7 @@ import { buildMiscExpenseRecordRow, expenseFromMiscRecord } from '../domain/misc
  * @property {Record<string, JsonValue|undefined>} workData
  * @property {Map<string, string>} idByDate
  * @property {string|number|null} legacyVehicleId 옛 항목이 잘못 쌓여 있을 수 있는 칸(차주 메인 차량, 5-B-2)
+ * @property {boolean} restoreMissing 차주만 쓰는 칸(메인·미연동)이면 true
  */
 
 /** @type {Array<KindSpec>} */
@@ -114,7 +115,8 @@ async function syncKind(spec, ctx) {
     const previous = previousById.get(item.id)
     const unchanged = !!previous && JSON.stringify(previous) === JSON.stringify(item)
     // 안 바뀐 항목: 서버에 있으면 그대로, 없으면 상대가 지운 것이므로 되살리지 않는다(단 메인 칸 옛 항목은 옮겨 넣는다).
-    if (unchanged && (row || !legacyIds.has(item.id))) continue
+    // 차주만 쓰는 칸은 서버에서 빠진 항목을 다시 넣는다(앞선 저장이 끊긴 경우).
+    if (unchanged && (row || (!legacyIds.has(item.id) && !ctx.restoreMissing))) continue
     const dailyLogId = await ensureDailyLog(ctx, item.date)
     const rowContext = { dailyLogId, userId: ctx.userId, vehicleId: ctx.vehicleId, workDate: item.date }
     if (!row) {
@@ -147,9 +149,10 @@ async function syncKind(spec, ctx) {
  * @param {Array<ExpenseItem>} next
  * @param {Record<string, JsonValue|undefined>} workData
  * @param {string|number|null} [legacyVehicleId] 옛 항목을 찾을 칸(차주 메인 차량). 기사 쪽은 없음
+ * @param {boolean} [restoreMissing] 차주만 쓰는 칸이면 true
  */
-export async function syncExpenseItemsForVehicle(userId, vehicleId, previous, next, workData, legacyVehicleId = null) {
-  const ctx = { userId, vehicleId, previous, next, workData, legacyVehicleId, idByDate: await dailyLogIdsByDate(vehicleId) }
+export async function syncExpenseItemsForVehicle(userId, vehicleId, previous, next, workData, legacyVehicleId = null, restoreMissing = false) {
+  const ctx = { userId, vehicleId, previous, next, workData, legacyVehicleId, restoreMissing, idByDate: await dailyLogIdsByDate(vehicleId) }
   for (const spec of KIND_SPECS) {
     await syncKind(spec, ctx)
   }
