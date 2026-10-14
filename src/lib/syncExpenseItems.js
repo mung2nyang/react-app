@@ -2,6 +2,7 @@
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 연동 차량 칸은 차주·기사 공용 장부 — 항목 id 기준으로 넣기·고치기·(내가 알던 것만) 지우기.
 import { supabase } from '../supabaseClient.js'
+import { fetchAllRows } from './fetchAllRows.js'
 import { buildFuelRecordRow, expenseFromFuelRecord } from '../domain/fuelRecords.js'
 import { buildMaintenanceRecordRow, expenseFromMaintenanceRecord, parseEntityNumber } from '../domain/maintenanceRecords.js'
 import { buildMiscExpenseRecordRow, expenseFromMiscRecord } from '../domain/miscExpenseRecords.js'
@@ -39,7 +40,7 @@ const KIND_SPECS = [
  * @returns {Promise<Map<string, string>>}
  */
 async function dailyLogIdsByDate(vehicleId) {
-  const { data, error } = await supabase.from('daily_logs').select('id, work_date').eq('vehicle_id', vehicleId)
+  const { data, error } = await fetchAllRows(() => supabase.from('daily_logs').select('id, work_date').eq('vehicle_id', vehicleId).order('id'))
   if (error) throw error
   return new Map((data || []).map((row) => [row.work_date, row.id]))
 }
@@ -80,8 +81,8 @@ async function ensureDailyLog(ctx, workDate) {
  * @returns {Promise<Array<ServerRow>>}
  */
 async function fetchRows(spec, vehicleId) {
-  const { data, error } = await supabase
-    .from(spec.table).select('id, raw, work_date, sequence').eq('vehicle_id', vehicleId).order('sequence', { ascending: true })
+  const { data, error } = await fetchAllRows(() => supabase
+    .from(spec.table).select('id, raw, work_date, sequence').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }).order('id'))
   if (error) throw error
   return /** @type {Array<ServerRow>} */ (data || [])
 }

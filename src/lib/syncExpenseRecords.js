@@ -6,6 +6,7 @@ import { buildFuelRecordRow, groupFuelExpensesByDate } from '../domain/fuelRecor
 import { buildMaintenanceRecordRow, groupMaintExpensesByDate } from '../domain/maintenanceRecords.js'
 import { buildMiscExpenseRecordRow, groupMiscExpensesByDate } from '../domain/miscExpenseRecords.js'
 import { upsertDailyLog } from './syncWorkData.js'
+import { fetchAllRows } from './fetchAllRows.js'
 
 /** @typedef {import('../domain/expenseVehicleRouting.js').ExpenseVehicleTarget} ExpenseVehicleTarget */
 
@@ -24,10 +25,11 @@ function syncDates(workData, byDate, cleanup) {
  * @returns {Promise<Map<string, string>>}
  */
 async function dailyLogIdsByDate(vehicleSupabaseId) {
-  const { data: logs, error: logsError } = await supabase
+  const { data: logs, error: logsError } = await fetchAllRows(() => supabase
     .from('daily_logs')
     .select('id, work_date')
     .eq('vehicle_id', vehicleSupabaseId)
+    .order('id'))
   if (logsError) throw logsError
   return new Map((logs || []).map((row) => [row.work_date, row.id]))
 }

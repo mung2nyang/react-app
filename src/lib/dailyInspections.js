@@ -3,6 +3,7 @@
 // 일상점검표 서버 읽기·저장(daily_inspections 표, 차량+날짜 1장). 로컬 보관·재시도 큐 없음 — 일지를 열 때 읽고 저장은 바로 서버.
 import { supabase } from '../supabaseClient.js'
 import { sanitizeInspectionItems } from '../domain/dailyInspectionItems.js'
+import { fetchAllRows } from './fetchAllRows.js'
 import { assertSessionStillCurrent, blockedReasonForCloudWrite, captureSession, getCloudUserId } from './cloudSession.js'
 
 /** @typedef {import('../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
@@ -91,10 +92,11 @@ export async function fetchVehiclesDailyInspections(vehicleIds) {
   /** @type {Record<string, Record<string, DailyInspection>>} */
   const byVehicle = {}
   if (!vehicleIds.length) return byVehicle
-  const { data, error } = await supabase
+  const { data, error } = await fetchAllRows(() => supabase
     .from('daily_inspections')
     .select('vehicle_id, work_date, items, action_note, inspector_name')
     .in('vehicle_id', vehicleIds)
+    .order('id'))
   if (error) throw error
   for (const row of Array.isArray(data) ? data : []) {
     if (!row || row.vehicle_id == null || typeof row.work_date !== 'string') continue
