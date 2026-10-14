@@ -166,6 +166,12 @@
   border-radius: 50%;
 }
 
+/* 오늘 파란 동그라미와 겹치지 않게 살짝 바깥으로 */
+.date-cell.today .unpaid-dot {
+  top: 4px;
+  left: 4px;
+}
+
 /* 좁은 휴대폰: 배지를 줄여 칸(약 33px) 안에 들어가게 */
 @media (max-width: 380px) {
   .work-badge,
