@@ -229,3 +229,15 @@ describe('getDriverSelfMonthlyDetail — 배정 차량 스코프 고정노선', 
     assert.equal(detail.income.fare.total, 250000)
   })
 })
+
+test('공제 줄용 breakdown: 기사 몫·산재(기사 부담)·원천징수, 실수령 = 몫 − 공제(로드맵 45)', () => {
+  const detail = getDriverSelfMonthlyDetail(MONTH_KEY, settingsWithCars([REVENUE_CAR]), MAIN_ONLY_WORK)
+  const breakdown = detail.income.settlement.breakdown
+  assert.ok(breakdown)
+  assert.equal(breakdown.amount, SHARE_GROSS)
+  assert.equal(breakdown.insurance, SHARE_GROSS - SHARE_NET)
+  assert.equal(breakdown.showInsurance, true)
+  assert.equal(breakdown.showWithholding, !!REVENUE_CAR.withholdingOn)
+  assert.equal(breakdown.amount - breakdown.insurance - breakdown.withholding, detail.income.settlement.total)
+})
+

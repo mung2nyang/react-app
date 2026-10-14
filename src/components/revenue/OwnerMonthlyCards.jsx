@@ -6,7 +6,8 @@ import { dateLabel, driverSelfNetProfitLabel, won } from './revenueFormat.js'
 
 /** @typedef {ReturnType<typeof import('../../domain/finance.js').getOwnerMonthlyFinanceDetail>} OwnerMonthlyDetail */
 /** @typedef {{ label: string, amount: number, date?: string }} DetailLine */
-/** @typedef {{ total: number, items: Array<DetailLine>, label?: string, payMode?: string|null }} SettlementBucket */
+/** @typedef {{ amount: number, insurance: number, withholding: number, showInsurance: boolean, showWithholding: boolean }} SettlementBreakdown */
+/** @typedef {{ total: number, items: Array<DetailLine>, label?: string, payMode?: string|null, breakdown?: SettlementBreakdown }} SettlementBucket */
 /**
  * @typedef {Omit<OwnerMonthlyDetail, 'income'> & {
  *   income: OwnerMonthlyDetail['income'] & { settlement?: SettlementBucket }
@@ -54,6 +55,8 @@ function RevenueDetailRow({ label, amount, items, showDate = false }) {
 export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) {
   const isDriverSelf = variant === 'driverSelf'
   const netTitle = isDriverSelf ? driverSelfNetProfitLabel(detail.income.settlement) : '당월 순이익'
+  // 기사 화면: 큰 숫자(실수령)가 어떻게 나왔는지 기사 몫·공제 줄로 보인다(로드맵 45).
+  const breakdown = isDriverSelf ? detail.income.settlement?.breakdown : undefined
 
   return (
     <>
@@ -72,6 +75,13 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
           </span>
         </div>
         <div className="revenue-net-stats">총 {detail.tripCount}회 운행 / {detail.distanceKm.toLocaleString('ko-KR')}km / {detail.durationHours.toLocaleString('ko-KR')}시간</div>
+        {breakdown && (
+          <>
+            <div className="summary-row" style={{ marginTop: 14 }}><span>기사 몫</span><span className="summary-value">{won(breakdown.amount)}</span></div>
+            {breakdown.showInsurance && breakdown.insurance > 0 && <div className="summary-row"><span>산재보험(기사 부담)</span><span className="summary-value">{won(-breakdown.insurance)}</span></div>}
+            {breakdown.showWithholding && breakdown.withholding > 0 && <div className="summary-row"><span>원천징수 3.3%</span><span className="summary-value">{won(-breakdown.withholding)}</span></div>}
+          </>
+        )}
         <div className="summary-row" style={{ marginTop: 14 }}>
           <span>당월 부가세(공급가액 기준 10%)</span>
           <span className="summary-value">{won(detail.vatAmount)}</span>
@@ -84,7 +94,7 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
       </div>
 
       <div className="summary-card revenue-net-card">
-        <div className="summary-title">운송 수입</div>
+        <div className="summary-title">{isDriverSelf ? '차량 운송 수입' : '운송 수입'}</div>
         <RevenueDetailRow label="운송료" amount={detail.income.fare.total} items={detail.income.fare.items} />
         <RevenueDetailRow
           label="운임 수수료"
@@ -107,7 +117,7 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
           />
         )}
         <div className="summary-row total">
-          <span>합계</span>
+          <span>{isDriverSelf ? '운송 수입 합계(정산 전)' : '합계'}</span>
           <span className="summary-value">{(Number(detail.income.total) || 0).toLocaleString('ko-KR')}원</span>
         </div>
       </div>

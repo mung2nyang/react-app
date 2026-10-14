@@ -59,6 +59,8 @@ export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLo
   let label = '기사 정산'
   /** @type {Array<{ date: string, label: string, amount: number }>} */
   let items = []
+  // 기사 화면에 공제 줄을 보이려고 넘긴다(로드맵 45) — 줄을 보일지는 차주 기사 관리(SettlementSummaryCard)와 같은 규칙.
+  let breakdown = { amount: 0, insurance: 0, withholding: 0, showInsurance: false, showWithholding: false }
 
   if (assigned) {
     // 산재보험료·3.3% 원천징수는 차주 화면(driverRevenueShareExpense.js)과 같은
@@ -68,7 +70,15 @@ export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLo
     const totals = getMonthlyDriverTotals(logData(workDataByLogId, 'main'), monthKey, link, settings)
     const commission = calculateDriverVehicleCommission(assigned, totals.grossAmount, totals.count)
     const settlementAmount = getDriverSettlementAmount(assigned, commission)
-    settlementTotal = getDriverIncomeDeductions(assigned, settlementAmount).driverNet
+    const deductions = getDriverIncomeDeductions(assigned, settlementAmount)
+    settlementTotal = deductions.driverNet
+    breakdown = {
+      amount: deductions.settlementAmount,
+      insurance: deductions.insuranceDriverShare,
+      withholding: deductions.withholding,
+      showInsurance: !!assigned.insuranceOn && assigned.driverIncomeType !== 'employee',
+      showWithholding: !!assigned.withholdingOn,
+    }
     label = settlementLabelForCar(assigned, settlementTotal)
     if (settlementTotal > 0) {
       items = [{
@@ -92,6 +102,7 @@ export function getDriverSelfMonthlyDetail(monthKey, settings = {}, workDataByLo
         items,
         label,
         payMode: assigned?.driverPayMode || null,
+        breakdown,
       },
       // 화면에 보이는 운송료·운임수수료·산재보험료 줄의 합(유가보조금은 driverSelf에서 숨김)
       total: (Number(base.income.fare.total) || 0) - (Number(base.income.commission.total) || 0) - (Number(base.income.insurance.total) || 0),

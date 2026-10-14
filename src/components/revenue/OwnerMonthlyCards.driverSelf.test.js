@@ -138,4 +138,47 @@ describe('OwnerMonthlyCards variant=driverSelf', () => {
       container.remove()
     }
   })
+
+  test('기사 화면: 기사 몫·원천징수 줄, 켜지지 않은 산재 줄은 숨김, 카드 이름은 기사용(로드맵 45)', async () => {
+    const detail = sampleDetail()
+    detail.income.settlement = {
+      ...detail.income.settlement,
+      breakdown: { amount: 60000, insurance: 0, withholding: 1980, showInsurance: false, showWithholding: true },
+    }
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    try {
+      await act(async () => {
+        root.render(React.createElement(OwnerMonthlyCards, { detail, variant: 'driverSelf' }))
+      })
+      const text = container.textContent || ''
+      assert.ok(text.includes('기사 몫60,000원'), text.slice(0, 300))
+      assert.ok(text.includes('원천징수 3.3%-1,980원'))
+      assert.equal(text.includes('산재보험(기사 부담)'), false)
+      assert.ok(text.includes('차량 운송 수입'))
+      assert.ok(text.includes('운송 수입 합계(정산 전)'))
+    } finally {
+      root.unmount()
+      container.remove()
+    }
+  })
+
+  test('차주 화면은 공제 줄 없이 이름 그대로', async () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    try {
+      await act(async () => {
+        root.render(React.createElement(OwnerMonthlyCards, { detail: sampleDetail(), variant: 'owner' }))
+      })
+      const text = container.textContent || ''
+      assert.equal(text.includes('기사 몫'), false)
+      assert.equal(text.includes('차량 운송 수입'), false)
+      assert.ok(text.includes('운송 수입'))
+    } finally {
+      root.unmount()
+      container.remove()
+    }
+  })
 })
