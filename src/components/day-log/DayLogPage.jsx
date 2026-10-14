@@ -160,10 +160,10 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
           <div className="modal-section fixed-route-section">
             <div className="modal-section-title">고정 노선</div>
             <div className="form-group fixed-route-group">
-              <FixedCountSection count={draft.fixedCount} isOff={draft.isOff} quickCounts={quickCounts} onChange={(count) => patchDraft({ fixedCount: Math.max(0, parseInt(String(count), 10) || 0) })} />
+              <FixedCountSection count={draft.fixedCount} isOff={draft.isOff} quickCounts={quickCounts} fixedRouteClient={fixedRouteClient} onChange={(count) => patchDraft({ fixedCount: Math.max(0, parseInt(String(count), 10) || 0) })} />
               <FixedRouteChips routePresets={routePresets} routeCounts={draft.fixedRouteCounts} isOff={draft.isOff} onRun={handleRouteRun} />
             </div>
-            <PalletSection visible={palletVisible} palletCount={draft.palletCount} isOff={draft.isOff} onChange={(count) => patchDraft({ palletCount: Math.max(0, parseInt(String(count), 10) || 0) })} />
+            <PalletSection visible={palletVisible} palletCount={draft.palletCount} isOff={draft.isOff} fixedRouteClient={fixedRouteClient} onChange={(count) => patchDraft({ palletCount: Math.max(0, parseInt(String(count), 10) || 0) })} />
           </div>
         )}
         <DailyInspectionNotice ownerKey={ownerKey} logId={logId} dateKey={dateKey} month={month} day={day} enabled={!!settings.dailyInspectionOn} isOff={draft.isOff} showToast={showToast} />

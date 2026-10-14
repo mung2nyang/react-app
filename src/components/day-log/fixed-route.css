@@ -8,6 +8,23 @@
   gap: 7px;
 }
 
+/* 횟수·장 수 × 단가 금액 줄(표시만) */
+.fixed-route-amount {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px 6px;
+  margin-top: 6px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-floor);
+}
+
+.fixed-route-amount strong {
+  color: var(--text-color);
+  font-size: var(--fs-3);
+}
+
 .fixed-route-input-row .input-with-suffix {
   position: relative;
   display: flex;

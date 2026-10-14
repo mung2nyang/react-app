@@ -42,6 +42,12 @@
   margin-top: 5px;
 }
 
+.work-log-page .maint-fuel-info > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .work-log-page .maint-fuel-info > strong {
   font-size: var(--fs-3);
 }
