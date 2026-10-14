@@ -32,64 +32,57 @@ export function loadWorkDataByLogId(ownerKey = 'guest') {
   return readOwnerWorkDataByLogId(ownerKey)
 }
 
+const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
+
 /**
- * @param {string} ownerKey
- * @param {WorkDataByLogId} nextWorkDataByLogId
+ * 한 차량 일지의 바뀐 날짜를 서버(있으면) 또는 기기에 저장한다.
+ * @param {string} ownerKey @param {string} logId @param {Record<string, DayRecordLike>} previous @param {Record<string, DayRecordLike>} next @param {string[]} dateKeys
+ * @returns {Promise<{ ok: boolean, applied: number, toast: string|null }>}
  */
-function persistSubLogChanges(ownerKey, nextWorkDataByLogId) {
-  for (const logId of Object.keys(nextWorkDataByLogId)) {
-    if (logId === 'main') continue
-    const next = nextWorkDataByLogId[logId]
-    if (!next) continue
-    const prev = readOwnerLogWorkData(ownerKey, logId)
-    if (JSON.stringify(prev) !== JSON.stringify(next)) commitLogWorkData(ownerKey, logId, next)
+async function persistLogChange(ownerKey, logId, previous, next, dateKeys) {
+  if (shouldCommitDayLogToCloud(ownerKey, logId)) {
+    if (dateKeys.length === 1) {
+      const one = await commitMainDayLogToCloud({ ownerKey, logId, dateKey: dateKeys[0], previousData: previous, nextData: next })
+      if (one.cloud) return { ok: one.ok, applied: one.ok ? 1 : 0, toast: one.toast }
+    } else {
+      const many = await commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, previousData: previous, nextData: next })
+      if (many.cloud) return { ok: many.ok, applied: many.appliedDateKeys.length, toast: many.toast }
+    }
   }
+  if (logId === 'main') saveWorkData(ownerKey, next)
+  else commitLogWorkData(ownerKey, logId, next)
+  return { ok: true, applied: dateKeys.length, toast: null }
 }
 
 /**
- * 미수 화면 쓰기 창구(8-B) — 로그인 메인은 commitMainDayLogToCloud/Map, 게스트·서브는 로컬.
+ * 미수 화면 쓰기 창구(8-B).
  * @param {string} ownerKey
  * @param {WorkDataByLogId} nextWorkDataByLogId
  * @returns {Promise<{ ok: boolean, partial: boolean, toast: string|null }>}
  */
 export async function persistReceivableWorkDataChange(ownerKey, nextWorkDataByLogId) {
-  const previousMain = readOwnerWorkData(ownerKey)
-  const nextMain = nextWorkDataByLogId.main || {}
-  const mainDateKeys = changedDayLogDateKeys(previousMain, nextMain)
-
-  if (mainDateKeys.length > 0 && shouldCommitDayLogToCloud(ownerKey, 'main')) {
-    const cloudResult = mainDateKeys.length === 1
-      ? await commitMainDayLogToCloud({
-        ownerKey,
-        logId: 'main',
-        dateKey: mainDateKeys[0],
-        previousData: previousMain,
-        nextData: nextMain,
-      })
-      : await commitMainDayLogMapToCloud({
-        ownerKey,
-        logId: 'main',
-        dateKeys: mainDateKeys,
-        previousData: previousMain,
-        nextData: nextMain,
-      })
-
-    if (cloudResult.cloud) {
-      if (!cloudResult.ok) {
-        const partial = 'partial' in cloudResult && cloudResult.partial === true
-        return {
-          ok: false,
-          partial,
-          toast: cloudResult.toast,
-        }
-      }
-      persistSubLogChanges(ownerKey, nextWorkDataByLogId)
-      return { ok: true, partial: false, toast: null }
+  // 차량마다(메인 → 기사 차량) 서버에 있으면 서버 저장, 없으면 기기 저장. 실패한 차량에서 멈춘다.
+  const logIds = ['main', ...Object.keys(nextWorkDataByLogId).filter((logId) => logId !== 'main')]
+  const changes = logIds.flatMap((logId) => {
+    const next = nextWorkDataByLogId[logId]
+    if (!next) return []
+    const previous = logId === 'main' ? readOwnerWorkData(ownerKey) : readOwnerLogWorkData(ownerKey, logId)
+    const dateKeys = changedDayLogDateKeys(previous, next)
+    return dateKeys.length ? [{ logId, previous, next, dateKeys }] : []
+  })
+  const total = changes.reduce((sum, change) => sum + change.dateKeys.length, 0)
+  let applied = 0
+  for (const { logId, previous, next, dateKeys } of changes) {
+    const result = await persistLogChange(ownerKey, logId, previous, next, dateKeys)
+    applied += result.applied
+    if (result.ok) continue
+    if (applied === 0 || result.toast === SESSION_CHANGED_TOAST) return { ok: false, partial: applied > 0, toast: result.toast }
+    return {
+      ok: false,
+      partial: true,
+      toast: `일부만 저장되었습니다. (성공 ${applied}건, 실패 ${total - applied}건) 화면에 남은 항목을 다시 시도해 주세요.`,
     }
   }
-
-  if (mainDateKeys.length > 0) saveWorkData(ownerKey, nextMain)
-  persistSubLogChanges(ownerKey, nextWorkDataByLogId)
   return { ok: true, partial: false, toast: null }
 }
 

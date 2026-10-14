@@ -13,8 +13,8 @@ const { persistReceivableWorkDataChange, markMonthlyReceivablesPaid } = await im
 const { commitMainDayLogMapToCloud, commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { setHydration, getState } = await import('../store/app-store.js')
-const { commitCars, commitWorkData } = await import('../store/commitHelpers.js')
-const { readOwnerWorkData } = await import('../store/ownerDataHooks.js')
+const { commitCars, commitLogWorkData, commitWorkData } = await import('../store/commitHelpers.js')
+const { readOwnerLogWorkData, readOwnerWorkData } = await import('../store/ownerDataHooks.js')
 const { getReceivableItems, getDetailPaymentSummary } = await import('../domain/finance.js')
 const { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK } = await import('../domain/finance.fixtures.js')
 const { markReceivableItemPaid, addPartialPayment, toggleCallPaymentStatus } = await import('../domain/payments.js')
@@ -249,5 +249,122 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
     assert.deepEqual(r.appliedDateKeys, dateKeys.slice(0, 2))
     assert.equal(getDetailPaymentSummary(readOwnerWorkData('rc-g4')['2026-05-10'].callDetails[0]).status, 'paid')
     assert.equal(getDetailPaymentSummary(readOwnerWorkData('rc-g4')['2026-05-14'].callDetails[0]).status, 'unpaid')
+  })
+})
+
+// 로드맵 64 — 기사(서브) 차량 운행도 미수 화면에서 서버에 저장한다.
+describe('64 receivables cloud commit — 기사 차량', () => {
+  const PLATE = '34나5678'
+  const SUB_DK = '2026-05-11'
+
+  /** @param {string} userId @param {string} ownerKey */
+  function beginWithSubCar(userId, ownerKey) {
+    beginLoggedIn(userId, ownerKey)
+    commitCars(ownerKey, [
+      { id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 },
+      { id: 'car-sub', type: 'sub', number: PLATE, supabaseId: 701 },
+    ], { syncToCloud: false })
+  }
+
+  /** @param {string} id */
+  function subLog(id) {
+    return { [SUB_DK]: { callDetails: [{ id, client: '한진', fare: '40000', payments: [] }] } }
+  }
+
+  /** @param {string} ownerKey @param {string} logId @param {string} dateKey @param {string} id */
+  function statusOf(ownerKey, logId, dateKey, id) {
+    const detail = readOwnerLogWorkData(ownerKey, logId)[dateKey]?.callDetails?.find((d) => d.id === id)
+    assert.ok(detail, `${logId} ${dateKey} ${id} 운행이 있어야 한다`)
+    return getDetailPaymentSummary(detail).status
+  }
+
+  /** @param {string} ownerKey @param {string} id */
+  function subStatus(ownerKey, id) {
+    return statusOf(ownerKey, PLATE, SUB_DK, id)
+  }
+
+  test('H-1 — 기사 차량 운행 입금 완료: 그 차량으로 서버 저장 후 Store 반영', async () => {
+    beginWithSubCar('u-rc-h1', 'rc-h1')
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    const upserts = []
+    handlers.daily_logs = { upsert: (row) => { upserts.push(row ?? null); return { data: { id: 6001 }, error: null } } }
+    commitLogWorkData('rc-h1', PLATE, subLog('h1-d1'))
+    const paid = markReceivableItemPaid(readOwnerLogWorkData('rc-h1', PLATE), SUB_DK, 'h1-d1')
+    assert.ok(paid.data)
+
+    const r = await persistReceivableWorkDataChange('rc-h1', { main: readOwnerWorkData('rc-h1'), [PLATE]: paid.data })
+    assert.deepEqual(r, { ok: true, partial: false, toast: null })
+    assert.equal(countOf('daily_logs', 'upsert'), 1)
+    assert.equal(countOf('transport_details', 'insert'), 1)
+    const row = /** @type {{ vehicle_id?: number, work_date?: string }} */ (upserts[0])
+    assert.equal(row.vehicle_id, 701)
+    assert.equal(row.work_date, SUB_DK)
+    assert.equal(subStatus('rc-h1', 'h1-d1'), 'paid')
+    endCloudSession()
+  })
+
+  test('H-2 — 기사 차량 서버 실패: Store 그대로, 실패 안내', async () => {
+    beginWithSubCar('u-rc-h2', 'rc-h2')
+    handlers.daily_logs = { upsert: () => { throw new Error('network down') } }
+    commitLogWorkData('rc-h2', PLATE, subLog('h2-d1'))
+    const paid = markReceivableItemPaid(readOwnerLogWorkData('rc-h2', PLATE), SUB_DK, 'h2-d1')
+
+    const r = await persistReceivableWorkDataChange('rc-h2', { main: readOwnerWorkData('rc-h2'), [PLATE]: paid.data })
+    assert.deepEqual(r, { ok: false, partial: false, toast: FAIL_FAST })
+    assert.equal(subStatus('rc-h2', 'h2-d1'), 'unpaid')
+    endCloudSession()
+  })
+
+  test('H-3 — 한 달치에 메인+기사 차량: 둘 다 서버 저장 / 기사 실패면 메인만 반영·부분 안내', async () => {
+    beginWithSubCar('u-rc-h3', 'rc-h3')
+    const main = { [DK]: { callDetails: [{ id: 'h3-m1', client: '한진', fare: '50000', payments: [] }] } }
+    seedMain('rc-h3', main)
+    commitLogWorkData('rc-h3', PLATE, subLog('h3-s1'))
+    /** @type {import('../domain/financeTypes.js').FinanceSettings} */
+    const settings = { paymentOn: true, subPaymentOn: true, clients: [], cars: [{ type: 'sub', number: PLATE }] }
+    const next = markMonthlyReceivablesPaid({ main, [PLATE]: readOwnerLogWorkData('rc-h3', PLATE) }, settings, '한진', '2026-05')
+
+    /** @type {Array<number|undefined>} */
+    const vehicleIds = []
+    handlers.daily_logs = {
+      upsert: (row) => {
+        vehicleIds.push(/** @type {{ vehicle_id?: number }} */ (row ?? {}).vehicle_id)
+        return { data: { id: 7000 + vehicleIds.length }, error: null }
+      },
+    }
+    const ok = await persistReceivableWorkDataChange('rc-h3', next)
+    assert.deepEqual(ok, { ok: true, partial: false, toast: null })
+    assert.deepEqual(vehicleIds, [700, 701])
+    assert.equal(statusOf('rc-h3', 'main', DK, 'h3-m1'), 'paid')
+    assert.equal(subStatus('rc-h3', 'h3-s1'), 'paid')
+    endCloudSession()
+
+    beginWithSubCar('u-rc-h3b', 'rc-h3b')
+    seedMain('rc-h3b', clone(main))
+    commitLogWorkData('rc-h3b', PLATE, subLog('h3-s1'))
+    handlers.daily_logs = {
+      upsert: (row) => {
+        if (/** @type {{ vehicle_id?: number }} */ (row ?? {}).vehicle_id === 701) throw new Error('sub fails')
+        return { data: { id: 7100 }, error: null }
+      },
+    }
+    const partial = await persistReceivableWorkDataChange('rc-h3b', next)
+    assert.equal(partial.ok, false)
+    assert.equal(partial.partial, true)
+    assert.match(partial.toast || '', /일부만 저장되었습니다. \(성공 1건, 실패 1건\)/)
+    assert.equal(statusOf('rc-h3b', 'main', DK, 'h3-m1'), 'paid')
+    assert.equal(subStatus('rc-h3b', 'h3-s1'), 'unpaid')
+    endCloudSession()
+  })
+
+  test('H-4 — 비회원 기사 차량: 서버 0회, 기기 저장', async () => {
+    resetHandlers()
+    endCloudSession()
+    commitLogWorkData('rc-guest-sub', PLATE, subLog('h4-d1'))
+    const paid = markReceivableItemPaid(readOwnerLogWorkData('rc-guest-sub', PLATE), SUB_DK, 'h4-d1')
+    const r = await persistReceivableWorkDataChange('rc-guest-sub', { main: {}, [PLATE]: paid.data })
+    assert.deepEqual(r, { ok: true, partial: false, toast: null })
+    assert.equal(countOf('daily_logs', 'upsert'), 0)
+    assert.equal(subStatus('rc-guest-sub', 'h4-d1'), 'paid')
   })
 })
