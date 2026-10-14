@@ -1,6 +1,7 @@
 // @ts-check
 // 콜상세 패널과 정비/주유/기타 패널은 state가 따로라, 이 열기 진입점으로만 열어 반대쪽을 먼저 닫게 한다(두 칸 동시 열림 방지).
 // 추가 버튼을 한 번 더 누르면 열려 있던 같은 새 입력 칸을 닫는다.
+import { confirmDialog } from '../shared/confirmDialog.jsx'
 /**
  * @param {(action: import('./day-log-reducer.js').DayLogAction) => void} dispatch
  * @param {{ closeAll: () => void, openAdd: (kind: string) => void, openEdit: (item: import('./dayLogTypes.js').ExpenseItem) => void, openKindPick: () => void, modalOpen: boolean, editingId: string|null, draft: { kind?: string } }} expenseForm
@@ -35,11 +36,17 @@ export function bindInlinePanelActions(dispatch, expenseForm, callPanel) {
       dispatch({ type: 'closeCallForm' })
       expenseForm.openKindPick()
     },
-    // 입력 칸이 열린 채 나가면 [저장] 전 입력이 사라지므로 먼저 확인한다(로드맵 36).
-    /** @returns {boolean} true면 나가도 된다. */
-    confirmLeaveOpenPanel() {
+    // 입력 칸이 열린 채 나가면 [저장] 전 입력이 사라지므로 먼저 확인한다(로드맵 36, 앱 확인 창).
+    /** @returns {Promise<boolean>} true면 나가도 된다. */
+    async confirmLeaveOpenPanel() {
       if (!callPanel.callFormOpen && !expenseForm.modalOpen) return true
-      return window.confirm('입력 중인 내용이 아직 저장되지 않았습니다. 그래도 나가시겠습니까?')
+      return confirmDialog({
+        title: '저장하지 않은 입력이 있습니다',
+        message: '지금 나가면 입력한 내용이 사라집니다.',
+        confirmLabel: '나가기',
+        cancelLabel: '계속 입력',
+        danger: true,
+      })
     },
   }
 }

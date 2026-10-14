@@ -90,8 +90,8 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
   // durable 기록조차 실패한 상태(durableWriteGuard.js)로 나가면 편집이 사라질 수
   // 있다 — beforeunload는 pendingWriteRetryListeners.js가 막지만, 화면 안 이동
   // (뒤로가기)은 데이터 라우터가 아니라 useBlocker를 못 써서(main.jsx) 여기서 직접 확인. 열린 입력 칸 확인도 같이 한다.
-  function handleClose() {
-    if (confirmLeaveIfUnsafe() && confirmLeaveOpenPanel()) onClose?.()
+  async function handleClose() {
+    if (confirmLeaveIfUnsafe() && await confirmLeaveOpenPanel()) onClose?.()
   }
 
   /** @param {Partial<DayDraft>} patch */

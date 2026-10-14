@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from 'react'
 import ConfirmModal from '../ConfirmModal.jsx'
 
-/** @typedef {{ confirmLabel?: string, danger?: boolean }} ConfirmOptions */
+/** @typedef {{ confirmLabel?: string, danger?: boolean, message?: string }} ConfirmOptions */
 /** @typedef {{ message: string, options: ConfirmOptions, resolve: (value: boolean) => void }} PendingConfirm */
 
 export function useConfirm() {
@@ -25,6 +25,7 @@ export function useConfirm() {
   const confirmDialog = pending ? (
     <ConfirmModal
       title={pending.message}
+      message={pending.options.message}
       confirmLabel={pending.options.confirmLabel}
       danger={pending.options.danger}
       onCancel={() => close(false)}

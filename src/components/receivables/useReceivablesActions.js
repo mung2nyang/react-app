@@ -25,7 +25,7 @@ import { formatWon } from '../../lib/money.js'
  * @param {import('../../domain/financeTypes.js').FinanceSettings} params.settings
  * @param {(message: string) => void} [params.showToast]
  * @param {() => void} [params.onWorkChanged]
- * @param {(message: string, options?: { confirmLabel?: string, danger?: boolean }) => Promise<boolean>} params.confirm
+ * @param {(message: string, options?: { confirmLabel?: string, danger?: boolean, message?: string }) => Promise<boolean>} params.confirm
  */
 export function useReceivablesActions({
   ownerKey, workDataByLogId, settings, showToast, onWorkChanged, confirm,
@@ -91,7 +91,10 @@ export function useReceivablesActions({
     const items = groupItems(getReceivableItems(settings, workDataByLogId), clientName, monthKey)
     const amount = items.reduce((sum, item) => sum + item.remainingAmount, 0)
     const month = parseInt(monthKey.slice(5, 7), 10)
-    const ok = await confirm(`${clientName} ${month}월분 미수 ${items.length}건, ${formatWon(amount)}을 모두 입금 완료로 처리할까요? 되돌리기는 한 건씩만 할 수 있어요.`, { confirmLabel: '입금 완료' })
+    const ok = await confirm(`${clientName} ${month}월분 입금 완료 처리`, {
+      message: `미수 ${items.length}건, ${formatWon(amount)}을 모두 입금 완료로 바꿉니다. 되돌리기는 한 건씩만 할 수 있습니다.`,
+      confirmLabel: '입금 완료',
+    })
     if (!ok) return false
     const next = markMonthlyReceivablesPaid(workDataByLogId, settings, clientName, monthKey)
     setSaving(true)

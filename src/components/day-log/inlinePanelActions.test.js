@@ -1,7 +1,12 @@
 // 추가 버튼을 한 번 더 누르면 같은 새 입력 칸이 닫힘(보리 지시 2026-10-08), 다른 경우는 지금처럼 열림.
+import { register } from 'node:module'
+import { pathToFileURL } from 'node:url'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { bindInlinePanelActions } from './inlinePanelActions.js'
+
+// 나가기 확인이 앱 확인 창 부품(.jsx)을 쓰므로 .jsx 로더를 건다.
+register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)
+const { bindInlinePanelActions } = await import('./inlinePanelActions.js')
 
 /** @param {{ modalOpen?: boolean, editingId?: string|null, kind?: string, callFormOpen?: boolean, editingCallId?: string|null }} state */
 function setup(state) {
@@ -48,18 +53,20 @@ test('정비·주유·기타 추가: 같은 종류 새 칸이 열려 있으면 �
   assert.deepEqual(closed.log, ['call:closeCallForm', 'expense:open:misc'])
 })
 
-test('나가기 확인(로드맵 36): 세부·정비 입력 칸이 열려 있으면 확인 창 답을 따르고, 닫혀 있으면 묻지 않고 나간다', () => {
+test('나가기 확인(로드맵 36): 세부·정비 입력 칸이 열려 있으면 확인 창 답을 따르고, 닫혀 있으면 묻지 않고 나간다', async () => {
   /** @type {Array<string>} */
   const asked = []
   let answer = false
   Reflect.set(globalThis, 'window', { confirm: (/** @type {string} */ message) => { asked.push(message); return answer } })
   try {
-    assert.equal(setup({ callFormOpen: true }).actions.confirmLeaveOpenPanel(), false, '세부 입력 칸 열림 + 취소 → 머문다')
-    assert.equal(setup({ modalOpen: true }).actions.confirmLeaveOpenPanel(), false, '정비 입력 칸 열림 + 취소 → 머문다')
+    // 앱 확인 창을 그릴 곳(AppShell)이 없는 테스트에서는 같은 문구로 기본 창이 대신 묻는다.
+    assert.equal(await setup({ callFormOpen: true }).actions.confirmLeaveOpenPanel(), false, '세부 입력 칸 열림 + 계속 입력 → 머문다')
+    assert.equal(await setup({ modalOpen: true }).actions.confirmLeaveOpenPanel(), false, '정비 입력 칸 열림 + 계속 입력 → 머문다')
     answer = true
-    assert.equal(setup({ callFormOpen: true }).actions.confirmLeaveOpenPanel(), true, '확인 → 나간다')
+    assert.equal(await setup({ callFormOpen: true }).actions.confirmLeaveOpenPanel(), true, '나가기 → 나간다')
     assert.equal(asked.length, 3)
-    assert.equal(setup({}).actions.confirmLeaveOpenPanel(), true, '닫혀 있으면 나간다')
+    assert.equal(asked[0], '저장하지 않은 입력이 있습니다\n지금 나가면 입력한 내용이 사라집니다.')
+    assert.equal(await setup({}).actions.confirmLeaveOpenPanel(), true, '닫혀 있으면 나간다')
     assert.equal(asked.length, 3, '닫혀 있으면 확인 창을 띄우지 않는다')
   } finally {
     Reflect.deleteProperty(globalThis, 'window')

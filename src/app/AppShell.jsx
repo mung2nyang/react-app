@@ -11,6 +11,7 @@ import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
 import PageLoadErrorBoundary from '../components/PageLoadErrorBoundary.jsx'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
+import { ConfirmDialogHost } from '../components/shared/confirmDialog.jsx'
 import AppShellRoutes from './AppShellRoutes.jsx'
 import useBackToExit from './useBackToExit.js'
 import usePageTransition from './usePageTransition.js'
@@ -128,6 +129,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   return (
     <div className="container main-app-container">
       <HydrationRetryBanner showToast={showToast} />
+      <ConfirmDialogHost />
       <div ref={pageBoxRef} className="page-transition">
         <PageLoadErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={<PageSkeleton path={location.pathname} onOpenMenu={() => setMenuOpen(true)} />}>

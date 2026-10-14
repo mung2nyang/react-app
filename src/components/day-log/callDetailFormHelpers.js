@@ -2,7 +2,8 @@
 // 콜상세 폼 순수 헬퍼(초기값 구성·포맷팅).
 import { dueDateForClient } from '../../lib/clients.js'
 import { getCallDetailDurationMinutes } from '../../lib/finance.js'
-import { formatCurrencyInput, formatWon, parseCurrencyValue } from '../../lib/money.js'
+import { formatCurrencyInput, formatWon, isLargeFare, parseCurrencyValue } from '../../lib/money.js'
+import { confirmDialog } from '../shared/confirmDialog.jsx'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
@@ -79,4 +80,19 @@ export function durationSuffix(detail) {
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60
   return ` (${hours ? `${hours}시간` : ''}${mins ? `${mins}분` : ''})`
+}
+
+/**
+ * 운송료가 1,000만원을 넘으면 저장 전에 한 번 묻는다(로드맵 43-C, 앱 확인 창). 넘지 않으면 바로 true.
+ * @param {string|number|undefined} fare 쉼표 금액 글자
+ * @returns {Promise<boolean>} true면 저장해도 된다.
+ */
+export async function confirmLargeFareSave(fare) {
+  if (!isLargeFare(fare)) return true
+  return confirmDialog({
+    title: '운송료가 1,000만원을 넘습니다',
+    message: `입력한 운송료: ${fare}원. 이 금액이 맞으면 저장해 주세요.`,
+    confirmLabel: '이 금액으로 저장',
+    cancelLabel: '금액 고치기',
+  })
 }

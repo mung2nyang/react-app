@@ -2,9 +2,9 @@
 // 순서: 경로·톤수 → 거래처 → 운송료·부가세 → 계산서·입금일 → 시간·계기판·플랫폼 → 산재보험료·비고.
 import { useState } from 'react'
 import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
-import { isLargeFare, parseCurrencyValue } from '../../lib/money.js'
+import { parseCurrencyValue } from '../../lib/money.js'
 import { computeDistanceKm } from '../../lib/workData.js'
-import { draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
+import { confirmLargeFareSave, draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
 import CallClientQuickAdd from './CallClientQuickAdd.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
@@ -194,7 +194,7 @@ export default function CallDetailForm({
       </div>
       <div className="modal-btns call-detail-form-actions">
         <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
-        <button type="button" className="modal-btn confirm" onClick={() => { if (!isLargeFare(draft.fare) || window.confirm(`운송료가 ${draft.fare}원으로 1,000만원을 넘어요. 금액이 맞나요?`)) onSave(draft) }}>저장</button>
+        <button type="button" className="modal-btn confirm" onClick={async () => { if (await confirmLargeFareSave(draft.fare)) onSave(draft) }}>저장</button>
       </div>
     </div>
   )
