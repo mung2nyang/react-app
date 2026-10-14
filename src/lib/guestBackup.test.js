@@ -8,7 +8,7 @@ import {
   getLastBackupAt,
   markBackupDone,
 } from './guestBackup.js'
-import { replaceOwnerState } from '../store/owner-state.js'
+import { initializeOwnerFromPersist, replaceOwnerState } from '../store/owner-state.js'
 import { getState } from '../store/app-store.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 
@@ -168,5 +168,77 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
     assert.equal(applyGuestBackupData({ workData: { '2026-05-01': null } }).ok, false)
     assert.equal(applyGuestBackupData({ workLogs: { main: null } }).ok, false)
     assert.equal(applyGuestBackupData({ subWorkData: 'bad' }).ok, false)
+  })
+
+  /** @returns {Record<string, string|null>} */
+  function storageSnapshot() {
+    /** @type {Record<string, string|null>} */
+    const out = {}
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i)
+      if (key) out[key] = localStorage.getItem(key)
+    }
+    return out
+  }
+
+  /** @param {import('./pendingWorkDataWritesTypes.js').JsonValue} file */
+  function assertRejectedUnchanged(file) {
+    replaceOwnerState('guest', { cars: [{ id: 'car-1', number: '11가1111', type: 'main' }], workLogs: { main: { '2026-09-01': { count: 1 } } } }, { sync: false })
+    const before = storageSnapshot()
+    const res = applyGuestBackupData(file)
+    assert.deepEqual(res, { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' })
+    assert.deepEqual(storageSnapshot(), before)
+    assert.equal(getState().cars.guest?.[0]?.number, '11가1111')
+    assert.equal(getState().workLogs.guest?.main?.['2026-09-01']?.count, 1)
+    assert.equal(initializeOwnerFromPersist('guest'), true)
+  }
+
+  test('68: 차량·거래처에 정해진 칸 밖 내용이 있으면 거절, 기존 기록 그대로', () => {
+    assertRejectedUnchanged({ cars: [{ id: 'car-9', number: '99가9999', type: 'main', oldField: 1 }] })
+    assertRejectedUnchanged({ clients: [{ id: 'c-9', companyName: '옛거래처', legacyMemo: 'x' }] })
+  })
+
+  test('68: 하루 기록에 정해진 칸 밖 내용·틀린 콜 상세가 있으면 거절', () => {
+    assertRejectedUnchanged({ workData: { '2026-05-01': { count: 2, memo: '옛 메모' } } })
+    assertRejectedUnchanged({ workLogs: { main: { '2026-05-01': { callDetails: [{ fare: 'abc' }] } } } })
+    assertRejectedUnchanged({ workLogs: { main: { 'not-a-date': { count: 1 } } } })
+  })
+
+  test('68: subWorkData 안쪽 일지가 틀리면 거절', () => {
+    assertRejectedUnchanged({ workData: {}, subWorkData: { '22나2222': { '2026-05-01': { count: -1 } } } })
+    assertRejectedUnchanged({ workData: {}, subWorkData: { '22나2222': 'bad' } })
+  })
+
+  test('68: 설정·개인정보에 정해진 칸 밖 내용이 있으면 거절', () => {
+    assertRejectedUnchanged({ settings: { theme: 'dark', oldToggle: true } })
+    assertRejectedUnchanged({ profile: { name: '차주', fax: '02-000-0000' } })
+  })
+
+  test('68: 복원에 성공하면 앱 켤 때 검사도 통과하고 옛 휴무 표기는 정리돼 저장', () => {
+    const res = applyGuestBackupData({
+      cars: [{ id: 'car-1', number: '11가1111', type: 'main' }, { id: 'car-2', number: '22나2222', type: 'sub' }],
+      workData: { '2026-05-01': 'off' },
+      subWorkData: { '22나2222': { '2026-05-02': { count: 3 } } },
+    })
+    assert.deepEqual(res, { ok: true })
+    assert.deepEqual(JSON.parse(localStorage.getItem('reactPracticeWorkData:guest') || 'null'), { '2026-05-01': { isOff: true } })
+    assert.equal(initializeOwnerFromPersist('guest'), true)
+    assert.equal(getState().workLogs.guest?.['22나2222']?.['2026-05-02']?.count, 3)
+  })
+
+  test('68-1: 백업에 없는 기사 차량의 옛 일지 키는 복원 때 지워짐', () => {
+    replaceOwnerState('guest', {
+      cars: [{ id: 'car-3', number: '33다3333', type: 'sub' }],
+      workLogs: { main: {}, '33다3333': { '2026-04-01': { count: 1 } } },
+    }, { sync: false, extraWrites: [{ key: 'reactPracticeWorkData:guest:log:33다3333', value: { '2026-04-01': { count: 1 } } }] })
+    assert.ok(localStorage.getItem('reactPracticeWorkData:guest:log:33다3333'))
+
+    const res = applyGuestBackupData({
+      cars: [{ id: 'car-2', number: '22나2222', type: 'sub' }],
+      workLogs: { main: {}, '22나2222': { '2026-05-02': { count: 3 } } },
+    })
+    assert.deepEqual(res, { ok: true })
+    assert.equal(localStorage.getItem('reactPracticeWorkData:guest:log:33다3333'), null)
+    assert.deepEqual(JSON.parse(localStorage.getItem('reactPracticeWorkData:guest:log:22나2222') || 'null'), { '2026-05-02': { count: 3 } })
   })
 })

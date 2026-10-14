@@ -1,10 +1,15 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-import { readLogWorkData } from '../store/persist.js'
+import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
 import { readPersistDomain } from '../store/persistDomainRead.js'
+import { matchesDomainSchema } from '../store/persistDomainSchema.js'
+import { parsePersistedWorkDataMap } from '../store/persistDayRecord.js'
+import { isPlainObject } from '../store/persistDomainRecords.js'
 import { replaceOwnerState } from '../store/owner-state.js'
+import { getState } from '../store/app-store.js'
 
 /** @typedef {import('../store/persist.js').PersistDomain} PersistDomain */
+/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
 /** @type {Array<PersistDomain>} */
 const SLICE_DOMAINS = [
@@ -74,100 +79,79 @@ export function buildGuestBackupData() {
   return backup
 }
 
+const INVALID_FILE = '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.'
+/** @type {Array<PersistDomain>} */
+const RECORD_DOMAINS = ['cars', 'clients', 'drivers', 'expenses', 'invoices', 'settings', 'profile']
+
+/**
+ * 차량별 일지 묶음(logId → 날짜별 기록)을 검사한다. 하나라도 틀리면 null.
+ * @param {JsonValue|undefined} logs
+ * @returns {Record<string, Record<string, DayRecordLike>>|null}
+ */
+function parseLogs(logs) {
+  if (logs === undefined || !isPlainObject(logs)) return null
+  /** @type {Record<string, Record<string, DayRecordLike>>} */
+  const out = {}
+  for (const [logId, map] of Object.entries(logs)) {
+    const days = parsePersistedWorkDataMap(map)
+    if (!days) return null
+    out[logId] = days
+  }
+  return out
+}
+
 /**
  * 파싱된 백업 데이터의 유효성을 검증하고 게스트 스토어에 복원한다.
  * @param {JsonValue|undefined} parsed
  * @returns {{ ok: true } | { ok: false, error: string }}
  */
 export function applyGuestBackupData(parsed) {
-  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-  }
+  if (parsed === undefined || !isPlainObject(parsed)) return { ok: false, error: INVALID_FILE }
 
-  const record = /** @type {Record<string, JsonValue|undefined>} */ (parsed)
+  const record = parsed
   const KNOWN_KEYS = [
     'cars', 'clients', 'settings', 'expenses', 'invoices',
     'drivers', 'profile', 'workData', 'workLogs', 'subWorkData',
   ]
-  if (!KNOWN_KEYS.some((key) => key in record)) {
-    return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-  }
+  if (!KNOWN_KEYS.some((key) => key in record)) return { ok: false, error: INVALID_FILE }
 
-  // 중첩 구조 및 타입 런타임 검증
-  const arrayDomains = ['cars', 'clients', 'drivers', 'expenses', 'invoices']
-  for (const domain of arrayDomains) {
-    if (domain in record) {
-      const arr = record[domain]
-      if (!Array.isArray(arr) || arr.some((item) => !item || typeof item !== 'object')) {
-        return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-      }
-    }
+  // 앱 켤 때 검사(owner-state.js)와 같은 규칙 — 통과 못 하면 다음 실행이 막기 화면에 갇힌다.
+  for (const domain of RECORD_DOMAINS) {
+    if (domain in record && !matchesDomainSchema(domain, record[domain])) return { ok: false, error: INVALID_FILE }
   }
-
-  if ('settings' in record) {
-    if (!record.settings || typeof record.settings !== 'object' || Array.isArray(record.settings)) {
-      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-    }
-  }
-  if ('profile' in record) {
-    if (!record.profile || typeof record.profile !== 'object' || Array.isArray(record.profile)) {
-      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-    }
-  }
-  if ('workData' in record) {
-    if (!record.workData || typeof record.workData !== 'object' || Array.isArray(record.workData)) {
-      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-    }
-    for (const day of Object.values(/** @type {Record<string, JsonValue|undefined>} */ (record.workData))) {
-      if (!day || typeof day !== 'object' || Array.isArray(day)) {
-        return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-      }
-    }
-  }
-  if ('workLogs' in record) {
-    if (!record.workLogs || typeof record.workLogs !== 'object' || Array.isArray(record.workLogs)) {
-      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-    }
-    for (const log of Object.values(/** @type {Record<string, JsonValue|undefined>} */ (record.workLogs))) {
-      if (!log || typeof log !== 'object' || Array.isArray(log)) {
-        return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-      }
-    }
-  }
-  if ('subWorkData' in record) {
-    if (!record.subWorkData || typeof record.subWorkData !== 'object' || Array.isArray(record.subWorkData)) {
-      return { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' }
-    }
-  }
+  const workData = 'workData' in record ? parsePersistedWorkDataMap(record.workData) : undefined
+  const workLogs = 'workLogs' in record ? parseLogs(record.workLogs) : undefined
+  const subWorkData = 'subWorkData' in record ? parseLogs(record.subWorkData) : undefined
+  if (workData === null || workLogs === null || subWorkData === null) return { ok: false, error: INVALID_FILE }
 
   /** @type {import('../store/owner-state.js').OwnerSnapshot} */
   const snapshot = {}
-  if (record.workLogs && typeof record.workLogs === 'object') {
-    snapshot.workLogs = /** @type {Record<string, Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>>} */ (record.workLogs)
-  } else if (record.subWorkData && typeof record.subWorkData === 'object') {
-    snapshot.workLogs = {
-      main: (record.workData && typeof record.workData === 'object' && !Array.isArray(record.workData))
-        ? /** @type {Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>} */ (record.workData)
-        : {},
-      .../** @type {Record<string, Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>>} */ (record.subWorkData),
-    }
-  } else if (record.workData && typeof record.workData === 'object') {
-    snapshot.workData = /** @type {Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>} */ (record.workData)
-  }
+  if (workLogs) snapshot.workLogs = workLogs
+  else if (subWorkData) snapshot.workLogs = { main: workData || {}, ...subWorkData }
+  else if (workData) snapshot.workData = workData
   if (Array.isArray(record.cars)) snapshot.cars = /** @type {Array<import('../domain/financeTypes.js').CarLike>} */ (record.cars)
   if (Array.isArray(record.clients)) snapshot.clients = /** @type {Array<import('../domain/clientTypes.js').ClientLike>} */ (record.clients)
   if (Array.isArray(record.drivers)) snapshot.drivers = /** @type {Array<import('../lib/outboxTypes.js').DriverRecord>} */ (record.drivers)
-  if (record.profile && typeof record.profile === 'object' && !Array.isArray(record.profile)) {
-    snapshot.profile = /** @type {import('../lib/hydrateMergeTypes.js').LocalProfile} */ (record.profile)
-  }
-  if (record.settings && typeof record.settings === 'object' && !Array.isArray(record.settings)) {
-    snapshot.settings = /** @type {import('../domain/financeTypes.js').FinanceSettings} */ (record.settings)
-  }
+  if (isPlainObject(record.profile)) snapshot.profile = /** @type {import('../lib/hydrateMergeTypes.js').LocalProfile} */ (record.profile)
+  if (isPlainObject(record.settings)) snapshot.settings = /** @type {import('../domain/financeTypes.js').FinanceSettings} */ (record.settings)
   if (Array.isArray(record.expenses)) snapshot.expenses = /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */ (record.expenses)
   if (Array.isArray(record.invoices)) snapshot.invoices = /** @type {Array<import('../domain/financeTaxInvoiceEntries.js').InvoiceLike>} */ (record.invoices)
 
+  /** @type {Array<import('../store/atomicPersist.js').KeyedWrite>} */
+  const extraWrites = []
+  if (snapshot.workLogs) {
+    // 기사 차량 일지도 메인과 같은 저장으로 기기에 쓰고, 백업에 없는 차량의 옛 일지 키는 지운다.
+    const nextLogs = snapshot.workLogs
+    for (const [logId, days] of Object.entries(nextLogs)) {
+      if (logId !== 'main') extraWrites.push({ key: storageKeyForLog('guest', logId), value: days })
+    }
+    for (const logId of Object.keys(getState().workLogs.guest || {})) {
+      if (logId !== 'main' && !(logId in nextLogs)) extraWrites.push({ key: storageKeyForLog('guest', logId), remove: true })
+    }
+  }
+
   try {
-    replaceOwnerState('guest', snapshot, { sync: false })
+    replaceOwnerState('guest', snapshot, { sync: false, extraWrites })
     return { ok: true }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : '백업을 적용하지 못했습니다.' }

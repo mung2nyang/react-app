@@ -99,10 +99,10 @@ export function initializeOwnerFromPersist(ownerKey) {
  * 끝난다 — 중간에 구독자가 절반만 반영된 snapshot을 볼 일이 없다.
  * @param {string} ownerKey
  * @param {OwnerSnapshot} [snapshot]
- * @param {{ sync?: boolean, persist?: boolean }} [options]
+ * @param {{ sync?: boolean, persist?: boolean, extraWrites?: Array<import('./atomicPersist.js').KeyedWrite> }} [options] extraWrites는 서브 일지 키처럼 도메인 밖 키를 같은 저장에 넣는다.
  */
 export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
-  const { sync = true, persist = true } = options
+  const { sync = true, persist = true, extraWrites = [] } = options
   /** @type {Array<import('./app-store.js').BatchEntry>} */
   const entries = []
   const workLogs = snapshot.workLogs && typeof snapshot.workLogs === 'object' ? snapshot.workLogs : null
@@ -125,8 +125,8 @@ export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
     : undefined
   if (!entries.length && !replaceDriverExpenses) return
   if (workLogs) {
-    commitBatch(entries, { persist, syncToCloud: sync, replaceWorkLogs: { ownerKey, next: workLogs }, replaceDriverExpenses })
+    commitBatch(entries, { persist, syncToCloud: sync, extraWrites, replaceWorkLogs: { ownerKey, next: workLogs }, replaceDriverExpenses })
     return
   }
-  commitBatch(entries, { persist, syncToCloud: sync, replaceDriverExpenses })
+  commitBatch(entries, { persist, syncToCloud: sync, extraWrites, replaceDriverExpenses })
 }
