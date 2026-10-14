@@ -1,5 +1,5 @@
 // @ts-check
-// 차량 추가/수정 + 서브 번호 변경 시 로컬 일지 키·pending 큐 이동.
+// 차량 추가/수정. 서브 번호 변경 때 묶인 것 옮기기는 vehicleRename.js.
 import { upsertCar } from '../domain/cars.js'
 import { applyBusinessForm } from '../domain/carBusinessInfo.js'
 import {
@@ -9,9 +9,8 @@ import {
   getCloudOwnerKey,
   getCloudUserId,
 } from './cloudSession.js'
-import { commitBatch, getState } from '../store/app-store.js'
-import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
-import { planPendingLogMove } from './logPendingLifecycle.js'
+import { commitBatch } from '../store/app-store.js'
+import { planRenamedPlateEntries, planSubLogRename, renameSubVehicleOnServer } from './vehicleRename.js'
 import { StaleSessionError } from './outboxErrors.js'
 import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
 import { upsertVehicleFromList } from './syncVehiclesClients.js'
@@ -22,49 +21,6 @@ const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했
 const SAVED_TOAST = '저장했습니다.'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-
-/** @param {Record<string, DayRecordLike>|undefined} data */
-function hasDates(data) {
-  return !!(data && typeof data === 'object' && Object.keys(data).length)
-}
-
-/**
- * @param {string} ownerKey
- * @param {string} oldNumber
- * @param {string} newNumber
- * @returns {{ error: string } | { extraWrites: Array<import('../store/atomicPersist.js').KeyedWrite>, nextLogs: Record<string, Record<string, DayRecordLike>>, afterPersist: () => void }}
- */
-function planSubLogRename(ownerKey, oldNumber, newNumber) {
-  const fromRead = readLogWorkData(ownerKey, oldNumber)
-  const toRead = readLogWorkData(ownerKey, newNumber)
-  if (!fromRead.ok || !toRead.ok) {
-    return { error: '운행 기록을 읽을 수 없습니다. 잠시 후 다시 시도해 주세요.' }
-  }
-  const pending = planPendingLogMove(ownerKey, oldNumber, newNumber)
-  if ('error' in pending) return pending
-  const fromStore = getState().workLogs[ownerKey]?.[oldNumber]
-  const toStore = getState().workLogs[ownerKey]?.[newNumber]
-  const fromData = hasDates(fromStore) ? fromStore : fromRead.value
-  const toData = hasDates(toStore) ? toStore : toRead.value
-  if (hasDates(fromData) && hasDates(toData)) {
-    return { error: '이미 그 번호의 운행 기록이 있습니다.' }
-  }
-  const moved = hasDates(fromData) ? fromData : (hasDates(toData) ? toData : {})
-  const prev = getState().workLogs[ownerKey] || {}
-  const nextLogs = { ...prev, [newNumber]: moved }
-  delete nextLogs[oldNumber]
-  const jsonMoved = /** @type {import('../store/atomicPersist.js').JsonValue} */ (moved)
-  return {
-    extraWrites: [
-      { key: storageKeyForLog(ownerKey, newNumber), value: jsonMoved },
-      { key: storageKeyForLog(ownerKey, oldNumber), remove: true },
-      ...pending.extraWrites,
-    ],
-    nextLogs,
-    afterPersist: pending.afterPersist,
-  }
-}
 
 /**
  * @typedef {Object} CarSaveDraft
@@ -101,6 +57,8 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
   let renamedFrom = /** @type {string|null} */ (null)
   /** @type {() => void} */
   let afterPersist = () => {}
+  /** @type {Array<import('../store/app-store.js').BatchEntry>} */
+  let renameEntries = []
   if (previous?.type === 'sub' && saved?.type === 'sub' && previous.number && saved.number && previous.number !== saved.number) {
     const planned = planSubLogRename(ownerKey, previous.number, saved.number)
     if ('error' in planned) return { cars, toast: planned.error, failed: true, saved: null, renamedFrom: null }
@@ -108,6 +66,7 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
     replaceWorkLogs = { ownerKey, next: planned.nextLogs }
     renamedFrom = previous.number
     afterPersist = planned.afterPersist
+    renameEntries = planRenamedPlateEntries(ownerKey, previous.number, saved.number)
   }
 
   const okToast = editingId ? '차량을 수정했습니다.' : '차량을 등록했습니다.'
@@ -116,6 +75,7 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
     return runOwnerSaveSerialized(ownerKey, async () => {
       try {
         const captured = captureSession()
+        if (renamedFrom && saved?.number && previous?.supabaseId) await renameSubVehicleOnServer(previous.supabaseId, saved.number, captured)
         const remoteId = await upsertVehicleFromList(
           /** @type {string} */ (cloudUserId), ownerKey, nextCars, /** @type {string} */ (saved?.id), captured,
         )
@@ -123,7 +83,7 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
         const withId = remoteId != null
           ? nextCars.map((item) => (item.id === saved?.id ? { ...item, supabaseId: String(remoteId) } : item))
           : nextCars
-        commitBatch([{ domain: 'cars', ownerKey, value: withId }], {
+        commitBatch([{ domain: 'cars', ownerKey, value: withId }, ...renameEntries], {
           extraWrites: [],
           replaceWorkLogs,
           syncToCloud: false,
@@ -134,13 +94,15 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
           return { cars, toast: SESSION_CHANGED_TOAST, failed: true, saved: null, renamedFrom: null }
         }
         console.error('[vehicleMutations] 차량 저장 실패:', error)
-        return { cars, toast: SAVE_FAIL_TOAST, failed: true, saved: null, renamedFrom: null }
+        // 서버가 정해 둔 거절(P0001, 예: 이미 등록된 차량번호)은 그 문구를 보여 준다.
+        const serverReason = error && typeof error === 'object' && 'code' in error && error.code === 'P0001' && 'message' in error && typeof error.message === 'string' ? error.message : null
+        return { cars, toast: serverReason || SAVE_FAIL_TOAST, failed: true, saved: null, renamedFrom: null }
       }
     })
   }
 
   try {
-    commitBatch([{ domain: 'cars', ownerKey, value: nextCars }], { extraWrites, replaceWorkLogs })
+    commitBatch([{ domain: 'cars', ownerKey, value: nextCars }, ...renameEntries], { extraWrites, replaceWorkLogs })
     afterPersist()
     return { cars: nextCars, toast: okToast, failed: false, saved, renamedFrom }
   } catch (error) {
