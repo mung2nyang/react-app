@@ -47,12 +47,9 @@ function clientIdByName(ownerKey) {
  * @param {string} workDate @param {DayRecordLike} record @param {Map<string, number|string>} byName
  */
 async function replaceTransportDetails(userId, vehicleId, dailyLogId, workDate, record, byName) {
-  const { error: deleteError } = await supabase.from('transport_details').delete().eq('daily_log_id', dailyLogId)
-  if (deleteError) throw deleteError
   const callDetails = Array.isArray(record?.callDetails) ? record.callDetails : []
-  if (!callDetails.length) return
-  const { error } = await supabase.from('transport_details').insert(callDetails.map((detail, index) => ({
-    daily_log_id: dailyLogId,
+  // 지우기·넣기를 서버 함수 한 번으로 — 중간에 끊겨도 그날 콜이 사라지지 않는다.
+  const { error } = await supabase.rpc('replace_transport_details', { p_daily_log_id: dailyLogId, p_rows: callDetails.map((detail, index) => ({
     user_id: userId,
     vehicle_id: vehicleId,
     client_id: byName.get(detail?.client || '') || null,
@@ -67,7 +64,7 @@ async function replaceTransportDetails(userId, vehicleId, dailyLogId, workDate, 
     payments: Array.isArray(detail?.payments) ? detail.payments : [],
     commission_snapshot: detail?.commissionSnapshot || null,
     raw: detail,
-  })))
+  })) })
   if (error) throw error
 }
 

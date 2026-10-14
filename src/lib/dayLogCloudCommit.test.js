@@ -175,3 +175,65 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
     assert.equal(getState().workLogs['dlc-epoch']?.main?.[DK]?.fixedCount, 2, 'Store는 저장 전 값(2)이어야 한다')
   })
 })
+
+describe('로드맵 69 — 그날 콜 상세는 서버 함수 한 번으로 교체', () => {
+  /** @param {Array<import('../store/atomicPersist.js').JsonValue>} calls */
+  function captureRpc(calls) {
+    handlers.rpc = { replace_transport_details: (args) => { calls.push(args ?? null); return { data: null, error: null } } }
+  }
+
+  test('69-1: 콜 2건 저장 — 서버 함수 1회, 표에 직접 지우기·넣기 0회, 칸 값 그대로', async () => {
+    beginLoggedIn('u1', 'dlc-69a')
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    const calls = []
+    captureRpc(calls)
+    const callDetails = [
+      { id: 'c1', fare: '10,000', client: '', loadLoc: '부산', unloadLoc: '대구', vatExempt: true, paymentStatus: '수금 완료', paymentDueDate: '2026-10-20', payments: [] },
+      { id: 'c2', fare: '20000' },
+    ]
+
+    const r = await commitMainDayLogToCloud({ ownerKey: 'dlc-69a', logId: 'main', dateKey: DK, previousData: {}, nextData: { [DK]: { fixedCount: 0, callDetails } } })
+
+    assert.deepEqual(r, { cloud: true, ok: true, toast: null })
+    assert.equal(countOf('rpc', 'replace_transport_details'), 1)
+    assert.equal(countOf('transport_details', 'delete'), 0)
+    assert.equal(countOf('transport_details', 'insert'), 0)
+    assert.deepEqual(calls, [{
+      p_daily_log_id: 5001,
+      p_rows: [
+        { user_id: 'u1', vehicle_id: 700, client_id: null, work_date: DK, sequence: 0, load_loc: '부산', unload_loc: '대구', fare_amount: 10000, vat_exempt: true, payment_status: '수금 완료', payment_due_date: '2026-10-20', payments: [], commission_snapshot: null, raw: callDetails[0] },
+        { user_id: 'u1', vehicle_id: 700, client_id: null, work_date: DK, sequence: 1, load_loc: null, unload_loc: null, fare_amount: 20000, vat_exempt: false, payment_status: '미수', payment_due_date: null, payments: [], commission_snapshot: null, raw: callDetails[1] },
+      ],
+    }])
+    assert.equal(getState().workLogs['dlc-69a']?.main?.[DK]?.callDetails?.length, 2)
+    endCloudSession()
+  })
+
+  test('69-2: 서버 함수가 { error }면 Fail-Fast 토스트, Store 저장 전 값', async () => {
+    beginLoggedIn('u1', 'dlc-69b')
+    withDay('dlc-69b', { fixedCount: 0, callDetails: [{ id: 'old', fare: '5000' }] })
+    handlers.rpc = { replace_transport_details: () => ({ data: null, error: { message: 'network down' } }) }
+
+    const r = await commitMainDayLogToCloud({ ownerKey: 'dlc-69b', logId: 'main', dateKey: DK, previousData: { [DK]: { fixedCount: 0, callDetails: [{ id: 'old', fare: '5000' }] } }, nextData: { [DK]: { fixedCount: 0, callDetails: [{ id: 'new', fare: '7000' }] } } })
+
+    assert.deepEqual(r, { cloud: true, ok: false, toast: FAIL_FAST })
+    assert.equal(countOf('rpc', 'replace_transport_details'), 1)
+    assert.equal(countOf('transport_details', 'delete'), 0, '함수 밖에서 먼저 지우면 안 된다')
+    assert.equal(getState().workLogs['dlc-69b']?.main?.[DK]?.callDetails?.[0]?.id, 'old')
+    endCloudSession()
+  })
+
+  test('69-3: 콜 0건이면 빈 목록으로 서버 함수 1회(그날 콜 지우기만)', async () => {
+    beginLoggedIn('u1', 'dlc-69c')
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    const calls = []
+    captureRpc(calls)
+
+    const r = await commitMainDayLogToCloud({ ownerKey: 'dlc-69c', logId: 'main', dateKey: DK, previousData: { [DK]: { fixedCount: 1, callDetails: [{ id: 'old' }] } }, nextData: { [DK]: { fixedCount: 1, callDetails: [] } } })
+
+    assert.deepEqual(r, { cloud: true, ok: true, toast: null })
+    assert.deepEqual(calls, [{ p_daily_log_id: 5001, p_rows: [] }])
+    assert.equal(countOf('transport_details', 'delete'), 0)
+    endCloudSession()
+  })
+})

@@ -295,7 +295,7 @@ describe('64 receivables cloud commit — 기사 차량', () => {
     const r = await persistReceivableWorkDataChange('rc-h1', { main: readOwnerWorkData('rc-h1'), [PLATE]: paid.data })
     assert.deepEqual(r, { ok: true, partial: false, toast: null })
     assert.equal(countOf('daily_logs', 'upsert'), 1)
-    assert.equal(countOf('transport_details', 'insert'), 1)
+    assert.equal(countOf('rpc', 'replace_transport_details'), 1)
     const row = /** @type {{ vehicle_id?: number, work_date?: string }} */ (upserts[0])
     assert.equal(row.vehicle_id, 701)
     assert.equal(row.work_date, SUB_DK)

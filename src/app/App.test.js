@@ -870,19 +870,20 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
   document.body.appendChild(container)
   const root = createTrackedRoot(container)
 
-  // 서버 실패는 transport_details 쓰기를 던지게 해서 낸다(commitMainDayLogToCloud가
-  // daily_logs upsert 다음에 transport_details를 교체하다 실패 → Fail-Fast).
+  // 서버 실패는 콜 상세 교체 서버 함수를 던지게 해서 낸다(commitMainDayLogToCloud가
+  // daily_logs upsert 다음에 replace_transport_details를 부르다 실패 → Fail-Fast).
   let serverShouldFail = false
   const prevDailyLogs = handlers.daily_logs
-  const prevTransport = handlers.transport_details
+  const prevRpc = handlers.rpc
   handlers.daily_logs = {
     ...(prevDailyLogs || {}),
     select: () => ({ data: [{ work_date: dateKey, vehicle_id: 501, is_off: false, fixed_count: 2, raw: { palletCount: 0, fixedRouteCounts: {} } }], error: null }),
   }
-  handlers.transport_details = {
-    delete: () => {
-      if (serverShouldFail) throw new Error('transport_details down (simulated)')
-      return { data: [{ id: 1 }], error: null }
+  handlers.rpc = {
+    ...(prevRpc || {}),
+    replace_transport_details: () => {
+      if (serverShouldFail) throw new Error('replace_transport_details down (simulated)')
+      return { data: null, error: null }
     },
   }
   const dailyLogs = captureDailyLogUpserts()
@@ -927,8 +928,8 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     errSpy.restore()
     dailyLogs.restore()
     handlers.daily_logs = prevDailyLogs
-    if (prevTransport) handlers.transport_details = prevTransport
-    else delete handlers.transport_details
+    if (prevRpc) handlers.rpc = prevRpc
+    else delete handlers.rpc
     if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
     await flushCloudSync()
   }
@@ -942,16 +943,17 @@ test('로드맵 35 — 로그인 일지 서버 저장 실패 중 뒤로가기: �
   document.body.appendChild(container)
   const root = createTrackedRoot(container)
   const prevDailyLogs = handlers.daily_logs
-  const prevTransport = handlers.transport_details
+  const prevRpc = handlers.rpc
   handlers.daily_logs = {
     ...(prevDailyLogs || {}),
     select: () => ({ data: [{ work_date: dateKey, vehicle_id: 501, is_off: false, fixed_count: 2, raw: { palletCount: 0, fixedRouteCounts: {} } }], error: null }),
   }
   let serverShouldFail = false
-  handlers.transport_details = {
-    delete: () => {
-      if (serverShouldFail) throw new Error('transport_details down (simulated)')
-      return { data: [{ id: 1 }], error: null }
+  handlers.rpc = {
+    ...(prevRpc || {}),
+    replace_transport_details: () => {
+      if (serverShouldFail) throw new Error('replace_transport_details down (simulated)')
+      return { data: null, error: null }
     },
   }
   const dailyLogs = captureDailyLogUpserts()
@@ -1001,8 +1003,8 @@ test('로드맵 35 — 로그인 일지 서버 저장 실패 중 뒤로가기: �
     errSpy.restore()
     dailyLogs.restore()
     handlers.daily_logs = prevDailyLogs
-    if (prevTransport) handlers.transport_details = prevTransport
-    else delete handlers.transport_details
+    if (prevRpc) handlers.rpc = prevRpc
+    else delete handlers.rpc
     if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
     await flushCloudSync()
   }
