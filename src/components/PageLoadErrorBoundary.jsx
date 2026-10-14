@@ -2,6 +2,7 @@
 // 화면을 그리다 오류(주로 업데이트 뒤 옛 화면 파일을 못 받음)가 나면 앱 전체가 사라지는 대신 안내. 하단 메뉴는 그대로.
 // 다른 화면으로 가면(resetKey 바뀜) 안내를 풀어 그 화면을 다시 그린다 — 평소엔 아무것도 다시 만들지 않는다.
 import { Component } from 'react'
+import { reportClientError } from '../lib/errorReport.js'
 import './boot-retry.css'
 
 /** @typedef {{ resetKey: string, children?: import('react').ReactNode }} BoundaryProps */
@@ -21,6 +22,7 @@ export default class PageLoadErrorBoundary extends Component {
   /** @param {Error} error */
   componentDidCatch(error) {
     console.error('[PageLoadErrorBoundary] 화면 오류:', error)
+    reportClientError({ kind: 'render', message: error?.message, stack: error?.stack })
   }
 
   /** @param {BoundaryProps} prevProps */
