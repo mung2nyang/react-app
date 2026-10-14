@@ -91,3 +91,29 @@ describe('CallDetailList — canAdd 분리', () => {
     }
   })
 })
+
+describe('CallDetailCard — 면세 배지 (로드맵 46-A)', () => {
+  async function badgesFor(details) {
+    const settings = normalizeSettings({ fixedOn: true, callDetail: true, platformOn: false, paymentOn: false })
+    const { container, root } = mountList()
+    try {
+      await act(async () => {
+        root.render(React.createElement(CallDetailList, { ...baseProps, details, settings, canAdd: false }))
+      })
+      return [...container.querySelectorAll('.detail-badge')].map((el) => el.textContent)
+    } finally {
+      await act(async () => { root.unmount() })
+      container.remove()
+    }
+  }
+
+  test('면세로 저장한 카드는 설정이 꺼져 있어도 "면세" 배지가 보인다', async () => {
+    const badges = await badgesFor([{ id: 'trp-vat-exempt', fare: '100,000', client: '한진', vatExempt: true }])
+    assert.deepEqual(badges, ['면세'])
+  })
+
+  test('면세가 아닌 카드엔 "면세" 배지가 없다', async () => {
+    const badges = await badgesFor([{ id: 'trp-vat-normal', fare: '100,000', client: '한진' }])
+    assert.equal(badges.includes('면세'), false)
+  })
+})

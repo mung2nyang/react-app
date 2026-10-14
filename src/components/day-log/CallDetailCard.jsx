@@ -63,6 +63,7 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
         <div className="detail-badges">
           {settings.platformOn && item.platform && <span className="detail-badge">{item.platform}</span>}
           {settings.paymentOn && item.receipt && <span className="detail-badge">{item.receipt}</span>}
+          {item.vatExempt && <span className="detail-badge">면세</span>}
         </div>
         {settings.paymentOn && (
           <div className="detail-payment-actions">
