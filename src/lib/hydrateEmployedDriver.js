@@ -20,6 +20,7 @@ import { mergeClientsFromRows, mergeDriversFromRows, mergeExpenseKind } from './
 import { reconcileClients } from './outboxReconcile.js'
 import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
 import { supabase } from '../supabaseClient.js'
+import { fetchAllRows } from './fetchAllRows.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
@@ -57,9 +58,9 @@ export function remapEmployedDriverWorkLogs(workLogs, cars) {
  */
 async function fetchExpensesForAssignedVehicle(vehicleId, throwIfAnyHydrateError) {
   const [fuelRes, maintRes, miscRes] = await Promise.all([
-    supabase.from('fuel_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
-    supabase.from('maintenance_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
-    supabase.from('misc_expense_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
+    fetchAllRows(() => supabase.from('fuel_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }).order('id')),
+    fetchAllRows(() => supabase.from('maintenance_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }).order('id')),
+    fetchAllRows(() => supabase.from('misc_expense_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }).order('id')),
   ])
   throwIfAnyHydrateError({
     fuel_records: fuelRes.error,
@@ -146,12 +147,13 @@ export async function buildEmployedDriverSnapshot({
   const { workLogs: rawWorkLogs } = await mergeVehicleDayLogsFromServer({
     cars: nextCars,
     mainTombstoneKeys: [],
-    fetchDaily: (vehicleId) => supabase.from('daily_logs').select('*').eq('vehicle_id', vehicleId),
-    fetchTransport: (vehicleId) => supabase
+    fetchDaily: (vehicleId) => fetchAllRows(() => supabase.from('daily_logs').select('*').eq('vehicle_id', vehicleId).order('id')),
+    fetchTransport: (vehicleId) => fetchAllRows(() => supabase
       .from('transport_details')
       .select('*')
       .eq('vehicle_id', vehicleId)
-      .order('sequence', { ascending: true }),
+      .order('sequence', { ascending: true })
+      .order('id')),
     throwIfAnyHydrateError,
   })
   const workLogs = remapEmployedDriverWorkLogs(rawWorkLogs, nextCars)

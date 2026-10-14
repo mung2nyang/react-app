@@ -7,6 +7,7 @@ import { expenseFromFuelRecord, replaceFuelExpenses } from '../domain/fuelRecord
 import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/maintenanceRecords.js'
 import { expenseFromMiscRecord, replaceMiscExpenses } from '../domain/miscExpenseRecords.js'
 import { dedupeExpensesById } from '../domain/expenses.js'
+import { fetchAllRows } from './fetchAllRows.js'
 
 /** @typedef {import('../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
@@ -22,9 +23,9 @@ import { dedupeExpensesById } from '../domain/expenses.js'
  */
 async function fetchTaggedExpensesForVehicle(vehicleId, vehicleNumber, throwIfAnyHydrateError) {
   const [fuelRes, maintRes, miscRes] = await Promise.all([
-    supabase.from('fuel_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
-    supabase.from('maintenance_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
-    supabase.from('misc_expense_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
+    fetchAllRows(() => supabase.from('fuel_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }).order('id')),
+    fetchAllRows(() => supabase.from('maintenance_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }).order('id')),
+    fetchAllRows(() => supabase.from('misc_expense_records').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }).order('id')),
   ])
   throwIfAnyHydrateError({
     [`fuel_records:${vehicleNumber}`]: fuelRes.error,

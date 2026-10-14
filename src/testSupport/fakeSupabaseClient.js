@@ -27,6 +27,8 @@ export function chainable(getResult) {
     in: () => api,
     order: () => api,
     limit: () => api,
+    /** @param {number} from @param {number} to */
+    range: (from, to) => { filters['range'] = `${from}-${to}`; return api },
     maybeSingle: () => api,
     single: () => api,
     /**

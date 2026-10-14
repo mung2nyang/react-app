@@ -47,6 +47,7 @@ function createQuery(method) {
     eq() { return query },
     in() { return query },
     order() { return query },
+    range() { return query },
     select() { return query },
     single() { return query },
     maybeSingle() { return query },

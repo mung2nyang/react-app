@@ -28,6 +28,7 @@ import { mergeTaxInvoiceRecords } from '../domain/taxInvoices.js'
 import { buildEmployedDriverSnapshot } from './hydrateEmployedDriver.js'
 import { fetchOwnerDriverExpenses } from './hydrateOwnerDriverExpenses.js'
 import { fetchOwnerDriverLinks } from './driverUnlink.js'
+import { fetchAllRows } from './fetchAllRows.js'
 
 /** @param {string} userId @param {string} ownerKey @param {{ employedDriver?: boolean }} [options] */
 export function hydrateFromSupabase(userId, ownerKey, options = {}) {
@@ -129,8 +130,8 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     const { workLogs, mainCar } = await mergeVehicleDayLogsFromServer({
       cars: nextCars,
       mainTombstoneKeys,
-      fetchDaily: (vehicleId) => supabase.from('daily_logs').select('*').eq('vehicle_id', vehicleId),
-      fetchTransport: (vehicleId) => supabase.from('transport_details').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }),
+      fetchDaily: (vehicleId) => fetchAllRows(() => supabase.from('daily_logs').select('*').eq('vehicle_id', vehicleId).order('id')),
+      fetchTransport: (vehicleId) => fetchAllRows(() => supabase.from('transport_details').select('*').eq('vehicle_id', vehicleId).order('sequence', { ascending: true }).order('id')),
       throwIfAnyHydrateError,
     })
     nextWorkLogs = workLogs
@@ -138,9 +139,9 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
 
     if (mainCar?.supabaseId) {
       const [fuelRes, maintRes, miscRes] = await Promise.all([
-        supabase.from('fuel_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
-        supabase.from('maintenance_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
-        supabase.from('misc_expense_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }),
+        fetchAllRows(() => supabase.from('fuel_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }).order('id')),
+        fetchAllRows(() => supabase.from('maintenance_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }).order('id')),
+        fetchAllRows(() => supabase.from('misc_expense_records').select('*').eq('vehicle_id', mainCar.supabaseId).order('sequence', { ascending: true }).order('id')),
       ])
       throwIfAnyHydrateError({
         fuel_records: fuelRes.error,
@@ -155,7 +156,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
 
     const { expenses: ownerExpenses, driverExpenses: nextDriverExpenses } = await fetchOwnerDriverExpenses(nextCars, nextDrivers, nextExpenses, throwIfAnyHydrateError)
 
-    const taxInvoicesRes = await supabase.from('tax_invoices').select('*').eq('user_id', userId)
+    const taxInvoicesRes = await fetchAllRows(() => supabase.from('tax_invoices').select('*').eq('user_id', userId).order('id'))
     throwIfAnyHydrateError({ tax_invoices: taxInvoicesRes.error })
     nextInvoices = mergeTaxInvoiceRecords(nextInvoices, taxInvoicesRes.data || [])
 

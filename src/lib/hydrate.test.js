@@ -479,3 +479,51 @@ describe('로드맵 5-A — 서브차량 정비/주유/기타 불러오기', () 
     endCloudSession()
   })
 })
+
+// 로드맵 67-A — 서버(Max rows 1000)처럼 한 번에 1,000줄까지만 주는 가짜 서버로 끝까지 받는지.
+/**
+ * @param {Array<import('../store/atomicPersist.js').JsonValue>} rows
+ * @param {Record<string, string|number>|undefined} filters
+ */
+function pageLikeServer(rows, filters) {
+  const [from, to] = String(filters?.range ?? '0-999').split('-').map(Number)
+  return { data: rows.slice(from, Math.min(to, from + 999) + 1), error: null }
+}
+
+describe('67-A hydrate — 1,000줄 넘는 기록도 끝까지 불러온다', () => {
+  test('H-1 메인 차량 콜 상세 1,200건 → Store에 1,200건 전부', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-67a-transport'
+    handlers.vehicles = { select: () => ({ data: [{ id: 601, type: 'main', number: '11가1111', raw: { id: 'c-main' } }], error: null }) }
+    const days = Array.from({ length: 30 }, (_, i) => `2026-07-${String(i + 1).padStart(2, '0')}`)
+    handlers.daily_logs = { select: () => ({ data: days.map((d) => ({ work_date: d, is_off: false, fixed_count: 0, raw: {} })), error: null }) }
+    const transport = Array.from({ length: 1200 }, (_, i) => ({
+      work_date: days[i % 30], sequence: Math.floor(i / 30), raw: { id: `t-${i}`, fare: '1000', client: '한진' },
+    }))
+    handlers.transport_details = { select: (filters) => pageLikeServer(transport, /** @type {Record<string, string|number>} */ (filters)) }
+
+    await hydrateFromSupabase('user-67a-transport', ownerKey)
+    const main = getState().workLogs[ownerKey]?.main || {}
+    const count = Object.values(main).reduce((sum, day) => sum + (day.callDetails?.length || 0), 0)
+    assert.equal(count, 1200)
+    assert.equal(countOf('transport_details', 'select'), 2)
+    endCloudSession()
+  })
+
+  test('H-2 메인 차량 주유 1,500건 → Store 지출 1,500건 전부', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-67a-fuel'
+    handlers.vehicles = { select: () => ({ data: [{ id: 602, type: 'main', number: '11가1111', raw: { id: 'c-main' } }], error: null }) }
+    const fuel = Array.from({ length: 1500 }, (_, i) => ({
+      work_date: '2026-07-01', sequence: i, cost_amount: 1000, raw: { id: `f-${i}`, date: '2026-07-01', cost: 1000 },
+    }))
+    handlers.fuel_records = { select: (filters) => pageLikeServer(fuel, /** @type {Record<string, string|number>} */ (filters)) }
+
+    await hydrateFromSupabase('user-67a-fuel', ownerKey)
+    const expenses = getState().expenses[ownerKey] || []
+    assert.equal(expenses.filter((item) => item.kind === 'fuel').length, 1500)
+    endCloudSession()
+  })
+})
