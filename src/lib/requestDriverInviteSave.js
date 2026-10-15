@@ -5,8 +5,11 @@
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('./outboxTypes.js').CarRecord} CarRecord */
 /** @typedef {import('./outboxTypes.js').DriverLinkRow} DriverLinkRow */
-import { assertCloudWriteReady, assertSessionStillCurrent, captureSession } from './cloudSession.js'
-import { commitDrivers } from '../store/commitHelpers.js'
+import { assertCloudWriteReady, assertSessionStillCurrent, captureSession, getCloudUserId } from './cloudSession.js'
+import { commitCars, commitDrivers } from '../store/commitHelpers.js'
+import { readOwnerCars } from '../store/ownerDataHooks.js'
+import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
+import { upsertVehicleFromList } from './syncVehiclesClients.js'
 import { StaleSessionError } from './outboxErrors.js'
 import {
   driverLinkRowNeedsUpdate,
@@ -19,6 +22,7 @@ const SESSION_CHANGED_MESSAGE = '로그인 정보가 바뀌어 저장하지 못�
 const MISSING_FIELDS_MESSAGE = '기사 이름, 배정 차량, 시작일을 입력해 주세요.'
 const UNKNOWN_CAR_MESSAGE = '등록된 기사 차량 번호를 입력해 주세요.'
 const UNSYNCED_CAR_MESSAGE = '선택한 차량이 아직 저장되지 않았습니다. 잠시 후 다시 시도해 주세요.'
+const CAR_DRIVER_FAIL_MESSAGE = '초대는 저장했지만 차량의 기사 이름·전화번호는 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.'
 
 /**
  * 서버가 확정한 행을 해당 로컬 driver 항목에 반영한다(순수).
@@ -31,6 +35,33 @@ function applyServerRow(items, idx, row) {
   return items.map((item, i) => (i === idx
     ? { ...item, supabaseId: row.id, inviteCode: row.invite_code || item.inviteCode }
     : item))
+}
+
+/**
+ * 초대 이름·전화번호를 그 차량 기사 정보에도 — 불러올 때 차량 값이 먼저라 안 바꾸면 다시 켤 때 되돌아간다(원본과 같음).
+ * 이미 같으면 저장하지 않는다. 서버 성공 뒤에만 화면에 반영한다.
+ * @param {string} ownerKey @param {string} carId @param {DriverRecord} driver
+ * @param {import('./outboxTypes.js').SessionCapture} captured
+ * @returns {Promise<boolean>} 차량 저장이 필요 없거나 성공하면 true
+ */
+function saveCarDriverInfo(ownerKey, carId, driver, captured) {
+  const name = driver.name || ''
+  const phone = driver.phone || ''
+  return runOwnerSaveSerialized(ownerKey, async () => {
+    const cars = readOwnerCars(ownerKey)
+    const current = cars.find((item) => item.id === carId)
+    if (!current || ((current.driverName || '') === name && (current.driverPhone || '') === phone)) return true
+    const nextCars = cars.map((item) => (item.id === carId ? { ...item, driverName: name, driverPhone: phone } : item))
+    try {
+      await upsertVehicleFromList(/** @type {string} */ (getCloudUserId()), ownerKey, nextCars, carId, captured)
+      assertSessionStillCurrent(captured)
+      commitCars(ownerKey, nextCars, { syncToCloud: false })
+      return true
+    } catch (error) {
+      console.error('[requestDriverInviteSave] 차량 기사 정보 저장 실패:', error)
+      return false
+    }
+  })
 }
 
 /**
@@ -90,10 +121,11 @@ export async function requestDriverInviteSave({ ownerKey, items, editingId, cars
 
     const nextItems = applyServerRow(items, idx, row)
     commitDrivers(ownerKey, nextItems, { syncToCloud: false })
+    const carSaved = await saveCarDriverInfo(ownerKey, car.id, driver, captured)
     return {
       items: nextItems,
       blocked: null,
-      toast: editingId ? '기사 배정 정보를 수정했습니다.' : '기사 초대를 저장했습니다.',
+      toast: !carSaved ? CAR_DRIVER_FAIL_MESSAGE : editingId ? '기사 배정 정보를 수정했습니다.' : '기사 초대를 저장했습니다.',
     }
   } catch (error) {
     if (error instanceof StaleSessionError) {

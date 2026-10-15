@@ -22,6 +22,7 @@ const { setHydration, getState, subscribe } = await import('../store/app-store.j
 const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../store/persist.js')
 const { hasPendingOps } = await import('./mutationOutbox.js')
 const { STORAGE_FAIL_TOAST } = await import('./outboxCommit.js')
+const { commitCars } = await import('../store/commitHelpers.js')
 
 /**
  * 로드맵 29: 비회원 로컬 저장 실패 — 예상 console.error 1건만 확인하고 나머지는 그대로 통과시킨다.
@@ -816,6 +817,85 @@ describe('실패 주입 — 직접 mutation 실행 직전 hydration이 hydrating
     const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
     assert.deepEqual(result.cars, cars)
     assert.equal(countOf('vehicles', 'delete'), 0)
+    endCloudSession()
+  })
+})
+
+describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번호도 서버에', () => {
+  const INVITE_ROW = { data: [{ id: 960, invite_code: '808080', assignment_start: '2026-10-15', assignment_end: null, status: 'pending' }], error: null }
+  const CAR = { id: 'car-80', number: '80가8080', type: /** @type {'sub'} */ ('sub'), supabaseId: 880, driverName: '옛기사', driverPhone: '010-0000-0000' }
+  const INVITE = { id: 'drv-80', name: '시험기사80', phone: '010-8080-8080', vehicleNumber: '80가8080', startDate: '2026-10-15', endDate: '', inviteCode: '808080' }
+
+  /** @param {string} ownerKey @param {Array<import('../store/atomicPersist.js').JsonValue>} vehicleUpdates */
+  function seed(ownerKey, vehicleUpdates, vehicleFails = false) {
+    beginReady('user-1', ownerKey)
+    commitCars(ownerKey, [CAR], { syncToCloud: false })
+    handlers.rpc = { [RPC_FN]: () => INVITE_ROW }
+    handlers.vehicles = {
+      update: (row) => {
+        vehicleUpdates.push(row ?? null)
+        return vehicleFails ? { data: null, error: { message: 'vehicles down' } } : { data: null, error: null }
+      },
+    }
+  }
+
+  /** @param {string} ownerKey */
+  function carInStore(ownerKey) {
+    const cars = getState().cars[ownerKey]
+    return Array.isArray(cars) ? cars.find((item) => item.id === 'car-80') : undefined
+  }
+
+  test('80-1: 이름이 다르면 초대 저장 뒤 차량 저장 1번, 화면 차량 이름·전화번호가 바뀜', async () => {
+    const ownerKey = 'dma-80-sync'
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    const updates = []
+    seed(ownerKey, updates)
+    const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items: [INVITE], editingId: null, cars: [CAR] })
+    assert.equal(result.toast, '기사 초대를 저장했습니다.')
+    assert.equal(countOf('rpc', RPC_FN), 1)
+    assert.equal(updates.length, 1)
+    const row = /** @type {{ driver_name?: string, raw?: { driverPhone?: string } }} */ (updates[0])
+    assert.equal(row.driver_name, '시험기사80')
+    assert.equal(row.raw?.driverPhone, '010-8080-8080')
+    assert.equal(carInStore(ownerKey)?.driverName, '시험기사80')
+    assert.equal(carInStore(ownerKey)?.driverPhone, '010-8080-8080')
+    endCloudSession()
+  })
+
+  test('80-2: 차량 이름·전화번호가 이미 같으면 차량 저장 0번', async () => {
+    const ownerKey = 'dma-80-same'
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    const updates = []
+    seed(ownerKey, updates)
+    commitCars(ownerKey, [{ ...CAR, driverName: '시험기사80', driverPhone: '010-8080-8080' }], { syncToCloud: false })
+    await requestDriverInviteSave({ ownerKey, userId: 'user-1', items: [INVITE], editingId: null, cars: [CAR] })
+    assert.equal(updates.length, 0)
+    endCloudSession()
+  })
+
+  test('80-3: 차량 저장만 실패하면 초대는 저장, 안내, 화면 차량 값 그대로', async () => {
+    const ownerKey = 'dma-80-carfail'
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    const updates = []
+    seed(ownerKey, updates, true)
+    const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items: [INVITE], editingId: null, cars: [CAR] })
+    assert.equal(result.blocked, null, '초대는 저장됐으니 창은 닫는다')
+    assert.equal(result.toast, '초대는 저장했지만 차량의 기사 이름·전화번호는 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.')
+    assert.ok((getState().drivers[ownerKey] || []).some((item) => item.supabaseId === 960))
+    assert.equal(carInStore(ownerKey)?.driverName, '옛기사')
+    endCloudSession()
+  })
+
+  test('80-4: 초대 저장이 실패하면 차량 저장 0번', async () => {
+    const ownerKey = 'dma-80-invitefail'
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    const updates = []
+    seed(ownerKey, updates)
+    handlers.rpc = { [RPC_FN]: () => ({ data: null, error: { message: 'RLS violation' } }) }
+    const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items: [INVITE], editingId: null, cars: [CAR] })
+    assert.equal(result.blocked, FAIL_FAST_TOAST)
+    assert.equal(updates.length, 0)
+    assert.equal(carInStore(ownerKey)?.driverName, '옛기사')
     endCloudSession()
   })
 })

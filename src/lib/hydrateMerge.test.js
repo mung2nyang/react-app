@@ -253,6 +253,14 @@ describe('mergeDriversFromRows — 슬라이스 B 보완: 서버 빈 배열은 �
     assert.equal(mergeDriversFromRows(local, cars, undefined), local)
   })
 
+  test('80-5: 다시 불러오면 초대 이름·전화번호는 차량 기사 정보로 — 초대 저장 때 차량도 바꾸므로 넣은 값 그대로 보인다', () => {
+    const syncedCars = asCars([{ id: 'car-80', number: '80가8080', supabaseId: 880, driverName: '시험기사80', driverPhone: '010-8080-8080' }])
+    const rows = asRows([{ id: 960, invite_code: '808080', vehicle_id: 880, assignment_start: '2026-10-15', status: 'pending' }])
+    const merged = mergeDriversFromRows(asLocal([]), syncedCars, rows)
+    assert.equal(merged[0]?.name, '시험기사80')
+    assert.equal(merged[0]?.phone, '010-8080-8080')
+  })
+
   test('서버 행이 있으면 기존처럼 병합한다(로컬 name/phone은 invite_code로 매칭해 채운다)', () => {
     const local = asLocal([{ id: 'drv-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '박기사', phone: '010-1' }])
     const rows = asRows([{ id: 700, invite_code: '123456', vehicle_id: 700, assignment_start: '2026-08-01', status: 'linked' }])
