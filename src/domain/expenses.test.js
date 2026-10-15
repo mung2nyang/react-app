@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { describe, test } from 'node:test'
+import { describe, mock, test } from 'node:test'
 import { dedupeExpensesById, emptyExpenseDraft, groupExpensesByDate, upsertExpense } from './expenses.js'
 
 describe('정비/기타 저장 조건', () => {
@@ -63,5 +63,28 @@ describe('정비/기타 저장 조건', () => {
     assert.equal(next.length, 2)
     assert.equal(next[0].cost, 1)
     assert.equal(next[1].id, 'b')
+  })
+})
+
+describe('로드맵 77 — 지출 번호', () => {
+  test('77-1: 같은 1/1000초에 만든 지출 두 건도 번호가 달라 둘 다 남는다', () => {
+    const clock = mock.method(Date, 'now', () => 1760412345678)
+    try {
+      const first = upsertExpense([], { kind: 'fuel', date: '2026-10-15', cost: 1000 })
+      const second = upsertExpense(first.items || [], { kind: 'fuel', date: '2026-10-15', cost: 2000 })
+      const items = second.items || []
+      assert.equal(items.length, 2)
+      assert.notEqual(items[0].id, items[1].id)
+      assert.match(String(items[1].id), /^exp_1760412345678_[a-z0-9]+$/)
+      assert.deepEqual(dedupeExpensesById(items).map((item) => item.cost), [1000, 2000])
+    } finally {
+      clock.mock.restore()
+    }
+  })
+
+  test('77-2: 옛 번호(exp-숫자) 지출도 그 번호로 고쳐진다', () => {
+    const result = upsertExpense([{ id: 'exp-123', kind: 'fuel', date: '2026-10-01', cost: 500 }], { kind: 'fuel', date: '2026-10-01', cost: 700 }, 'exp-123')
+    assert.equal(result.error, undefined)
+    assert.deepEqual((result.items || []).map((item) => [item.id, item.cost]), [['exp-123', 700]])
   })
 })
