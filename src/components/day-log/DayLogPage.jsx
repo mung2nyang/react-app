@@ -154,7 +154,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
         onBack={onClose ? handleClose : undefined}
         onOpenMenu={onOpenMenu}
       />
-      <OffToggle isOff={draft.isOff} onChange={(off) => patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })} />
+      <OffToggle isOff={draft.isOff} callCount={draft.callDetails.length} onChange={(off) => patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })} />
       <div className={`modal-work-details${draft.isOff ? ' is-off' : ''}`}>
         {settings.fixedOn && (
           <div className="modal-section fixed-route-section">

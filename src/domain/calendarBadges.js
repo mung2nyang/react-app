@@ -65,7 +65,7 @@ export function dayWorkBadgeLabel(record, { inputMode = 'count', unitPrice = 0 }
  * @returns {boolean}
  */
 export function dayHasUnpaid(record, paymentOn) {
-  if (!paymentOn) return false
+  if (!paymentOn || isOffDay(record)) return false
   return getCallDetails(record).some(
     (/** @type {CallDetailLike} */ detail) => getDetailPaymentSummary(detail).status !== 'paid',
   )

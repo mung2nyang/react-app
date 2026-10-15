@@ -108,7 +108,7 @@ export function getMonthlyDriverTotals(data, monthKey, link = null, settings = {
   let insuranceAmount = 0
   let count = 0
   Object.entries(data || {}).forEach(([dateKey, record]) => {
-    if (!dateKey.startsWith(monthKey) || !record || typeof record !== 'object') return
+    if (!dateKey.startsWith(monthKey) || !record || typeof record !== 'object' || record.isOff) return
     if (!isDateWithinAssignment(dateKey, link?.assignmentStart, link?.assignmentEnd)) return
     const details = Array.isArray(record.callDetails) ? record.callDetails : []
     details.forEach((detail) => {

@@ -177,7 +177,7 @@ export function monthCallUnpaidTotal(data, year, month) {
   const prefix = `${year}-${String(month + 1).padStart(2, '0')}-`
   let total = 0
   for (const [key, record] of Object.entries(data || {})) {
-    if (!key.startsWith(prefix)) continue
+    if (!key.startsWith(prefix) || isOffDay(record)) continue
     getCallDetails(record).forEach((detail) => {
       const summary = getDetailPaymentSummary(detail)
       if (summary.status !== 'paid') total += summary.remainingAmount
