@@ -109,7 +109,7 @@ export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMont
    * @param {'draft'|'issued'} status
    */
   function changeStatus(item, status) {
-    changeTaxInvoiceStatus({
+    void changeTaxInvoiceStatus({
       item,
       status,
       settings,
