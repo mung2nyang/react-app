@@ -86,6 +86,16 @@ test('결제 및 수금 입력이 꺼져 있으면 기사연동 여부와 무관
   } finally { await view.cleanup() }
 })
 
+test('운송료 이름표 "(부가세 별도)"는 보통 공백 — 큰 글씨에서 줄을 바꿔 칸 안에 들어간다(로드맵 49)', async () => {
+  const view = await mount({})
+  try {
+    const label = view.container.querySelector('label[for="callFare"]')
+    const text = label?.textContent || ''
+    assert.equal(text, '운송료(부가세 별도)')
+    assert.equal(text.includes(' '), false, '줄바꿈 안 되는 공백이 없어야 한다')
+  } finally { await view.cleanup() }
+})
+
 describe('운송료 1,000만원 초과 저장 확인(로드맵 43-C)', () => {
   /** @param {string} fare @param {boolean} answer */
   async function clickSave(fare, answer) {

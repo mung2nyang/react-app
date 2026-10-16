@@ -132,7 +132,7 @@ export default function CallDetailForm({
       </div>
       <div className="call-detail-panel call-money-panel">
         <div className="call-inline-field">
-          <label htmlFor="callFare">운송료<br />(부가세{' '}별도)</label>
+          <label htmlFor="callFare">운송료<br />(부가세 별도)</label>
           <div className="input-with-suffix">
             <CurrencyInput id="callFare" className="input-box" placeholder="운송료 입력" value={draft.fare} onValueChange={(fare) => setDraft({ ...draft, fare })} />
             <span className="suffix">원</span>
