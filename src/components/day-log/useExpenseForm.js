@@ -4,6 +4,8 @@
 import { useState } from 'react'
 import { emptyExpenseDraft, saveExpenses, upsertExpense } from '../../lib/expenses.js'
 import { readOwnerExpenses, useOwnerExpenses } from '../../store/ownerDataHooks.js'
+import { getCloudOwnerKey } from '../../lib/cloudSession.js'
+import { saveFailMessage } from '../../lib/failureMessages.js'
 
 /** @typedef {import('./dayLogTypes.js').ExpenseItem} ExpenseItem */
 
@@ -66,7 +68,7 @@ export function useExpenseForm(ownerKey, dateKey, showToast, logId = 'main') {
       await persist(/** @type {Array<ExpenseItem>} */ (readOwnerExpenses(ownerKey)).filter((item) => item.id !== id))
     } catch (error) {
       console.error('비용 삭제 실패:', error)
-      showToast?.('삭제하지 못했습니다. 저장 공간을 확인해 주세요.')
+      showToast?.(saveFailMessage(getCloudOwnerKey() === ownerKey))
     }
   }
 
@@ -79,7 +81,7 @@ export function useExpenseForm(ownerKey, dateKey, showToast, logId = 'main') {
       // 모달을 안 닫는다 — draft가 그대로 남아 있어야 사용자가 다시 저장을 시도할 수
       // 있다.
       console.error('비용 저장 실패:', error)
-      showToast?.('저장하지 못했습니다. 저장 공간을 확인해 주세요.')
+      showToast?.(saveFailMessage(getCloudOwnerKey() === ownerKey))
       return
     }
     setModalOpen(false)

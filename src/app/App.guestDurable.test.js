@@ -57,6 +57,7 @@ const { clearGuestModePersisted } = await import('./guestSessionPersist.js')
 const { getState, subscribe } = await import('../store/app-store.js')
 const { readJsonKey, storageKeyFor } = await import('../store/persist.js')
 const { normalizeSettings } = await import('../domain/practiceSettings.js')
+const { DEVICE_SAVE_FAIL } = await import('../lib/failureMessages.js')
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
@@ -580,7 +581,7 @@ test('재감사 3차 FAIL 지적 5번 — 비용 저장 quota 초과: store/loca
     errSpy.restore()
 
     const toastText = container.querySelector('.toast-message')?.textContent || ''
-    assert.ok(toastText.includes('저장하지 못했'), `실패 토스트가 떠야 한다 — 실제: "${toastText}"`)
+    assert.equal(toastText, DEVICE_SAVE_FAIL, '기기 저장 실패 문구(로드맵 56-A)')
 
     assert.ok(container.querySelector('#expenseName'), '모달이 안 닫혀야 한다(draft가 유실되면 안 된다)')
     assert.equal(container.querySelector('#expenseName').value, '타이어 교체', '입력하던 draft 값이 그대로 남아 있어야 한다')
@@ -635,7 +636,7 @@ test('재감사 3차 FAIL 지적 5번 — 비용 삭제 quota 초과: store/loca
     errSpy.restore()
 
     const toastText = container.querySelector('.toast-message')?.textContent || ''
-    assert.ok(toastText.includes('삭제하지 못했'), `실패 토스트가 떠야 한다 — 실제: "${toastText}"`)
+    assert.equal(toastText, DEVICE_SAVE_FAIL, '기기 저장 실패 문구(로드맵 56-A)')
     assert.ok(container.textContent.includes('오일'), '기존 항목(e1)이 화면에서 사라지면 안 된다')
   } finally {
     spy.mock.restore()
@@ -788,7 +789,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     assert.equal(errSpy.count(), 1, '디바운스 커밋 실패로 정확히 1번 로깅돼야 한다')
     assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), '실패 UI가 화면에 표시돼야 한다')
     assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장 완료'), false, '성공 문구가 보이면 안 된다')
-    assert.match(container.querySelector('.toast-message')?.textContent || '', /자동 저장에 실패/)
+    assert.equal(container.querySelector('.toast-message')?.textContent || '', DEVICE_SAVE_FAIL)
     unsubscribe()
 
     const beforeUnloadEvent = fireBeforeUnload()
@@ -932,7 +933,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
     assert.equal(totalSupabaseCalls(), supabaseCallsBefore, '실패한 시도는 Supabase 호출로 이어지면 안 된다')
     assert.equal(errSpy.count(), 1, '디바운스 커밋 실패로 정확히 1번 로깅돼야 한다')
     assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), '실패 UI가 표시돼야 한다')
-    assert.match(container.querySelector('.toast-message')?.textContent || '', /자동 저장에 실패/)
+    assert.equal(container.querySelector('.toast-message')?.textContent || '', DEVICE_SAVE_FAIL)
     unsubscribe()
 
     const beforeUnloadEvent = fireBeforeUnload()

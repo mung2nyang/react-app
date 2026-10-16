@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../lib/durableWriteGuard.js'
 import { registerPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
 import { saveLogWorkDataWithTombstoneCheck } from '../../lib/workData.js'
+import { DEVICE_SAVE_FAIL } from '../../lib/failureMessages.js'
 
 /** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 
@@ -84,7 +85,7 @@ export function commitLocalDayWrite(ctx) {
     saveLogWorkDataWithTombstoneCheck(ctx.ownerKey, ctx.logId, ctx.dateKey, ctx.latest, ctx.next)
   } catch (error) {
     if (ctx.mountedRef.current) ctx.setAutoSaveStatus('failed')
-    ctx.showToastRef.current?.('자동 저장에 실패했습니다. 저장 공간을 확인해 주세요.')
+    ctx.showToastRef.current?.(DEVICE_SAVE_FAIL)
     console.error('일지 자동 저장 실패:', error)
     const attemptRev = ctx.draftRevRef.current
     queueFailedDayWrite(ctx.pendingOwner, ctx.dateKey, ctx.patch, (ok) => {

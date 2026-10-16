@@ -3,8 +3,9 @@
 /** @typedef {import('../store/persist.js').PersistDomain} PersistDomain */
 /** @typedef {import('../store/app-store.js').DomainValue} DomainValue */
 import { commitBatch } from '../store/app-store.js'
+import { DEVICE_SAVE_FAIL } from './failureMessages.js'
 
-export const STORAGE_FAIL_TOAST = '저장에 실패했습니다. 잠시 후 다시 시도해 주세요.'
+export const STORAGE_FAIL_TOAST = DEVICE_SAVE_FAIL
 
 /**
  * 로컬 전용(supabaseId 없음) 도메인 변경 — outbox 없이 commitBatch만 거친다.

@@ -15,6 +15,8 @@ import {
 } from '../lib/expenses.js'
 import { formatWon } from '../lib/money.js'
 import { readOwnerExpenses, useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../store/ownerDataHooks.js'
+import { getCloudOwnerKey } from '../lib/cloudSession.js'
+import { saveFailMessage } from '../lib/failureMessages.js'
 import './maint-fuel.css'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
@@ -86,7 +88,7 @@ export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, on
       return true
     } catch (error) {
       console.error('비용 저장 실패:', error)
-      showToast?.('저장하지 못했습니다. 저장 공간을 확인해 주세요.')
+      showToast?.(saveFailMessage(getCloudOwnerKey() === ownerKey))
       return false
     }
   }

@@ -5,6 +5,7 @@
 import { getState, setHydration } from '../store/app-store.js'
 import { evict } from './singleFlight.js'
 import { StaleSessionError } from './outboxErrors.js'
+import { SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 // hydrate.js가 실제로 쓰는 singleFlight 키 형식과 반드시 같아야 한다(문자열 하나를
 // 공유하려고 새 모듈을 만들 만큼은 아니라고 판단해 복제했다 — hydrate.js가 이 파일을
@@ -132,20 +133,20 @@ export function blockedReasonForOwnerDataWrite(expected = {}) {
     return error instanceof Error ? error.message : String(error)
   }
   if (expected.ownerKey && getCloudOwnerKey() !== expected.ownerKey) {
-    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return SESSION_CHANGED_FAIL
   }
   if (expected.userId && getCloudUserId() !== expected.userId) {
-    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return SESSION_CHANGED_FAIL
   }
   if (expected.sessionEpoch != null && expected.sessionEpoch !== getSessionEpoch()) {
-    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return SESSION_CHANGED_FAIL
   }
   const hydration = getState().hydration
   if (expected.ownerKey && hydration.ownerKey && hydration.ownerKey !== expected.ownerKey) {
-    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return SESSION_CHANGED_FAIL
   }
   if (expected.userId && hydration.userId && hydration.userId !== expected.userId) {
-    return '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.'
+    return SESSION_CHANGED_FAIL
   }
   return null
 }
