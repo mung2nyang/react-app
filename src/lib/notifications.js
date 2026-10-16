@@ -4,7 +4,6 @@ import { todayKey } from './expenses.js'
 import { todayWorkLogSelection } from '../domain/calendar.js'
 import { formatWon } from './money.js'
 import { getDdayLabel, overdueItems } from './receivables.js'
-import { loadWorkData } from './workData.js'
 import { buildFinanceSettings, loadWorkDataByLogId } from './ownerFinance.js'
 import { getReceivableItems } from './finance.js'
 import { readJsonKey } from '../store/persist.js'
@@ -86,7 +85,8 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
   if (new Date().getHours() >= TODAY_LOG_REMINDER_HOUR) {
     const dateKey = todayKey()
     const todayId = `today:${dateKey}`
-    const workMap = /** @type {Record<string, JsonValue|undefined>} */ (loadWorkData(ownerKey))
+    // 로그인 계정 일지는 메모리에만 있어 기기 저장소가 아닌 메모리(위 workDataByLogId)에서 읽는다.
+    const workMap = /** @type {Record<string, JsonValue|undefined>} */ (workDataByLogId.main || {})
     const todayRecord = workMap[dateKey]
     /** @type {{ isOff?: JsonValue, callDetails?: JsonValue, fixedCount?: JsonValue }|null} */
     const record = (todayRecord && typeof todayRecord === 'object' && !Array.isArray(todayRecord))
