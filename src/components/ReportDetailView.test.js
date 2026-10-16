@@ -113,6 +113,17 @@ test('세부내역서: info-table에 성명·차량번호·계좌 배치 반영'
   }
 })
 
+test('세부내역서: 거래처 안 고른 운송료는 달력과 같은 이름 "미지정 거래처 운송료"(로드맵 47-A)', async () => {
+  const { container, cleanup } = await renderDetail({ defaultBaseFare: 20000 })
+  try {
+    const text = container.textContent || ''
+    assert.ok(text.includes('미지정 거래처 운송료20,000원'), text.slice(0, 300))
+    assert.ok(text.includes('한진 기본 운송료'))
+  } finally {
+    await cleanup()
+  }
+})
+
 test('report.css: info-table th·report-table td 중앙정렬, detail-amount right 없음', () => {
   const cssPath = join(dirname(fileURLToPath(import.meta.url)), 'report', 'report.css')
   const css = readFileSync(cssPath, 'utf8')

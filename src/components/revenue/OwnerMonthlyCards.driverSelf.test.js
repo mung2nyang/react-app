@@ -176,6 +176,8 @@ describe('OwnerMonthlyCards variant=driverSelf', () => {
       assert.equal(text.includes('기사 몫'), false)
       assert.equal(text.includes('차량 운송 수입'), false)
       assert.ok(text.includes('운송 수입'))
+      assert.ok(text.includes('미수금(0건)'), '앱 전체와 같은 이름 "미수금"(로드맵 47-A)')
+      assert.equal(text.includes('미입금'), false)
     } finally {
       root.unmount()
       container.remove()

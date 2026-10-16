@@ -87,7 +87,7 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
           <span className="summary-value">{won(detail.vatAmount)}</span>
         </div>
         <RevenueDetailRow
-          label={`미입금 운송료(${detail.unpaid.count}건)`}
+          label={`미수금(${detail.unpaid.count}건)`}
           amount={detail.unpaid.total}
           items={detail.unpaid.items.map((item) => ({ label: item.client, amount: item.remainingAmount }))}
         />

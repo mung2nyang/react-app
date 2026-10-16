@@ -140,7 +140,7 @@ export default function ReportDetailContent({ report, clientFilter, showClientCo
         </div>
         {showDefaultBase && (
           <div className="summary-row">
-            <span>기본 운송료</span>
+            <span>미지정 거래처 운송료</span>
             <span className="summary-value">{formatWon(report.defaultBaseFare)}</span>
           </div>
         )}
