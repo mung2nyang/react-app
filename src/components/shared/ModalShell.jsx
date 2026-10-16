@@ -14,12 +14,13 @@ const openShells = []
  * @param {string} [props.label] 화면 읽기용 창 이름
  * @param {string} [props.labelledBy] 창 이름이 적힌 요소 id
  * @param {string} [props.contentClassName] 안쪽 상자 CSS 이름(기본 modal-content)
+ * @param {string} [props.overlayClassName] 바깥막 CSS 이름(기본 modal-overlay)
  * @param {import('react').RefObject<HTMLElement|null>} [props.initialFocusRef] 열릴 때 키보드 위치(없으면 창 자체)
  * @param {import('react').ReactNode} [props.children]
  */
 export default function ModalShell({
   onClose, closeOnOverlay = true, closeOnEscape = true, role = 'dialog', label, labelledBy,
-  contentClassName = 'modal-content', initialFocusRef, children,
+  contentClassName = 'modal-content', overlayClassName = 'modal-overlay', initialFocusRef, children,
 }) {
   const boxRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const latest = useRef({ onClose, closeOnEscape })
@@ -44,7 +45,7 @@ export default function ModalShell({
   }, [])
 
   return (
-    <div className="modal-overlay" onClick={closeOnOverlay ? onClose : undefined}>
+    <div className={overlayClassName} onClick={closeOnOverlay ? onClose : undefined}>
       <div
         ref={boxRef}
         className={contentClassName}

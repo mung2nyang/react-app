@@ -131,6 +131,31 @@ describe('MessageTemplateSheet — 문자 양식 3종 + ②-1 설정 반영', ()
     }
   })
 
+  test('바깥 누름·Esc로 닫히고 화면 읽기 "창"(로드맵 57-B 공용 껍데기)', async () => {
+    const { container, root } = mountSheet()
+    let closed = 0
+    try {
+      await act(async () => {
+        root.render(React.createElement(MessageTemplateSheet, {
+          item: sampleItem,
+          client: { id: 'c1', companyName: '한진', phone: '010-1111-2222' },
+          onClose: () => { closed += 1 },
+        }))
+      })
+      const sheet = container.querySelector('.message-template-overlay > .message-template-sheet')
+      assert.ok(sheet)
+      assert.equal(sheet.getAttribute('role'), 'dialog')
+      assert.equal(sheet.getAttribute('tabindex'), '-1', '공용 껍데기가 키보드 위치를 잡는다')
+      await act(async () => { document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })) })
+      assert.equal(closed, 1)
+      await act(async () => { /** @type {HTMLElement} */ (container.querySelector('.message-template-overlay')).click() })
+      assert.equal(closed, 2)
+    } finally {
+      await act(async () => { root.unmount() })
+      container.remove()
+    }
+  })
+
   test('buildTemplateSmsUrl: 기본 UA는 ?, iPhone UA는 &', () => {
     const body = '안녕 테스트'
     const defaultUrl = buildTemplateSmsUrl('01012345678', body)

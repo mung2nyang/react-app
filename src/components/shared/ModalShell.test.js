@@ -94,3 +94,12 @@ test('열리면 키보드 위치가 창 안으로(지정한 칸 또는 창), 닫
   } finally { await plain.cleanup() }
   opener.remove()
 })
+
+test('바깥막 CSS 이름을 바꿀 수 있다(기본 modal-overlay)', async () => {
+  const view = await mount((close) => React.createElement(ModalShell, { onClose: () => close('sheet'), overlayClassName: 'message-template-overlay' }, 'x'))
+  try {
+    assert.equal(view.container.querySelector('.modal-overlay'), null)
+    await act(async () => { /** @type {HTMLElement} */ (view.container.querySelector('.message-template-overlay')).click() })
+    assert.deepEqual(view.closed, ['sheet'])
+  } finally { await view.cleanup() }
+})

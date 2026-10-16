@@ -6,6 +6,7 @@ import { buildCloudAppSession, ownerKeyFromSession } from '../app/boot.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
 import ClearableInput from './shared/ClearableInput.jsx'
 import './InviteRedeemModal.css'
+import ModalShell from './shared/ModalShell.jsx'
 
 /**
  * @param {{ session: AppSession|null, showToast?: (message: string) => void, onClose: () => void, onLinked: (session: AppSession) => void }} props
@@ -41,30 +42,28 @@ export default function InviteRedeemModal({ session, showToast, onClose, onLinke
   }
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content client-modal invite-redeem-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-title">초대 코드 입력</div>
-        <p className="invite-redeem-note">
-          차주에게 전달받은 초대 코드를 입력해 주세요.<br />
-          연동이 완료되면 기사님이 입력한 운행·매출 내역이 차주에게 공유됩니다.
-        </p>
-        <div className="form-group">
-          <label htmlFor="driverInviteCode">초대 코드</label>
-          <ClearableInput
-            id="driverInviteCode"
-            className="input-box"
-            placeholder="초대 코드"
-            autoComplete="off"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            disabled={busy}
-          />
-        </div>
-        <div className="modal-btns">
-          <button type="button" className="modal-btn cancel" disabled={busy} onClick={onClose}>취소</button>
-          <button type="button" className="modal-btn confirm" disabled={!ready} onClick={submit}>{busy ? '연동 중…' : '연동하기'}</button>
-        </div>
+    <ModalShell onClose={onClose} closeOnOverlay={false} closeOnEscape={false} contentClassName="modal-content client-modal invite-redeem-modal" label="초대코드 입력">
+      <div className="modal-title">초대 코드 입력</div>
+      <p className="invite-redeem-note">
+        차주에게 전달받은 초대 코드를 입력해 주세요.<br />
+        연동이 완료되면 기사님이 입력한 운행·매출 내역이 차주에게 공유됩니다.
+      </p>
+      <div className="form-group">
+        <label htmlFor="driverInviteCode">초대 코드</label>
+        <ClearableInput
+          id="driverInviteCode"
+          className="input-box"
+          placeholder="초대 코드"
+          autoComplete="off"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          disabled={busy}
+        />
       </div>
-    </div>
+      <div className="modal-btns">
+        <button type="button" className="modal-btn cancel" disabled={busy} onClick={onClose}>취소</button>
+        <button type="button" className="modal-btn confirm" disabled={!ready} onClick={submit}>{busy ? '연동 중…' : '연동하기'}</button>
+      </div>
+    </ModalShell>
   )
 }

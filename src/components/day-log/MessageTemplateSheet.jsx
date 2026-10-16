@@ -2,6 +2,7 @@
 import { parseCurrencyValue } from '../../domain/money.js'
 import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../lib/messageTemplates.js'
 import './message-template.css'
+import ModalShell from '../shared/ModalShell.jsx'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
@@ -45,8 +46,7 @@ export default function MessageTemplateSheet({ item, client, onClose, showToast 
   }
 
   return (
-    <div className="message-template-overlay" onClick={onClose}>
-      <section className="message-template-sheet" role="dialog" aria-modal="true" aria-label="문자 양식 선택" onClick={(e) => e.stopPropagation()}>
+    <ModalShell onClose={onClose} overlayClassName="message-template-overlay" contentClassName="message-template-sheet" label="문자 양식 선택">
         <div className="message-template-head">
           <div>
             <strong>문자 보내기</strong>
@@ -63,7 +63,6 @@ export default function MessageTemplateSheet({ item, client, onClose, showToast 
             </button>
           ))}
         </div>
-      </section>
-    </div>
+    </ModalShell>
   )
 }

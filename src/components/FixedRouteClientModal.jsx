@@ -9,6 +9,7 @@ import { formatCurrencyInput } from '../lib/money.js'
 import CurrencyInput from './shared/CurrencyInput.jsx'
 import { requestClientSave } from '../lib/clientMutations.js'
 import { getCloudUserId } from '../lib/cloudSession.js'
+import ModalShell from './shared/ModalShell.jsx'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 
@@ -68,8 +69,8 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
   const options = candidates.map((client) => ({ value: client.id, label: client.companyName }))
 
   return createPortal(
-    <div className="modal-overlay">
-      <div className="modal-content client-modal fixed-route-client-modal" onClick={(e) => e.stopPropagation()}>
+    <>
+      <ModalShell onClose={onClose} closeOnOverlay={false} closeOnEscape={false} contentClassName="modal-content client-modal fixed-route-client-modal" label="고정 노선 거래처">
         <div className="modal-title">고정 노선 거래처</div>
         <div className="form-group fixed-route-client-row">
           <label>거래처</label>
@@ -102,11 +103,11 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
           <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
           <button type="button" className="modal-btn confirm" disabled={saving} onClick={save}>저장</button>
         </div>
-      </div>
+      </ModalShell>
       {confirmUnlink && (
         <ConfirmModal title="고정 노선 거래처 연결을 해제하시겠습니까?" confirmLabel="연결 해제" danger onCancel={() => setConfirmUnlink(false)} onConfirm={unlink} />
       )}
-    </div>,
+    </>,
     document.body,
   )
 }

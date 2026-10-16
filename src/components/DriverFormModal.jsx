@@ -6,6 +6,7 @@ import { formatPhoneNumber } from '../lib/formatPhone.js'
 import ClearableInput from './shared/ClearableInput.jsx'
 import TemporalInput from './shared/TemporalInput.jsx'
 import './drivers/driver-connection.css'
+import ModalShell from './shared/ModalShell.jsx'
 
 /** @typedef {import('../domain/drivers.js').DriverDraft} DriverDraft */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
@@ -46,56 +47,54 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
   const requiredMark = required ? ' (필수)' : ''
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content client-modal driver-form-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-title">{editingId ? '초대 수정' : '기사 초대'}</div>
+    <ModalShell onClose={onCancel} closeOnOverlay={false} closeOnEscape={false} contentClassName="modal-content client-modal driver-form-modal" label="기사 초대">
+      <div className="modal-title">{editingId ? '초대 수정' : '기사 초대'}</div>
+      <div className="form-group">
+        <label htmlFor="drvName">기사 이름</label>
+        <ClearableInput id="drvName" className="input-box" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+      </div>
+      <div className="form-group">
+        <label htmlFor="drvPhone">기사 전화번호</label>
+        <ClearableInput id="drvPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: formatPhoneNumber(e.target.value) })} />
+      </div>
+      <div className="form-group">
+        <label htmlFor="drvCode">초대 코드</label>
+        <div className="driver-code-row">
+          <input id="drvCode" className="input-box" readOnly disabled={linked} value={formatInviteCode(draft.inviteCode)} />
+          <button type="button" className="theme-toggle-btn" disabled={linked} onClick={() => setDraft({ ...draft, inviteCode: generateInviteCode(drivers) })}>코드 생성</button>
+          <button type="button" className="theme-toggle-btn" disabled={linked} onClick={sendInviteSms}>문자 보내기</button>
+        </div>
+        {linked && (
+          <p className="driver-invite-note">
+            초대 코드는 1회만 사용할 수 있습니다.<br />
+            기존 연동을 해제하고 다시 연결할 경우, 새 코드를 발급해 주세요.
+          </p>
+        )}
+      </div>
+      <div className="form-group">
+        <label htmlFor="drvCar">배정 차량{requiredMark}</label>
+        <ClearableInput id="drvCar" className="input-box driver-car-input" list="drvCarOptions" placeholder="차량번호" value={draft.vehicleNumber} onChange={(e) => setDraft({ ...draft, vehicleNumber: e.target.value })} />
+        <datalist id="drvCarOptions">
+          {assignableCars.map((car, index) => (
+            <option key={String(car.id || car.number || `car-${index}`)} value={car.number} />
+          ))}
+        </datalist>
+      </div>
+      <div className="personal-inline-fields">
         <div className="form-group">
-          <label htmlFor="drvName">기사 이름</label>
-          <ClearableInput id="drvName" className="input-box" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+          <label htmlFor="drvStart">계약 시작일{requiredMark}</label>
+          <TemporalInput type="date" id="drvStart" value={draft.startDate || ''} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
         </div>
         <div className="form-group">
-          <label htmlFor="drvPhone">기사 전화번호</label>
-          <ClearableInput id="drvPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: formatPhoneNumber(e.target.value) })} />
-        </div>
-        <div className="form-group">
-          <label htmlFor="drvCode">초대 코드</label>
-          <div className="driver-code-row">
-            <input id="drvCode" className="input-box" readOnly disabled={linked} value={formatInviteCode(draft.inviteCode)} />
-            <button type="button" className="theme-toggle-btn" disabled={linked} onClick={() => setDraft({ ...draft, inviteCode: generateInviteCode(drivers) })}>코드 생성</button>
-            <button type="button" className="theme-toggle-btn" disabled={linked} onClick={sendInviteSms}>문자 보내기</button>
-          </div>
-          {linked && (
-            <p className="driver-invite-note">
-              초대 코드는 1회만 사용할 수 있습니다.<br />
-              기존 연동을 해제하고 다시 연결할 경우, 새 코드를 발급해 주세요.
-            </p>
-          )}
-        </div>
-        <div className="form-group">
-          <label htmlFor="drvCar">배정 차량{requiredMark}</label>
-          <ClearableInput id="drvCar" className="input-box driver-car-input" list="drvCarOptions" placeholder="차량번호" value={draft.vehicleNumber} onChange={(e) => setDraft({ ...draft, vehicleNumber: e.target.value })} />
-          <datalist id="drvCarOptions">
-            {assignableCars.map((car, index) => (
-              <option key={String(car.id || car.number || `car-${index}`)} value={car.number} />
-            ))}
-          </datalist>
-        </div>
-        <div className="personal-inline-fields">
-          <div className="form-group">
-            <label htmlFor="drvStart">계약 시작일{requiredMark}</label>
-            <TemporalInput type="date" id="drvStart" value={draft.startDate || ''} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
-          </div>
-          <div className="form-group">
-            <label htmlFor="drvEnd">계약 종료일</label>
-            <TemporalInput type="date" id="drvEnd" value={draft.endDate || ''} onChange={(e) => setDraft({ ...draft, endDate: e.target.value })} />
-          </div>
-        </div>
-        <p className="car-type-hint">한 차량은 한 기사에게만 배정할 수 있습니다. 종료일이 없으면 계속 배정됩니다. 메인 차량은 배정할 수 없습니다.</p>
-        <div className="modal-btns">
-          <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
-          <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>
+          <label htmlFor="drvEnd">계약 종료일</label>
+          <TemporalInput type="date" id="drvEnd" value={draft.endDate || ''} onChange={(e) => setDraft({ ...draft, endDate: e.target.value })} />
         </div>
       </div>
-    </div>
+      <p className="car-type-hint">한 차량은 한 기사에게만 배정할 수 있습니다. 종료일이 없으면 계속 배정됩니다. 메인 차량은 배정할 수 없습니다.</p>
+      <div className="modal-btns">
+        <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
+        <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>
+      </div>
+    </ModalShell>
   )
 }

@@ -9,6 +9,7 @@ import TemporalInput from './shared/TemporalInput.jsx'
 import ClearableInput from './shared/ClearableInput.jsx'
 import CurrencyInput from './shared/CurrencyInput.jsx'
 import './expense-form.css'
+import ModalShell from './shared/ModalShell.jsx'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
 
@@ -36,8 +37,9 @@ export default function ExpenseFormModal({
 }) {
   const categories = draft.kind === 'misc' ? MISC_CATEGORIES : MAINT_CATEGORIES
 
-  const form = (
-      <div className={`modal-content expense-form-content${inline ? '' : ' client-modal'}${inline ? ' inline-expense-form' : ''}`} onClick={inline ? undefined : (e) => e.stopPropagation()}>
+  const formClass = `modal-content expense-form-content${inline ? '' : ' client-modal'}${inline ? ' inline-expense-form' : ''}`
+  const fields = (
+      <>
         <div className="modal-title">{editingId ? `${kindLabel} 수정` : `${kindLabel} 내역 추가`}</div>
         <div className="personal-inline-fields">
           <div className="form-group">
@@ -167,14 +169,14 @@ export default function ExpenseFormModal({
           <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
           <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>
         </div>
-      </div>
+      </>
   )
 
-  if (inline) return form
+  if (inline) return <div className={formClass}>{fields}</div>
 
   return (
-    <div className="modal-overlay">
-      {form}
-    </div>
+    <ModalShell onClose={onClose} closeOnOverlay={false} closeOnEscape={false} contentClassName={formClass} label={`${kindLabel} 내역`}>
+      {fields}
+    </ModalShell>
   )
 }

@@ -21,6 +21,7 @@ const { default: DriverFormModal } = await import('./DriverFormModal.jsx')
 const { default: TaxInvoiceDraftModal } = await import('./TaxInvoiceDraftModal.jsx')
 const { default: ConfirmModal } = await import('./ConfirmModal.jsx')
 const { default: InviteRedeemModal } = await import('./InviteRedeemModal.jsx')
+const { default: FixedRouteClientModal } = await import('./FixedRouteClientModal.jsx')
 
 /** @type {import('./cars/CarFormModal.jsx').CarFormDraft} */
 const CAR_DRAFT = {
@@ -77,6 +78,38 @@ for (const modal of INPUT_MODALS) {
     }
   })
 }
+
+// 로드맵 57-B — 입력 창은 공용 껍데기(화면 읽기 "창")를 쓰고, 컴퓨터 Esc 키로도 안 닫힌다(보리 결정).
+for (const modal of INPUT_MODALS) {
+  test(`${modal.name} 창: 화면 읽기 "창" 표시, Esc로도 안 닫힌다`, async () => {
+    const view = await mount(modal.element)
+    try {
+      const box = view.container.querySelector('.modal-overlay > [role="dialog"]')
+      assert.ok(box, '공용 껍데기의 창 상자가 있어야 한다')
+      assert.equal(box.getAttribute('aria-modal'), 'true')
+      await act(async () => { document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })) })
+      assert.equal(view.closedCount(), 0, 'Esc로 닫히면 입력이 날아간다')
+    } finally {
+      await view.cleanup()
+    }
+  })
+}
+
+test('고정 노선 거래처 창(화면 맨 바깥에 그려짐): 바깥 누름·Esc로 안 닫히고 취소로 닫힌다, 화면 읽기 "창"', async () => {
+  const view = await mount((close) => React.createElement(FixedRouteClientModal, { ownerKey: 'guest', clients: [], candidates: [], linked: null, onClose: close }))
+  try {
+    const box = document.querySelector('.modal-overlay > .fixed-route-client-modal')
+    assert.ok(box, '공용 껍데기의 창 상자가 있어야 한다')
+    assert.equal(box.getAttribute('role'), 'dialog')
+    await click(document.querySelector('.modal-overlay'))
+    await act(async () => { document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true })) })
+    assert.equal(view.closedCount(), 0)
+    await click(box.querySelector('.modal-btn.cancel'))
+    assert.equal(view.closedCount(), 1)
+  } finally {
+    await view.cleanup()
+  }
+})
 
 test('입력 없는 확인 창은 바깥 클릭으로 닫힌다(그대로)', async () => {
   const view = await mount((close) => React.createElement(ConfirmModal, { message: '삭제할까요?', onCancel: close, onConfirm: () => {} }))
