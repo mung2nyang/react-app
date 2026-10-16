@@ -75,6 +75,24 @@
   stroke-linejoin: round;
 }
 
+/* 달력 위 미수금 카드 아래, 빨간 점(.unpaid-dot) 뜻 설명 줄 */
+.unpaid-dot-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: -4px 0 10px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+}
+
+.unpaid-dot-legend-mark {
+  width: 6px;
+  height: 6px;
+  background-color: var(--sunday-color);
+  border-radius: 50%;
+}
+
 /* Step 9 슬라이스 B — 서브 차량 달력 모드 배너 */
 .sub-car-log-banner {
   display: flex;

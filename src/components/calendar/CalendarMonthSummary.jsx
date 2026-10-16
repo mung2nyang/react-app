@@ -39,6 +39,7 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
   return (
     <>
       {paymentOn && unpaidTotal > 0 && (
+        <>
         <div className="unpaid-summary-card">
           <svg viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"></circle>
@@ -47,6 +48,8 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
           </svg>
           이번 달 미수금 {unpaidTotal.toLocaleString()}원이 있습니다.
         </div>
+        <p className="unpaid-dot-legend"><span className="unpaid-dot-legend-mark" aria-hidden="true" />빨간 점: 미수금이 남은 날</p>
+        </>
       )}
 
       <div className="summary-card">

@@ -11,8 +11,8 @@ import {
   useOwnerWorkDataByLogId,
 } from '../../store/ownerDataHooks.js'
 
-/** @param {string} ownerKey */
-export function useReceivablesData(ownerKey) {
+/** @param {string} ownerKey @param {boolean} [isEmployedDriver] */
+export function useReceivablesData(ownerKey, isEmployedDriver = false) {
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const practiceSettings = useOwnerSettings(ownerKey)
@@ -28,6 +28,6 @@ export function useReceivablesData(ownerKey) {
   const items = useMemo(() => getReceivableItems(settings, workDataByLogId), [settings, workDataByLogId])
   const groups = useMemo(() => groupByClientMonth(items), [items])
   const dueItems = useMemo(() => dueSoonItems(items), [items])
-  const hasSubCars = (settings.cars || []).some((car) => car.type === 'sub')
+  const hasSubCars = !isEmployedDriver && (settings.cars || []).some((car) => car.type === 'sub')
   return { workDataByLogId, settings, items, groups, dueItems, hasSubCars }
 }

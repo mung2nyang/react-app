@@ -16,17 +16,18 @@ import './receivables.css'
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
+ * @param {boolean} [props.isEmployedDriver]
  * @param {(message: string) => void} [props.showToast]
  * @param {() => void} [props.onWorkChanged]
  */
-export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, onWorkChanged }) {
+export default function ReceivablesDetailPage({ ownerKey = 'guest', isEmployedDriver = false, showToast, onWorkChanged }) {
   const navigate = useNavigate()
   const { search } = useLocation()
   const { client: clientParam, month: monthParam } = useParams()
   const monthKey = parseMonthParam(monthParam)
   const clientName = parseClientParam(clientParam)
   const { confirm, confirmDialog } = useConfirm()
-  const { workDataByLogId, settings, items, hasSubCars } = useReceivablesData(ownerKey)
+  const { workDataByLogId, settings, items, hasSubCars } = useReceivablesData(ownerKey, isEmployedDriver)
   const actions = useReceivablesActions({
     ownerKey, workDataByLogId, settings, showToast, onWorkChanged, confirm,
   })
@@ -64,7 +65,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', showToast, o
         </div>
       </section>
 
-      {detailItems.length === 0 && <div className="empty-state">모든 미수금이 입금 완료 처리되었습니다.</div>}
+      {detailItems.length === 0 && <div className="empty-state">남은 미수금이 없습니다.</div>}
       {detailItems.map((/** @type {ReceivableItemLike} */ item) => (
         <ReceivableItemCard
           key={receivableItemKey(item)}

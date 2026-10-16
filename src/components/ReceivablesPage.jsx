@@ -7,13 +7,14 @@ import ReceivablesDetailPage from './receivables/ReceivablesDetailPage.jsx'
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
+ * @param {boolean} [props.isEmployedDriver] 연동 기사 계정이면 차량 배지를 안 그린다(자기 차가 "메인 차량"으로 보이지 않게).
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  * @param {() => void} [props.onWorkChanged]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ReceivablesPage({ ownerKey = 'guest', onBack, showToast, onWorkChanged, onOpenMenu }) {
-  const shared = { ownerKey, showToast, onWorkChanged }
+export default function ReceivablesPage({ ownerKey = 'guest', isEmployedDriver = false, onBack, showToast, onWorkChanged, onOpenMenu }) {
+  const shared = { ownerKey, isEmployedDriver, showToast, onWorkChanged }
   return (
     <Routes>
       <Route index element={<ReceivablesListPage {...shared} onBack={onBack} onOpenMenu={onOpenMenu} />} />
