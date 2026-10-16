@@ -18,13 +18,13 @@
   --primary-color: #2b6cb0;
   --primary-fill: #2b6cb0; /* 흰 글씨를 얹는 파란 바탕(라이트·다크 공통, 대비 5.42:1) */
   --danger-fill: #c53030; /* 흰 글씨를 얹는 빨간 바탕(라이트·다크 공통, 대비 5.9:1) */
-  --saturday-color: #3182ce;
-  --sunday-color: #e53e3e;
+  --saturday-color: #2b6cb0;
+  --sunday-color: #c53030;
   --hover-bg: #edf2f7;
   --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.07);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --work-badge-bg: #feebc8;
-  --work-badge-text: #c05621;
+  --work-badge-text: #a84a1c;
   --off-badge-bg: #fed7d7;
   --off-badge-text: #9b2c2c;
   --maint-badge-bg: #e53e3e;
