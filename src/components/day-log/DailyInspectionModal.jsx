@@ -3,6 +3,7 @@
 // 연필로 들어온 수정 중 [취소]는 보기로 돌아가고, 처음 입력 중 [취소]는 창을 닫는다.
 import { useState } from 'react'
 import { DAILY_INSPECTION_SECTIONS, INSPECTION_RESULT_LABEL, allGoodItems, isInspectionComplete } from '../../domain/dailyInspectionItems.js'
+import ModalShell from '../shared/ModalShell.jsx'
 
 /** @typedef {import('../../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
 /** @typedef {import('../../lib/dailyInspections.js').DailyInspection} DailyInspection */
@@ -65,72 +66,70 @@ export default function DailyInspectionModal({ title, record, inspectorName, onC
   }
 
   return (
-    <div className="modal-overlay" onClick={editing ? undefined : onClose}>
-      <div className="daily-inspection-modal" role="dialog" aria-label={title} onClick={(e) => e.stopPropagation()}>
-        <div className="di-header">
-          <button type="button" className="di-icon-btn" aria-label="닫기" onClick={onClose}>
-            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    <ModalShell onClose={onClose} closeOnOverlay={!editing} closeOnEscape={!editing} contentClassName="daily-inspection-modal" label={title}>
+      <div className="di-header">
+        <button type="button" className="di-icon-btn" aria-label="닫기" onClick={onClose}>
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <h2 className="di-title">{title}</h2>
+        {!editing ? (
+          <button type="button" className="di-icon-btn" aria-label="수정" onClick={startEdit}>
+            <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
           </button>
-          <h2 className="di-title">{title}</h2>
-          {!editing ? (
-            <button type="button" className="di-icon-btn" aria-label="수정" onClick={startEdit}>
-              <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
-            </button>
-          ) : <span className="di-icon-btn" aria-hidden="true"></span>}
-        </div>
-
-        {DAILY_INSPECTION_SECTIONS.map((section, index) => (
-          <section key={section.no} className="di-section">
-            <div className="di-section-head">
-              <span className="di-badge">{section.no}</span>
-              <h3>{section.title}</h3>
-              {editing && index === 0 && (
-                <button type="button" className="di-all-good" onClick={toggleAllGood}>모두 양호</button>
-              )}
-            </div>
-            {section.items.map((item) => {
-              const value = editing ? items[item.key] : record?.items[item.key]
-              return (
-                <div key={item.key} className="di-row">
-                  <span className="di-label">{item.label}</span>
-                  {editing ? (
-                    <span className="di-choices">
-                      {(/** @type {Array<'good'|'bad'>} */ (['good', 'bad'])).map((result) => (
-                        <button
-                          key={result}
-                          type="button"
-                          className={`di-choice ${result}${value === result ? ' is-selected' : ''}`}
-                          aria-pressed={value === result}
-                          onClick={() => toggleItem(item.key, result)}
-                        >
-                          {INSPECTION_RESULT_LABEL[result]}
-                        </button>
-                      ))}
-                    </span>
-                  ) : (
-                    <span className={`di-result ${value || ''}`}>{value ? INSPECTION_RESULT_LABEL[value] : '-'}</span>
-                  )}
-                </div>
-              )
-            })}
-          </section>
-        ))}
-
-        <p className="di-sign">본인은 위 점검 내용을 사실대로 확인하였습니다.<br />점검자: {signer} (자동 서명)</p>
-        <div className="di-note-label">불량상태 조치 기록</div>
-        {editing ? (
-          <textarea className="input-box di-note" placeholder="예: 창닦이기 불량 → 와이퍼 교체" value={note} onChange={(e) => setNote(e.target.value)} />
-        ) : (
-          <div className="di-note-view">{record?.actionNote || '-'}</div>
-        )}
-
-        {editing && (
-          <div className="modal-btns">
-            <button type="button" className="modal-btn cancel" onClick={cancel}>취소</button>
-            <button type="button" className="modal-btn confirm" disabled={saving} onClick={() => { void save() }}>저장</button>
-          </div>
-        )}
+        ) : <span className="di-icon-btn" aria-hidden="true"></span>}
       </div>
-    </div>
+
+      {DAILY_INSPECTION_SECTIONS.map((section, index) => (
+        <section key={section.no} className="di-section">
+          <div className="di-section-head">
+            <span className="di-badge">{section.no}</span>
+            <h3>{section.title}</h3>
+            {editing && index === 0 && (
+              <button type="button" className="di-all-good" onClick={toggleAllGood}>모두 양호</button>
+            )}
+          </div>
+          {section.items.map((item) => {
+            const value = editing ? items[item.key] : record?.items[item.key]
+            return (
+              <div key={item.key} className="di-row">
+                <span className="di-label">{item.label}</span>
+                {editing ? (
+                  <span className="di-choices">
+                    {(/** @type {Array<'good'|'bad'>} */ (['good', 'bad'])).map((result) => (
+                      <button
+                        key={result}
+                        type="button"
+                        className={`di-choice ${result}${value === result ? ' is-selected' : ''}`}
+                        aria-pressed={value === result}
+                        onClick={() => toggleItem(item.key, result)}
+                      >
+                        {INSPECTION_RESULT_LABEL[result]}
+                      </button>
+                    ))}
+                  </span>
+                ) : (
+                  <span className={`di-result ${value || ''}`}>{value ? INSPECTION_RESULT_LABEL[value] : '-'}</span>
+                )}
+              </div>
+            )
+          })}
+        </section>
+      ))}
+
+      <p className="di-sign">본인은 위 점검 내용을 사실대로 확인하였습니다.<br />점검자: {signer} (자동 서명)</p>
+      <div className="di-note-label">불량상태 조치 기록</div>
+      {editing ? (
+        <textarea className="input-box di-note" placeholder="예: 창닦이기 불량 → 와이퍼 교체" value={note} onChange={(e) => setNote(e.target.value)} />
+      ) : (
+        <div className="di-note-view">{record?.actionNote || '-'}</div>
+      )}
+
+      {editing && (
+        <div className="modal-btns">
+          <button type="button" className="modal-btn cancel" onClick={cancel}>취소</button>
+          <button type="button" className="modal-btn confirm" disabled={saving} onClick={() => { void save() }}>저장</button>
+        </div>
+      )}
+    </ModalShell>
   )
 }

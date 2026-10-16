@@ -4,6 +4,7 @@ import { formatWon } from '../lib/money.js'
 import { dash } from '../lib/report.js'
 import AppDropdown from './shared/AppDropdown.jsx'
 import './report/report.css'
+import ModalShell from './shared/ModalShell.jsx'
 
 /**
  * @typedef {Object} DetailReportItem
@@ -38,28 +39,26 @@ import './report/report.css'
 export function ReportClientPickerModal({ open, options, value, onChange, onConfirm, onClose }) {
   if (!open) return null
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content report-picker-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-title">세부 내역서 조회</div>
-        <div className="form-group">
-          <label>거래처</label>
-          <AppDropdown
-            label="거래처"
-            value={value}
-            options={options.map((option) => ({
-              value: option,
-              label: option === 'ALL' ? '전체 (모두)' : option,
-            }))}
-            onChange={onChange}
-            className="app-dropdown-boxed"
-          />
-        </div>
-        <div className="modal-btns">
-          <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
-          <button type="button" className="modal-btn confirm" onClick={onConfirm}>조회</button>
-        </div>
+    <ModalShell onClose={onClose} contentClassName="modal-content report-picker-modal" label="세부 내역서 조회">
+      <div className="modal-title">세부 내역서 조회</div>
+      <div className="form-group">
+        <label>거래처</label>
+        <AppDropdown
+          label="거래처"
+          value={value}
+          options={options.map((option) => ({
+            value: option,
+            label: option === 'ALL' ? '전체 (모두)' : option,
+          }))}
+          onChange={onChange}
+          className="app-dropdown-boxed"
+        />
       </div>
-    </div>
+      <div className="modal-btns">
+        <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
+        <button type="button" className="modal-btn confirm" onClick={onConfirm}>조회</button>
+      </div>
+    </ModalShell>
   )
 }
 

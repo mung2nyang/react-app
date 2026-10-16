@@ -2,6 +2,7 @@
 // 일상점검표 보내기(9-D): 운송비 내역서 공유 창과 같은 모양 — 카카오톡(파일+안내 문구)·문자(받는 사람은 문자 앱에서 직접 고름) × PDF·이미지.
 import { buildReportSmsUrl } from '../ReportShareModal.jsx'
 import '../report/report.css'
+import ModalShell from '../shared/ModalShell.jsx'
 
 /**
  * @param {Object} props
@@ -57,35 +58,33 @@ export default function DailyInspectionShareModal({ month, buildFile, onClose, s
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content report-share-content" onClick={(e) => e.stopPropagation()}>
-        <div className="report-share-head">
-          <strong>점검표 보내기</strong>
-          <p>보내는 방법이나 파일 형식을 선택해 주세요.</p>
-        </div>
-        <div className="report-share-options">
-          <section className="report-share-channel">
-            <div className="report-share-channel-title">
-              <span className="report-share-file-icon kakao">톡</span>
-              <span><strong>카카오톡으로 보내기</strong><small>파일과 안내 문구를 함께 공유합니다.</small></span>
-            </div>
-            <div className="report-share-format-buttons">
-              <button type="button" onClick={() => shareToKakao('pdf')}><strong>PDF로 보내기</strong></button>
-              <button type="button" onClick={() => shareToKakao('image')}><strong>이미지로 보내기</strong></button>
-            </div>
-          </section>
-          <section className="report-share-channel">
-            <div className="report-share-channel-title">
-              <span className="report-share-file-icon sms">문자</span>
-              <span><strong>문자로 보내기</strong><small>파일을 저장하고 안내 문구로 문자 앱을 엽니다. 받는 사람은 직접 골라 주세요.</small></span>
-            </div>
-            <div className="report-share-format-buttons">
-              <button type="button" onClick={() => shareBySms('pdf')}><strong>PDF로 보내기</strong></button>
-              <button type="button" onClick={() => shareBySms('image')}><strong>이미지로 보내기</strong></button>
-            </div>
-          </section>
-        </div>
+    <ModalShell onClose={onClose} contentClassName="modal-content report-share-content" label="점검표 보내기">
+      <div className="report-share-head">
+        <strong>점검표 보내기</strong>
+        <p>보내는 방법이나 파일 형식을 선택해 주세요.</p>
       </div>
-    </div>
+      <div className="report-share-options">
+        <section className="report-share-channel">
+          <div className="report-share-channel-title">
+            <span className="report-share-file-icon kakao">톡</span>
+            <span><strong>카카오톡으로 보내기</strong><small>파일과 안내 문구를 함께 공유합니다.</small></span>
+          </div>
+          <div className="report-share-format-buttons">
+            <button type="button" onClick={() => shareToKakao('pdf')}><strong>PDF로 보내기</strong></button>
+            <button type="button" onClick={() => shareToKakao('image')}><strong>이미지로 보내기</strong></button>
+          </div>
+        </section>
+        <section className="report-share-channel">
+          <div className="report-share-channel-title">
+            <span className="report-share-file-icon sms">문자</span>
+            <span><strong>문자로 보내기</strong><small>파일을 저장하고 안내 문구로 문자 앱을 엽니다. 받는 사람은 직접 골라 주세요.</small></span>
+          </div>
+          <div className="report-share-format-buttons">
+            <button type="button" onClick={() => shareBySms('pdf')}><strong>PDF로 보내기</strong></button>
+            <button type="button" onClick={() => shareBySms('image')}><strong>이미지로 보내기</strong></button>
+          </div>
+        </section>
+      </div>
+    </ModalShell>
   )
 }
