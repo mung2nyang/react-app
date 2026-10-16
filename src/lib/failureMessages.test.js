@@ -23,3 +23,24 @@ test('기기 저장 실패 상수·로그인 바뀜 안내가 같은 문구를 �
   assert.equal(source.includes('화면을 새로고침한 뒤 다시 시도해 주세요.'), false, '문구를 직접 적지 않고 공용 상수를 쓴다')
   assert.ok(source.includes('SESSION_CHANGED_FAIL'))
 })
+
+test('공용 파일 밖에서 ①·③ 문구를 글자로 적은 곳이 없다(로드맵 56-B-1)', async () => {
+  const { readdirSync, readFileSync, statSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
+  const phrases = ['저장에 실패했습니다. 네트워크 상태를 확인해 주세요.', '로그인 정보가 바뀌어 저장하지 못했습니다.']
+  /** @type {Array<string>} */
+  const found = []
+  /** @param {string} dir */
+  function walk(dir) {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name)
+      if (statSync(full).isDirectory()) { walk(full); continue }
+      if (!/\.(js|jsx)$/.test(name) || /\.test\./.test(name) || name === 'failureMessages.js') continue
+      const text = readFileSync(full, 'utf8')
+      phrases.forEach((phrase) => { if (text.includes(phrase)) found.push(`${full}: ${phrase.slice(0, 12)}`) })
+    }
+  }
+  walk(root)
+  assert.deepEqual(found, [])
+})

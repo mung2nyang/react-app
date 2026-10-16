@@ -3,12 +3,13 @@
 // 로그인 상태의 saveProfile은 서버 저장 뒤에야 Store를 바꾸므로, 글자마다 저장하면 입력이 늦게 보이거나 사라졌다.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { saveProfile } from '../lib/profile.js'
+import { SERVER_SAVE_FAIL } from '../lib/failureMessages.js'
 
 /** @typedef {import('../lib/hydrateMergeTypes.js').LocalProfile} LocalProfile */
 /** @typedef {Partial<Record<keyof LocalProfile, string>>} ProfileDraft */
 
 export const SAVE_DELAY_MS = 700
-const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 
 /**
  * @param {{ ownerKey: string, profile: LocalProfile, showToast?: (message: string) => void }} params

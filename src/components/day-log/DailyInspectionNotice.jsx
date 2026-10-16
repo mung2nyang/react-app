@@ -9,10 +9,11 @@ import { useOwnerProfile } from '../../store/ownerProfileDriversHooks.js'
 import DailyInspectionModal from './DailyInspectionModal.jsx'
 import './daily-inspection.css'
 import './daily-inspection-loading.css'
+import { SERVER_SAVE_FAIL } from '../../lib/failureMessages.js'
 
 /** @typedef {import('../../lib/dailyInspections.js').DailyInspection} DailyInspection */
 
-const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 
 /**
  * @param {{

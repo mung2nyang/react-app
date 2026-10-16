@@ -11,6 +11,7 @@ import PageHeader from './PageHeader.jsx'
 import AppSettingsBackupSection from './AppSettingsBackupSection.jsx'
 import './app-settings.css'
 import './app-settings-groups.css'
+import { SERVER_SAVE_FAIL } from '../lib/failureMessages.js'
 
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../domain/financeTypes.js').SubCarPracticeSettings} SubCarPracticeSettings */
@@ -45,7 +46,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
       applyTheme(next.theme)
     } catch (error) {
       console.error('설정 저장 실패:', error)
-      showToast?.('저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
+      showToast?.(SERVER_SAVE_FAIL)
     }
   }
 

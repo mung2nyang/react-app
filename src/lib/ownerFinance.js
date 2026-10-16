@@ -19,6 +19,7 @@ import {
   commitMainDayLogToCloud,
 } from './dayLogCloudCommit.js'
 import { shouldCommitDayLogToCloud } from './mainDayLogRouting.js'
+import { SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 /** @typedef {import('../domain/day-record.js').DayRecordLike} DayRecordLike */
 // WorkDataByLogId의 정본은 domain/financeTypes.js다 — alias만 한다(중복 선언 금지).
@@ -32,7 +33,7 @@ export function loadWorkDataByLogId(ownerKey = 'guest') {
   return readOwnerWorkDataByLogId(ownerKey)
 }
 
-const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL
 
 /**
  * 한 차량 일지의 바뀐 날짜를 서버(있으면) 또는 기기에 저장한다.

@@ -16,9 +16,10 @@ import {
   updateDriverLinkFields,
   upsertDriverLinkViaRpc,
 } from './driverLinkRpc.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
-const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const SESSION_CHANGED_MESSAGE = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
+const SESSION_CHANGED_MESSAGE = SESSION_CHANGED_FAIL
 const MISSING_FIELDS_MESSAGE = '기사 이름, 배정 차량, 시작일을 입력해 주세요.'
 const UNKNOWN_CAR_MESSAGE = '등록된 기사 차량 번호를 입력해 주세요.'
 const UNSYNCED_CAR_MESSAGE = '선택한 차량이 아직 저장되지 않았습니다. 잠시 후 다시 시도해 주세요.'

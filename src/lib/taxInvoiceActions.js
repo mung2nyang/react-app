@@ -6,8 +6,9 @@ import { requestClientTaxInfo } from '../lib/clientMutations.js'
 import { getCloudUserId } from '../lib/cloudSession.js'
 import { getTaxInvoiceFlowMeta } from '../lib/finance.js'
 import { invoiceCanIssue, persistInvoiceRecord } from '../lib/invoices.js'
+import { SERVER_SAVE_FAIL } from './failureMessages.js'
 
-const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 
 // 저장 결과를 기다린 뒤 안내 — 실패를 성공으로 보여 주지 않는다.
 /** @param {() => Promise<void>} save @param {string} label @returns {Promise<boolean>} */

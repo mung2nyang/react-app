@@ -9,6 +9,7 @@ import { saveClientsToCloud } from './clientCloudSave.js'
 import { getCloudUserId } from './cloudSession.js'
 import { saveExpenses } from './expenses.js'
 import { saveInvoices } from './invoices.js'
+import { SERVER_SAVE_FAIL } from './failureMessages.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
@@ -122,7 +123,7 @@ export function pickMemberRecords(ownerKey, parsed) {
 
 /** @typedef {{ ok: boolean, count: number, toast: string|null }} StepResult */
 
-const SAVE_FAIL = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+const SAVE_FAIL = SERVER_SAVE_FAIL
 
 /** 저장 직전 Store를 다시 읽어 그 사이 생긴 거래처는 뺀다. @param {string} ownerKey @param {ClientLike[]} picked @returns {Promise<StepResult>} */
 export async function restoreClients(ownerKey, picked) {

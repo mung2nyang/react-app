@@ -7,10 +7,11 @@ import { savePracticeSettings } from '../../lib/practiceSettings.js'
 import { useOwnerDrivers, useOwnerSettings } from '../../store/ownerDataHooks.js'
 import PageHeader from '../PageHeader.jsx'
 import './notifications-page.css'
+import { SERVER_SAVE_FAIL } from '../../lib/failureMessages.js'
 
 /** @typedef {ReturnType<typeof collectNotifications>[number]} NotificationItem */
 
-const SAVE_FAIL = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+const SAVE_FAIL = SERVER_SAVE_FAIL
 
 /**
  * @param {Object} props

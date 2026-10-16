@@ -8,6 +8,7 @@ import { isValidCalendarDateKey } from '../domain/dateKey.js'
 import { sanitizeInspectionItems } from '../domain/dailyInspectionItems.js'
 import { fetchVehiclesDailyInspections, saveDailyInspection } from './dailyInspections.js'
 import { isOwnUnlinkedCar } from './memberRestoreRecords.js'
+import { SERVER_SAVE_FAIL } from './failureMessages.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./dailyInspections.js').DailyInspection} DailyInspection */
@@ -15,7 +16,7 @@ import { isOwnUnlinkedCar } from './memberRestoreRecords.js'
 
 const INVALID_FILE = '파일 내용이 올바르지 않습니다.'
 const FETCH_FAIL = '점검표를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.'
-const SAVE_FAIL = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+const SAVE_FAIL = SERVER_SAVE_FAIL
 
 /**
  * 파일의 점검표를 차량 칸(main·서브 번호) → 날짜별로 꺼낸다. 칸이 없으면 빈 값, 하나라도 틀리면 null.

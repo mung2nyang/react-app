@@ -15,9 +15,10 @@ import { StaleSessionError } from './outboxErrors.js'
 import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
 import { upsertVehicleFromList } from './syncVehiclesClients.js'
 import { STORAGE_FAIL_TOAST } from './outboxCommit.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
-const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
+const SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL
 const SAVED_TOAST = '저장했습니다.'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */

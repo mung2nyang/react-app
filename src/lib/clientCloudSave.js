@@ -5,11 +5,12 @@ import { commitBatch } from '../store/app-store.js'
 import { StaleSessionError } from './outboxErrors.js'
 import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
 import { upsertClientFromList } from './syncVehiclesClients.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 
-export const CLIENT_SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-export const CLIENT_SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
+export const CLIENT_SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
+export const CLIENT_SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL
 
 /** @param {string} ownerKey */
 export function isCloudClientOwner(ownerKey) {

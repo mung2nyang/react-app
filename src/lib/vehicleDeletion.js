@@ -16,11 +16,12 @@ import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
 import { planPendingLogDiscard } from './logPendingLifecycle.js'
 import { deleteVehicleFromSupabase } from './directMutations.js'
 import { StaleSessionError } from './outboxErrors.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 
-const SAVE_FAIL_TOAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
-const SESSION_CHANGED_TOAST = '로그인 정보가 바뀌어 저장하지 못했습니다. 다시 로그인한 뒤 시도해 주세요.'
+const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
+const SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL
 const LINKED_VEHICLE_TOAST = '기사가 연동된 차량은 삭제할 수 없습니다. 기사 관리에서 연동을 먼저 해제해 주세요.'
 
 /**
