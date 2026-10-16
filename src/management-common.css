@@ -52,7 +52,7 @@
   display: flex;
   align-self: flex-start;
   flex-shrink: 0;
-  gap: 3px;
+  gap: 8px;
   margin-left: 10px;
 }
 
@@ -98,8 +98,8 @@
 
 .management-list-card .action-icon-btn,
 .management-record-actions .action-icon-btn {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
 }
 
 .management-list-card .action-icon-btn svg {
