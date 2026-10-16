@@ -21,23 +21,43 @@ export default function RunCountChips({ scope, settings, onPatch, showToast }) {
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
   const presets = settings[key] || []
   const [pendingIndex, setPendingIndex] = useState(/** @type {number|null} */ (null))
-  const press = useRef(/** @type {{ timer: ReturnType<typeof setTimeout>, x: number, y: number }|null} */ (null))
+  // 평소엔 읽기 전용이라 손가락이 닿아도 자판이 안 뜬다 — 짧게 떼거나 키보드로 오면 그 칩만 고친다.
+  const [editingIndex, setEditingIndex] = useState(/** @type {number|null} */ (null))
+  const inputs = useRef(/** @type {Array<HTMLInputElement|null>} */ ([]))
+  const press = useRef(/** @type {{ timer: ReturnType<typeof setTimeout>|null, x: number, y: number }|null} */ (null))
+  const pointerActive = useRef(false)
 
   function cancelPress() {
-    if (press.current) clearTimeout(press.current.timer)
+    if (press.current?.timer) clearTimeout(press.current.timer)
     press.current = null
   }
   useEffect(() => cancelPress, [])
+  useEffect(() => {
+    if (editingIndex !== null) inputs.current[editingIndex]?.focus()
+  }, [editingIndex])
 
   /** @param {number} index @param {{ clientX: number, clientY: number }} event */
   function startPress(index, event) {
     cancelPress()
-    if (presets.length <= 1) return
-    const timer = setTimeout(() => {
+    pointerActive.current = true
+    const timer = presets.length <= 1 ? null : setTimeout(() => {
       press.current = null
       setPendingIndex(index)
     }, LONG_PRESS_MS)
     press.current = { timer, x: event.clientX || 0, y: event.clientY || 0 }
+  }
+
+  /** 길게 누르기 전에 밀지 않고 떼면 고치기 시작. @param {number} index */
+  function endPress(index) {
+    const tapped = press.current !== null
+    cancelPress()
+    pointerActive.current = false
+    if (tapped) setEditingIndex(index)
+  }
+
+  function leavePress() {
+    cancelPress()
+    pointerActive.current = false
   }
 
   /** @param {{ clientX: number, clientY: number }} event */
@@ -70,18 +90,24 @@ export default function RunCountChips({ scope, settings, onPatch, showToast }) {
         {presets.map((count, index) => (
           <span key={`${count}-${index}`} className="run-count-preset-chip-wrap">
             <input
+              ref={(el) => { inputs.current[index] = el }}
               type="number"
               className="run-count-preset-chip"
               inputMode="numeric"
               min="1"
               defaultValue={count}
+              readOnly={editingIndex !== index}
               aria-label={`${index + 1}번째 횟수 버튼`}
-              onBlur={(e) => onPatch(replaceRunCountPreset(settings, scope, index, e.target.value))}
+              onFocus={() => { if (!pointerActive.current) setEditingIndex(index) }}
+              onBlur={(e) => {
+                setEditingIndex(null)
+                onPatch(replaceRunCountPreset(settings, scope, index, e.target.value))
+              }}
               onPointerDown={(e) => startPress(index, e)}
               onPointerMove={movePress}
-              onPointerUp={cancelPress}
-              onPointerLeave={cancelPress}
-              onPointerCancel={cancelPress}
+              onPointerUp={() => endPress(index)}
+              onPointerLeave={leavePress}
+              onPointerCancel={leavePress}
               onContextMenu={(e) => e.preventDefault()}
             />
           </span>

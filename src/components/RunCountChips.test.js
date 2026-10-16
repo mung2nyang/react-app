@@ -96,3 +96,47 @@ test('버튼이 1개뿐이면 길게 눌러도 삭제 창이 뜨지 않는다', 
     assert.equal(container.querySelector('.modal-overlay'), null)
   } finally { await cleanup() }
 })
+
+// 로드맵 53 — 평소엔 읽기 전용(손가락이 닿아도 자판 안 뜸), 짧게 떼면 고치기, 길게 누르면 자판 없이 삭제 창.
+test('처음엔 모든 칩이 읽기 전용이다', async () => {
+  const { container, cleanup } = await mount([1, 2, 3])
+  try {
+    container.querySelectorAll('.run-count-preset-chip').forEach((el) => {
+      assert.equal(/** @type {HTMLInputElement} */ (el).readOnly, true)
+    })
+  } finally { await cleanup() }
+})
+
+test('짧게 누르고 떼면 그 칩만 고칠 수 있게 되고 커서가 들어간다', async () => {
+  const { container, cleanup } = await mount([1, 2, 3])
+  try {
+    await act(async () => { fire(chip(container, 1), 'pointerdown'); fire(chip(container, 1), 'pointerup') })
+    const target = /** @type {HTMLInputElement} */ (chip(container, 1))
+    assert.equal(target.readOnly, false)
+    assert.equal(document.activeElement, target)
+    assert.equal(/** @type {HTMLInputElement} */ (chip(container, 0)).readOnly, true)
+  } finally { await cleanup() }
+})
+
+test('길게 누르면 읽기 전용 그대로 삭제 창만 뜬다', async () => {
+  const { container, cleanup } = await mount([1, 2, 3])
+  try {
+    fire(chip(container, 2), 'pointerdown')
+    await act(async () => { await wait(700) })
+    fire(chip(container, 2), 'pointerup')
+    assert.ok((container.textContent ?? '').includes('3회 버튼을 삭제하시겠습니까?'))
+    assert.equal(/** @type {HTMLInputElement} */ (chip(container, 2)).readOnly, true)
+  } finally { await cleanup() }
+})
+
+test('고친 뒤 칸을 벗어나면 저장되고 다시 읽기 전용', async () => {
+  const { container, patches, cleanup } = await mount([1, 2, 3])
+  try {
+    await act(async () => { fire(chip(container, 0), 'pointerdown'); fire(chip(container, 0), 'pointerup') })
+    const target = /** @type {HTMLInputElement} */ (chip(container, 0))
+    target.value = '5'
+    await act(async () => { target.blur() })
+    assert.deepEqual(patches.at(-1)?.runCountPresets, [5, 2, 3])
+    assert.equal(/** @type {HTMLInputElement} */ (chip(container, 0)).readOnly, true)
+  } finally { await cleanup() }
+})
