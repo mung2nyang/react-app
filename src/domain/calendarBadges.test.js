@@ -10,13 +10,20 @@ const clients = [{ id: 'c1', companyName: '한진' }]
 
 // 달력 셀 뱃지용 짧은 금액 표기 — 만원 이상은 천 원 단위까지 "35.2만", 미만은 "N원".
 describe('formatFareShort — 달력 셀 fare 뱃지 표기', () => {
-  test('10000 이상은 천 원 단위까지 "N.N만"(백 원 이하 버림, 딱 떨어지면 "N만")', () => {
+  test('1만~100만 미만은 천 원 단위까지 "N.N만"(백 원 이하 버림, 딱 떨어지면 "N만")', () => {
     assert.equal(formatFareShort(150000), '15만')
     assert.equal(formatFareShort(10000), '1만')
     assert.equal(formatFareShort(352000), '35.2만')
     assert.equal(formatFareShort(352900), '35.2만', '반올림하지 않음')
     assert.equal(formatFareShort(154999), '15.4만')
-    assert.equal(formatFareShort(1234000), '123.4만')
+    assert.equal(formatFareShort(999900), '99.9만')
+  })
+
+  test('100만 이상은 소수점 없이 "N만"(천 원 이하 버림) — 320px 달력 칸에 들어가게(로드맵 51)', () => {
+    assert.equal(formatFareShort(1000000), '100만')
+    assert.equal(formatFareShort(1234000), '123만')
+    assert.equal(formatFareShort(1239900), '123만', '반올림하지 않음')
+    assert.equal(formatFareShort(12345000), '1234만')
   })
 
   test('10000 미만은 "N원"(천 단위 콤마)', () => {

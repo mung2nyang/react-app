@@ -126,6 +126,7 @@
 /* 이번 달 정산 합계 */
 .home-month-card {
   display: flex;
+  flex-wrap: wrap; /* 큰 글씨에서 금액이 넓으면 "달력에서 보기"가 아래 줄로 */
   justify-content: space-between;
   align-items: center;
   gap: 12px;
@@ -145,6 +146,7 @@
 .home-month-total {
   font-size: var(--fs-7);
   font-weight: 800;
+  white-space: nowrap; /* 금액과 "원"이 떨어지지 않게 */
 }
 
 .home-month-expense {

@@ -13,7 +13,7 @@ import { parseCurrencyValue } from './money.js'
 
 /**
  * 달력 셀 뱃지용 짧은 금액 표기. 만원 이상은 천 원 단위까지 "35.2만"(백 원 이하 버림,
- * 딱 떨어지면 "35만"), 그보다 작으면 "N원".
+ * 딱 떨어지면 "35만"), 100만원 이상은 320px 칸에 들어가게 "1234만", 그보다 작으면 "N원".
  * @param {number} amount
  * @returns {string}
  */
@@ -22,7 +22,7 @@ export function formatFareShort(amount) {
   if (n >= 10000) {
     const thousands = Math.floor(n / 1000)
     const man = Math.floor(thousands / 10)
-    const rest = thousands % 10
+    const rest = n >= 1000000 ? 0 : thousands % 10
     return rest ? `${man}.${rest}만` : `${man}만`
   }
   return `${n.toLocaleString('ko-KR')}원`
