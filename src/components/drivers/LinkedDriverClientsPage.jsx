@@ -1,36 +1,15 @@
 // @ts-check
-// 연동/미연동 서브 거래처 화면. 두 모드 한 화면 응집 — §6 예외(≤250).
-import { useMemo, useState } from 'react'
+// 차주가 보는 연동·미연동 기사 차량 거래처 화면 — 주소의 기사·차량으로 어느 차량 거래처인지 찾는다.
+import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import ConfirmModal from '../ConfirmModal.jsx'
-import ClientFormModal from '../clients/ClientFormModal.jsx'
 import { getShortCarNum } from '../../domain/cars.js'
 import { resolveDriverManagementContext } from '../../domain/driverManagementContext.js'
-import { requestClientSave } from '../../lib/clientMutations.js'
-import { requestClientDeletion } from '../../lib/directMutationActions.js'
-import { getCloudUserId } from '../../lib/cloudSession.js'
-import {
-  useOwnerCars,
-  useOwnerClients,
-  useOwnerDrivers,
-} from '../../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers } from '../../store/ownerDataHooks.js'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../PageHeader.jsx'
+import ScopedClientsList from '../clients/ScopedClientsList.jsx'
 import '../clients/client-management.css'
-import ClientListItem from '../clients/ClientListItem.jsx'
 import './linked-driver.css'
-
-/** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
-
-/** @type {ClientDraft} */
-const emptyDraft = {
-  companyName: '', managerName: '', phone: '', bizNumber: '', taxRepresentative: '',
-  taxEmail: '', taxAddress: '', taxBizType: '', taxBizItem: '',
-  paymentTerm: 'next_month_end', paymentTermValue: '', isPinned: false,
-  commEnabled: false, commType: 'percent', commValue: '',
-  fixedRouteLinked: false, fixedUnitPrice: '', palletOn: false, palletPrice: '',
-}
 
 /**
  * @param {Object} props
@@ -46,7 +25,6 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
   const logId = decodeURIComponent(rawLogId || '')
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
-  const clients = useOwnerClients(ownerKey)
 
   const ctx = useMemo(
     () => resolveDriverManagementContext({ linkId, logId }, drivers, cars),
@@ -56,66 +34,9 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
   const unlinked = ctx.mode === 'unlinked'
   const scopeKey = (unlinked ? ctx.plate : (ctx.car?.number || '')) || ''
 
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
-  const [draft, setDraft] = useState(emptyDraft)
-  const [pendingDelete, setPendingDelete] = useState(/** @type {ClientLike|null} */ (null))
-
   function handleBack() {
     if (onBack) onBack()
     else navigate(-1)
-  }
-
-  function openAdd() {
-    setEditingId(null)
-    setDraft({ ...emptyDraft, scopedToVehicleNumber: scopeKey })
-    setModalOpen(true)
-  }
-
-  /** @param {ClientLike} item */
-  function openEdit(item) {
-    setEditingId(item.id)
-    setDraft({
-      companyName: item.companyName || '', managerName: item.managerName || '',
-      phone: item.phone || '', bizNumber: item.bizNumber || '',
-      taxRepresentative: item.taxRepresentative || item.managerName || '',
-      taxEmail: item.taxEmail || '', taxAddress: item.taxAddress || '',
-      taxBizType: item.taxBizType || '', taxBizItem: item.taxBizItem || '',
-      paymentTerm: item.paymentTerm || 'next_month_end', paymentTermValue: item.paymentTermValue || '',
-      isPinned: !!item.isPinned, scopedToVehicleNumber: item.scopedToVehicleNumber || scopeKey,
-      commEnabled: !!item.commEnabled, commType: item.commType === 'direct' ? 'direct' : 'percent',
-      commValue: String(item.commValue || ''), fixedRouteLinked: !!item.fixedRouteLinked,
-      fixedUnitPrice: String(item.fixedUnitPrice || ''), palletOn: !!item.palletOn, palletPrice: String(item.palletPrice || ''),
-    })
-    setModalOpen(true)
-  }
-
-  async function save() {
-    const payload = { ...draft, scopedToVehicleNumber: scopeKey }
-    const result = await requestClientSave({
-      ownerKey,
-      userId: getCloudUserId(),
-      clients,
-      draft: payload,
-      editingId,
-    })
-    if (result.toast) showToast?.(result.toast)
-    if (result.failed) return
-    setModalOpen(false)
-  }
-
-  async function confirmRemove() {
-    const clientToDelete = pendingDelete
-    if (!clientToDelete?.id) return
-    const result = await requestClientDeletion({
-      ownerKey,
-      userId: getCloudUserId(),
-      clients,
-      clientId: clientToDelete.id,
-    })
-    if (result.toast) showToast?.(result.toast)
-    if (result.failed || result.closeModal === false) return
-    setPendingDelete(null)
   }
 
   const title = unlinked
@@ -133,45 +54,10 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
     )
   }
 
-  const scopedClients = clients.filter((c) => scopeKey && c.scopedToVehicleNumber === scopeKey)
-
   return (
     <div className="page client-management-page">
       <PageHeader title={title} onBack={handleBack} onOpenMenu={onOpenMenu} />
-
-      <div className="client-list" id="linkedDriverClientsListContainer">
-        {!scopedClients.length ? (
-          <div className="empty-state">등록된 거래처가 없습니다.</div>
-        ) : (
-          scopedClients.map((client) => (
-            <ClientListItem
-              key={client.id}
-              client={client}
-              onEdit={() => openEdit(client)}
-              onDelete={() => setPendingDelete(client)}
-            />
-          ))
-        )}
-      </div>
-      <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>
-      {modalOpen && (
-        <ClientFormModal
-          draft={draft}
-          setDraft={setDraft}
-          editingId={editingId}
-          onCancel={() => setModalOpen(false)}
-          onSave={save}
-        />
-      )}
-      {pendingDelete && (
-        <ConfirmModal
-          title="이 거래처를 삭제하시겠습니까?"
-          confirmLabel="삭제"
-          danger
-          onCancel={() => setPendingDelete(null)}
-          onConfirm={confirmRemove}
-        />
-      )}
+      <ScopedClientsList ownerKey={ownerKey} scopeKey={scopeKey} listId="linkedDriverClientsListContainer" showToast={showToast} />
     </div>
   )
 }
