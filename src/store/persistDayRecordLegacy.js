@@ -1,27 +1,21 @@
 // @ts-check
 import * as v from 'valibot'
 import { isValidCurrencyAmount } from '../lib/callDetailSchema.js'
-import { isPlainObject } from './persistDomainRecords.js'
+import { by, finiteNumber, nonEmptyString, opt, plain, str, stringOrNumber } from '../domain/schemaParts.js'
 
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
-// 옛 하루 기록 안 주유·정비·기타 항목의 칸 → 모양(Valibot). 목록 밖 칸·값이 비어 있는 칸은 거부.
-const opt = v.exactOptional
-const str = v.string()
-const text = v.pipe(str, v.nonEmpty())
-const strOrNum = v.union([str, v.pipe(v.number(), v.finite())])
+// 옛 하루 기록 안 주유·정비·기타 항목의 칸 → 모양(Valibot, 공용 조각은 domain/schemaParts.js). 목록 밖 칸·값이 비어 있는 칸은 거부.
 // 돈: 유한 숫자면 음수·소수도 받고, 글자면 금액 규칙("1,000원"·빈 글자).
-const money = v.union([v.pipe(v.number(), v.finite()), v.custom((input) => isValidCurrencyAmount(/** @type {JsonValue} */ (input)))])
-/** Valibot은 배열도 객체로 받고 검사 뒤엔 새 객체를 넘기므로, 객체 검사 앞에서 배열을 먼저 거른다. @template {v.GenericSchema} T @param {T} schema */
-const plain = (schema) => v.pipe(v.custom((input) => isPlainObject(/** @type {JsonValue} */ (input))), schema)
+const money = v.union([finiteNumber, by(isValidCurrencyAmount)])
 
 const FUEL_ITEM = plain(v.strictObject({
-  type: text, cost: money, subsidy: opt(money), liter: opt(strOrNum), liters: opt(strOrNum), mileage: opt(strOrNum),
+  type: nonEmptyString, cost: money, subsidy: opt(money), liter: opt(stringOrNumber), liters: opt(stringOrNumber), mileage: opt(stringOrNumber),
 }))
 
-const MAINT_FIELDS = { name: text, fare: money, mileage: opt(strOrNum), category: opt(str), payment: opt(str) }
+const MAINT_FIELDS = { name: nonEmptyString, fare: money, mileage: opt(stringOrNumber), category: opt(str), payment: opt(str) }
 const MAINT_ITEM = plain(v.strictObject(MAINT_FIELDS))
-const MISC_ITEM = plain(v.strictObject({ ...MAINT_FIELDS, id: opt(text) }))
+const MISC_ITEM = plain(v.strictObject({ ...MAINT_FIELDS, id: opt(nonEmptyString) }))
 
 /** @param {JsonValue} value */
 export function isPersistedFuelItem(value) {

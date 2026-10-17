@@ -1,18 +1,17 @@
 // @ts-check
 import * as v from 'valibot'
+import { bool, by, finiteNumber, isPlainObject, opt, str, stringOrNumber } from '../domain/schemaParts.js'
 import {
   CAR_SETTLEMENT_MODES, COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, PAYMENT_TERM_VALUES,
 } from './persistDomainEnums.js'
 
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
-/** @param {JsonValue} value @returns {value is Record<string, JsonValue>} */
-export function isPlainObject(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+// isPlainObject는 공용 조각(domain/schemaParts.js) 것 — 이 파일에서 가져다 쓰던 곳이 많아 그대로 내보낸다.
+export { isPlainObject }
 
 /** @param {JsonValue} value */
-export function isFiniteNumber(value) {
+function isFiniteNumber(value) {
   return typeof value === 'number' && Number.isFinite(value)
 }
 
@@ -22,7 +21,7 @@ export function isStringOrFiniteNumber(value) {
 }
 
 /** @param {Record<string, JsonValue>} value @param {ReadonlyArray<string>} allowed */
-export function hasOnlyKeys(value, allowed) {
+function hasOnlyKeys(value, allowed) {
   const set = new Set(allowed)
   return Object.keys(value).every((key) => set.has(key))
 }
@@ -47,63 +46,43 @@ export function isStringRecord(value, keys) {
 
 export { PERSONAL_INFO_KEYS, BUSINESS_INFO_KEYS }
 
-// 칸 이름 → 그 칸이 있을 때의 모양(Valibot). 목록 밖 칸은 거부, 칸이 있는데 값이 비어 있어도 거부(exactOptional).
-const str = v.string()
-const bool = v.boolean()
-const num = v.pipe(v.number(), v.finite())
-const strOrNum = v.union([str, num])
-
-/** @template {Record<string, v.GenericSchema>} T @param {T} fields */
-function optional(fields) {
-  return /** @type {{ [K in keyof T]: v.ExactOptionalSchema<T[K], undefined> }} */ (
-    Object.fromEntries(Object.entries(fields).map(([key, schema]) => [key, v.exactOptional(schema)]))
-  )
-}
-
+// 칸 이름 → 그 칸이 있을 때의 모양(Valibot, 공용 조각은 domain/schemaParts.js). 목록 밖 칸·값이 비어 있는 칸은 거부.
 const CAR = v.strictObject({
   number: str,
-  ...optional({
-    id: str, supabaseId: strOrNum, tonnage: str, type: v.picklist(['main', 'sub']),
-    // settlementMode: 옛 "계산서 처리 방식"(2026-10-02 삭제) — 옛 저장분 읽기용.
-    settlementMode: v.picklist(CAR_SETTLEMENT_MODES),
-    commEnabled: bool, commType: v.picklist(COMM_TYPES), commission: strOrNum,
-    insuranceOn: bool, withholdingOn: bool, logEnabled: bool, driverLinkEnabled: bool, shareRevenueWithOwner: bool, archived: bool,
-    driverIncomeType: v.picklist(['employee', 'business']), expenseRate: strOrNum, insuranceRate: strOrNum,
-    driverName: str, driverPhone: str, driverLinkId: str, driverPayMode: v.picklist(DRIVER_PAY_MODES), driverSalaryAmount: str,
-    infoType: v.picklist(INFO_TYPES),
-    personalInfo: v.custom((value) => isStringRecord(/** @type {JsonValue} */ (value), PERSONAL_INFO_KEYS)),
-    businessInfo: v.custom((value) => isStringRecord(/** @type {JsonValue} */ (value), BUSINESS_INFO_KEYS)),
-  }),
+  id: opt(str), supabaseId: opt(stringOrNumber), tonnage: opt(str), type: opt(v.picklist(['main', 'sub'])),
+  // settlementMode: 옛 "계산서 처리 방식"(2026-10-02 삭제) — 옛 저장분 읽기용.
+  settlementMode: opt(v.picklist(CAR_SETTLEMENT_MODES)),
+  commEnabled: opt(bool), commType: opt(v.picklist(COMM_TYPES)), commission: opt(stringOrNumber),
+  insuranceOn: opt(bool), withholdingOn: opt(bool), logEnabled: opt(bool), driverLinkEnabled: opt(bool), shareRevenueWithOwner: opt(bool), archived: opt(bool),
+  driverIncomeType: opt(v.picklist(['employee', 'business'])), expenseRate: opt(stringOrNumber), insuranceRate: opt(stringOrNumber),
+  driverName: opt(str), driverPhone: opt(str), driverLinkId: opt(str), driverPayMode: opt(v.picklist(DRIVER_PAY_MODES)), driverSalaryAmount: opt(str),
+  infoType: opt(v.picklist(INFO_TYPES)),
+  personalInfo: opt(by((value) => isStringRecord(value, PERSONAL_INFO_KEYS))),
+  businessInfo: opt(by((value) => isStringRecord(value, BUSINESS_INFO_KEYS))),
 })
 
 const CLIENT = v.strictObject({
   id: str,
   companyName: str,
-  ...optional({
-    isPinned: bool, commEnabled: bool, fixedRouteLinked: bool, palletOn: bool,
-    commValue: strOrNum, palletPrice: strOrNum, fixedUnitPrice: strOrNum, supabaseId: strOrNum,
-    paymentTerm: v.picklist(PAYMENT_TERM_VALUES), commType: v.picklist(COMM_TYPES), paymentTermValue: str,
-    managerName: str, phone: str, bizNumber: str, scopedToVehicleNumber: str,
-    taxRepresentative: str, taxEmail: str, taxAddress: str, taxBizType: str, taxBizItem: str,
-  }),
+  isPinned: opt(bool), commEnabled: opt(bool), fixedRouteLinked: opt(bool), palletOn: opt(bool),
+  commValue: opt(stringOrNumber), palletPrice: opt(stringOrNumber), fixedUnitPrice: opt(stringOrNumber), supabaseId: opt(stringOrNumber),
+  paymentTerm: opt(v.picklist(PAYMENT_TERM_VALUES)), commType: opt(v.picklist(COMM_TYPES)), paymentTermValue: opt(str),
+  managerName: opt(str), phone: opt(str), bizNumber: opt(str), scopedToVehicleNumber: opt(str),
+  taxRepresentative: opt(str), taxEmail: opt(str), taxAddress: opt(str), taxBizType: opt(str), taxBizItem: opt(str),
 })
 
 const EXPENSE = v.strictObject({
   id: str,
   date: str,
   kind: v.picklist(['maint', 'fuel', 'misc']),
-  ...optional({
-    name: str, category: str, fuelType: str, payment: str, vehicleNumber: str,
-    cost: num, subsidy: num, mileage: num, liters: strOrNum,
-  }),
+  name: opt(str), category: opt(str), fuelType: opt(str), payment: opt(str), vehicleNumber: opt(str),
+  cost: opt(finiteNumber), subsidy: opt(finiteNumber), mileage: opt(finiteNumber), liters: opt(stringOrNumber),
 })
 
 const DRIVER = v.strictObject({
   id: str,
-  ...optional({
-    status: v.picklist(['pending', 'linked']), supabaseId: strOrNum,
-    name: str, phone: str, vehicleNumber: str, startDate: str, endDate: str, inviteCode: str,
-  }),
+  status: opt(v.picklist(['pending', 'linked'])), supabaseId: opt(stringOrNumber),
+  name: opt(str), phone: opt(str), vehicleNumber: opt(str), startDate: opt(str), endDate: opt(str), inviteCode: opt(str),
 })
 
 /** @param {JsonValue} value */

@@ -2,14 +2,10 @@
 // 콜 상세 한 건의 모양 검사(Valibot). 저장 기록은 id 선택(옛 콜), 저장 대기 기록은 id 필수. 목록 밖 칸은 거부 — 칸을 늘리면 domain/callDetail.js와 함께.
 import * as v from 'valibot'
 import { parseCurrencyValue } from '../domain/money.js'
+import { bool, by, isPlainObject, nonEmptyString, opt, plain, str } from '../domain/schemaParts.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
-
-/** @param {JsonValue} value @returns {value is Record<string, JsonValue>} */
-function isPlainObject(value) {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 /**
  * payments.js/financeCore.js가 실제로 받는 금액: 숫자이거나, parseCurrencyValue가
@@ -29,30 +25,26 @@ export function isValidCurrencyAmount(value) {
   return Number.isFinite(parsed) && parsed >= 0
 }
 
-// Valibot은 배열도 객체로 받고 검사 뒤엔 새 객체를 넘기므로, 객체 검사 앞에서 배열을 먼저 거른다.
-/** @param {(value: Record<string, JsonValue>) => boolean} [extra] */
-const plainObject = (extra = () => true) => v.custom((input) => isPlainObject(/** @type {JsonValue} */ (input)) && extra(/** @type {Record<string, JsonValue>} */ (input)))
-const opt = v.exactOptional
-const str = v.string()
-const amount = v.custom((input) => isValidCurrencyAmount(/** @type {JsonValue} */ (input)))
+// 공용 조각은 domain/schemaParts.js.
+const amount = by(isValidCurrencyAmount)
 
-const COMMISSION_SNAPSHOT = v.pipe(plainObject(), v.strictObject({
-  enabled: v.boolean(),
+const COMMISSION_SNAPSHOT = plain(v.strictObject({
+  enabled: bool,
   type: v.nullable(str),
   // 지금까지처럼 숫자면 다 받는다(Valibot number는 NaN을 거부해서 typeof로).
   value: v.nullable(v.union([str, v.custom((input) => typeof input === 'number')])),
 }))
 
 // 입금 항목은 칸이 모두 선택이다(id 없는 옛 항목, 금액이 통화 글자인 값도 정상).
-const PAYMENT = v.pipe(plainObject(), v.strictObject({
+const PAYMENT = plain(v.strictObject({
   id: opt(str), amount: opt(amount), paidAt: opt(str), note: opt(str),
 }))
 
 // domain/callDetail.js의 CallDetailLike 칸 전체.
 const CALL_DETAIL_FIELDS = {
-  id: opt(v.pipe(str, v.nonEmpty())), loadLoc: opt(str), unloadLoc: opt(str), fare: opt(amount), client: opt(str),
+  id: opt(nonEmptyString), loadLoc: opt(str), unloadLoc: opt(str), fare: opt(amount), client: opt(str),
   clientId: opt(v.nullable(str)), commissionSnapshot: opt(COMMISSION_SNAPSHOT),
-  remarks: opt(str), vatExempt: opt(v.boolean()), paymentStatus: opt(str), payments: opt(v.array(PAYMENT)),
+  remarks: opt(str), vatExempt: opt(bool), paymentStatus: opt(str), payments: opt(v.array(PAYMENT)),
   paymentDueDate: opt(str), workDate: opt(str),
   distanceType: opt(str), linkedLoadIndex: opt(str), departureTime: opt(str), arrivalTime: opt(str), platform: opt(str),
   cargoTonnage: opt(v.union([str, v.pipe(v.number(), v.finite(), v.minValue(0))])),
@@ -63,7 +55,7 @@ const CALL_DETAIL_FIELDS = {
 export const ALLOWED_CALL_DETAIL_KEYS = Object.keys(CALL_DETAIL_FIELDS)
 
 // 빈 객체 {}는 콜로 치지 않는다.
-const CALL_DETAIL = v.pipe(plainObject((value) => Object.keys(value).length > 0), v.strictObject(CALL_DETAIL_FIELDS))
+const CALL_DETAIL = plain(v.strictObject(CALL_DETAIL_FIELDS), (value) => Object.keys(value).length > 0)
 
 /**
  * 저장된 하루 기록용 — id는 선택(옛 콜), 빈 콜·빈 글자 id는 거부.

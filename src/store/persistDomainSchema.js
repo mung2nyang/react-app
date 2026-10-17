@@ -1,6 +1,7 @@
 // @ts-check
 import * as v from 'valibot'
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
+import { bool, by, finiteNumber, opt, plain, str, stringOrNumber } from '../domain/schemaParts.js'
 import { isPersistedWorkDataMap } from './persistDayRecord.js'
 import { isPersistedInvoice } from './persistDomainInvoice.js'
 import { isPersistedCar, isPersistedClient, isPersistedDriver, isPersistedExpense } from './persistDomainRecords.js'
@@ -17,17 +18,7 @@ import { DRIVER_INVOICE_BASES, DRIVER_SETTLEMENT_MODES } from './persistDomainEn
  * }} LocalProfile
  */
 
-// 칸 이름 → 모양(Valibot). 목록 밖 칸·값이 비어 있는 칸은 거부.
-const opt = v.exactOptional
-const str = v.string()
-const bool = v.boolean()
-const num = v.pipe(v.number(), v.finite())
-
-/** Valibot은 배열도 객체로 받고 검사 뒤엔 새 객체를 넘기므로, 객체 검사 앞에서 배열을 먼저 거른다. @template {v.GenericSchema} T @param {T} schema */
-const plain = (schema) => v.pipe(v.custom((input) => typeof input === 'object' && input !== null && !Array.isArray(input)), schema)
-
-/** @param {(value: JsonValue) => boolean} check */
-const by = (check) => v.custom((input) => check(/** @type {JsonValue} */ (input)))
+// 칸 이름 → 모양(Valibot, 공용 조각은 domain/schemaParts.js). 목록 밖 칸·값이 비어 있는 칸은 거부.
 
 const DRIVER_LINK = plain(v.strictObject({
   id: opt(str), vehicleNumber: opt(str), assignmentStart: opt(str), assignmentEnd: opt(str), status: opt(str),
@@ -49,13 +40,13 @@ const SETTINGS = plain(v.strictObject({
   defaultDriverSettlementMode: opt(v.picklist(DRIVER_SETTLEMENT_MODES)),
   // driverInvoiceBasis: 옛 기사 매입 계산서 기준(2026-10-02 삭제) — 옛 저장분 읽기용.
   driverInvoiceBasis: opt(v.picklist(DRIVER_INVOICE_BASES)),
-  unitPrice: opt(v.union([str, num])),
+  unitPrice: opt(stringOrNumber),
   bizName: opt(str), bizNumber: opt(str), bizRepresentative: opt(str), userName: opt(str),
   bizAddress: opt(str), bizType: opt(str), bizItem: opt(str), bizEmail: opt(str),
   theme: opt(v.picklist(['light', 'dark'])), inputMode: opt(INPUT_MODE),
   callDetail: opt(bool), timeOn: opt(bool), platformOn: opt(bool), distanceOn: opt(bool), cargoTonnageOn: opt(bool),
-  fixedRouteOn: opt(bool), fixedRoutePresets: opt(v.array(ROUTE_PRESET)), runCountToggle: opt(bool), runCountPresets: opt(v.array(num)),
-  subFixedRouteOn: opt(bool), subFixedRoutePresets: opt(v.array(ROUTE_PRESET)), subRunCountToggle: opt(bool), subRunCountPresets: opt(v.array(num)),
+  fixedRouteOn: opt(bool), fixedRoutePresets: opt(v.array(ROUTE_PRESET)), runCountToggle: opt(bool), runCountPresets: opt(v.array(finiteNumber)),
+  subFixedRouteOn: opt(bool), subFixedRoutePresets: opt(v.array(ROUTE_PRESET)), subRunCountToggle: opt(bool), subRunCountPresets: opt(v.array(finiteNumber)),
   pinnedLocations: opt(v.array(str)), subCarSettings: opt(plain(v.record(str, SUB_CAR_SETTINGS))),
   dailyInspectionOn: opt(bool), notifOff: opt(v.array(str)),
 }))
