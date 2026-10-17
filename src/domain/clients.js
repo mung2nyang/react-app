@@ -54,43 +54,54 @@ export function computeFixedRouteFare(record, opts) {
   return amount
 }
 
+/** @param {ClientDraft} draft */
+function paymentTermOf(draft) {
+  return PAYMENT_TERMS.some((item) => item.value === draft.paymentTerm) ? String(draft.paymentTerm) : 'next_month_end'
+}
+
+/**
+ * 저장 전 입력 검사 — 맨 처음 문제 칸과 문구, 문제 없으면 null(거래처 창 칸 표시와 upsertClient가 같이 씀).
+ * @param {ClientDraft} draft
+ * @returns {{ field: 'companyName'|'paymentTermValue'|'commValue'|'fixedUnitPrice'|'palletPrice', message: string }|null}
+ */
+export function checkClientDraft(draft) {
+  if (!String(draft.companyName || '').trim()) return { field: 'companyName', message: '거래처명을 입력해 주세요.' }
+  const paymentTerm = paymentTermOf(draft)
+  const paymentTermValue = String(draft.paymentTermValue || '').trim()
+  if (needsPaymentTermValue(paymentTerm)) {
+    const n = Number(paymentTermValue)
+    if (!paymentTermValue || !Number.isFinite(n) || n < 1) return { field: 'paymentTermValue', message: '결제 주기 숫자를 입력해 주세요.' }
+    if ((paymentTerm === 'next_month_day' || paymentTerm === 'second_month_day') && n > 31) {
+      return { field: 'paymentTermValue', message: '날짜는 1~31 사이로 입력해 주세요.' }
+    }
+  }
+  if (draft.commEnabled && !String(draft.commValue || '').trim()) return { field: 'commValue', message: '수수료 값을 입력해 주세요.' }
+  if (draft.fixedRouteLinked && !String(draft.fixedUnitPrice ?? '').trim()) return { field: 'fixedUnitPrice', message: '고정 노선 1회 단가를 입력해 주세요.' }
+  if (draft.palletOn && !String(draft.palletPrice ?? '').trim()) return { field: 'palletPrice', message: '파렛트 단가를 입력해 주세요.' }
+  return null
+}
+
 /**
  * @param {Array<ClientLike>} clients
  * @param {ClientDraft} draft
  * @param {string|null} [editingId]
  */
 export function upsertClient(clients, draft, editingId = null) {
+  const problem = checkClientDraft(draft)
+  if (problem) return { error: problem.message, clients }
+
   const companyName = String(draft.companyName || '').trim()
   const managerName = String(draft.managerName || '').trim()
   const phone = String(draft.phone || '').trim()
   const bizNumber = String(draft.bizNumber || '').trim()
-  const paymentTerm = PAYMENT_TERMS.some((item) => item.value === draft.paymentTerm)
-    ? draft.paymentTerm
-    : 'next_month_end'
+  const paymentTerm = paymentTermOf(draft)
   const paymentTermValue = String(draft.paymentTermValue || '').trim()
-
-  if (!companyName) return { error: '거래처명을 입력해 주세요.', clients }
-
-  if (needsPaymentTermValue(paymentTerm)) {
-    const n = Number(paymentTermValue)
-    if (!paymentTermValue || !Number.isFinite(n) || n < 1) {
-      return { error: '결제 주기 숫자를 입력해 주세요.', clients }
-    }
-    if ((paymentTerm === 'next_month_day' || paymentTerm === 'second_month_day') && n > 31) {
-      return { error: '날짜는 1~31 사이로 입력해 주세요.', clients }
-    }
-  }
-
   const commEnabled = !!draft.commEnabled
   const commValue = String(draft.commValue || '').trim()
   const fixedRouteLinked = !!draft.fixedRouteLinked
   const fixedUnitPrice = String(draft.fixedUnitPrice ?? '').trim()
   const palletOn = !!draft.palletOn
   const palletPrice = String(draft.palletPrice ?? '').trim()
-
-  if (commEnabled && !commValue) return { error: '수수료 값을 입력해 주세요.', clients }
-  if (fixedRouteLinked && !fixedUnitPrice) return { error: '고정 노선 1회 단가를 입력해 주세요.', clients }
-  if (palletOn && !palletPrice) return { error: '파렛트 단가를 입력해 주세요.', clients }
 
   const next = {
     companyName,

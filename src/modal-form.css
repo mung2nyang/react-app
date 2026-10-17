@@ -137,5 +137,35 @@
   text-align: center;
 }
 
+/* 입력이 잘못된 칸(로드맵 82, FieldError.jsx) — 화면 읽기용 "잘못됨" 표시를 빨간 테두리로, 커서가 있어도 빨강 */
+.input-box[aria-invalid='true'],
+.car-commission-input:has([aria-invalid='true']) {
+  border-color: var(--sunday-color);
+  outline: 2px solid var(--sunday-color);
+  outline-offset: -2px;
+}
+
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 6px 2px 0;
+  color: var(--sunday-color);
+  font-size: var(--fs-floor);
+  font-weight: 700;
+  text-align: left;
+}
+
+.field-error svg {
+  flex: 0 0 14px;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* 확인 팝업의 되돌릴 수 없는 동작(삭제·해제·탈퇴) 버튼 */
 .modal-btn.confirm.danger { background: var(--danger-fill); }

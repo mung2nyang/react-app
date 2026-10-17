@@ -1,15 +1,28 @@
 // @ts-check
+import { useState } from 'react'
+import { checkClientDraft } from '../../domain/clients.js'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../domain/formatPhone.js'
 import { needsPaymentTermValue, PAYMENT_TERMS } from '../../lib/clients.js'
 import AppDropdown from '../shared/AppDropdown.jsx'
 import BizNumberHint from '../shared/BizNumberHint.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
+import FieldError, { invalidProps } from '../shared/FieldError.jsx'
 import ClientTradeFields from './ClientTradeFields.jsx'
 import { StarIcon } from '../day-log/icons.jsx'
 import './client-management.css'
 import ModalShell from '../shared/ModalShell.jsx'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
+/** @typedef {NonNullable<ReturnType<typeof checkClientDraft>>} ClientProblem */
+
+// 이 창에 있는 칸만 표시 — 창에 없는 칸(고정 노선·파렛트 단가) 문제는 저장 함수가 지금처럼 알림으로.
+/** @type {Partial<Record<ClientProblem['field'], string>>} */
+const INPUT_IDS = { companyName: 'clientCompanyName', paymentTermValue: 'clientPaymentTermValue', commValue: 'clientCommValue' }
+
+/** @param {ClientDraft} draft @param {ClientProblem['field']} field */
+function valueOf(draft, field) {
+  return String(draft[field] ?? '')
+}
 
 /**
  * @param {Object} props
@@ -21,6 +34,23 @@ import ModalShell from '../shared/ModalShell.jsx'
  */
 export default function ClientFormModal({ draft, setDraft, editingId, onCancel, onSave }) {
   const termValueLabel = draft.paymentTerm === 'after_days' ? '며칠 후' : '날짜'
+  const [problem, setProblem] = useState(/** @type {(ClientProblem & { value: string })|null} */ (null))
+  // 문제 칸 값을 고치기 시작하면 표시를 거둔다.
+  const shown = problem && valueOf(draft, problem.field) === problem.value ? problem : null
+
+  function handleSave() {
+    const found = checkClientDraft(draft)
+    const inputId = found ? INPUT_IDS[found.field] : undefined
+    if (!found || !inputId) {
+      setProblem(null)
+      onSave()
+      return
+    }
+    setProblem({ ...found, value: valueOf(draft, found.field) })
+    const input = document.getElementById(inputId)
+    input?.scrollIntoView?.({ block: 'center' })
+    input?.focus({ preventScroll: true })
+  }
 
   return (
     <ModalShell onClose={onCancel} closeOnOverlay={false} closeOnEscape={false} contentClassName="modal-content client-modal" label="거래처">
@@ -32,7 +62,8 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
       </div>
       <div className="form-group">
         <label htmlFor="clientCompanyName">거래처명</label>
-        <ClearableInput id="clientCompanyName" className="input-box" placeholder="거래처명 입력" value={draft.companyName || ''} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} />
+        <ClearableInput id="clientCompanyName" className="input-box" placeholder="거래처명 입력" value={draft.companyName || ''} onChange={(e) => setDraft({ ...draft, companyName: e.target.value })} {...invalidProps(shown, 'companyName', 'clientCompanyName')} />
+        <FieldError problem={shown} field="companyName" inputId="clientCompanyName" />
       </div>
       <div className="personal-inline-fields">
         <div className="form-group">
@@ -84,13 +115,14 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
       {needsPaymentTermValue(draft.paymentTerm) && (
         <div className="form-group">
           <label htmlFor="clientPaymentTermValue">{termValueLabel}</label>
-          <input id="clientPaymentTermValue" className="input-box" inputMode="numeric" placeholder="숫자 입력" value={String(draft.paymentTermValue || '')} onChange={(e) => setDraft({ ...draft, paymentTermValue: e.target.value.replace(/\D/g, '') })} />
+          <input id="clientPaymentTermValue" className="input-box" inputMode="numeric" placeholder="숫자 입력" value={String(draft.paymentTermValue || '')} onChange={(e) => setDraft({ ...draft, paymentTermValue: e.target.value.replace(/\D/g, '') })} {...invalidProps(shown, 'paymentTermValue', 'clientPaymentTermValue')} />
+          <FieldError problem={shown} field="paymentTermValue" inputId="clientPaymentTermValue" />
         </div>
       )}
-      <ClientTradeFields draft={draft} setDraft={setDraft} />
+      <ClientTradeFields draft={draft} setDraft={setDraft} problem={shown} />
       <div className="modal-btns">
         <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
-        <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>
+        <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
       </div>
     </ModalShell>
   )

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { computeFixedRouteFare, getFixedRouteClient, reorderClients, resolveFixedUnitPrice, sortClientsPinnedFirst, upsertClient } from './clients.js'
+import { checkClientDraft, computeFixedRouteFare, getFixedRouteClient, reorderClients, resolveFixedUnitPrice, sortClientsPinnedFirst, upsertClient } from './clients.js'
 import { monthWorkFareSummary } from './day-record.js'
 import { getMonthlyFareRevenue } from './finance.js'
 
@@ -203,5 +203,28 @@ describe('computeFixedRouteFare — 고정노선 단가×횟수(fare 필드 없�
 
   test('fixedCount 0이면 0', () => {
     assert.equal(computeFixedRouteFare({ isOff: false, fixedCount: 0 }, { fixedUnitPrice: 250000 }), 0)
+  })
+})
+
+describe('checkClientDraft — 저장 전 입력 검사가 어느 칸인지까지(로드맵 82)', () => {
+  test('맨 처음 문제 칸과 문구, 저장 함수도 같은 문구', () => {
+    const ok = { companyName: '한진' }
+    const cases = [
+      [{ companyName: '  ' }, 'companyName', '거래처명을 입력해 주세요.'],
+      [{ ...ok, paymentTerm: 'after_days', paymentTermValue: '' }, 'paymentTermValue', '결제 주기 숫자를 입력해 주세요.'],
+      [{ ...ok, paymentTerm: 'next_month_day', paymentTermValue: '32' }, 'paymentTermValue', '날짜는 1~31 사이로 입력해 주세요.'],
+      [{ ...ok, commEnabled: true, commValue: '' }, 'commValue', '수수료 값을 입력해 주세요.'],
+      [{ ...ok, fixedRouteLinked: true, fixedUnitPrice: '' }, 'fixedUnitPrice', '고정 노선 1회 단가를 입력해 주세요.'],
+      [{ ...ok, palletOn: true, palletPrice: '' }, 'palletPrice', '파렛트 단가를 입력해 주세요.'],
+    ]
+    for (const [draft, field, message] of cases) {
+      assert.deepEqual(checkClientDraft(draft), { field, message })
+      assert.equal(upsertClient([], draft).error, message)
+    }
+  })
+
+  test('문제가 없으면 null, 거래처명이 비면 다른 칸보다 먼저', () => {
+    assert.equal(checkClientDraft({ companyName: '한진', paymentTerm: 'after_days', paymentTermValue: '30', commEnabled: true, commValue: '5' }), null)
+    assert.equal(checkClientDraft({ companyName: '', commEnabled: true, commValue: '' })?.field, 'companyName')
   })
 })
