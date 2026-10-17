@@ -19,7 +19,8 @@
     "html2pdf.js": "^0.14.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.2"
+    "react-router-dom": "^7.18.2",
+    "valibot": "^1.5.0"
   },
   "devDependencies": {
     "@types/jsdom": "^30.0.0",

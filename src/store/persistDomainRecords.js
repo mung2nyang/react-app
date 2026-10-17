@@ -1,6 +1,7 @@
 // @ts-check
+import * as v from 'valibot'
 import {
-  CAR_SETTLEMENT_MODES, COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, PAYMENT_TERM_VALUES, isAllowedEnum,
+  CAR_SETTLEMENT_MODES, COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, PAYMENT_TERM_VALUES,
 } from './persistDomainEnums.js'
 
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
@@ -32,22 +33,6 @@ const PERSONAL_INFO_KEYS = [
   'phone', 'bank', 'account', 'accountHolder',
 ]
 const BUSINESS_INFO_KEYS = ['sameAsOwner', 'name', 'bizNumber', 'representative', 'address', 'bizType', 'bizItem', 'email']
-const CAR_KEYS = [
-  'id', 'supabaseId', 'number', 'tonnage', 'type', 'settlementMode', 'commEnabled', 'commType',
-  'commission', 'insuranceOn', 'logEnabled', 'driverLinkEnabled', 'shareRevenueWithOwner',
-  'archived', 'driverName', 'driverPhone', 'driverLinkId', 'driverPayMode', 'driverSalaryAmount',
-  'infoType', 'personalInfo', 'businessInfo',
-  'driverIncomeType', 'withholdingOn', 'expenseRate', 'insuranceRate',
-]
-const CLIENT_KEYS = [
-  'id', 'companyName', 'managerName', 'phone', 'bizNumber', 'paymentTerm', 'paymentTermValue',
-  'isPinned', 'scopedToVehicleNumber', 'commEnabled', 'commType', 'commValue', 'fixedRouteLinked',
-  'palletOn', 'palletPrice', 'fixedUnitPrice', 'taxRepresentative', 'taxEmail', 'taxAddress',
-  'taxBizType', 'taxBizItem', 'supabaseId',
-]
-const EXPENSE_KEYS = ['id', 'kind', 'date', 'name', 'category', 'fuelType', 'payment', 'cost', 'subsidy', 'mileage', 'liters', 'vehicleNumber']
-const DRIVER_KEYS = ['id', 'name', 'phone', 'vehicleNumber', 'startDate', 'endDate', 'inviteCode', 'status', 'supabaseId']
-
 /**
  * hydrate 정규화(hydrateMergeCars.js)가 재사용한다 — personalInfo/businessInfo raw
  * 백업이 정본 키셋 밖 필드나 잘못된 타입을 가지면(전체) 이 함수가 false를 돌려주고,
@@ -62,78 +47,81 @@ export function isStringRecord(value, keys) {
 
 export { PERSONAL_INFO_KEYS, BUSINESS_INFO_KEYS }
 
+// 칸 이름 → 그 칸이 있을 때의 모양(Valibot). 목록 밖 칸은 거부, 칸이 있는데 값이 비어 있어도 거부(exactOptional).
+const str = v.string()
+const bool = v.boolean()
+const num = v.pipe(v.number(), v.finite())
+const strOrNum = v.union([str, num])
+
+/** @template {Record<string, v.GenericSchema>} T @param {T} fields */
+function optional(fields) {
+  return /** @type {{ [K in keyof T]: v.ExactOptionalSchema<T[K], undefined> }} */ (
+    Object.fromEntries(Object.entries(fields).map(([key, schema]) => [key, v.exactOptional(schema)]))
+  )
+}
+
+const CAR = v.strictObject({
+  number: str,
+  ...optional({
+    id: str, supabaseId: strOrNum, tonnage: str, type: v.picklist(['main', 'sub']),
+    // settlementMode: 옛 "계산서 처리 방식"(2026-10-02 삭제) — 옛 저장분 읽기용.
+    settlementMode: v.picklist(CAR_SETTLEMENT_MODES),
+    commEnabled: bool, commType: v.picklist(COMM_TYPES), commission: strOrNum,
+    insuranceOn: bool, withholdingOn: bool, logEnabled: bool, driverLinkEnabled: bool, shareRevenueWithOwner: bool, archived: bool,
+    driverIncomeType: v.picklist(['employee', 'business']), expenseRate: strOrNum, insuranceRate: strOrNum,
+    driverName: str, driverPhone: str, driverLinkId: str, driverPayMode: v.picklist(DRIVER_PAY_MODES), driverSalaryAmount: str,
+    infoType: v.picklist(INFO_TYPES),
+    personalInfo: v.custom((value) => isStringRecord(/** @type {JsonValue} */ (value), PERSONAL_INFO_KEYS)),
+    businessInfo: v.custom((value) => isStringRecord(/** @type {JsonValue} */ (value), BUSINESS_INFO_KEYS)),
+  }),
+})
+
+const CLIENT = v.strictObject({
+  id: str,
+  companyName: str,
+  ...optional({
+    isPinned: bool, commEnabled: bool, fixedRouteLinked: bool, palletOn: bool,
+    commValue: strOrNum, palletPrice: strOrNum, fixedUnitPrice: strOrNum, supabaseId: strOrNum,
+    paymentTerm: v.picklist(PAYMENT_TERM_VALUES), commType: v.picklist(COMM_TYPES), paymentTermValue: str,
+    managerName: str, phone: str, bizNumber: str, scopedToVehicleNumber: str,
+    taxRepresentative: str, taxEmail: str, taxAddress: str, taxBizType: str, taxBizItem: str,
+  }),
+})
+
+const EXPENSE = v.strictObject({
+  id: str,
+  date: str,
+  kind: v.picklist(['maint', 'fuel', 'misc']),
+  ...optional({
+    name: str, category: str, fuelType: str, payment: str, vehicleNumber: str,
+    cost: num, subsidy: num, mileage: num, liters: strOrNum,
+  }),
+})
+
+const DRIVER = v.strictObject({
+  id: str,
+  ...optional({
+    status: v.picklist(['pending', 'linked']), supabaseId: strOrNum,
+    name: str, phone: str, vehicleNumber: str, startDate: str, endDate: str, inviteCode: str,
+  }),
+})
+
 /** @param {JsonValue} value */
 export function isPersistedCar(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, CAR_KEYS) || typeof value.number !== 'string') return false
-  if ('id' in value && typeof value.id !== 'string') return false
-  if ('supabaseId' in value && !isStringOrFiniteNumber(value.supabaseId)) return false
-  if ('tonnage' in value && typeof value.tonnage !== 'string') return false
-  if ('type' in value && value.type !== 'main' && value.type !== 'sub') return false
-  // settlementMode: 옛 "계산서 처리 방식"(2026-10-02 삭제) — 옛 저장분 읽기용.
-  if ('settlementMode' in value &&!isAllowedEnum(value.settlementMode, CAR_SETTLEMENT_MODES)) return false
-  if ('commEnabled' in value && typeof value.commEnabled !== 'boolean') return false
-  if ('commType' in value && !isAllowedEnum(value.commType, COMM_TYPES)) return false
-  if ('commission' in value && !isStringOrFiniteNumber(value.commission)) return false
-  for (const flag of ['insuranceOn', 'withholdingOn', 'logEnabled', 'driverLinkEnabled', 'shareRevenueWithOwner', 'archived']) {
-    if (flag in value && typeof value[flag] !== 'boolean') return false
-  }
-  if ('driverIncomeType' in value && value.driverIncomeType !== 'employee' && value.driverIncomeType !== 'business') return false
-  if ('expenseRate' in value && !isStringOrFiniteNumber(value.expenseRate)) return false
-  if ('insuranceRate' in value && !isStringOrFiniteNumber(value.insuranceRate)) return false
-  if ('driverName' in value && typeof value.driverName !== 'string') return false
-  if ('driverPhone' in value && typeof value.driverPhone !== 'string') return false
-  if ('driverLinkId' in value && typeof value.driverLinkId !== 'string') return false
-  if ('driverPayMode' in value && !isAllowedEnum(value.driverPayMode, DRIVER_PAY_MODES)) return false
-  if ('driverSalaryAmount' in value && typeof value.driverSalaryAmount !== 'string') return false
-  if ('infoType' in value && !isAllowedEnum(value.infoType, INFO_TYPES)) return false
-  if ('personalInfo' in value && !isStringRecord(value.personalInfo, PERSONAL_INFO_KEYS)) return false
-  if ('businessInfo' in value && !isStringRecord(value.businessInfo, BUSINESS_INFO_KEYS)) return false
-  return true
+  return v.is(CAR, value)
 }
 
 /** @param {JsonValue} value */
 export function isPersistedClient(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, CLIENT_KEYS)) return false
-  if (typeof value.id !== 'string' || typeof value.companyName !== 'string') return false
-  if ('isPinned' in value && typeof value.isPinned !== 'boolean') return false
-  if ('commEnabled' in value && typeof value.commEnabled !== 'boolean') return false
-  if ('fixedRouteLinked' in value && typeof value.fixedRouteLinked !== 'boolean') return false
-  if ('palletOn' in value && typeof value.palletOn !== 'boolean') return false
-  if ('commValue' in value && !isStringOrFiniteNumber(value.commValue)) return false
-  if ('palletPrice' in value && !isStringOrFiniteNumber(value.palletPrice)) return false
-  if ('fixedUnitPrice' in value && !isStringOrFiniteNumber(value.fixedUnitPrice)) return false
-  if ('paymentTerm' in value && !isAllowedEnum(value.paymentTerm, PAYMENT_TERM_VALUES)) return false
-  if ('commType' in value && !isAllowedEnum(value.commType, COMM_TYPES)) return false
-  if ('paymentTermValue' in value && typeof value.paymentTermValue !== 'string') return false
-  if ('supabaseId' in value && !isStringOrFiniteNumber(value.supabaseId)) return false
-  for (const key of ['managerName', 'phone', 'bizNumber', 'scopedToVehicleNumber', 'taxRepresentative', 'taxEmail', 'taxAddress', 'taxBizType', 'taxBizItem']) {
-    if (key in value && typeof value[key] !== 'string') return false
-  }
-  return true
+  return v.is(CLIENT, value)
 }
 
 /** @param {JsonValue} value */
 export function isPersistedExpense(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, EXPENSE_KEYS)) return false
-  if (typeof value.id !== 'string' || typeof value.date !== 'string') return false
-  if (value.kind !== 'maint' && value.kind !== 'fuel' && value.kind !== 'misc') return false
-  for (const text of ['name', 'category', 'fuelType', 'payment', 'vehicleNumber']) {
-    if (text in value && typeof value[text] !== 'string') return false
-  }
-  for (const num of ['cost', 'subsidy', 'mileage']) {
-    if (num in value && !isFiniteNumber(value[num])) return false
-  }
-  if ('liters' in value && !isStringOrFiniteNumber(value.liters)) return false
-  return true
+  return v.is(EXPENSE, value)
 }
 
 /** @param {JsonValue} value */
 export function isPersistedDriver(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, DRIVER_KEYS) || typeof value.id !== 'string') return false
-  if ('status' in value && value.status !== 'pending' && value.status !== 'linked') return false
-  if ('supabaseId' in value && !isStringOrFiniteNumber(value.supabaseId)) return false
-  for (const text of ['name', 'phone', 'vehicleNumber', 'startDate', 'endDate', 'inviteCode']) {
-    if (text in value && typeof value[text] !== 'string') return false
-  }
-  return true
+  return v.is(DRIVER, value)
 }
