@@ -10,6 +10,7 @@ import { useConfirm } from './useConfirm.jsx'
 import ReceivableItemCard from './ReceivableItemCard.jsx'
 import PageHeader from '../PageHeader.jsx'
 import './receivables.css'
+import './receivablesGroupHead.css'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 
@@ -68,21 +69,23 @@ export default function ReceivablesListPage({ ownerKey = 'guest', isEmployedDriv
             return (
               <div key={`${group.client}-${group.monthKey}`} className="receivable-group-card">
                 <div className="receivable-group-head">
-                  <div className="receivable-group-title">{group.client}</div>
+                  <div className="receivable-group-name-row">
+                    {hasSubCars && carEntries.length > 0 && (
+                      <div className="receivable-group-cars">
+                        {carEntries.map(([logId, logLabel]) => (
+                          <span
+                            key={String(logId)}
+                            className={`management-badge car-type${logId === 'main' ? ' main' : ''}`}
+                          >
+                            {logLabel}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="receivable-group-title">{group.client}</div>
+                  </div>
                   <div className="receivable-group-period">{formatWorkMonth(group.monthKey)}</div>
                 </div>
-                {hasSubCars && carEntries.length > 0 && (
-                  <div className="receivable-group-cars">
-                    {carEntries.map(([logId, logLabel]) => (
-                      <span
-                        key={String(logId)}
-                        className={`management-badge car-type${logId === 'main' ? ' main' : ''}`}
-                      >
-                        {logLabel}
-                      </span>
-                    ))}
-                  </div>
-                )}
                 <div className="receivable-group-summary">
                   <span className="receivable-summary-label">미수금</span>
                   <strong className="receivable-summary-amount">{formatWon(group.total)}</strong>

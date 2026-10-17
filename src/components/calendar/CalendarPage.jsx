@@ -60,11 +60,10 @@ export default function CalendarPage({
         yearOptions={YEAR_OPTIONS}
         onChangeMonth={changeMonth}
         onOpenMenu={onOpenMenu}
+        banner={!isMain && (
+          <CalendarSubLogBanner logId={logId} onBackToMain={() => navigate('/app/calendar')} />
+        )}
       />
-
-      {!isMain && (
-        <CalendarSubLogBanner logId={logId} onBackToMain={() => navigate('/app/calendar')} />
-      )}
 
       <CalendarGrid
         cells={cells}

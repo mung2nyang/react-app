@@ -103,7 +103,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
         kind: 'today',
         page: 'home',
         title: '오늘 운행일지가 비어 있습니다',
-        body: '홈에서 [운행 기록하기]를 눌러 횟수나 휴무를 남겨 주세요.',
+        body: '홈에서 [운행 기록하기]를 눌러 일지나 휴무를 남겨 주세요.',
         dateLabel: shortDate(dateKey),
       })
     }

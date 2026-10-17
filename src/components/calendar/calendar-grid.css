@@ -146,6 +146,16 @@
   font-weight: 800;
 }
 
+/* 줄이 아니라 숫자 모양을 동그라미 정중앙에 */
+@supports (text-box: trim-both cap alphabetic) {
+  .date-cell.today .cell-date-text {
+    display: inline-block;
+    align-content: center;
+    text-align: center;
+    text-box: trim-both cap alphabetic;
+  }
+}
+
 .cell-date-text { line-height: 1.4; }
 
 /* .unpaid-dot(position:absolute)이 셀 좌상단에 정확히 앉으려면 부모(.date-cell)가

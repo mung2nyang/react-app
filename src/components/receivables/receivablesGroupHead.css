@@ -1,0 +1,18 @@
+/* 월별 묶음 카드: 차량 칩 + 거래처명 한 줄 */
+.receivable-group-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.receivable-group-name-row .receivable-group-cars {
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  margin: 0;
+}
+
+.receivable-group-name-row .receivable-group-title {
+  flex: 1;
+  min-width: 0;
+}

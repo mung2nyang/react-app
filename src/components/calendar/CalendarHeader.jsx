@@ -9,6 +9,7 @@ import CalendarDateSelect from './CalendarDateSelect.jsx'
  * @param {Array<number>} props.yearOptions
  * @param {(year: number, month: number) => void} props.onChangeMonth 월이 -1/12처럼 범위를 벗어나도(이전/다음 달 이동) 그대로 넘긴다 — new Date()가 알아서 연도로 넘긴다.
  * @param {(() => void)} [props.onOpenMenu]
+ * @param {import('react').ReactNode} [props.banner] 년·월 줄 위에 둔다 — 년·월 줄과 달력 판이 붙어야 한 카드가 된다.
  */
 export default function CalendarHeader({
   year,
@@ -16,10 +17,12 @@ export default function CalendarHeader({
   yearOptions,
   onChangeMonth,
   onOpenMenu,
+  banner,
 }) {
   return (
     <>
       <AppTopBar onOpenMenu={onOpenMenu} />
+      {banner}
       <div className="header">
         <div className="date-navigator">
           <button type="button" className="arrow-btn" title="이전 달" onClick={() => onChangeMonth(year, month - 1)}>
