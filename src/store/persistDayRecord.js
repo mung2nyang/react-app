@@ -1,22 +1,36 @@
 // @ts-check
+import * as v from 'valibot'
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
 import { isPersistedCallDetail, isValidCurrencyAmount } from '../lib/callDetailSchema.js'
-import { hasOnlyKeys, isFiniteNumber, isPlainObject } from './persistDomainRecords.js'
+import { isPlainObject } from './persistDomainRecords.js'
 import { isPersistedFuelList, isPersistedMaintList, isPersistedMiscList } from './persistDayRecordLegacy.js'
 
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
-const DAY_RECORD_KEYS = [
-  'isOff', 'fixedCount', 'palletCount', 'callDetails', 'fixedRouteCounts',
-  'fare', 'fixedFare', 'totalFare', 'count', 'dailyDistance',
-  'fuelItems', 'maintItems', 'miscItems', 'assignedVehicleNumber',
-]
+// 하루 기록의 칸 → 모양(Valibot). 목록 밖 칸·값이 비어 있는 칸은 거부.
+const opt = v.exactOptional
+const count = v.pipe(v.number(), v.integer(), v.minValue(0))
+/** @param {(value: JsonValue) => boolean} check */
+const by = (check) => v.custom((input) => check(/** @type {JsonValue} */ (input)))
+const amount = by(isValidCurrencyAmount)
+/** Valibot은 배열도 객체로 받고 검사 뒤엔 새 객체를 넘기므로, 객체 검사 앞에서 배열을 먼저 거른다. @param {(value: Record<string, JsonValue>) => boolean} [extra] */
+const plainObject = (extra = () => true) => by((input) => isPlainObject(input) && extra(input))
 
-/** @param {JsonValue} value @returns {value is number} */
-function isNonNegativeInteger(value) {
-  return typeof value === 'number' && Number.isFinite(value) && Number.isInteger(value) && value >= 0
+const DAY_RECORD_FIELDS = {
+  isOff: opt(v.boolean()), fixedCount: opt(count), palletCount: opt(count),
+  callDetails: opt(v.array(by(isPersistedCallDetail))),
+  fixedRouteCounts: opt(v.pipe(plainObject(), v.record(v.string(), count))),
+  fare: opt(amount), fixedFare: opt(amount), totalFare: opt(amount), count: opt(count),
+  dailyDistance: opt(v.pipe(v.number(), v.finite(), v.minValue(0))),
+  fuelItems: opt(by(isPersistedFuelList)), maintItems: opt(by(isPersistedMaintList)), miscItems: opt(by(isPersistedMiscList)),
+  assignedVehicleNumber: opt(v.string()),
 }
+
+const DAY_RECORD_KEYS = Object.keys(DAY_RECORD_FIELDS)
+
+// 빈 하루 {}는 기록으로 치지 않는다.
+const DAY_RECORD = v.pipe(plainObject((value) => Object.keys(value).length > 0), v.strictObject(DAY_RECORD_FIELDS))
 
 /** @param {JsonValue} value */
 export function canonicalizeDayRecord(value) {
@@ -29,32 +43,7 @@ export function canonicalizeDayRecord(value) {
  * @returns {value is DayRecordLike}
  */
 export function isPersistedDayRecord(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, DAY_RECORD_KEYS) || Object.keys(value).length === 0) return false
-  if ('isOff' in value && typeof value.isOff !== 'boolean') return false
-  if ('fixedCount' in value && !isNonNegativeInteger(value.fixedCount)) return false
-  if ('palletCount' in value && !isNonNegativeInteger(value.palletCount)) return false
-  if ('count' in value && !isNonNegativeInteger(value.count)) return false
-  if ('dailyDistance' in value && !(isFiniteNumber(value.dailyDistance) && Number(value.dailyDistance) >= 0)) return false
-  if ('fare' in value && !isValidCurrencyAmount(value.fare)) return false
-  if ('fixedFare' in value && !isValidCurrencyAmount(value.fixedFare)) return false
-  if ('totalFare' in value && !isValidCurrencyAmount(value.totalFare)) return false
-  if ('assignedVehicleNumber' in value && typeof value.assignedVehicleNumber !== 'string') return false
-  if ('fixedRouteCounts' in value) {
-    if (!isPlainObject(value.fixedRouteCounts)) return false
-    for (const count of Object.values(value.fixedRouteCounts)) {
-      if (!isNonNegativeInteger(count)) return false
-    }
-  }
-  if ('callDetails' in value) {
-    if (!Array.isArray(value.callDetails)) return false
-    for (const item of value.callDetails) {
-      if (!isPersistedCallDetail(item)) return false
-    }
-  }
-  if ('fuelItems' in value && !isPersistedFuelList(value.fuelItems)) return false
-  if ('maintItems' in value && !isPersistedMaintList(value.maintItems)) return false
-  if ('miscItems' in value && !isPersistedMiscList(value.miscItems)) return false
-  return true
+  return v.is(DAY_RECORD, value)
 }
 
 /**
