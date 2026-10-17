@@ -33,23 +33,6 @@
   border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
 }
 
-/* 원본 style.css:364-378 .inline-icon — 전역(스코프 없음) */
-.inline-icon {
-  width: 20px;
-  height: 20px;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-  vertical-align: middle;
-}
-
-.inline-icon.sm {
-  width: 16px;
-  height: 16px;
-}
-
 .unpaid-summary-card {
   display: flex;
   align-items: center;

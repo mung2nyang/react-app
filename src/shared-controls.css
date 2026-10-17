@@ -173,8 +173,7 @@
   font-size: var(--fs-floor);
 }
 
-/* 전역 인라인 아이콘(테마·백업 버튼) — calendar.css에도 동일 정의가 있으나
-   앱설정은 calendar를 import하지 않으므로 공용 파일에 둔다. */
+/* 전역 인라인 아이콘(앱 설정 백업 버튼·달력 월 요약) — App.jsx가 모든 화면에 불러옴. */
 .inline-icon {
   width: 20px;
   height: 20px;

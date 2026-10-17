@@ -1,6 +1,5 @@
-/* CustomerCenterPage.jsx 전용. .support-panel/.support-card/
-   .faq-item/.support-detail은 NoticePage.jsx와 공유해 notice.css에 별도 복제
-   (둘 다 lazyPages.js에서 별도 청크라 자기완결 유지, side-menu.css §6 분리). */
+/* 고객센터(CustomerCenterPage.jsx)·공지사항(NoticePage.jsx) 공용 — .support-panel/.support-card/
+   .faq-item/.support-detail은 두 화면이 같이 쓴다. */
 .customer-center-page { padding-bottom: 110px; text-align: left; }
 .support-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0 14px; padding: 5px; border-radius: 14px; background: var(--input-bg); }
 .support-tab { min-height: 44px; padding: 7px 4px; border: 0; border-radius: 10px; background: transparent; color: var(--sub-text-color); font: inherit; font-size: var(--fs-floor); font-weight: 750; cursor: pointer; }

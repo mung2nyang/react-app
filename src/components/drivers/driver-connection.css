@@ -1,9 +1,8 @@
 /* DriverConnectionPage — 바닐라 driver-connection 요약/연동카드 + 초대 모달.
-   linked-driver.css §15 슬라이스 A 분리(§6) — driver-section-heading은
-   ClientInvoiceGroups(linked-driver.css)와 공유 클래스라 두 파일에 각각 복제(§9 전례 동일). */
+   linked-driver.css §15 슬라이스 A 분리(§6). */
 /* 원본 style.css 2162~2165행 + text-align:left — 부모 .main-app-container가
    text-align:center라 h3/p 각각의 짧은 줄이 개별적으로 가운데 정렬돼 보이는
-   문제까지 명시적으로 상쇄(§15 슬라이스 A, linked-driver.css와 동일 복제) */
+   문제까지 명시적으로 상쇄(§15 슬라이스 A) */
 .driver-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; text-align: left; }
 .driver-section-heading h3, .driver-section-heading p { margin: 0; }
 .driver-section-heading h3 { color: var(--text-color); font-size: var(--fs-3); }

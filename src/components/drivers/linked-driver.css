@@ -154,13 +154,6 @@
   font-weight: 700;
   color: var(--sub-text-color);
 }
-/* 원본 style.css 2162~2165행 + text-align:left — 부모 .main-app-container가
-   text-align:center라 h3/p 각각의 짧은 줄이 개별적으로 가운데 정렬돼 보이는
-   문제까지 명시적으로 상쇄(§15 슬라이스 A, 보리 검증 지적으로 추가) */
-.driver-section-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; text-align: left; }
-.driver-section-heading h3, .driver-section-heading p { margin: 0; }
-.driver-section-heading h3 { color: var(--text-color); font-size: var(--fs-3); }
-.driver-section-heading p { margin-top: 4px; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; }
 
 /* 원본 style.css 2153·6954행 — 이관 시 누락된 배경카드 복원(§15 슬라이스 A) */
 .driver-list-section {

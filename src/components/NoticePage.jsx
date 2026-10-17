@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
 import PageHeader from './PageHeader.jsx'
-import './notice.css'
+import './customer-center.css'
 
 // 실제 공지는 출시 때 추가(임시 글 삭제, 문구 정리 1).
 /** @type {Array<{ title: string, date: string, body: string }>} */
