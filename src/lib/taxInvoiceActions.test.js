@@ -5,7 +5,7 @@ import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
-const { changeTaxInvoiceStatus, saveTaxInvoiceDraft } = await import('./taxInvoiceActions.js')
+const { changeTaxInvoiceStatus, checkTaxInvoiceDraft, saveTaxInvoiceDraft } = await import('./taxInvoiceActions.js')
 
 const SAVE_FAIL = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 
@@ -72,4 +72,10 @@ test('74-4: 발급 상태 되돌리기가 성공하면 지금 안내', async () 
   await changeTaxInvoiceStatus({ item: ITEM, status: 'draft', settings: {}, records: [ITEM], persist, openDraft: () => {}, showToast })
   assert.equal(calls[0]?.[0]?.status, 'draft')
   assert.deepEqual(toasts, ['처리 전 상태로 되돌렸습니다.'])
+})
+
+test('저장 전 검사 — 사업자등록번호 → 작성일자 순서로 빈 칸 하나(로드맵 82-C)', () => {
+  assert.deepEqual(checkTaxInvoiceDraft({ id: 'inv-82c', clientBizNumber: '', issueDate: '' }), { field: 'clientBizNumber', message: '사업자등록번호를 입력해 주세요.' })
+  assert.deepEqual(checkTaxInvoiceDraft({ id: 'inv-82c', clientBizNumber: '123-45-67890', issueDate: '' }), { field: 'issueDate', message: '작성일자를 입력해 주세요.' })
+  assert.equal(checkTaxInvoiceDraft({ id: 'inv-82c', clientBizNumber: '123-45-67890', issueDate: '2026-10-31' }), null)
 })

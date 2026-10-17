@@ -10,8 +10,8 @@ import {
   monthWorkFareSummary,
   saveDayRecord,
 } from './day-record.js'
-import { upsertCallDetail } from './call-details.js'
-import { addPartialPayment, toggleCallPaymentStatus } from './payments.js'
+import { checkCallDetailDraft, upsertCallDetail } from './call-details.js'
+import { addPartialPayment, checkPartialAmount, toggleCallPaymentStatus } from './payments.js'
 
 const dateKey = '2026-05-10'
 const clients = [
@@ -269,5 +269,19 @@ describe('saveDayRecord — 비용 임베드를 일지에 남기지 않는다', 
     assert.equal(next[dateKey].callDetails.length, 2)
     assert.equal(next[dateKey].callDetails[0].id, 'trp_a')
     assert.equal(next[dateKey].callDetails[1].id, '7')
+  })
+})
+
+describe('저장 전 칸 검사(로드맵 82-C)', () => {
+  test('콜 상세 — 운임·상차지·하차지가 모두 비면 상차지 칸, 하나라도 있으면 없음', () => {
+    assert.deepEqual(checkCallDetailDraft({ fare: '', loadLoc: ' ', unloadLoc: '' }), { field: 'loadLoc', message: '운임 또는 상·하차지 중 하나를 입력해 주세요.' })
+    assert.equal(checkCallDetailDraft({ unloadLoc: '대구' }), null)
+    assert.equal(checkCallDetailDraft({ fare: '100,000' }), null)
+  })
+
+  test('부분 입금 — 0·빈칸, 남은 금액 초과는 입금액 칸 문구', () => {
+    assert.deepEqual(checkPartialAmount('', 50000), { field: 'amount', message: '입금액을 올바르게 입력해 주세요.' })
+    assert.deepEqual(checkPartialAmount('60,000', 50000), { field: 'amount', message: '남은 금액보다 큰 금액은 입력할 수 없습니다.' })
+    assert.equal(checkPartialAmount('50,000', 50000), null)
   })
 })

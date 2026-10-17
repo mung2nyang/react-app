@@ -75,6 +75,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', isEmployedDr
           saving={actions.saving}
           partialKey={actions.partialKey}
           partialAmount={actions.partialAmount}
+          partialProblem={actions.partialProblem}
           historyKey={actions.historyKey}
           onTogglePartial={togglePartial}
           onPartialAmountChange={actions.setPartialAmount}

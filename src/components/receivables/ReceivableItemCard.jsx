@@ -2,6 +2,8 @@
 import { formatWon, formatCurrencyInput, parseCurrencyValue } from '../../lib/money.js'
 import { formatWorkMonth, getDdayLabel, receivableItemKey } from '../../lib/receivables.js'
 import CurrencyInput from '../shared/CurrencyInput.jsx'
+import FieldError, { invalidProps } from '../shared/FieldError.jsx'
+import { partialInputId } from './useReceivablesActions.js'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 /** @typedef {import('../../domain/callDetail.js').PaymentLike} PaymentLike */
@@ -14,6 +16,7 @@ import CurrencyInput from '../shared/CurrencyInput.jsx'
  * @param {boolean} [props.saving]
  * @param {string} [props.partialKey]
  * @param {string} [props.partialAmount]
+ * @param {import('../shared/FieldError.jsx').FieldProblem|null} [props.partialProblem]
  * @param {string} [props.historyKey]
  * @param {(key: string) => void} [props.onTogglePartial]
  * @param {(value: string) => void} [props.onPartialAmountChange]
@@ -23,7 +26,7 @@ import CurrencyInput from '../shared/CurrencyInput.jsx'
  * @param {() => void} [props.onUndoPayment]
  */
 export default function ReceivableItemCard({
-  item, compact, hasSubCars, saving = false, partialKey = '', partialAmount = '',
+  item, compact, hasSubCars, saving = false, partialKey = '', partialAmount = '', partialProblem = null,
   historyKey = '', onTogglePartial, onPartialAmountChange, onConfirmPartial,
   onToggleHistory, onPayItem, onUndoPayment,
 }) {
@@ -111,17 +114,20 @@ export default function ReceivableItemCard({
       {partialKey === key && onConfirmPartial && onPartialAmountChange && (
         <div className="receivable-partial-input-row">
           <CurrencyInput
+            id={partialInputId(key)}
             clearable
             className="input-box"
             placeholder="입금액 입력"
             value={formatCurrencyInput(partialAmount)}
             onValueChange={onPartialAmountChange}
+            {...invalidProps(partialProblem, 'amount', partialInputId(key))}
           />
           <button type="button" className="receivable-partial-confirm-btn" onClick={onConfirmPartial} disabled={saving}>
             확인
           </button>
         </div>
       )}
+      {partialKey === key && <FieldError problem={partialProblem} field="amount" inputId={partialInputId(key)} />}
     </article>
   )
 }

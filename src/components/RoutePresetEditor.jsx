@@ -1,7 +1,8 @@
 // @ts-check
 // 앱 설정의 노선 이름표(프리셋) 편집.
 import { useState } from 'react'
-import { addFixedRoutePreset, FIXED_ROUTE_PRESET_MAX, removeFixedRoutePreset } from '../lib/practiceSettings.js'
+import { addFixedRoutePreset, checkRoutePreset, FIXED_ROUTE_PRESET_MAX, removeFixedRoutePreset } from '../lib/practiceSettings.js'
+import FieldError, { focusField, invalidProps } from './shared/FieldError.jsx'
 
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 
@@ -17,8 +18,18 @@ export default function RoutePresetEditor({ scope, settings, onPatch, showToast 
   const [unloadLoc, setUnloadLoc] = useState('')
   const key = scope === 'sub' ? 'subFixedRoutePresets' : 'fixedRoutePresets'
   const presets = settings[key] || []
+  const ids = { loadLoc: `routePresetLoad-${scope}`, unloadLoc: `routePresetUnload-${scope}` }
+  const [problem, setProblem] = useState(/** @type {ReturnType<typeof checkRoutePreset>} */ (null))
+  // 문제 칸을 채우면 표시를 거둔다.
+  const shown = problem && checkRoutePreset(loadLoc, unloadLoc)?.field === problem.field ? problem : null
 
   function addRoute() {
+    const found = checkRoutePreset(loadLoc, unloadLoc)
+    setProblem(found)
+    if (found) {
+      focusField(ids[found.field])
+      return
+    }
     const result = addFixedRoutePreset(settings, scope, loadLoc, unloadLoc)
     if (result.error) {
       showToast?.(result.error)
@@ -45,11 +56,13 @@ export default function RoutePresetEditor({ scope, settings, onPatch, showToast 
         ))}
       </div>
       <div className="fixed-route-preset-add-row">
-        <input className="input-box" placeholder="상차지" value={loadLoc} onChange={(e) => setLoadLoc(e.target.value)} />
+        <input id={ids.loadLoc} className="input-box" placeholder="상차지" value={loadLoc} onChange={(e) => setLoadLoc(e.target.value)} {...invalidProps(shown, 'loadLoc', ids.loadLoc)} />
         <span className="fixed-route-preset-arrow">→</span>
-        <input className="input-box" placeholder="하차지" value={unloadLoc} onChange={(e) => setUnloadLoc(e.target.value)} />
+        <input id={ids.unloadLoc} className="input-box" placeholder="하차지" value={unloadLoc} onChange={(e) => setUnloadLoc(e.target.value)} {...invalidProps(shown, 'unloadLoc', ids.unloadLoc)} />
         <button type="button" disabled={presets.length >= FIXED_ROUTE_PRESET_MAX} onClick={addRoute}>추가</button>
       </div>
+      <FieldError problem={shown} field="loadLoc" inputId={ids.loadLoc} />
+      <FieldError problem={shown} field="unloadLoc" inputId={ids.unloadLoc} />
     </div>
   )
 }

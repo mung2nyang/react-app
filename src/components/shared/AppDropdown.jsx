@@ -13,8 +13,11 @@ import './app-dropdown.css'
  * @param {(next: string) => void} props.onChange
  * @param {string} [props.className]
  * @param {string} [props.placeholder] 값과 맞는 항목이 없을 때 버튼에 보일 글자(없으면 첫 항목)
+ * @param {string} [props.id] 단추 id(칸 오류 표시에서 커서를 옮길 때)
+ * @param {boolean} [props.invalid] 입력이 잘못된 칸 — 단추에 빨간 표시(FieldError.jsx)
+ * @param {string} [props.describedBy] 칸 아래 오류 문구 id
  */
-export default function AppDropdown({ label, value, options, onChange, className = '', placeholder }) {
+export default function AppDropdown({ label, value, options, onChange, className = '', placeholder, id, invalid = false, describedBy }) {
   const listId = useId()
   const rootRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const listRef = useRef(/** @type {HTMLDivElement|null} */ (null))
@@ -70,7 +73,10 @@ export default function AppDropdown({ label, value, options, onChange, className
     <div className={rootClass} ref={rootRef}>
       <button
         type="button"
+        id={id}
         className="app-dropdown-trigger"
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}

@@ -125,6 +125,13 @@
   outline-offset: -2px;
 }
 
+/* 입력이 잘못된 칸(로드맵 82) — 커서가 있어도 빨강이라 위 커서 표시보다 뒤에 둔다 */
+.app-dropdown-boxed .app-dropdown-trigger[aria-invalid='true'] {
+  border-color: var(--sunday-color);
+  outline: 2px solid var(--sunday-color);
+  outline-offset: -2px;
+}
+
 .app-dropdown-boxed .app-dropdown-menu {
   width: 100%;
 }

@@ -9,6 +9,7 @@ import {
   saveMessageTemplateSettings,
 } from '../lib/messageTemplates.js'
 import PageHeader from './PageHeader.jsx'
+import FieldError, { focusField, invalidProps } from './shared/FieldError.jsx'
 import './message-settings.css'
 
 /**
@@ -22,6 +23,11 @@ export default function MessageSettingsPage({ onBack, showToast }) {
   const [paymentRequest, setPaymentRequest] = useState(initial[1])
   const [tripComplete, setTripComplete] = useState(initial[2])
   const [reportShare, setReportShare] = useState(getReportShareMessagePattern())
+  const [problemId, setProblemId] = useState('')
+  const values = { msgUnpaid: unpaid, msgPaymentRequest: paymentRequest, msgTripComplete: tripComplete, msgReportShare: reportShare }
+  // 위에서부터 첫 빈 칸 하나. 그 칸을 채우면 표시를 거둔다.
+  const emptyId = Object.keys(values).find((id) => !values[/** @type {keyof typeof values} */ (id)].trim()) || ''
+  const shown = problemId && problemId === emptyId ? { field: problemId, message: '문구를 입력해 주세요.' } : null
 
   function handleSave() {
     const unpaidMessage = unpaid.trim()
@@ -29,8 +35,9 @@ export default function MessageSettingsPage({ onBack, showToast }) {
     const tripCompleteMessage = tripComplete.trim()
     const reportMessage = reportShare.trim()
 
-    if (!unpaidMessage || !paymentRequestMessage || !tripCompleteMessage || !reportMessage) {
-      showToast?.('모든 문자 문구를 입력해 주세요.')
+    setProblemId(emptyId)
+    if (emptyId) {
+      focusField(emptyId)
       return
     }
 
@@ -68,7 +75,8 @@ export default function MessageSettingsPage({ onBack, showToast }) {
           <h3>미수금 안내 문자</h3>
           <p>운행일지의 미수금 문자 보내기에 사용됩니다.</p>
         </div>
-        <textarea className="message-settings-textarea" maxLength={500} aria-label="미수금 안내 문자 문구" value={unpaid} onChange={(e) => setUnpaid(e.target.value)} />
+        <textarea className="message-settings-textarea" maxLength={500} aria-label="미수금 안내 문자 문구" id="msgUnpaid" value={unpaid} onChange={(e) => setUnpaid(e.target.value)} {...invalidProps(shown, 'msgUnpaid', 'msgUnpaid')} />
+        <FieldError problem={shown} field="msgUnpaid" inputId="msgUnpaid" />
         <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처} · {운행구간} · {운송료}'}</p>
       </section>
 
@@ -77,7 +85,8 @@ export default function MessageSettingsPage({ onBack, showToast }) {
           <h3>입금 요청 문자</h3>
           <p>운행일지의 입금 요청 문자 보내기에 사용됩니다.</p>
         </div>
-        <textarea className="message-settings-textarea" maxLength={500} aria-label="입금 요청 문자 문구" value={paymentRequest} onChange={(e) => setPaymentRequest(e.target.value)} />
+        <textarea className="message-settings-textarea" maxLength={500} aria-label="입금 요청 문자 문구" id="msgPaymentRequest" value={paymentRequest} onChange={(e) => setPaymentRequest(e.target.value)} {...invalidProps(shown, 'msgPaymentRequest', 'msgPaymentRequest')} />
+        <FieldError problem={shown} field="msgPaymentRequest" inputId="msgPaymentRequest" />
         <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처} · {운행구간} · {운송료}'}</p>
       </section>
 
@@ -86,7 +95,8 @@ export default function MessageSettingsPage({ onBack, showToast }) {
           <h3>운행 완료 문자</h3>
           <p>운행일지의 운행 완료 문자 보내기에 사용됩니다.</p>
         </div>
-        <textarea className="message-settings-textarea" maxLength={500} aria-label="운행 완료 문자 문구" value={tripComplete} onChange={(e) => setTripComplete(e.target.value)} />
+        <textarea className="message-settings-textarea" maxLength={500} aria-label="운행 완료 문자 문구" id="msgTripComplete" value={tripComplete} onChange={(e) => setTripComplete(e.target.value)} {...invalidProps(shown, 'msgTripComplete', 'msgTripComplete')} />
+        <FieldError problem={shown} field="msgTripComplete" inputId="msgTripComplete" />
         <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처} · {운행구간} · {운송료}'}</p>
       </section>
 
@@ -95,7 +105,8 @@ export default function MessageSettingsPage({ onBack, showToast }) {
           <h3>운송비 내역서 공유 문구</h3>
           <p>카카오톡과 문자 공유에 함께 포함됩니다.</p>
         </div>
-        <textarea className="message-settings-textarea" maxLength={500} aria-label="운송비 내역서 공유 문구" value={reportShare} onChange={(e) => setReportShare(e.target.value)} />
+        <textarea className="message-settings-textarea" maxLength={500} aria-label="운송비 내역서 공유 문구" id="msgReportShare" value={reportShare} onChange={(e) => setReportShare(e.target.value)} {...invalidProps(shown, 'msgReportShare', 'msgReportShare')} />
+        <FieldError problem={shown} field="msgReportShare" inputId="msgReportShare" />
         <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처}'}</p>
       </section>
 

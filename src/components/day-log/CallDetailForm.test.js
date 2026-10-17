@@ -140,3 +140,44 @@ describe('운송료 1,000만원 초과 저장 확인(로드맵 43-C)', () => {
   })
 })
 
+/** React 제어 입력에 값을 넣고 input 이벤트를 보낸다. @param {HTMLInputElement} input @param {string} value */
+function typeInto(input, value) {
+  const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value')?.set
+  setter?.call(input, value)
+  input.dispatchEvent(new window.Event('input', { bubbles: true }))
+}
+
+describe('입력이 잘못된 칸 표시(로드맵 82-C)', () => {
+  test('아무것도 안 넣고 저장 → 상차지 칸 표시·문구·커서, 저장 안 함, 채우면 사라짐', async () => {
+    /** @type {Array<object>} */
+    const saves = []
+    const view = await mount({ onSave: (/** @type {object} */ item) => saves.push(item) })
+    try {
+      const saveButton = [...view.container.querySelectorAll('button')].find((button) => button.textContent === '저장')
+      await act(async () => { saveButton?.click() })
+      const input = /** @type {HTMLInputElement} */ (view.container.querySelector('#callLoadLoc'))
+      assert.equal(saves.length, 0)
+      assert.equal(input.getAttribute('aria-invalid'), 'true')
+      assert.equal(view.container.querySelector('#callLoadLoc-error')?.textContent, '운임 또는 상·하차지 중 하나를 입력해 주세요.')
+      assert.equal(document.activeElement, input)
+      await act(async () => { typeInto(input, '부산') })
+      assert.equal(input.getAttribute('aria-invalid'), null)
+      assertMissing(view.container.querySelector('#callLoadLoc-error'), '채우면 문구가 사라져야 한다')
+    } finally { await view.cleanup() }
+  })
+
+  test('마감 계기판이 출발보다 작으면 마감 칸 표시·문구, 고치면 운행거리', async () => {
+    const view = await mount({ settings: normalizeSettings({ distanceOn: true }) })
+    try {
+      const start = /** @type {HTMLInputElement} */ (view.container.querySelector('#callStartOdometer'))
+      const end = /** @type {HTMLInputElement} */ (view.container.querySelector('#callEndOdometer'))
+      await act(async () => { typeInto(start, '1000') })
+      await act(async () => { typeInto(end, '900') })
+      assert.equal(end.getAttribute('aria-invalid'), 'true')
+      assert.equal(view.container.querySelector('#callEndOdometer-error')?.textContent, '마감 계기판이 출발 계기판보다 작습니다.')
+      await act(async () => { typeInto(end, '1100') })
+      assert.equal(end.getAttribute('aria-invalid'), null)
+      assert.ok(view.container.textContent?.includes('운행거리 100km'))
+    } finally { await view.cleanup() }
+  })
+})

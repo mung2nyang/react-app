@@ -79,3 +79,25 @@ test('문구에 거래처·달·건수(0원 제외)·금액, 버튼은 [입금 �
   assert.equal(asked[0].options?.confirmLabel, '입금 완료')
   assert.equal(asked[0].options?.danger, undefined)
 })
+
+test('로드맵 82-C — 부분 입금액이 남은 금액보다 크면 저장 없이 입금액 칸 문구, 고치면 사라짐', async () => {
+  /** @type {{ actions?: ReturnType<typeof useReceivablesActions> }} */
+  const captured = {}
+  function Harness() {
+    captured.actions = useReceivablesActions({ ownerKey: 'owner-82c', workDataByLogId: WORK, settings: SETTINGS, confirm: async () => true })
+    return null
+  }
+  const container = document.createElement('div')
+  const root = createRoot(container)
+  await act(async () => { root.render(React.createElement(Harness)) })
+  const item = /** @type {import('../../domain/financeReceivables.js').ReceivableItemLike} */ ({ logId: 'main', dateKey: '2026-10-01', detailId: 'a', remainingAmount: 300000 })
+  await act(async () => { captured.actions?.setPartialKey('main|a'); captured.actions?.setPartialAmount('400,000') })
+  await act(async () => { captured.actions?.confirmPartial(item) })
+  assert.equal(persistCalls, 0)
+  assert.equal(captured.actions?.partialProblem?.message, '남은 금액보다 큰 금액은 입력할 수 없습니다.')
+  await act(async () => { captured.actions?.setPartialAmount('100,000') })
+  assert.equal(captured.actions?.partialProblem, null)
+  await act(async () => { captured.actions?.confirmPartial(item) })
+  assert.equal(persistCalls, 1)
+  await act(async () => { root.unmount() })
+})

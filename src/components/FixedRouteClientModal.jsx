@@ -10,6 +10,7 @@ import CurrencyInput from './shared/CurrencyInput.jsx'
 import { requestClientSave } from '../lib/clientMutations.js'
 import { getCloudUserId } from '../lib/cloudSession.js'
 import ModalShell from './shared/ModalShell.jsx'
+import FieldError, { focusField } from './shared/FieldError.jsx'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 
@@ -29,6 +30,11 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
   const [palletPrice, setPalletPrice] = useState(formatCurrencyInput(linked?.palletPrice ?? ''))
   const [saving, setSaving] = useState(false)
   const [confirmUnlink, setConfirmUnlink] = useState(false)
+  const [missing, setMissing] = useState(false)
+  // 거래처를 고르면 표시를 거둔다.
+  const shown = missing && !candidates.some((item) => item.id === selectedId)
+    ? { field: 'client', message: '거래처를 선택해 주세요.' }
+    : null
 
   /** @param {string} id */
   function pick(id) {
@@ -54,8 +60,9 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
 
   function save() {
     const target = candidates.find((item) => item.id === selectedId)
+    setMissing(!target)
     if (!target) {
-      showToast?.('거래처를 선택해 주세요.')
+      focusField('fixedRouteClientSelect')
       return
     }
     void submit(target, { ...clientToDraft(target), fixedRouteLinked: true, fixedUnitPrice: price, palletOn, palletPrice: palletOn ? palletPrice : '' })
@@ -74,8 +81,9 @@ export default function FixedRouteClientModal({ ownerKey, clients, candidates, l
         <div className="modal-title">고정 노선 거래처</div>
         <div className="form-group fixed-route-client-row">
           <label>거래처</label>
-          <AppDropdown label="고정 노선 거래처" value={selectedId} options={options} placeholder="선택" className="app-dropdown-boxed" onChange={pick} />
+          <AppDropdown id="fixedRouteClientSelect" label="고정 노선 거래처" value={selectedId} options={options} placeholder="선택" className="app-dropdown-boxed" onChange={pick} invalid={Boolean(shown)} describedBy={shown ? 'fixedRouteClientSelect-error' : undefined} />
         </div>
+        <FieldError problem={shown} field="client" inputId="fixedRouteClientSelect" />
         <div className="form-group fixed-route-client-row">
           <label htmlFor="fixedRouteClientPrice">1회 단가</label>
           <span className="car-commission-input">

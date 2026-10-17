@@ -13,10 +13,15 @@ import {
 import { getReceivableItems } from '../../lib/finance.js'
 import { groupItems } from '../../lib/receivables.js'
 import { formatWon } from '../../lib/money.js'
+import { checkPartialAmount } from '../../domain/payments.js'
+import { focusField } from '../shared/FieldError.jsx'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 /** @typedef {import('../../domain/financeTypes.js').WorkDataByLogId} WorkDataByLogId */
 /** @typedef {import('../../domain/day-record.js').DayRecordLike} DayRecordLike */
+
+/** @param {string} key */
+export const partialInputId = (key) => `receivablePartial-${key}`
 
 /**
  * @param {Object} params
@@ -34,6 +39,9 @@ export function useReceivablesActions({
   const [partialKey, setPartialKey] = useState('')
   const [partialAmount, setPartialAmount] = useState('')
   const [historyKey, setHistoryKey] = useState('')
+  const [problem, setProblem] = useState(/** @type {(NonNullable<ReturnType<typeof checkPartialAmount>> & { key: string, value: string })|null} */ (null))
+  // 같은 카드에서 입금액을 고치기 시작하면 표시를 거둔다.
+  const partialProblem = problem && problem.key === partialKey && problem.value === partialAmount ? problem : null
 
   function clearPartialUi() {
     setPartialKey('')
@@ -115,6 +123,12 @@ export function useReceivablesActions({
 
   /** @param {ReceivableItemLike} item */
   function confirmPartial(item) {
+    const found = checkPartialAmount(partialAmount, item.remainingAmount)
+    setProblem(found && { ...found, key: partialKey, value: partialAmount })
+    if (found) {
+      focusField(partialInputId(partialKey))
+      return
+    }
     applyPatch(item.logId, item.dateKey, item.detailId, (store, dateKey, detailId) => (
       addPartialPayment(store, dateKey, detailId, partialAmount)
     ), '부분 입금을 등록했습니다.')
@@ -135,6 +149,7 @@ export function useReceivablesActions({
     setPartialKey,
     partialAmount,
     setPartialAmount,
+    partialProblem,
     historyKey,
     setHistoryKey,
     payItem,

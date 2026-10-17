@@ -23,6 +23,17 @@ async function saveSucceeded(save, label) {
 }
 
 /**
+ * 저장 전 검사 — 사업자등록번호 → 작성일자 순서로 빈 칸 하나.
+ * @param {InvoiceLike} item
+ * @returns {{ field: 'clientBizNumber'|'issueDate', message: string }|null}
+ */
+export function checkTaxInvoiceDraft(item) {
+  if (!item.clientBizNumber) return { field: 'clientBizNumber', message: '사업자등록번호를 입력해 주세요.' }
+  if (!item.issueDate) return { field: 'issueDate', message: '작성일자를 입력해 주세요.' }
+  return null
+}
+
+/**
  * @param {Object} params
  * @param {string} params.ownerKey
  * @param {Array<ClientLike>} params.clients
@@ -33,12 +44,9 @@ async function saveSucceeded(save, label) {
  * @returns {Promise<boolean>} true면 모달을 닫아도 됨
  */
 export async function saveTaxInvoiceDraft({ ownerKey, clients, records, modalItem, persist, showToast }) {
-  if (!modalItem.clientBizNumber) {
-    showToast?.('사업자등록번호를 입력해 주세요.')
-    return false
-  }
-  if (!modalItem.issueDate) {
-    showToast?.('작성일자를 입력해 주세요.')
+  const problem = checkTaxInvoiceDraft(modalItem)
+  if (problem) {
+    showToast?.(problem.message)
     return false
   }
   const nextItem = { ...modalItem, updatedAt: new Date().toISOString() }

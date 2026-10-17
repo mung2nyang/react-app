@@ -3,13 +3,15 @@
 import { useState } from 'react'
 import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../lib/clients.js'
 import { parseCurrencyValue } from '../../lib/money.js'
-import { computeDistanceKm } from '../../lib/workData.js'
+import { checkCallDetailDraft } from '../../domain/call-details.js'
 import { confirmLargeFareSave, draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
 import CallClientQuickAdd from './CallClientQuickAdd.jsx'
+import CallOdometerFields from './CallOdometerFields.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
 import CurrencyInput from '../shared/CurrencyInput.jsx'
 import TemporalInput from '../shared/TemporalInput.jsx'
+import FieldError, { focusField, invalidProps } from '../shared/FieldError.jsx'
 import CallDetailPaymentFields, { CallInsuranceFeeField, CallVatExemptRow } from './CallDetailPaymentFields.jsx'
 import './call-detail-form.css'
 
@@ -48,8 +50,9 @@ export default function CallDetailForm({
   const scopeKey = clientScopeKey || logId
   const scopedClients = /** @type {Array<ClientLike>} */ (getClientsForLog(clients, scopeKey))
   const shortcuts = /** @type {Array<ClientLike>} */ (pinnedClients(scopedClients))
-  const distancePreview = computeDistanceKm(draft.startOdometer, draft.endOdometer)
-  const odometerError = Boolean(draft.startOdometer && draft.endOdometer && !distancePreview)
+  const [problem, setProblem] = useState(/** @type {ReturnType<typeof checkCallDetailDraft>} */ (null))
+  // 세 칸 중 하나라도 채우면 표시를 거둔다.
+  const shown = problem && checkCallDetailDraft(draft)
   const fareNumber = parseCurrencyValue(draft.fare)
   const vatPreview = !fareNumber
     ? ''
@@ -60,6 +63,16 @@ export default function CallDetailForm({
   const paymentGuide = selectedClient
     ? getPaymentTermLabel(selectedClient.paymentTerm, selectedClient.paymentTermValue)
     : '거래처를 선택하면 결제 조건에 맞춰 자동 입력됩니다.'
+
+  async function handleSave() {
+    const found = checkCallDetailDraft(draft)
+    setProblem(found)
+    if (found) {
+      focusField('callLoadLoc')
+      return
+    }
+    if (await confirmLargeFareSave(draft.fare)) onSave(draft)
+  }
 
   /** @param {string} name */
   function applyClient(name) {
@@ -78,7 +91,8 @@ export default function CallDetailForm({
       <div className="call-detail-panel call-route-panel">
         <div className="form-group">
           <label className="load-label" htmlFor="callLoadLoc">상차지</label>
-          <ClearableInput id="callLoadLoc" className="input-box" placeholder="상차지 입력" value={draft.loadLoc} onFocus={() => setActiveLocationTarget('load')} onChange={(e) => setDraft({ ...draft, loadLoc: e.target.value })} />
+          <ClearableInput id="callLoadLoc" className="input-box" placeholder="상차지 입력" value={draft.loadLoc} onFocus={() => setActiveLocationTarget('load')} onChange={(e) => setDraft({ ...draft, loadLoc: e.target.value })} {...invalidProps(shown, 'loadLoc', 'callLoadLoc')} />
+          <FieldError problem={shown} field="loadLoc" inputId="callLoadLoc" />
         </div>
         <div className="form-group">
           <label className="unload-label" htmlFor="callUnloadLoc">하차지</label>
@@ -155,25 +169,7 @@ export default function CallDetailForm({
           </div>
         </div>
       )}
-      {settings.distanceOn && (
-        <div className="call-detail-panel call-two-column-panel">
-          <div className="form-group">
-            <label htmlFor="callStartOdometer">출발 계기판</label>
-            <div className="input-with-suffix">
-              <CurrencyInput id="callStartOdometer" className="input-box" placeholder="출발 계기판" value={draft.startOdometer} onValueChange={(startOdometer) => setDraft({ ...draft, startOdometer })} />
-              <span className="suffix">km</span>
-            </div>
-          </div>
-          <div className="form-group">
-            <label htmlFor="callEndOdometer">마감 계기판</label>
-            <div className="input-with-suffix">
-              <CurrencyInput id="callEndOdometer" className={`input-box${odometerError ? ' input-error' : ''}`} placeholder="마감 계기판" value={draft.endOdometer} onValueChange={(endOdometer) => setDraft({ ...draft, endOdometer })} />
-              <span className="suffix">km</span>
-            </div>
-          </div>
-          {distancePreview && <p className="billing-settings-note">운행거리 {distancePreview}km</p>}
-        </div>
-      )}
+      {settings.distanceOn && <CallOdometerFields draft={draft} setDraft={setDraft} />}
       {settings.platformOn && (
         <div className="call-detail-panel">
           <div className="call-inline-field platform-main-row">
@@ -194,7 +190,7 @@ export default function CallDetailForm({
       </div>
       <div className="modal-btns call-detail-form-actions">
         <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
-        <button type="button" className="modal-btn confirm" onClick={async () => { if (await confirmLargeFareSave(draft.fare)) onSave(draft) }}>저장</button>
+        <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
       </div>
     </div>
   )

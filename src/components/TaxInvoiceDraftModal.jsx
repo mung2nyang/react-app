@@ -1,13 +1,18 @@
 // @ts-check
+import { useState } from 'react'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../domain/formatPhone.js'
 import { formatWon } from '../lib/money.js'
+import { checkTaxInvoiceDraft } from '../lib/taxInvoiceActions.js'
 import BizNumberHint from './shared/BizNumberHint.jsx'
 import ClearableInput from './shared/ClearableInput.jsx'
 import TemporalInput from './shared/TemporalInput.jsx'
 import './tax-invoice/tax-invoice.css'
 import ModalShell from './shared/ModalShell.jsx'
+import FieldError, { focusField, invalidProps } from './shared/FieldError.jsx'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+
+const INPUT_IDS = { clientBizNumber: 'invBiz', issueDate: 'invDate' }
 
 /**
  * @param {Object} props
@@ -18,6 +23,21 @@ import ModalShell from './shared/ModalShell.jsx'
  * @param {() => void} props.onSave
  */
 export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, onCancel, onSave }) {
+  const [problem, setProblem] = useState(/** @type {ReturnType<typeof checkTaxInvoiceDraft>} */ (null))
+  // 문제 칸을 채우면 표시를 거둔다.
+  const shown = problem && !modalItem[problem.field] ? problem : null
+  const dateProps = invalidProps(shown, 'issueDate', 'invDate')
+
+  function handleSave() {
+    const found = checkTaxInvoiceDraft(modalItem)
+    setProblem(found)
+    if (found) {
+      focusField(INPUT_IDS[found.field])
+      return
+    }
+    onSave()
+  }
+
   return (
     <ModalShell onClose={onCancel} closeOnOverlay={false} closeOnEscape={false} contentClassName="modal-content client-modal" label="세금계산서 작성">
       <div className="modal-title">{flowMeta.label} 계산서</div>
@@ -27,7 +47,8 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
       </div>
       <div className="form-group">
         <label htmlFor="invBiz">사업자등록번호</label>
-        <ClearableInput id="invBiz" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(modalItem.clientBizNumber || '')} onChange={(e) => onChange({ ...modalItem, clientBizNumber: formatBizNumber(e.target.value) })} />
+        <ClearableInput id="invBiz" className="input-box" inputMode="numeric" placeholder={BIZ_NUMBER_PLACEHOLDER} value={formatBizNumber(modalItem.clientBizNumber || '')} onChange={(e) => onChange({ ...modalItem, clientBizNumber: formatBizNumber(e.target.value) })} {...invalidProps(shown, 'clientBizNumber', 'invBiz')} />
+        <FieldError problem={shown} field="clientBizNumber" inputId="invBiz" />
         <BizNumberHint value={modalItem.clientBizNumber} />
       </div>
       <div className="personal-inline-fields">
@@ -60,7 +81,8 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
       </div>
       <div className="form-group">
         <label htmlFor="invDate">작성일자</label>
-        <TemporalInput type="date" id="invDate" value={modalItem.issueDate || ''} onChange={(e) => onChange({ ...modalItem, issueDate: e.target.value })} />
+        <TemporalInput type="date" id="invDate" value={modalItem.issueDate || ''} onChange={(e) => onChange({ ...modalItem, issueDate: e.target.value })} invalid={Boolean(dateProps['aria-invalid'])} describedBy={dateProps['aria-describedby']} />
+        <FieldError problem={shown} field="issueDate" inputId="invDate" />
       </div>
       <div className="tax-invoice-amount-grid">
         <div><span>공급가액</span><strong>{formatWon(modalItem.supplyAmount)}</strong></div>
@@ -74,7 +96,7 @@ export default function TaxInvoiceDraftModal({ modalItem, flowMeta, onChange, on
       <p className="car-type-hint">금액은 운행일지 세부 입력에서 자동 집계됩니다. 실제 발급은 홈택스에서 해 주세요.</p>
       <div className="modal-btns">
         <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
-        <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>
+        <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
       </div>
     </ModalShell>
   )

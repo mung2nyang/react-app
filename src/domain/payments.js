@@ -61,6 +61,19 @@ function ensurePaymentList(detail) {
 }
 
 /**
+ * 부분 입금 전 검사 — 문제면 입금액 칸 문구, 없으면 null.
+ * @param {JsonValue|undefined} amount
+ * @param {number} remainingAmount
+ * @returns {{ field: 'amount', message: string }|null}
+ */
+export function checkPartialAmount(amount, remainingAmount) {
+  const value = parseCurrencyValue(amount)
+  if (!(value > 0)) return { field: 'amount', message: '입금액을 올바르게 입력해 주세요.' }
+  if (value > remainingAmount) return { field: 'amount', message: '남은 금액보다 큰 금액은 입력할 수 없습니다.' }
+  return null
+}
+
+/**
  * @template {WorkDataMap} T
  * @param {T} data
  * @param {string} dateKey
@@ -72,9 +85,8 @@ function ensurePaymentList(detail) {
 export function addPartialPayment(data, dateKey, detailId, amount, paidAt = new Date()) {
   return withCallDetail(data, dateKey, detailId, (detail) => {
     const value = parseCurrencyValue(amount)
-    if (!(value > 0)) return '입금액을 올바르게 입력해 주세요.'
-    const summary = getDetailPaymentSummary(detail)
-    if (value > summary.remainingAmount) return '남은 금액보다 큰 금액은 입력할 수 없습니다.'
+    const problem = checkPartialAmount(amount, getDetailPaymentSummary(detail).remainingAmount)
+    if (problem) return problem.message
     ensurePaymentList(detail)
     detail.payments = [...(detail.payments || []), {
       id: generateLocalId('pay'),

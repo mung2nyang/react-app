@@ -121,3 +121,54 @@ test('사업자등록번호 검증번호가 틀리면 칸 아래 안내만 보�
     ok.container.remove()
   }
 })
+
+/** 저장 칸 검사용 — 입력이 상태에 반영되고 저장 횟수를 센다. @param {object} override */
+async function mountStateful(override) {
+  const saves = []
+  function Harness() {
+    const [item, setItem] = React.useState({ ...baseItem, ...override })
+    return React.createElement(TaxInvoiceDraftModal, { modalItem: item, flowMeta: { label: '매출 발행', partyHeading: '공급받는 자' }, onChange: setItem, onCancel() {}, onSave: () => saves.push(item) })
+  }
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => { root.render(React.createElement(Harness)) })
+  const saveButton = [...document.querySelectorAll('button')].find((button) => button.textContent === '저장')
+  return {
+    saves,
+    async save() { await act(async () => { saveButton.click() }) },
+    async cleanup() { await act(async () => { root.unmount() }); container.remove() },
+  }
+}
+
+test('로드맵 82-C — 사업자등록번호 비우고 저장 → 그 칸 표시·문구·커서, 저장 안 함, 채우면 사라짐', async () => {
+  const view = await mountStateful({ clientBizNumber: '' })
+  try {
+    await view.save()
+    const input = document.querySelector('#invBiz')
+    assert.equal(view.saves.length, 0)
+    assert.equal(input.getAttribute('aria-invalid'), 'true')
+    assert.equal(document.querySelector('#invBiz-error')?.textContent, '사업자등록번호를 입력해 주세요.')
+    assert.equal(document.activeElement, input)
+    await act(async () => { typeInto(input, '1234567891') })
+    assert.equal(input.getAttribute('aria-invalid'), null)
+    await view.save()
+    assert.equal(view.saves.length, 1)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('로드맵 82-C — 작성일자가 비면 날짜 단추에 표시·문구·커서, 저장 안 함', async () => {
+  const view = await mountStateful({ issueDate: '' })
+  try {
+    await view.save()
+    const trigger = document.querySelector('#invDate')?.closest('.app-temporal')?.querySelector('button')
+    assert.equal(view.saves.length, 0)
+    assert.equal(trigger?.getAttribute('aria-invalid'), 'true')
+    assert.equal(document.querySelector('#invDate-error')?.textContent, '작성일자를 입력해 주세요.')
+    assert.equal(document.activeElement, trigger)
+  } finally {
+    await view.cleanup()
+  }
+})

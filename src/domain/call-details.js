@@ -28,6 +28,16 @@ import { generateLocalId } from './payments.js'
  */
 
 /**
+ * 저장 전 검사 — 운임·상차지·하차지가 모두 비면 상차지 칸에 표시한다.
+ * @param {CallDetailDraft} draft
+ * @returns {{ field: 'loadLoc', message: string }|null}
+ */
+export function checkCallDetailDraft(draft) {
+  const filled = [draft.fare, draft.loadLoc, draft.unloadLoc].some((value) => String(value ?? '').trim())
+  return filled ? null : { field: 'loadLoc', message: '운임 또는 상·하차지 중 하나를 입력해 주세요.' }
+}
+
+/**
  * @param {CallDetailDraft} draft
  * @param {CallDetailLike|null} [existing]
  * @param {string} [dateKey]
@@ -38,9 +48,8 @@ export function buildCallDetail(draft, existing, dateKey, clients = []) {
   const unloadLoc = String(draft.unloadLoc || '').trim()
   const fareInput = String(draft.fare ?? '').trim()
   const client = String(draft.client || '').trim()
-  if (!fareInput && !loadLoc && !unloadLoc) {
-    return { error: '운임 또는 상·하차지 중 하나를 입력해 주세요.' }
-  }
+  const problem = checkCallDetailDraft(draft)
+  if (problem) return { error: problem.message }
 
   const matchedClient = (clients || []).find((item) => item.companyName === client)
   const commissionSnapshot = (matchedClient && matchedClient.commEnabled)

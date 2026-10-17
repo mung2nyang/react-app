@@ -6,7 +6,7 @@ import { needsPaymentTermValue, PAYMENT_TERMS } from '../../lib/clients.js'
 import AppDropdown from '../shared/AppDropdown.jsx'
 import BizNumberHint from '../shared/BizNumberHint.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
-import FieldError, { invalidProps } from '../shared/FieldError.jsx'
+import FieldError, { focusField, invalidProps } from '../shared/FieldError.jsx'
 import ClientTradeFields from './ClientTradeFields.jsx'
 import { StarIcon } from '../day-log/icons.jsx'
 import './client-management.css'
@@ -47,9 +47,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
       return
     }
     setProblem({ ...found, value: valueOf(draft, found.field) })
-    const input = document.getElementById(inputId)
-    input?.scrollIntoView?.({ block: 'center' })
-    input?.focus({ preventScroll: true })
+    focusField(inputId)
   }
 
   return (

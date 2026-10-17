@@ -140,6 +140,7 @@
 /* 입력이 잘못된 칸(로드맵 82, FieldError.jsx) — 화면 읽기용 "잘못됨" 표시를 빨간 테두리로, 커서가 있어도 빨강 */
 .input-box[aria-invalid='true'],
 .app-temporal-trigger[aria-invalid='true'],
+.message-settings-textarea[aria-invalid='true'],
 .car-commission-input:has([aria-invalid='true']) {
   border-color: var(--sunday-color);
   outline: 2px solid var(--sunday-color);

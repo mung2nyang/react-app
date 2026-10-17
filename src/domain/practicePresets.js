@@ -64,6 +64,18 @@ export function normalizeFixedRoutePresets(value) {
 }
 
 /**
+ * 노선 추가 전 검사 — 빈 칸을 상차지 → 하차지 순서로 하나 돌려준다.
+ * @param {JsonValue|undefined} loadLoc
+ * @param {JsonValue|undefined} unloadLoc
+ * @returns {{ field: 'loadLoc'|'unloadLoc', message: string }|null}
+ */
+export function checkRoutePreset(loadLoc, unloadLoc) {
+  if (!String(loadLoc || '').trim()) return { field: 'loadLoc', message: '상차지를 입력해 주세요.' }
+  if (!String(unloadLoc || '').trim()) return { field: 'unloadLoc', message: '하차지를 입력해 주세요.' }
+  return null
+}
+
+/**
  * @param {FinanceSettings} settings
  * @param {'main'|'sub'} scope
  * @param {JsonValue|undefined} loadLoc
@@ -74,7 +86,8 @@ export function addFixedRoutePreset(settings, scope, loadLoc, unloadLoc) {
   const key = scope === 'sub' ? 'subFixedRoutePresets' : 'fixedRoutePresets'
   const load = String(loadLoc || '').trim()
   const unload = String(unloadLoc || '').trim()
-  if (!load || !unload) return { error: '상차지와 하차지를 모두 입력해 주세요.', settings }
+  const problem = checkRoutePreset(load, unload)
+  if (problem) return { error: problem.message, settings }
   const presets = Array.isArray(settings[key]) ? [...settings[key]] : []
   if (presets.length >= FIXED_ROUTE_PRESET_MAX) {
     return { error: '노선은 최대 10개까지 등록할 수 있습니다.', settings }

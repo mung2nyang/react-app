@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import {
   addFixedRoutePreset,
+  checkRoutePreset,
   addRunCountPreset,
   defaultCarSettings,
   normalizeCarSettings,
@@ -54,7 +55,13 @@ describe('상하차지 프리셋', () => {
 
   test('상차지·하차지 없으면 추가하지 않는다', () => {
     const result = addFixedRoutePreset(normalizeSettings({}), 'main', '부산', '')
-    assert.equal(result.error, '상차지와 하차지를 모두 입력해 주세요.')
+    assert.equal(result.error, '하차지를 입력해 주세요.')
+  })
+
+  test('노선 추가 전 검사 — 빈 칸을 상차지 → 하차지 순서로 하나 돌려준다(로드맵 82-C)', () => {
+    assert.deepEqual(checkRoutePreset('', ''), { field: 'loadLoc', message: '상차지를 입력해 주세요.' })
+    assert.deepEqual(checkRoutePreset('부산', ' '), { field: 'unloadLoc', message: '하차지를 입력해 주세요.' })
+    assert.equal(checkRoutePreset('부산', '대구'), null)
   })
 
   test('삭제는 id 기준이다', () => {
