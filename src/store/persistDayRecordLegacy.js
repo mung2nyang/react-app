@@ -1,52 +1,41 @@
 // @ts-check
+import * as v from 'valibot'
 import { isValidCurrencyAmount } from '../lib/callDetailSchema.js'
-import { hasOnlyKeys, isFiniteNumber, isPlainObject, isStringOrFiniteNumber } from './persistDomainRecords.js'
+import { isPlainObject } from './persistDomainRecords.js'
 
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
-const FUEL_ITEM_KEYS = ['type', 'cost', 'subsidy', 'liter', 'liters', 'mileage']
-const MAINT_ITEM_KEYS = ['name', 'fare', 'mileage', 'category', 'payment']
-const MISC_ITEM_KEYS = ['id', 'name', 'fare', 'mileage', 'category', 'payment']
+// 옛 하루 기록 안 주유·정비·기타 항목의 칸 → 모양(Valibot). 목록 밖 칸·값이 비어 있는 칸은 거부.
+const opt = v.exactOptional
+const str = v.string()
+const text = v.pipe(str, v.nonEmpty())
+const strOrNum = v.union([str, v.pipe(v.number(), v.finite())])
+// 돈: 유한 숫자면 음수·소수도 받고, 글자면 금액 규칙("1,000원"·빈 글자).
+const money = v.union([v.pipe(v.number(), v.finite()), v.custom((input) => isValidCurrencyAmount(/** @type {JsonValue} */ (input)))])
+/** Valibot은 배열도 객체로 받고 검사 뒤엔 새 객체를 넘기므로, 객체 검사 앞에서 배열을 먼저 거른다. @template {v.GenericSchema} T @param {T} schema */
+const plain = (schema) => v.pipe(v.custom((input) => isPlainObject(/** @type {JsonValue} */ (input))), schema)
 
-/** @param {Record<string, JsonValue>} value @param {string} key */
-function hasValidMoney(value, key) {
-  const amount = value[key]
-  return amount !== undefined && (isFiniteNumber(amount) || isValidCurrencyAmount(amount))
-}
+const FUEL_ITEM = plain(v.strictObject({
+  type: text, cost: money, subsidy: opt(money), liter: opt(strOrNum), liters: opt(strOrNum), mileage: opt(strOrNum),
+}))
+
+const MAINT_FIELDS = { name: text, fare: money, mileage: opt(strOrNum), category: opt(str), payment: opt(str) }
+const MAINT_ITEM = plain(v.strictObject(MAINT_FIELDS))
+const MISC_ITEM = plain(v.strictObject({ ...MAINT_FIELDS, id: opt(text) }))
 
 /** @param {JsonValue} value */
 export function isPersistedFuelItem(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, FUEL_ITEM_KEYS)) return false
-  if (typeof value.type !== 'string' || value.type === '') return false
-  if (!hasValidMoney(value, 'cost')) return false
-  if ('subsidy' in value && !isFiniteNumber(value.subsidy) && !isValidCurrencyAmount(value.subsidy)) return false
-  if ('mileage' in value && !isStringOrFiniteNumber(value.mileage)) return false
-  if ('liter' in value && !isStringOrFiniteNumber(value.liter)) return false
-  if ('liters' in value && !isStringOrFiniteNumber(value.liters)) return false
-  return true
+  return v.is(FUEL_ITEM, value)
 }
 
 /** @param {JsonValue} value */
 export function isPersistedMaintItem(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, MAINT_ITEM_KEYS)) return false
-  if (typeof value.name !== 'string' || value.name === '') return false
-  if (!hasValidMoney(value, 'fare')) return false
-  if ('mileage' in value && !isStringOrFiniteNumber(value.mileage)) return false
-  if ('category' in value && typeof value.category !== 'string') return false
-  if ('payment' in value && typeof value.payment !== 'string') return false
-  return true
+  return v.is(MAINT_ITEM, value)
 }
 
 /** @param {JsonValue} value */
 export function isPersistedMiscItem(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, MISC_ITEM_KEYS)) return false
-  if (typeof value.name !== 'string' || value.name === '') return false
-  if (!hasValidMoney(value, 'fare')) return false
-  if ('mileage' in value && !isStringOrFiniteNumber(value.mileage)) return false
-  if ('category' in value && typeof value.category !== 'string') return false
-  if ('payment' in value && typeof value.payment !== 'string') return false
-  if ('id' in value && (typeof value.id !== 'string' || value.id === '')) return false
-  return true
+  return v.is(MISC_ITEM, value)
 }
 
 /** @param {JsonValue} value @param {(item: JsonValue) => boolean} check */
