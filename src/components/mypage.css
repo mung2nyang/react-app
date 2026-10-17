@@ -128,3 +128,33 @@
   right: 0;
   border-top: 1px solid var(--border-color);
 }
+
+/* 연동 기사 "연동중" 칩(LinkStatusChip.jsx) — 카드 오른쪽 화살표 앞에 겹쳐 둠, 누르는 자리는 위아래로 넓혀 44px */
+.mypage-profile-wrap { position: relative; }
+.mypage-profile-wrap.has-link-chip .mypage-profile-copy { padding-right: 84px; }
+
+.mypage-link-chip {
+  position: absolute;
+  top: 50%;
+  right: 48px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--primary-color);
+  border-radius: 999px;
+  background: var(--hover-bg);
+  color: var(--primary-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: 800;
+  cursor: pointer;
+}
+.mypage-link-chip::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.mypage-link-chip::after { content: ''; position: absolute; inset: -6px 0; }
+
+.link-status-rows { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; margin: 6px 0 14px; font-size: var(--fs-3); text-align: left; }
+.link-status-rows dt { color: var(--sub-text-color); font-weight: 700; }
+.link-status-rows dd { margin: 0; font-weight: 800; overflow-wrap: anywhere; }

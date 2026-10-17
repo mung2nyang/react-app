@@ -5,6 +5,7 @@ import { isCloudSession } from '../lib/cloudSession.js'
 import InviteRedeemModal from './InviteRedeemModal.jsx'
 import DataDownloadModal from './DataDownloadModal.jsx'
 import PageHeader from './PageHeader.jsx'
+import LinkStatusChip from './LinkStatusChip.jsx'
 import './mypage.css'
 import './mypage-shortcuts.css'
 
@@ -107,16 +108,18 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
     <div className="page my-page">
       <PageHeader title="마이페이지" onOpenMenu={onOpenMenu} />
 
-      <button type="button" className="mypage-profile-card" onClick={() => onOpen('profile')}>
-        <span className="mypage-profile-icon" aria-hidden="true"><PersonIcon /></span>
-        <span className="mypage-profile-copy">
-          <strong>개인정보</strong>
-          <span className="mypage-role-user-row">
-            <span className="mypage-user-name">{displayName}</span>
+      <LinkStatusChip ownerKey={ownerKey} employed={employed} onOpenProfile={() => onOpen('profile')}>
+        <button type="button" className="mypage-profile-card" onClick={() => onOpen('profile')}>
+          <span className="mypage-profile-icon" aria-hidden="true"><PersonIcon /></span>
+          <span className="mypage-profile-copy">
+            <strong>개인정보</strong>
+            <span className="mypage-role-user-row">
+              <span className="mypage-user-name">{displayName}</span>
+            </span>
           </span>
-        </span>
-        <svg className="mypage-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </button>
+          <svg className="mypage-link-arrow" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </LinkStatusChip>
 
       <section className="mypage-shortcut-section" aria-labelledby="myPageShortcutTitle">
         <div className="mypage-section-heading">
