@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+/* 앱 전체 기본 — box-sizing, html·body 높이와 본문 글꼴(Jua 글꼴 불러오기 포함). 색 값은 variables.css. */
+* { box-sizing: border-box; }
+html, body, #root { min-height: 100%; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }

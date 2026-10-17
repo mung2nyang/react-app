@@ -1,0 +1,39 @@
+/* 창(팝업) 껍데기(앱 전체) — 바깥막·안쪽 상자·제목·문구·단추. 움직임은 app-shell-base.css, 빨간 확인은 modal-form.css. */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+.modal-content {
+  width: min(92vw, 320px);
+  padding: 22px 20px 18px;
+  border-radius: 18px;
+  background: var(--card-bg);
+  text-align: center;
+}
+.modal-title { font-size: 1.05rem; font-weight: 850; color: var(--primary-color); margin-bottom: 12px; }
+.confirm-modal-text {
+  font-size: 0.95rem;
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  color: var(--text-color);
+}
+.modal-btns { display: flex; gap: 8px; margin-top: 24px; }
+.modal-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-size: var(--fs-4);
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 44px;
+}
+.modal-btn.confirm { background: var(--primary-fill); color: #fff; }
+.modal-btn.cancel { background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); }

@@ -1,0 +1,94 @@
+/* 로그인 단계 화면(환영·처음 정보 입력이 같이 씀) — 위 줄·뒤로·작은 로고·제목·입력칸·아래 고정. */
+
+.auth-topbar {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.auth-topbar::after { content: ''; }
+
+.auth-back-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--card-bg);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.auth-back-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.auth-brand-sm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: center;
+  color: #fff;
+  font-size: var(--fs-6);
+  font-weight: 850;
+}
+
+.auth-brand-sm span { font-family: 'Jua', sans-serif; font-weight: 400; letter-spacing: -.5px; }
+.auth-logo-sm { height: 34px; object-fit: contain; }
+
+.auth-heading-box { margin-bottom: 28px; }
+.auth-heading-box h1 {
+  margin: 14px 0 0;
+  color: var(--text-color);
+  font-size: clamp(1.9rem, 8vw, 2.3rem);
+  line-height: 1.2;
+  letter-spacing: -.05em;
+}
+.auth-desc-text {
+  margin: 12px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  line-height: 1.6;
+}
+
+.auth-form-fields { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+.auth-field { display: flex; flex-direction: column; gap: 8px; }
+.auth-field label { color: var(--text-color); font-size: var(--fs-2); font-weight: 850; }
+
+.auth-input-box {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 18px;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font-size: var(--fs-4);
+  font-weight: 600;
+  outline: none;
+}
+
+.auth-input-box::placeholder { color: var(--sub-text-color); }
+.auth-input-box:focus {
+  border-color: var(--primary-color);
+  outline: 2px solid var(--primary-color);
+  outline-offset: -2px;
+}
+
+.auth-field-extra { display: flex; justify-content: flex-start; margin-top: 4px; }
+
+.auth-bottom-sticky { margin-top: auto; padding-top: 24px; }
+
+@media (max-width: 360px) {
+  .auth-heading-box h1 { font-size: 1.78rem; }
+}
