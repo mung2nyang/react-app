@@ -1,17 +1,19 @@
 // @ts-check
-import {
-  FUEL_TYPES,
-  MAINT_CATEGORIES,
-  MISC_CATEGORIES,
-} from '../lib/expenses.js'
+import { useState } from 'react'
+import { checkExpenseDraft, FUEL_TYPES, MAINT_CATEGORIES, MISC_CATEGORIES } from '../lib/expenses.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../lib/money.js'
 import TemporalInput from './shared/TemporalInput.jsx'
 import ClearableInput from './shared/ClearableInput.jsx'
 import CurrencyInput from './shared/CurrencyInput.jsx'
+import FieldError, { focusField, invalidProps } from './shared/FieldError.jsx'
 import './expense-form.css'
 import ModalShell from './shared/ModalShell.jsx'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
+/** @typedef {NonNullable<ReturnType<typeof checkExpenseDraft>>} ExpenseProblem */
+
+// 날짜는 창에서 비울 수 없어(기본값 오늘·일지에선 잠김) 표시하지 않고 저장 함수 알림으로.
+const INPUT_IDS = { name: 'expenseName', cost: 'expenseCost' }
 
 /**
  * @template {ExpenseDraft} T
@@ -36,6 +38,17 @@ export default function ExpenseFormModal({
   onSave,
 }) {
   const categories = draft.kind === 'misc' ? MISC_CATEGORIES : MAINT_CATEGORIES
+  const [problem, setProblem] = useState(/** @type {(ExpenseProblem & { value: string })|null} */ (null))
+  // 문제 칸 값을 고치기 시작하면 표시를 거둔다.
+  const shown = problem && String(draft[problem.field] ?? '') === problem.value ? problem : null
+
+  function handleSave() {
+    const found = checkExpenseDraft(draft)
+    const inputId = found && found.field !== 'date' ? INPUT_IDS[found.field] : undefined
+    setProblem(found && inputId ? { ...found, value: String(draft[found.field] ?? '') } : null)
+    if (inputId) focusField(inputId)
+    else onSave()
+  }
 
   const formClass = `modal-content expense-form-content${inline ? '' : ' client-modal'}${inline ? ' inline-expense-form' : ''}`
   const fields = (
@@ -72,7 +85,8 @@ export default function ExpenseFormModal({
           <>
             <div className="form-group">
               <label htmlFor="expenseName">{draft.kind === 'misc' ? '항목명' : '정비 항목명'}</label>
-              <ClearableInput id="expenseName" className="input-box" placeholder="항목명을 입력하세요" value={draft.name} onChange={(e) => onChange({ ...draft, name: e.target.value })} />
+              <ClearableInput id="expenseName" className="input-box" placeholder="항목명을 입력하세요" value={draft.name} onChange={(e) => onChange({ ...draft, name: e.target.value })} {...invalidProps(shown, 'name', 'expenseName')} />
+              <FieldError problem={shown} field="name" inputId="expenseName" />
             </div>
             <div className="form-group">
               <label>분류</label>
@@ -119,9 +133,11 @@ export default function ExpenseFormModal({
               placeholder="비용을 입력하세요"
               value={formatCurrencyInput(draft.cost)}
               onValueChange={(next) => onChange({ ...draft, cost: parseCurrencyValue(next) })}
+              {...invalidProps(shown, 'cost', 'expenseCost')}
             />
             <span className="suffix">원</span>
           </div>
+          <FieldError problem={shown} field="cost" inputId="expenseCost" />
         </div>
 
         {draft.kind === 'fuel' && (
@@ -167,7 +183,7 @@ export default function ExpenseFormModal({
 
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
-          <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>
+          <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
         </div>
       </>
   )

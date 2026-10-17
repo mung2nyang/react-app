@@ -50,6 +50,35 @@ export function countByStatus(items) {
   }
 }
 
+/** @typedef {'name'|'phone'|'inviteCode'|'vehicleNumber'|'startDate'|'endDate'} DriverField */
+
+/**
+ * 저장 전 입력 검사 — 맨 처음 문제 칸과 문구, 문제 없으면 null(기사 창 칸 표시와 upsertDriver가 같이 씀).
+ * required(로그인 회원)면 배정 차량·시작일 필수, 아니면 차량을 넣었을 때만 시작일 필수.
+ * @param {DriverDraft} draft
+ * @param {{ editingId?: string|null, items?: Array<DriverRecord>|null, cars?: Array<CarRef>|null, required?: boolean }} [opts]
+ * @returns {{ field: DriverField, message: string }|null}
+ */
+export function checkDriverDraft(draft, { editingId = null, items = [], cars = [], required = false } = {}) {
+  const inviteCode = normalizeInviteCode(draft.inviteCode)
+  const vehicleNumber = String(draft.vehicleNumber || '').trim()
+  const startDate = String(draft.startDate || draft.assignmentStart || '').trim()
+  const endDate = String(draft.endDate || draft.assignmentEnd || '').trim()
+  if (!String(draft.name || '').trim()) return { field: 'name', message: '기사 이름을 입력해 주세요.' }
+  if (String(draft.phone || '').replace(/\D/g, '').length < 10) return { field: 'phone', message: '전화번호를 입력해 주세요.' }
+  // 예전 6자리 코드는 바꾸지 않고 다시 저장할 때만 허용(연동된 기사 계약 수정 등).
+  const keptCode = Boolean(inviteCode) && Boolean(editingId)
+    && (items || []).some((item) => item.id === editingId && item.inviteCode === inviteCode)
+  if (!INVITE_CODE_PATTERN.test(inviteCode) && !keptCode) return { field: 'inviteCode', message: '[코드 생성]으로 초대 코드를 만들어 주세요.' }
+  if (vehicleNumber && (cars || []).find((car) => car.number === vehicleNumber)?.type === 'main') {
+    return { field: 'vehicleNumber', message: '메인 차량은 기사에게 배정할 수 없습니다. 기사 차량 번호를 입력해 주세요.' }
+  }
+  if (required && !vehicleNumber) return { field: 'vehicleNumber', message: '배정 차량을 입력해 주세요.' }
+  if ((required || vehicleNumber) && !startDate) return { field: 'startDate', message: '계약 시작일을 선택해 주세요.' }
+  if (endDate && startDate && endDate < startDate) return { field: 'endDate', message: '계약 종료일은 시작일 이후로 선택해 주세요.' }
+  return null
+}
+
 /**
  * @param {Array<DriverRecord>} items
  * @param {DriverDraft} draft
@@ -65,25 +94,8 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
   const startDate = String(draft.startDate || draft.assignmentStart || '').trim()
   const endDate = String(draft.endDate || draft.assignmentEnd || '').trim()
 
-  if (!name) return { error: '기사 이름을 입력해 주세요.', items }
-  if (phone.replace(/\D/g, '').length < 10) return { error: '전화번호를 입력해 주세요.', items }
-  // 예전 6자리 코드는 바꾸지 않고 다시 저장할 때만 허용(연동된 기사 계약 수정 등).
-  const keptCode = Boolean(inviteCode) && Boolean(editingId)
-    && (items || []).some((item) => item.id === editingId && item.inviteCode === inviteCode)
-  if (!INVITE_CODE_PATTERN.test(inviteCode) && !keptCode) {
-    return { error: '[코드 생성]으로 초대 코드를 만들어 주세요.', items }
-  }
-
-  if (vehicleNumber) {
-    const targetCar = (cars || []).find((car) => car.number === vehicleNumber)
-    if (targetCar?.type === 'main') {
-      return { error: '메인 차량은 기사에게 배정할 수 없습니다. 기사 차량 번호를 입력해 주세요.', items }
-    }
-    if (!startDate) return { error: '기사 이름, 배정 차량, 시작일을 입력해 주세요.', items }
-  }
-  if (endDate && startDate && endDate < startDate) {
-    return { error: '계약 종료일은 시작일 이후로 선택해 주세요.', items }
-  }
+  const problem = checkDriverDraft(draft, { editingId, items, cars })
+  if (problem) return { error: problem.message, items }
 
   const list = [...(items || [])]
   const duplicate = list.some((item) => item.inviteCode === inviteCode && item.id !== editingId)

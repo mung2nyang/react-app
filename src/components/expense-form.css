@@ -109,3 +109,9 @@
 .expense-form-content .expense-payment-row > label {
   margin: 0;
 }
+
+/* 한 줄 입력 칸 아래 오류 문구(로드맵 82, FieldError.jsx)는 입력칸 아래 줄에 */
+.expense-form-content .expense-inline-field > .field-error {
+  grid-column: 2;
+  margin-top: 0;
+}

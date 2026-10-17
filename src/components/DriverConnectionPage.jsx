@@ -177,6 +177,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
           editingId={editingId}
           drivers={drivers}
           assignableCars={assignableCars}
+          cars={cars}
           ownerDisplayName={profile.bizName || profile.name || '운송사'}
           showToast={showToast}
           required={cloud}

@@ -40,28 +40,48 @@ export function dedupeCarsById(cars) {
 }
 
 /**
+ * @param {string|undefined} name
+ * @param {string|undefined} phone
+ * @returns {{ field: 'driverName'|'driverPhone', message: string }|null}
+ */
+function checkDriverLink(name, phone) {
+  if (!String(name || '').trim()) return { field: 'driverName', message: '기사명을 입력해 주세요.' }
+  if (String(phone || '').replace(/\D/g, '').length < 10) return { field: 'driverPhone', message: '연락처 형식을 확인해 주세요.' }
+  return null
+}
+
+/**
+ * 저장 전 입력 검사 — 맨 처음 문제 칸과 문구, 문제 없으면 null(차량 창 칸 표시와 upsertCar가 같이 씀).
+ * 기사 이름·연락처는 "기사 연동"일 때만 필수(linkRequired) — 운행 일지 전용 등록은 비워도 된다.
+ * @param {CarUpsertDraft} draft
+ * @param {{ linkRequired?: boolean }} [opts]
+ * @returns {{ field: 'driverName'|'driverPhone'|'number'|'driverSalaryAmount', message: string }|null}
+ */
+export function checkCarDraft(draft, { linkRequired = false } = {}) {
+  const linkProblem = linkRequired ? checkDriverLink(draft.driverName, draft.driverPhone) : null
+  if (linkProblem) return linkProblem
+  if (!String(draft.number || '').trim()) return { field: 'number', message: '차량번호를 입력해 주세요.' }
+  if (draft.type !== 'sub') return null
+  const extra = driverFieldsFromDraft(draft, 'sub')
+  if (extra.driverPhone && extra.driverPhone.replace(/\D/g, '').length < 10) return { field: 'driverPhone', message: '연락처 형식을 확인해 주세요.' }
+  if (extra.driverPayMode === 'salary' && !(Number(extra.driverSalaryAmount) > 0)) {
+    return { field: 'driverSalaryAmount', message: '월급제는 급여 금액을 입력해 주세요.' }
+  }
+  return null
+}
+
+/**
  * @param {Array<CarLike>|null|undefined} cars
  * @param {CarUpsertDraft} draft
  * @param {string|null} [editingId]
  */
 export function upsertCar(cars, draft, editingId) {
+  const problem = checkCarDraft(draft)
+  if (problem) return { error: problem.message, cars }
   const number = String(draft.number || '').trim()
   const tonnage = String(draft.tonnage || '').trim()
-  if (!number) return { error: '차량번호를 입력해 주세요.', cars }
-
   const type = draft.type === 'sub' ? 'sub' : 'main'
   const extra = driverFieldsFromDraft(draft, type)
-  if (type === 'sub') {
-    // 이름·전화번호는 여기서 필수 아님(미연동·운행 일지 전용 등록 허용).
-    // 실제 기사 연동(초대) 시 필수 검증은 domain/drivers.js의 upsertDriver가 한다.
-    const phoneDigits = extra.driverPhone.replace(/\D/g, '')
-    if (extra.driverPhone && phoneDigits.length < 10) {
-      return { error: '연락처 형식을 확인해 주세요.', cars }
-    }
-    if (extra.driverPayMode === 'salary' && !(Number(extra.driverSalaryAmount) > 0)) {
-      return { error: '월급제는 급여 금액을 입력해 주세요.', cars }
-    }
-  }
 
   const list = [...(cars || [])]
   const duplicate = list.some((car) => car.number === number && (!editingId || car.id !== editingId))
@@ -101,11 +121,7 @@ export function upsertCar(cars, draft, editingId) {
  * @returns {string|null} 에러 메시지, 문제 없으면 null
  */
 export function validateDriverLinkFields(name, phone) {
-  const phoneDigits = String(phone || '').replace(/\D/g, '')
-  if (!String(name || '').trim() || phoneDigits.length < 10) {
-    return '기사명과 연락처를 확인해 주세요.'
-  }
-  return null
+  return checkDriverLink(name, phone)?.message ?? null
 }
 
 /** @param {Array<CarLike>|null|undefined} cars @param {string} id */

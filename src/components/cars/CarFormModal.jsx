@@ -1,10 +1,13 @@
 // @ts-check
+import { useState } from 'react'
+import { checkCarDraft } from '../../domain/cars.js'
 import { formatPhoneNumber, tonnageDigits, tonnageValue } from '../../lib/formatPhone.js'
 import { formatCurrencyInput, formatPercentInput } from '../../lib/money.js'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
 import CarDriverIncomeFields from './CarDriverIncomeFields.jsx'
 import ClearableInput from '../shared/ClearableInput.jsx'
 import CurrencyInput from '../shared/CurrencyInput.jsx'
+import FieldError, { focusField, invalidProps } from '../shared/FieldError.jsx'
 import ModalShell from '../shared/ModalShell.jsx'
 
 /**
@@ -29,6 +32,9 @@ import ModalShell from '../shared/ModalShell.jsx'
  * @property {string|null} inviteDriverId
  * @property {'link'|'log'} connectMode
  */
+/** @typedef {NonNullable<ReturnType<typeof checkCarDraft>>} CarProblem */
+
+const INPUT_IDS = { number: 'newCarNumber', driverName: 'newDriverName', driverPhone: 'newUserPhone', driverSalaryAmount: 'newCarSettlementValue' }
 
 /**
  * @param {Object} props
@@ -47,6 +53,21 @@ export default function CarFormModal({
   const isSub = draft.type === 'sub'
   const isSalary = draft.driverPayMode === 'salary'
   const showConnect = isSub && cloud
+  const [problem, setProblem] = useState(/** @type {(CarProblem & { value: string })|null} */ (null))
+  // 문제 칸 값을 고치기 시작하면 표시를 거둔다.
+  const shown = problem && String(draft[problem.field] ?? '') === problem.value ? problem : null
+
+  function handleSave() {
+    // 기사 연동 탭 사전 검사는 CarListPage.jsx save()와 같은 조건.
+    const found = checkCarDraft(draft, { linkRequired: showConnect && draft.connectMode === 'link' })
+    if (!found) {
+      setProblem(null)
+      onSave()
+      return
+    }
+    setProblem({ ...found, value: String(draft[found.field] ?? '') })
+    focusField(INPUT_IDS[found.field])
+  }
 
   function setRevenueMode() {
     setDraft((prev) => ({
@@ -82,7 +103,8 @@ export default function CarFormModal({
       <div className="personal-inline-fields">
         <div className="form-group">
           <label htmlFor="newCarNumber">차량번호</label>
-          <ClearableInput id="newCarNumber" className="input-box" placeholder="12가 3456" value={draft.number} onChange={(e) => setDraft({ ...draft, number: e.target.value })} />
+          <ClearableInput id="newCarNumber" className="input-box" placeholder="12가 3456" value={draft.number} onChange={(e) => setDraft({ ...draft, number: e.target.value })} {...invalidProps(shown, 'number', 'newCarNumber')} />
+          <FieldError problem={shown} field="number" inputId="newCarNumber" />
         </div>
         <div className="form-group">
           <label htmlFor="newCarTonnage">차량 톤수</label>
@@ -96,11 +118,13 @@ export default function CarFormModal({
         <>
           <div className="form-group">
             <label htmlFor="newDriverName">기사명</label>
-            <ClearableInput id="newDriverName" className="input-box" placeholder="기사명을 입력하세요" value={draft.driverName} onChange={(e) => setDraft({ ...draft, driverName: e.target.value })} />
+            <ClearableInput id="newDriverName" className="input-box" placeholder="기사명을 입력하세요" value={draft.driverName} onChange={(e) => setDraft({ ...draft, driverName: e.target.value })} {...invalidProps(shown, 'driverName', 'newDriverName')} />
+            <FieldError problem={shown} field="driverName" inputId="newDriverName" />
           </div>
           <div className="form-group">
             <label htmlFor="newUserPhone">연락처</label>
-            <ClearableInput id="newUserPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.driverPhone} onChange={(e) => setDraft({ ...draft, driverPhone: formatPhoneNumber(e.target.value) })} />
+            <ClearableInput id="newUserPhone" className="input-box" type="tel" placeholder="010-0000-0000" value={draft.driverPhone} onChange={(e) => setDraft({ ...draft, driverPhone: formatPhoneNumber(e.target.value) })} {...invalidProps(shown, 'driverPhone', 'newUserPhone')} />
+            <FieldError problem={shown} field="driverPhone" inputId="newUserPhone" />
           </div>
           <hr className="car-modal-divider" />
           <div className="form-group">
@@ -122,6 +146,7 @@ export default function CarFormModal({
                     placeholder="0"
                     value={formatCurrencyInput(draft.driverSalaryAmount)}
                     onValueChange={(next) => setDraft({ ...draft, driverSalaryAmount: next.replace(/\D/g, '') })}
+                    {...invalidProps(shown, 'driverSalaryAmount', 'newCarSettlementValue')}
                   />
                 ) : (
                   <input
@@ -135,6 +160,7 @@ export default function CarFormModal({
                 <b>{isSalary ? '원' : '%'}</b>
               </span>
             </div>
+            <FieldError problem={shown} field="driverSalaryAmount" inputId="newCarSettlementValue" />
           </div>
           <hr className="car-modal-divider" />
           <CarDriverIncomeFields draft={draft} setDraft={setDraft} />
@@ -156,7 +182,7 @@ export default function CarFormModal({
       )}
       <div className="modal-btns">
         <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
-        <button type="button" className="modal-btn confirm" onClick={onSave}>저장</button>
+        <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
       </div>
     </ModalShell>
   )

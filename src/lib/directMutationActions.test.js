@@ -736,7 +736,7 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
   test('71-1: 배정 차량이 없으면 안내만, 서버 0회·Store 그대로(예전엔 메모리에만 저장되고 "저장했습니다")', async () => {
     const ownerKey = 'dma-invite-incomplete'
     beginReady('user-1', ownerKey)
-    await expectInviteRejected(ownerKey, [{ id: 'drv-incomplete', name: '박기사', startDate: '2026-08-01' }], [], '기사 이름, 배정 차량, 시작일을 입력해 주세요.')
+    await expectInviteRejected(ownerKey, [{ id: 'drv-incomplete', name: '박기사', startDate: '2026-08-01' }], [], '배정 차량을 입력해 주세요.')
     endCloudSession()
   })
 
@@ -744,7 +744,7 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
     const ownerKey = 'dma-invite-incomplete-start'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '77가7777', type: 'sub', supabaseId: 802 }]
-    await expectInviteRejected(ownerKey, [{ id: 'drv-incomplete-2', name: '박기사', vehicleNumber: '77가7777', startDate: '' }], cars, '기사 이름, 배정 차량, 시작일을 입력해 주세요.')
+    await expectInviteRejected(ownerKey, [{ id: 'drv-incomplete-2', name: '박기사', vehicleNumber: '77가7777', startDate: '' }], cars, '계약 시작일을 선택해 주세요.')
     endCloudSession()
   })
 

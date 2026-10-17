@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { dedupeCarsById, upsertCar, validateDriverLinkFields } from './cars.js'
+import { checkCarDraft, dedupeCarsById, upsertCar, validateDriverLinkFields } from './cars.js'
 
 describe('차량 저장 — 기사명·정산·수수료', () => {
   test('차량번호 중복은 거절한다', () => {
@@ -165,22 +165,40 @@ describe('validateDriverLinkFields — 기사 연동 사전 검사', () => {
   test('이름만 없으면 거절한다', () => {
     assert.equal(
       validateDriverLinkFields('', '010-1234-5678'),
-      '기사명과 연락처를 확인해 주세요.',
+      '기사명을 입력해 주세요.',
     )
   })
 
   test('전화만 짧으면 거절한다', () => {
     assert.equal(
       validateDriverLinkFields('김기사', '010'),
-      '기사명과 연락처를 확인해 주세요.',
+      '연락처 형식을 확인해 주세요.',
     )
   })
 
   test('둘 다 없으면 거절한다', () => {
     assert.equal(
       validateDriverLinkFields('', ''),
-      '기사명과 연락처를 확인해 주세요.',
+      '기사명을 입력해 주세요.',
     )
+  })
+})
+
+describe('checkCarDraft — 로드맵 82-B 어느 칸이 문제인지', () => {
+  test('차량번호 → 기사 연락처 → 월급제 금액 순서로 첫 문제 칸', () => {
+    assert.deepEqual(checkCarDraft({ number: '' }), { field: 'number', message: '차량번호를 입력해 주세요.' })
+    assert.deepEqual(checkCarDraft({ number: '12가3456', type: 'sub', driverPhone: '010' }), { field: 'driverPhone', message: '연락처 형식을 확인해 주세요.' })
+    assert.deepEqual(
+      checkCarDraft({ number: '12가3456', type: 'sub', driverPayMode: 'salary', driverSalaryAmount: '' }),
+      { field: 'driverSalaryAmount', message: '월급제는 급여 금액을 입력해 주세요.' },
+    )
+    assert.equal(checkCarDraft({ number: '12가3456', type: 'sub' }), null)
+  })
+
+  test('기사 연동이면 기사명·연락처를 먼저, 운행 일지 전용이면 비워도 된다', () => {
+    assert.deepEqual(checkCarDraft({ number: '', type: 'sub' }, { linkRequired: true }), { field: 'driverName', message: '기사명을 입력해 주세요.' })
+    assert.deepEqual(checkCarDraft({ number: '', type: 'sub', driverName: '김기사', driverPhone: '' }, { linkRequired: true }), { field: 'driverPhone', message: '연락처 형식을 확인해 주세요.' })
+    assert.equal(checkCarDraft({ number: '12가3456', type: 'sub', driverName: '', driverPhone: '' }), null)
   })
 })
 

@@ -20,7 +20,8 @@ import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 const SESSION_CHANGED_MESSAGE = SESSION_CHANGED_FAIL
-const MISSING_FIELDS_MESSAGE = '기사 이름, 배정 차량, 시작일을 입력해 주세요.'
+const MISSING_CAR_MESSAGE = '배정 차량을 입력해 주세요.'
+const MISSING_START_MESSAGE = '계약 시작일을 선택해 주세요.'
 const UNKNOWN_CAR_MESSAGE = '등록된 기사 차량 번호를 입력해 주세요.'
 const UNSYNCED_CAR_MESSAGE = '선택한 차량이 아직 저장되지 않았습니다. 잠시 후 다시 시도해 주세요.'
 const CAR_DRIVER_FAIL_MESSAGE = '초대는 저장했지만 차량의 기사 이름·전화번호는 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.'
@@ -76,7 +77,8 @@ export async function requestDriverInviteSave({ ownerKey, items, editingId, cars
   const driver = items[idx]
 
   if (!driver?.vehicleNumber || !driver.startDate) {
-    return { items, blocked: MISSING_FIELDS_MESSAGE, toast: MISSING_FIELDS_MESSAGE }
+    const missing = driver?.vehicleNumber ? MISSING_START_MESSAGE : MISSING_CAR_MESSAGE
+    return { items, blocked: missing, toast: missing }
   }
 
   /** @type {string|null} */

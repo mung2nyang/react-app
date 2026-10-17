@@ -23,8 +23,10 @@ const GAP = 7
  * @param {string} [props.max]
  * @param {boolean} [props.disabled]
  * @param {boolean} [props.centered] 트리거 값을 가운데 정렬(원본 콜상세·정비·주유 공통 스타일).
+ * @param {boolean} [props.invalid] 입력이 잘못된 칸 — 단추에 빨간 표시(FieldError.jsx)
+ * @param {string} [props.describedBy] 칸 아래 오류 문구 id
  */
-export default function TemporalInput({ type, id, value, onChange, className = '', min, max, disabled = false, centered = false }) {
+export default function TemporalInput({ type, id, value, onChange, className = '', min, max, disabled = false, centered = false, invalid = false, describedBy }) {
   const menuId = useId()
   const [open, setOpen] = useState(false)
   const [cursor, setCursor] = useState(() => parseCursor(type, value))
@@ -133,6 +135,8 @@ export default function TemporalInput({ type, id, value, onChange, className = '
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={menuId}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
         onClick={() => setOpen((prev) => !prev)}
       >
         <span className="app-temporal-value">{label}</span>

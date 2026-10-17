@@ -34,3 +34,12 @@ export default function FieldError({ problem, field, inputId }) {
     </p>
   )
 }
+
+// 문제 칸으로 화면을 옮기고 커서를 넣는다 — 날짜 칸은 숨은 입력 대신 단추로.
+/** @param {string} inputId */
+export function focusField(inputId) {
+  const input = document.getElementById(inputId)
+  const target = input?.closest('.app-temporal')?.querySelector('button') ?? input
+  target?.scrollIntoView?.({ block: 'center' })
+  target?.focus({ preventScroll: true })
+}

@@ -75,6 +75,19 @@ export function emptyExpenseDraft(kind, date = todayKey(), vehicleNumber) {
 }
 
 // editingId 타입 설명 필수 — 없으면 기본값 null 때문에 TS가 null만 되는 타입으로 좁힌다.
+// 저장 전 검사와 저장이 같은 문구를 쓰려고 한 파일에 둔다.
+/**
+ * 저장 전 입력 검사 — 맨 처음 문제 칸과 문구, 문제 없으면 null(지출 창 칸 표시와 upsertExpense가 같이 씀).
+ * @param {ExpenseDraft} draft
+ * @returns {{ field: 'date'|'name'|'cost', message: string }|null}
+ */
+export function checkExpenseDraft(draft) {
+  const cost = Math.max(0, parseInt(String(draft.cost), 10) || 0)
+  if (!String(draft.date || '').trim()) return { field: 'date', message: '날짜를 선택해 주세요.' }
+  if (draft.kind === 'fuel') return cost ? null : { field: 'cost', message: '비용을 입력해 주세요.' }
+  return String(draft.name || '').trim() || cost ? null : { field: 'name', message: '항목명 또는 비용을 입력해 주세요.' }
+}
+
 /**
  * @param {Array<ExpenseItem>} items
  * @param {ExpenseDraft} draft
@@ -93,12 +106,8 @@ export function upsertExpense(items, draft, editingId = null) {
   const liters = Math.max(0, Number.parseFloat(String(draft.liters)) || 0)
   const vehicleNumber = String(draft.vehicleNumber || '').trim() || undefined
 
-  if (!date) return { error: '날짜를 선택해 주세요.', items }
-  if (kind === 'fuel') {
-    if (!cost) return { error: '비용을 입력해 주세요.', items }
-  } else if (!name && !cost) {
-    return { error: '항목명 또는 비용을 입력해 주세요.', items }
-  }
+  const problem = checkExpenseDraft(draft)
+  if (problem) return { error: problem.message, items }
 
   const next = {
     kind: /** @type {ExpenseItem['kind']} */ (kind),

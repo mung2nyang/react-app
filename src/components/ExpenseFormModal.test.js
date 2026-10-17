@@ -145,3 +145,56 @@ test('비용 칸에 12345.6을 치면 비용은 반올림한 12346(로드맵 43-
   }
 })
 
+// 로드맵 82-B — 지출 창에서 빠진 칸은 저장 전에 빨간 표시·칸 아래 문구·커서.
+/** @param {object} draft */
+async function renderForSave(draft) {
+  const saves = []
+  function Harness() {
+    const [value, setValue] = React.useState(draft)
+    return React.createElement(ExpenseFormModal, { draft: value, kindLabel: '주유', inline: true, onChange: setValue, onClose() {}, onSave: () => saves.push(value) })
+  }
+  const { container, root } = mountTarget()
+  await act(async () => { root.render(React.createElement(Harness)) })
+  const saveButton = [...container.querySelectorAll('button')].find((button) => button.textContent === '저장')
+  return {
+    container,
+    saves,
+    async save() { await act(async () => { saveButton?.click() }) },
+    async cleanup() { await act(async () => { root.unmount() }); container.remove() },
+  }
+}
+
+test('주유 비용을 비우고 저장 → 비용 칸 표시·아래 문구·커서, 저장 안 함', async () => {
+  const view = await renderForSave({ kind: 'fuel', date: '2026-10-17', cost: 0, fuelType: '주유', payment: '카드' })
+  try {
+    await view.save()
+    const input = view.container.querySelector('#expenseCost')
+    assert.equal(view.saves.length, 0)
+    assert.equal(input?.getAttribute('aria-invalid'), 'true')
+    assert.equal(view.container.querySelector('#expenseCost-error')?.textContent, '비용을 입력해 주세요.')
+    assert.equal(document.activeElement, input)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('정비 항목명·비용 둘 다 비면 항목명 칸 표시, 항목명 넣으면 사라지고 저장 1번', async () => {
+  const view = await renderForSave({ kind: 'maint', date: '2026-10-17', name: '', cost: 0, category: '소모품', payment: '카드' })
+  try {
+    await view.save()
+    const input = /** @type {HTMLInputElement} */ (view.container.querySelector('#expenseName'))
+    assert.equal(view.saves.length, 0)
+    assert.equal(view.container.querySelector('#expenseName-error')?.textContent, '항목명 또는 비용을 입력해 주세요.')
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set
+    await act(async () => {
+      setter?.call(input, '엔진오일')
+      input.dispatchEvent(new window.Event('input', { bubbles: true }))
+    })
+    assert.equal(view.container.querySelector('.field-error'), null)
+    await view.save()
+    assert.equal(view.saves.length, 1)
+  } finally {
+    await view.cleanup()
+  }
+})
+
