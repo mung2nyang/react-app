@@ -81,7 +81,7 @@ export function buildGuestBackupData() {
 
 const INVALID_FILE = '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.'
 /** @type {Array<PersistDomain>} */
-const RECORD_DOMAINS = ['cars', 'clients', 'drivers', 'expenses', 'invoices', 'settings', 'profile']
+const RECORD_DOMAINS = ['cars', 'clients', 'drivers', 'expenses', 'invoices', 'settings', 'profile', 'dismissedNotifications', 'workDataDeletedDates']
 
 /**
  * 차량별 일지 묶음(logId → 날짜별 기록)을 검사한다. 하나라도 틀리면 null.
@@ -136,6 +136,8 @@ export function applyGuestBackupData(parsed) {
   if (isPlainObject(record.settings)) snapshot.settings = /** @type {import('../domain/financeTypes.js').FinanceSettings} */ (record.settings)
   if (Array.isArray(record.expenses)) snapshot.expenses = /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */ (record.expenses)
   if (Array.isArray(record.invoices)) snapshot.invoices = /** @type {Array<import('../domain/financeTaxInvoiceEntries.js').InvoiceLike>} */ (record.invoices)
+  if (Array.isArray(record.dismissedNotifications)) snapshot.dismissedNotifications = /** @type {Array<string>} */ (record.dismissedNotifications)
+  if (isPlainObject(record.workDataDeletedDates)) snapshot.workDataDeletedDates = /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones} */ (record.workDataDeletedDates)
 
   /** @type {Array<import('../store/atomicPersist.js').KeyedWrite>} */
   const extraWrites = []

@@ -10,6 +10,7 @@ import {
 } from './guestBackup.js'
 import { initializeOwnerFromPersist, replaceOwnerState } from '../store/owner-state.js'
 import { getState } from '../store/app-store.js'
+import { commitDismissedNotifications, commitWorkDataDeletedDates } from '../store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 
 describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => {
@@ -240,5 +241,40 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
     assert.deepEqual(res, { ok: true })
     assert.equal(localStorage.getItem('reactPracticeWorkData:guest:log:33다3333'), null)
     assert.deepEqual(JSON.parse(localStorage.getItem('reactPracticeWorkData:guest:log:22나2222') || 'null'), { '2026-05-02': { count: 3 } })
+  })
+  /** 기기에 닫은 알림·빈 날 삭제 목록을 심는다. @param {Array<string>} ids @param {Record<string, string>} tombstones */
+  function seedMarks(ids, tombstones) {
+    commitDismissedNotifications('guest', ids)
+    commitWorkDataDeletedDates('guest', tombstones, { syncToCloud: false })
+  }
+
+  test('78: 닫은 알림·빈 날 삭제 목록도 백업 시점으로 복원(교체), 앱 다시 켜도 남음', () => {
+    seedMarks(['today:2026-10-17', 'backup:never'], { '2026-10-01': '2026-10-02T00:00:00.000Z' })
+    const backup = buildGuestBackupData()
+    seedMarks(['today:2026-10-18'], { '2026-10-09': '2026-10-10T00:00:00.000Z' })
+
+    assert.deepEqual(applyGuestBackupData(backup), { ok: true })
+    assert.deepEqual(getState().dismissedNotifications.guest, ['today:2026-10-17', 'backup:never'])
+    assert.deepEqual(getState().workDataDeletedDates.guest, { '2026-10-01': '2026-10-02T00:00:00.000Z' })
+
+    assert.deepEqual(JSON.parse(localStorage.getItem('reactPracticeDismissedNotifs:guest') || 'null'), ['today:2026-10-17', 'backup:never'])
+    assert.deepEqual(JSON.parse(localStorage.getItem('reactPracticeWorkDataDeletedDates:guest') || 'null'), { '2026-10-01': '2026-10-02T00:00:00.000Z' })
+    assert.equal(initializeOwnerFromPersist('guest'), true)
+    assert.deepEqual(getState().dismissedNotifications.guest, ['today:2026-10-17', 'backup:never'])
+    assert.deepEqual(getState().workDataDeletedDates.guest, { '2026-10-01': '2026-10-02T00:00:00.000Z' })
+  })
+
+  test('78: 두 목록이 없는 옛 백업은 기기 목록을 그대로 둠', () => {
+    seedMarks(['backup:never'], { '2026-10-01': '2026-10-02T00:00:00.000Z' })
+    assert.deepEqual(applyGuestBackupData({ cars: [{ id: 'car-1', number: '11가1111', type: 'main' }] }), { ok: true })
+    assert.deepEqual(getState().dismissedNotifications.guest, ['backup:never'])
+    assert.deepEqual(getState().workDataDeletedDates.guest, { '2026-10-01': '2026-10-02T00:00:00.000Z' })
+  })
+
+  test('78: 두 목록 모양이 틀리면 거절, 두 목록만 있는 파일도 거절', () => {
+    assertRejectedUnchanged({ cars: [], dismissedNotifications: [1, 2] })
+    assertRejectedUnchanged({ cars: [], workDataDeletedDates: { 'not-a-date': '2026-10-02T00:00:00.000Z' } })
+    assertRejectedUnchanged({ cars: [], workDataDeletedDates: ['2026-10-01'] })
+    assertRejectedUnchanged({ dismissedNotifications: ['backup:never'], workDataDeletedDates: {} })
   })
 })

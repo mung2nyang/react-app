@@ -91,6 +91,8 @@ export function initializeOwnerFromPersist(ownerKey) {
  * @property {Array<ExpenseItem>} [expenses]
  * @property {Array<DriverExpenseItem>} [driverExpenses] 메모리 전용 — 있으면 통째 replace
  * @property {Array<InvoiceLike>} [invoices]
+ * @property {Array<string>} [dismissedNotifications] 닫은 알림 id
+ * @property {import('../domain/workDataTombstones.js').WorkDataTombstones} [workDataDeletedDates] 빈 날 삭제 목록
  */
 
 /**
@@ -119,6 +121,8 @@ export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
   if (snapshot.settings && typeof snapshot.settings === 'object') entries.push({ domain: 'settings', ownerKey, value: snapshot.settings })
   if (Array.isArray(snapshot.expenses)) entries.push({ domain: 'expenses', ownerKey, value: snapshot.expenses })
   if (Array.isArray(snapshot.invoices)) entries.push({ domain: 'invoices', ownerKey, value: snapshot.invoices })
+  if (Array.isArray(snapshot.dismissedNotifications)) entries.push({ domain: 'dismissedNotifications', ownerKey, value: snapshot.dismissedNotifications })
+  if (snapshot.workDataDeletedDates && typeof snapshot.workDataDeletedDates === 'object') entries.push({ domain: 'workDataDeletedDates', ownerKey, value: snapshot.workDataDeletedDates })
   /** @type {import('./app-store.js').DriverExpensesReplace|undefined} */
   const replaceDriverExpenses = Array.isArray(snapshot.driverExpenses)
     ? { ownerKey, next: snapshot.driverExpenses }
