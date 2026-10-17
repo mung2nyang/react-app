@@ -1,33 +1,14 @@
 // @ts-check
+import * as v from 'valibot'
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
 import { isPersistedWorkDataMap } from './persistDayRecord.js'
 import { isPersistedInvoice } from './persistDomainInvoice.js'
-import {
-  hasOnlyKeys, isFiniteNumber, isPersistedCar, isPersistedClient, isPersistedDriver,
-  isPersistedExpense, isPlainObject, isStringOrFiniteNumber,
-} from './persistDomainRecords.js'
-import { DRIVER_INVOICE_BASES, DRIVER_SETTLEMENT_MODES, isAllowedEnum } from './persistDomainEnums.js'
+import { isPersistedCar, isPersistedClient, isPersistedDriver, isPersistedExpense } from './persistDomainRecords.js'
+import { DRIVER_INVOICE_BASES, DRIVER_SETTLEMENT_MODES } from './persistDomainEnums.js'
 
 /** @typedef {import('./persist.js').PersistDomain} PersistDomain */
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
-const DRIVER_LINK_KEYS = ['id', 'vehicleNumber', 'assignmentStart', 'assignmentEnd', 'status']
-const ROUTE_PRESET_KEYS = ['id', 'loadLoc', 'unloadLoc']
-const SUB_CAR_SETTINGS_KEYS = ['inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'dailyInspectionOn']
-const SETTINGS_KEYS = [
-  'cars', 'clients', 'driverLinks', 'paymentOn', 'subPaymentOn', 'fixedOn', 'subFixedOn',
-  'defaultDriverSettlementMode', 'driverInvoiceBasis', 'unitPrice', 'bizName', 'bizNumber',
-  'bizRepresentative', 'userName', 'bizAddress', 'bizType', 'bizItem', 'bizEmail', 'theme',
-  'inputMode', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn',
-  'fixedRoutePresets', 'runCountToggle', 'runCountPresets', 'subFixedRouteOn', 'subFixedRoutePresets',
-  'subRunCountToggle', 'subRunCountPresets', 'pinnedLocations', 'subCarSettings', 'dailyInspectionOn',
-  'notifOff',
-]
-/** lib/profile.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
-const PROFILE_KEYS = [
-  'name', 'phone', 'bizName', 'bizRepresentative', 'bizNumber', 'bizAddress', 'bizType', 'bizItem',
-  'bizEmail', 'bankName', 'accountNumber', 'accountHolder',
-]
 /**
  * @typedef {{
  *   name?: string, phone?: string, bizName?: string, bizRepresentative?: string, bizNumber?: string,
@@ -36,70 +17,70 @@ const PROFILE_KEYS = [
  * }} LocalProfile
  */
 
-/** @param {JsonValue} value */
-function isPersistedDriverLink(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, DRIVER_LINK_KEYS)) return false
-  return Object.values(value).every((field) => typeof field === 'string')
-}
+// 칸 이름 → 모양(Valibot). 목록 밖 칸·값이 비어 있는 칸은 거부.
+const opt = v.exactOptional
+const str = v.string()
+const bool = v.boolean()
+const num = v.pipe(v.number(), v.finite())
 
-/** @param {JsonValue} value */
-function isRoutePreset(value) {
-  return isPlainObject(value) && hasOnlyKeys(value, ROUTE_PRESET_KEYS)
-    && typeof value.id === 'string' && typeof value.loadLoc === 'string' && typeof value.unloadLoc === 'string'
-}
+/** Valibot은 배열도 객체로 받고 검사 뒤엔 새 객체를 넘기므로, 객체 검사 앞에서 배열을 먼저 거른다. @template {v.GenericSchema} T @param {T} schema */
+const plain = (schema) => v.pipe(v.custom((input) => typeof input === 'object' && input !== null && !Array.isArray(input)), schema)
 
-/** @param {JsonValue} value */
-function isPersistedSubCarSettings(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, SUB_CAR_SETTINGS_KEYS)) return false
-  if ('inputMode' in value && value.inputMode !== 'count' && value.inputMode !== 'fare') return false
-  for (const flag of ['callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'dailyInspectionOn']) {
-    if (flag in value && typeof value[flag] !== 'boolean') return false
-  }
-  return true
-}
+/** @param {(value: JsonValue) => boolean} check */
+const by = (check) => v.custom((input) => check(/** @type {JsonValue} */ (input)))
+
+const DRIVER_LINK = plain(v.strictObject({
+  id: opt(str), vehicleNumber: opt(str), assignmentStart: opt(str), assignmentEnd: opt(str), status: opt(str),
+}))
+
+const ROUTE_PRESET = plain(v.strictObject({ id: str, loadLoc: str, unloadLoc: str }))
+
+const INPUT_MODE = v.picklist(['count', 'fare'])
+
+const SUB_CAR_SETTINGS = plain(v.strictObject({
+  inputMode: opt(INPUT_MODE), callDetail: opt(bool), timeOn: opt(bool), platformOn: opt(bool),
+  distanceOn: opt(bool), cargoTonnageOn: opt(bool), dailyInspectionOn: opt(bool),
+}))
+
+const SETTINGS = plain(v.strictObject({
+  cars: opt(v.array(by(isPersistedCar))), clients: opt(v.array(by(isPersistedClient))), driverLinks: opt(v.array(DRIVER_LINK)),
+  paymentOn: opt(bool), subPaymentOn: opt(bool), fixedOn: opt(bool), subFixedOn: opt(bool),
+  // defaultDriverSettlementMode: 옛 "계산서 처리 방식" 기본값(2026-10-02 삭제) — 옛 저장분 읽기용.
+  defaultDriverSettlementMode: opt(v.picklist(DRIVER_SETTLEMENT_MODES)),
+  // driverInvoiceBasis: 옛 기사 매입 계산서 기준(2026-10-02 삭제) — 옛 저장분 읽기용.
+  driverInvoiceBasis: opt(v.picklist(DRIVER_INVOICE_BASES)),
+  unitPrice: opt(v.union([str, num])),
+  bizName: opt(str), bizNumber: opt(str), bizRepresentative: opt(str), userName: opt(str),
+  bizAddress: opt(str), bizType: opt(str), bizItem: opt(str), bizEmail: opt(str),
+  theme: opt(v.picklist(['light', 'dark'])), inputMode: opt(INPUT_MODE),
+  callDetail: opt(bool), timeOn: opt(bool), platformOn: opt(bool), distanceOn: opt(bool), cargoTonnageOn: opt(bool),
+  fixedRouteOn: opt(bool), fixedRoutePresets: opt(v.array(ROUTE_PRESET)), runCountToggle: opt(bool), runCountPresets: opt(v.array(num)),
+  subFixedRouteOn: opt(bool), subFixedRoutePresets: opt(v.array(ROUTE_PRESET)), subRunCountToggle: opt(bool), subRunCountPresets: opt(v.array(num)),
+  pinnedLocations: opt(v.array(str)), subCarSettings: opt(plain(v.record(str, SUB_CAR_SETTINGS))),
+  dailyInspectionOn: opt(bool), notifOff: opt(v.array(str)),
+}))
+
+/** lib/profile.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
+const PROFILE = plain(v.strictObject({
+  name: opt(str), phone: opt(str), bizName: opt(str), bizRepresentative: opt(str), bizNumber: opt(str), bizAddress: opt(str),
+  bizType: opt(str), bizItem: opt(str), bizEmail: opt(str), bankName: opt(str), accountNumber: opt(str), accountHolder: opt(str),
+}))
+
+const DELETED_DATES = plain(v.record(v.pipe(str, v.check(isValidCalendarDateKey)), str))
 
 /** @param {JsonValue} value */
 export function isPersistedSettings(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, SETTINGS_KEYS)) return false
-  if ('theme' in value && value.theme !== 'light' && value.theme !== 'dark') return false
-  if ('inputMode' in value && value.inputMode !== 'count' && value.inputMode !== 'fare') return false
-  if ('unitPrice' in value && !isStringOrFiniteNumber(value.unitPrice)) return false
-  for (const flag of ['paymentOn', 'subPaymentOn', 'fixedOn', 'subFixedOn', 'callDetail', 'timeOn', 'platformOn', 'distanceOn', 'cargoTonnageOn', 'fixedRouteOn', 'runCountToggle', 'subFixedRouteOn', 'subRunCountToggle', 'dailyInspectionOn']) {
-    if (flag in value && typeof value[flag] !== 'boolean') return false
-  }
-  // defaultDriverSettlementMode: 옛 "계산서 처리 방식" 기본값(2026-10-02 삭제) — 옛 저장분 읽기용.
-  if ('defaultDriverSettlementMode' in value &&!isAllowedEnum(value.defaultDriverSettlementMode, DRIVER_SETTLEMENT_MODES)) return false
-  // driverInvoiceBasis: 옛 기사 매입 계산서 기준(2026-10-02 삭제) — 옛 저장분 읽기용.
-  if ('driverInvoiceBasis' in value && !isAllowedEnum(value.driverInvoiceBasis, DRIVER_INVOICE_BASES)) return false
-  for (const text of ['bizName', 'bizNumber', 'bizRepresentative', 'userName', 'bizAddress', 'bizType', 'bizItem', 'bizEmail']) {
-    if (text in value && typeof value[text] !== 'string') return false
-  }
-  if ('cars' in value && (!Array.isArray(value.cars) || !value.cars.every(isPersistedCar))) return false
-  if ('clients' in value && (!Array.isArray(value.clients) || !value.clients.every(isPersistedClient))) return false
-  if ('driverLinks' in value && (!Array.isArray(value.driverLinks) || !value.driverLinks.every(isPersistedDriverLink))) return false
-  if ('fixedRoutePresets' in value && (!Array.isArray(value.fixedRoutePresets) || !value.fixedRoutePresets.every(isRoutePreset))) return false
-  if ('subFixedRoutePresets' in value && (!Array.isArray(value.subFixedRoutePresets) || !value.subFixedRoutePresets.every(isRoutePreset))) return false
-  if ('runCountPresets' in value && (!Array.isArray(value.runCountPresets) || !value.runCountPresets.every(isFiniteNumber))) return false
-  if ('subRunCountPresets' in value && (!Array.isArray(value.subRunCountPresets) || !value.subRunCountPresets.every(isFiniteNumber))) return false
-  if ('pinnedLocations' in value && (!Array.isArray(value.pinnedLocations) || !value.pinnedLocations.every((loc) => typeof loc === 'string'))) return false
-  if ('notifOff' in value && (!Array.isArray(value.notifOff) || !value.notifOff.every((kind) => typeof kind === 'string'))) return false
-  if ('subCarSettings' in value) {
-    if (!isPlainObject(value.subCarSettings)) return false
-    if (!Object.values(value.subCarSettings).every(isPersistedSubCarSettings)) return false
-  }
-  return true
+  return v.is(SETTINGS, value)
 }
 
 /** @param {JsonValue} value @returns {value is LocalProfile} */
 export function isPersistedProfile(value) {
-  if (!isPlainObject(value) || !hasOnlyKeys(value, PROFILE_KEYS)) return false
-  return Object.values(value).every((field) => typeof field === 'string')
+  return v.is(PROFILE, value)
 }
 
 /** @param {JsonValue} value */
 export function isPersistedWorkDataDeletedDates(value) {
-  if (!isPlainObject(value)) return false
-  return Object.entries(value).every(([dateKey, stampedAt]) => isValidCalendarDateKey(dateKey) && typeof stampedAt === 'string')
+  return v.is(DELETED_DATES, value)
 }
 
 /**
