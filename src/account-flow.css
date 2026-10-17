@@ -421,22 +421,6 @@ input:checked + .slider:before { transform: translateX(22px); }
 .modal-btn.confirm { background: var(--primary-fill); color: #fff; }
 .modal-btn.cancel { background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); }
 
-.toast-message {
-  position: fixed;
-  bottom: calc(76px + env(safe-area-inset-bottom)); /* 아래 탭 바로 위 — 내용을 가리지 않게 */
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: rgba(15, 23, 42, 0.9);
-  color: #fff;
-  padding: 14px 24px;
-  border-radius: 30px;
-  font-size: var(--fs-4);
-  font-weight: 700;
-  z-index: 2000;
-  max-width: calc(100vw - 32px);
-  text-align: center;
-}
-
 @media (max-width: 360px) {
   .account-flow-page { padding-inline: 0; }
   .auth-heading-box h1 { font-size: 1.78rem; }

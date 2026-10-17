@@ -17,3 +17,14 @@ export const SESSION_CHANGED_FAIL = '로그인 정보가 바뀌어 저장하지 
 export function saveFailMessage(onServer) {
   return onServer ? SERVER_SAVE_FAIL : DEVICE_SAVE_FAIL
 }
+
+/** 실패 안내에만 쓰는 낱말 — 알림을 빨간 실패 모양으로 보일지 가른다(로드맵 83). */
+const FAILURE_WORDS = ['실패', '못했', '수 없', '지원하지 않', '올바르지 않', '맞지 않', '손상', '오류', '다시 시도']
+
+/**
+ * 알림 문구가 실패 안내인지.
+ * @param {string} message
+ */
+export function isFailureMessage(message) {
+  return FAILURE_WORDS.some((word) => message.includes(word))
+}

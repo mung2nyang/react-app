@@ -7,6 +7,7 @@ import { endCloudSession } from '../lib/cloudSession.js'
 import { flushCloudSync } from '../lib/syncQueue.js'
 import { confirmReloadIfUnsaved } from '../lib/durableWriteGuard.js'
 import { buzz } from '../lib/haptic.js'
+import { isFailureMessage } from '../lib/failureMessages.js'
 import { supabase } from '../supabaseClient.js'
 import { restoreSessionOnBoot, ownerKeyFromSession } from './boot.js'
 import { initializeOwnerFromPersist } from '../store/owner-state.js'
@@ -110,7 +111,7 @@ export function useAppSession() {
   useEffect(() => {
     if (!toast) return undefined
     buzz() // 안내 문구가 뜰 때 짧은 진동
-    const timer = setTimeout(() => setToast(''), 4000)
+    const timer = setTimeout(() => setToast(''), isFailureMessage(toast) ? 6000 : 4000) // 실패 알림은 놓치지 않게 6초
     return () => clearTimeout(timer)
   }, [toast])
 

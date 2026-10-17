@@ -17,8 +17,10 @@ import RequireSession from './RequireSession.jsx'
 import { applyOnboardingWizard } from '../lib/onboardingFinish.js'
 import { GUEST_APP_SESSION, setGuestModePersisted } from './guestSessionPersist.js'
 import { useAppSession } from './useAppSession.js'
+import ToastMessage from './ToastMessage.jsx'
 import '../variables.css'
 import '../account-flow.css'
+import '../toast.css'
 import '../side-menu.css'
 import '../management-common.css'
 import '../controls-common.css'
@@ -151,7 +153,7 @@ export default function App() {
       </PageLoadErrorBoundary>
 
 
-      {toast && <div className="toast-message" role="status">{toast}</div>}
+      <ToastMessage message={toast} />
     </>
   )
 }
