@@ -1,13 +1,6 @@
 // @ts-check
-// durable EffectivePatch는 isValidCallDetail(비어 있지 않은 id 필수). persisted
-// historical workData는 isPersistedCallDetail — CallDetailLike 정본대로 id는 선택이다.
-// 예전 검증기는 `id`가 "있으면 문자열이어야 한다" 정도만 봐서
-// `{}`/`{id:""}`도 통과시켰다 — day-record.js가 이런 값을 실제 CallDetailLike로
-// 오인해 뒤섞이면 콜상세 목록 자체가 깨질 수 있다. persist 쪽은 id 없는 레거시
-// 콜을 허용하고, initialize → useDayDraft → backfillCallDetailIds가 한 번만 채운다.
-// 정의되지 않은 추가 필드(레거시/서버가 몰래 얹은 필드 등)도 이제 명시적으로 거부한다
-// — 여기 없는 필드가 실제로 필요해지면 CallDetailLike 정본(domain/callDetail.js)과
-// 이 검증기 양쪽에 같이 추가해야 한다(스키마 드리프트 방지).
+// 콜 상세 한 건의 모양 검사(Valibot). 저장 기록은 id 선택(옛 콜), 저장 대기 기록은 id 필수. 목록 밖 칸은 거부 — 칸을 늘리면 domain/callDetail.js와 함께.
+import * as v from 'valibot'
 import { parseCurrencyValue } from '../domain/money.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
@@ -16,11 +9,6 @@ import { parseCurrencyValue } from '../domain/money.js'
 /** @param {JsonValue} value @returns {value is Record<string, JsonValue>} */
 function isPlainObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-/** @param {JsonValue} value @returns {boolean} 0 이상의 유한한 숫자(금액류 — 정수만은 아니다) */
-function isNonNegativeFiniteNumber(value) {
-  return typeof value === 'number' && Number.isFinite(value) && value >= 0
 }
 
 /**
@@ -33,10 +21,7 @@ export function isValidCurrencyAmount(value) {
   if (typeof value === 'number') return Number.isInteger(value) && Number.isFinite(value) && value >= 0
   if (typeof value !== 'string') return false
   const trimmed = value.trim()
-  // 빈 값 = 미입력(0) — domain/money.js의 parseCurrencyValue('')===0과 같은 규약.
-  // 이게 없어서 산재보험료를 안 채운 콜상세(대부분)가 전부 검증 실패 →
-  // 그 owner의 Store 초기화 전체가 무산되는 버그가 있었다(실측: 2026-09-11
-  // "게스트 데이터 유실" 재현·원인 확정).
+  // 빈 값 = 미입력(0) — parseCurrencyValue('')===0과 같은 규약(없으면 산재보험료 빈 콜이 전부 거부됨).
   if (trimmed === '') return true
   // 쉼표 없는 정수, 또는 천 단위 쉼표 그룹(3자리). 선택적으로 끝의 `원`(앞에 공백 하나).
   if (!/^(?:\d{1,3}(?:,\d{3})+|\d+)(?:\s?원)?$/.test(trimmed)) return false
@@ -44,93 +29,55 @@ export function isValidCurrencyAmount(value) {
   return Number.isFinite(parsed) && parsed >= 0
 }
 
-// domain/callDetail.js의 CallDetailLike가 선언한 필드 전체 — 이 목록 밖의 키가 있으면
-// 거부한다(레거시 데이터에 정말 필요한 필드가 생기면 여기와 callDetail.js 둘 다 고친다).
-export const ALLOWED_CALL_DETAIL_KEYS = /** @type {const} */ ([
-  'id', 'loadLoc', 'unloadLoc', 'fare', 'client', 'clientId', 'commissionSnapshot',
-  'remarks', 'vatExempt', 'paymentStatus', 'payments', 'paymentDueDate', 'workDate',
-  'distanceType', 'linkedLoadIndex', 'departureTime', 'arrivalTime', 'platform',
-  'cargoTonnage', 'receipt', 'startOdometer', 'endOdometer', 'distanceKm', 'insuranceFee',
-])
-const ALLOWED_COMMISSION_KEYS = /** @type {const} */ (['enabled', 'type', 'value'])
-const ALLOWED_PAYMENT_KEYS = /** @type {const} */ (['id', 'amount', 'paidAt', 'note'])
+// Valibot은 배열도 객체로 받고 검사 뒤엔 새 객체를 넘기므로, 객체 검사 앞에서 배열을 먼저 거른다.
+/** @param {(value: Record<string, JsonValue>) => boolean} [extra] */
+const plainObject = (extra = () => true) => v.custom((input) => isPlainObject(/** @type {JsonValue} */ (input)) && extra(/** @type {Record<string, JsonValue>} */ (input)))
+const opt = v.exactOptional
+const str = v.string()
+const amount = v.custom((input) => isValidCurrencyAmount(/** @type {JsonValue} */ (input)))
 
-/** @param {JsonValue} value @returns {boolean} */
-function isValidCommissionSnapshot(value) {
-  if (!isPlainObject(value)) return false
-  if (Object.keys(value).some((key) => !ALLOWED_COMMISSION_KEYS.includes(/** @type {typeof ALLOWED_COMMISSION_KEYS[number]} */ (key)))) return false
-  if (typeof value.enabled !== 'boolean') return false
-  if (value.type !== null && typeof value.type !== 'string') return false
-  if (value.value !== null && typeof value.value !== 'string' && typeof value.value !== 'number') return false
-  return true
+const COMMISSION_SNAPSHOT = v.pipe(plainObject(), v.strictObject({
+  enabled: v.boolean(),
+  type: v.nullable(str),
+  // 지금까지처럼 숫자면 다 받는다(Valibot number는 NaN을 거부해서 typeof로).
+  value: v.nullable(v.union([str, v.custom((input) => typeof input === 'number')])),
+}))
+
+// 입금 항목은 칸이 모두 선택이다(id 없는 옛 항목, 금액이 통화 글자인 값도 정상).
+const PAYMENT = v.pipe(plainObject(), v.strictObject({
+  id: opt(str), amount: opt(amount), paidAt: opt(str), note: opt(str),
+}))
+
+// domain/callDetail.js의 CallDetailLike 칸 전체.
+const CALL_DETAIL_FIELDS = {
+  id: opt(v.pipe(str, v.nonEmpty())), loadLoc: opt(str), unloadLoc: opt(str), fare: opt(amount), client: opt(str),
+  clientId: opt(v.nullable(str)), commissionSnapshot: opt(COMMISSION_SNAPSHOT),
+  remarks: opt(str), vatExempt: opt(v.boolean()), paymentStatus: opt(str), payments: opt(v.array(PAYMENT)),
+  paymentDueDate: opt(str), workDate: opt(str),
+  distanceType: opt(str), linkedLoadIndex: opt(str), departureTime: opt(str), arrivalTime: opt(str), platform: opt(str),
+  cargoTonnage: opt(v.union([str, v.pipe(v.number(), v.finite(), v.minValue(0))])),
+  receipt: opt(str), startOdometer: opt(str), endOdometer: opt(str), distanceKm: opt(str), insuranceFee: opt(amount),
 }
 
-/**
- * payments[] 항목은 도메인 타입(callDetail.js)대로 전부 선택 필드 — id 없는 옛 항목·금액이 통화 글자("1,000")인 값도 실제로 있고 정상 계산된다.
- * 있는 필드만 타입을 검사하고, 없는 필드는 통과시킨다.
- * @param {JsonValue} value @returns {boolean}
- */
-function isValidPayment(value) {
-  if (!isPlainObject(value)) return false
-  if (Object.keys(value).some((key) => !ALLOWED_PAYMENT_KEYS.includes(/** @type {typeof ALLOWED_PAYMENT_KEYS[number]} */ (key)))) return false
-  if ('id' in value && typeof value.id !== 'string') return false
-  if ('amount' in value && !isValidCurrencyAmount(value.amount)) return false
-  if ('paidAt' in value && typeof value.paidAt !== 'string') return false
-  if ('note' in value && typeof value.note !== 'string') return false
-  return true
-}
+/** 이 목록 밖의 칸은 거부한다 — 서버 기록 합치기(hydrateMergeWork.js)도 이 목록으로 모르는 칸을 거른다. */
+export const ALLOWED_CALL_DETAIL_KEYS = Object.keys(CALL_DETAIL_FIELDS)
+
+// 빈 객체 {}는 콜로 치지 않는다.
+const CALL_DETAIL = v.pipe(plainObject((value) => Object.keys(value).length > 0), v.strictObject(CALL_DETAIL_FIELDS))
 
 /**
- * persisted historical workData용. CallDetailLike 정본대로 id는 선택이다.
- * 빈 `{}`와 빈 문자열 id는 거부한다.
+ * 저장된 하루 기록용 — id는 선택(옛 콜), 빈 콜·빈 글자 id는 거부.
  * @param {JsonValue} item
  */
 export function isPersistedCallDetail(item) {
-  if (!isPlainObject(item) || Object.keys(item).length === 0) return false
-  if (Object.keys(item).some((key) => !ALLOWED_CALL_DETAIL_KEYS.includes(/** @type {typeof ALLOWED_CALL_DETAIL_KEYS[number]} */ (key)))) return false
-  if ('id' in item && (typeof item.id !== 'string' || item.id === '')) return false
-  return matchesCallDetailFields(item)
+  return v.is(CALL_DETAIL, item)
 }
 
 /**
- * durable EffectivePatch용. 비어 있지 않은 id가 필수다.
+ * 저장 대기 기록용 — 비어 있지 않은 id가 필수다.
  * @param {JsonValue} item
  * @returns {item is EffectiveCallDetail}
  */
 export function isValidCallDetail(item) {
   return isPersistedCallDetail(item) && isPlainObject(item) && typeof item.id === 'string' && item.id !== ''
-}
-
-/** @param {Record<string, JsonValue>} item */
-function matchesCallDetailFields(item) {
-  if ('loadLoc' in item && typeof item.loadLoc !== 'string') return false
-  if ('unloadLoc' in item && typeof item.unloadLoc !== 'string') return false
-  if ('fare' in item && !isValidCurrencyAmount(item.fare)) return false
-  if ('client' in item && typeof item.client !== 'string') return false
-  if ('clientId' in item && item.clientId !== null && typeof item.clientId !== 'string') return false
-  if ('remarks' in item && typeof item.remarks !== 'string') return false
-  if ('vatExempt' in item && typeof item.vatExempt !== 'boolean') return false
-  if ('paymentStatus' in item && typeof item.paymentStatus !== 'string') return false
-  if ('paymentDueDate' in item && typeof item.paymentDueDate !== 'string') return false
-  if ('workDate' in item && typeof item.workDate !== 'string') return false
-  if ('distanceType' in item && typeof item.distanceType !== 'string') return false
-  if ('linkedLoadIndex' in item && typeof item.linkedLoadIndex !== 'string') return false
-  if ('departureTime' in item && typeof item.departureTime !== 'string') return false
-  if ('arrivalTime' in item && typeof item.arrivalTime !== 'string') return false
-  if ('platform' in item && typeof item.platform !== 'string') return false
-  if ('cargoTonnage' in item) {
-    if (typeof item.cargoTonnage !== 'string' && typeof item.cargoTonnage !== 'number') return false
-    if (typeof item.cargoTonnage === 'number' && !isNonNegativeFiniteNumber(item.cargoTonnage)) return false
-  }
-  if ('receipt' in item && typeof item.receipt !== 'string') return false
-  if ('startOdometer' in item && typeof item.startOdometer !== 'string') return false
-  if ('endOdometer' in item && typeof item.endOdometer !== 'string') return false
-  if ('distanceKm' in item && typeof item.distanceKm !== 'string') return false
-  if ('insuranceFee' in item && !isValidCurrencyAmount(item.insuranceFee)) return false
-  if ('commissionSnapshot' in item && !isValidCommissionSnapshot(item.commissionSnapshot)) return false
-  if ('payments' in item) {
-    if (!Array.isArray(item.payments)) return false
-    for (const p of item.payments) if (!isValidPayment(p)) return false
-  }
-  return true
 }
