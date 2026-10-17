@@ -7,19 +7,13 @@ import {
 } from '../lib/report.js'
 import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../lib/messageTemplates.js'
 import { createReportImageFile, createReportPdfFile } from '../lib/reportExport.js'
-import './report/report.css'
-import ModalShell from './shared/ModalShell.jsx'
+import ShareFileModal, { buildShareSmsUrl } from './shared/ShareFileModal.jsx'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 
-/**
- * @param {string} phone
- * @param {string} body
- */
-export function buildReportSmsUrl(phone, body) {
-  const separator = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?'
-  return `sms:${phone}${separator}body=${encodeURIComponent(body)}`
-}
+export const buildReportSmsUrl = buildShareSmsUrl
+
+const NO_CONTACT = '문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.'
 
 /**
  * @param {Object} props
@@ -51,88 +45,21 @@ export default function ReportShareModal({ exportRef, viewMode, clientFilter, cl
     }
   }
 
-  /** @param {'pdf'|'image'} type */
-  async function shareToKakao(type) {
-    onClose()
-    try {
-      const formatLabel = type === 'image' ? '이미지' : 'PDF'
-      showToast?.(`카카오톡으로 보낼 ${formatLabel}를 준비하고 있습니다.`)
-      const file = await buildFile(type)
-      const nav = /** @type {Navigator & { canShare?: (data: { files: Array<File> }) => boolean }} */ (navigator)
-      if (!nav.share || (nav.canShare && !nav.canShare({ files: [file] }))) {
-        showToast?.('이 휴대폰에서는 파일 공유를 할 수 없습니다. [PDF 다운로드]로 저장한 뒤 보내 주세요.')
-        return
-      }
-      await nav.share({
-        files: [file],
-        title: '운송비 내역서',
-        text: fillReportShareMessagePattern(getReportShareMessagePattern(), companyName),
-      })
-    } catch (error) {
-      if (error instanceof Error && error.name !== 'AbortError') {
-        console.error('카카오톡 내역서 공유 실패:', error)
-        showToast?.('카카오톡 파일 공유에 실패했습니다.')
-      }
-    }
-  }
-
-  /** @param {'pdf'|'image'} type */
-  async function shareBySms(type) {
-    if (!contact) {
-      showToast?.('문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.')
-      return
-    }
-    onClose()
-    let fileUrl = ''
-    try {
-      const formatLabel = type === 'image' ? '이미지' : 'PDF'
-      showToast?.(`문자로 보낼 ${formatLabel}를 저장하고 있습니다.`)
-      const file = await buildFile(type)
-      fileUrl = URL.createObjectURL(file)
-      const link = document.createElement('a')
-      link.download = file.name
-      link.href = fileUrl
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      const message = fillReportShareMessagePattern(getReportShareMessagePattern(), contact.name)
-      window.location.href = buildReportSmsUrl(contact.phone, message)
-    } catch (error) {
-      console.error('문자용 내역서 저장 실패:', error)
-      showToast?.('문자용 파일 저장에 실패했습니다.')
-    } finally {
-      if (fileUrl) setTimeout(() => URL.revokeObjectURL(fileUrl), 1000)
-    }
-  }
-
   return (
-    <ModalShell onClose={onClose} contentClassName="modal-content report-share-content" label="내역서 보내기">
-      <div className="report-share-head">
-        <strong>내역서 보내기</strong>
-        <p>보내는 방법이나 파일 형식을 선택해 주세요.</p>
-      </div>
-      <div className="report-share-options">
-        <section className="report-share-channel">
-          <div className="report-share-channel-title">
-            <span className="report-share-file-icon kakao">톡</span>
-            <span><strong>카카오톡으로 보내기</strong><small>파일과 설정한 안내 문구를 함께 공유합니다.</small></span>
-          </div>
-          <div className="report-share-format-buttons">
-            <button type="button" onClick={() => shareToKakao('pdf')}><strong>PDF로 보내기</strong></button>
-            <button type="button" onClick={() => shareToKakao('image')}><strong>이미지로 보내기</strong></button>
-          </div>
-        </section>
-        <section className="report-share-channel">
-          <div className="report-share-channel-title">
-            <span className="report-share-file-icon sms">문자</span>
-            <span><strong>문자로 보내기</strong><small>설정한 안내 문구를 포함해 문자 앱을 엽니다.</small></span>
-          </div>
-          <div className="report-share-format-buttons">
-            <button type="button" onClick={() => shareBySms('pdf')}><strong>PDF로 보내기</strong></button>
-            <button type="button" onClick={() => shareBySms('image')}><strong>이미지로 보내기</strong></button>
-          </div>
-        </section>
-      </div>
-    </ModalShell>
+    <ShareFileModal
+      title="내역서 보내기"
+      kakaoHint="파일과 설정한 안내 문구를 함께 공유합니다."
+      smsHint="설정한 안내 문구를 포함해 문자 앱을 엽니다."
+      shareTitle="운송비 내역서"
+      kakaoText={fillReportShareMessagePattern(getReportShareMessagePattern(), companyName)}
+      unsupportedToast="이 휴대폰에서는 파일 공유를 할 수 없습니다. [PDF 다운로드]로 저장한 뒤 보내 주세요."
+      logLabel="내역서"
+      buildFile={buildFile}
+      smsTarget={() => (contact
+        ? { phone: contact.phone, message: fillReportShareMessagePattern(getReportShareMessagePattern(), contact.name) }
+        : NO_CONTACT)}
+      onClose={onClose}
+      showToast={showToast}
+    />
   )
 }
