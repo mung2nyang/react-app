@@ -103,7 +103,7 @@ export default function OwnerScopedClientsView({ ownerKey = 'guest', onBack, sho
 
       <div className="client-list" id="ownerScopedClientsListContainer">
         <p className="linked-driver-readonly-notice" style={{ marginBottom: 10 }}>
-          <span>차주와 공유하는 거래처 목록입니다. 등록·수정·삭제가 차주 화면에도 함께 반영됩니다.</span>
+          <span>차주와 공유하는 거래처 목록입니다. 등록, 수정, 삭제가 차주 화면에도 함께 반영됩니다.</span>
         </p>
         {!scopedClients.length ? (
           <div className="empty-state">등록된 거래처가 없습니다.</div>

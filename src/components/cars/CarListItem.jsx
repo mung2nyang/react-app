@@ -22,10 +22,10 @@ export default function CarListItem({
   const isSub = car.type === 'sub'
   const hasDriverLink = isSub && drivers.some((d) => d.vehicleNumber === car.number)
   const commissionText = isSub && car.commEnabled && car.commission
-    ? ` · 수수료 ${car.commType === 'direct' ? `${formatCurrencyInput(car.commission)}원` : `${car.commission}%`}`
+    ? `, 수수료 ${car.commType === 'direct' ? `${formatCurrencyInput(car.commission)}원` : `${car.commission}%`}`
     : ''
   const salaryText = isSub && car.driverPayMode === 'salary' && car.driverSalaryAmount
-    ? ` · 월급 ${formatCurrencyInput(car.driverSalaryAmount)}원`
+    ? `, 월급 ${formatCurrencyInput(car.driverSalaryAmount)}원`
     : ''
   const subText = `${car.tonnage ? `(${car.tonnage})` : ''}${commissionText}${salaryText}`
 

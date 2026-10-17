@@ -201,7 +201,7 @@ test('파렛트 단가: 켜고 단가 입력 → 함께 저장, 단가 비우면
     assert.equal(c1.fixedRouteLinked, true)
     assert.equal(c1.palletOn, true)
     assert.equal(c1.palletPrice, '3,000')
-    assert.ok((view.container.textContent || '').includes('1회 50,000원 · 파렛트 3,000원'), '요약에 파렛트 표시')
+    assert.ok((view.container.textContent || '').includes('1회 50,000원, 파렛트 3,000원'), '요약에 파렛트 표시')
   } finally { await view.cleanup() }
 })
 

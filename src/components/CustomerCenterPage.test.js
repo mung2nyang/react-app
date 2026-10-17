@@ -140,7 +140,7 @@ describe('CustomerCenterPage — 나의 문의·건의 확인', () => {
     const { container, root } = await openSupportTab({ userId: 'u-empty', guestMode: false, name: '테스트' }, '나의 문의')
     try {
       await act(async () => { await Promise.resolve() })
-      assert.ok(container.textContent?.includes('아직 접수한 문의·건의가 없습니다'))
+      assert.ok(container.textContent?.includes('아직 접수한 문의나 건의가 없습니다'))
       assert.equal(container.querySelector('.my-inquiry-card'), null)
     } finally {
       await act(async () => { root.unmount() })

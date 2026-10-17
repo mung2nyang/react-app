@@ -75,8 +75,8 @@ test('기본은 "내 사업자 정보와 동일"(차주 사업자·계좌 두 �
   const { container, cleanup } = await mount(owner, OWNER_PROFILE, [])
   try {
     assert.equal(input(container, '#carBizSameAsOwner').checked, true)
-    assert.ok((container.textContent ?? '').includes('차주상사 · 111-22-33333'))
-    assert.ok((container.textContent ?? '').includes('차주은행 · 000-111 · 차주명의'))
+    assert.ok((container.textContent ?? '').includes('차주상사, 111-22-33333'))
+    assert.ok((container.textContent ?? '').includes('차주은행, 000-111, 차주명의'))
     for (const id of ['#carBizName', '#carBankName', '#carAccountHolder', '#carAccountNumber']) assert.equal(container.querySelector(id), null, id)
     await act(async () => { input(container, '#carBizSameAsOwner').click() })
     for (const id of ['#carBankName', '#carAccountHolder', '#carAccountNumber']) assert.ok(container.querySelector(id), id)
@@ -91,7 +91,7 @@ test('차주 사업자·계좌 정보가 비어 있으면 안내 문구', async 
   commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }], { syncToCloud: false })
   const { container, cleanup } = await mount(owner, {}, [])
   try {
-    assert.ok((container.textContent ?? '').includes('마이페이지 → 개인정보에서 사업자 정보 · 정산 계좌를 등록해 주세요.'))
+    assert.ok((container.textContent ?? '').includes('마이페이지 → 개인정보에서 사업자 정보와 정산 계좌를 등록해 주세요.'))
   } finally { await cleanup() }
 })
 
@@ -102,12 +102,12 @@ test('차주 사업자·계좌 중 하나만 있으면 빠진 쪽만 안내', as
   try {
     const text = accountOnly.container.textContent ?? ''
     assert.ok(text.includes('마이페이지 → 개인정보에서 사업자 정보를 등록해 주세요.'))
-    assert.ok(text.includes('차주은행 · 000-111 · 차주명의'))
+    assert.ok(text.includes('차주은행, 000-111, 차주명의'))
   } finally { await accountOnly.cleanup() }
   const bizOnly = await mount(owner, { bizName: '차주상사', bizNumber: '111-22-33333' }, [])
   try {
     const text = bizOnly.container.textContent ?? ''
-    assert.ok(text.includes('차주상사 · 111-22-33333'))
+    assert.ok(text.includes('차주상사, 111-22-33333'))
     assert.ok(text.includes('마이페이지 → 개인정보에서 정산 계좌를 등록해 주세요.'))
   } finally { await bizOnly.cleanup() }
 })

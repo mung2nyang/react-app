@@ -55,8 +55,8 @@ export default function CarBusinessInfoSection({ ownerKey, car, cars, profile, s
     value: form[key],
     onChange: (/** @type {string} */ value) => set(key, value),
   })
-  const ownerLine = [profile.bizName, profile.bizNumber].filter(Boolean).join(' · ')
-  const ownerAccountLine = [profile.bankName, profile.accountNumber, profile.accountHolder].filter(Boolean).join(' · ')
+  const ownerLine = [profile.bizName, profile.bizNumber].filter(Boolean).join(', ')
+  const ownerAccountLine = [profile.bankName, profile.accountNumber, profile.accountHolder].filter(Boolean).join(', ')
 
   async function save() {
     if (saving || !car.id) return
@@ -71,7 +71,7 @@ export default function CarBusinessInfoSection({ ownerKey, car, cars, profile, s
 
   return (
     <section className="car-biz-card">
-      <h3>사업자·정산 계좌 정보</h3>
+      <h3>사업자/정산 계좌 정보</h3>
       <div className="car-biz-toggle">
         <div>
           <label htmlFor="carBizSameAsOwner">내 사업자 정보와 동일</label>
@@ -90,7 +90,7 @@ export default function CarBusinessInfoSection({ ownerKey, car, cars, profile, s
       {form.sameAsOwner ? (
         <p className="car-biz-owner-line">
           {!ownerLine && !ownerAccountLine ? (
-            <span>마이페이지 → 개인정보에서 사업자 정보 · 정산 계좌를 등록해 주세요.</span>
+            <span>마이페이지 → 개인정보에서 사업자 정보와 정산 계좌를 등록해 주세요.</span>
           ) : (
             <>
               <span>{ownerLine || '마이페이지 → 개인정보에서 사업자 정보를 등록해 주세요.'}</span>

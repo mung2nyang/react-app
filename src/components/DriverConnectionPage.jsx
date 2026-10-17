@@ -128,7 +128,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
             </span>
           </div>
           <div className="car-sub-text">
-            {[driver.phone, driver.status !== 'linked' && `초대 코드 ${formatInviteCode(driver.inviteCode)}`].filter(Boolean).join(' · ')}
+            {[driver.phone, driver.status !== 'linked' && `초대 코드 ${formatInviteCode(driver.inviteCode)}`].filter(Boolean).join(', ')}
           </div>
 
           <div className="driver-assignment-grid">

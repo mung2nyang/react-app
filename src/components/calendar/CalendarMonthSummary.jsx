@@ -7,7 +7,7 @@ import SummaryInfoToggle from './SummaryInfoToggle.jsx'
  * @typedef {ReturnType<typeof import('../../domain/monthSettlement.js').monthSettlementSummary>} MonthSettlementSummary
  */
 
-const TOTAL_INFO = '운송료 + 파렛트 회수 청구액 − 수수료 + 부가세입니다. 아래 정비비·주유비·통행료는 합계에서 빼지 않은 이번 달 차량 지출 기록입니다.'
+const TOTAL_INFO = '운송료 + 파렛트 회수 청구액 − 수수료 + 부가세입니다. 아래 정비비, 주유비, 통행료는 합계에서 빼지 않은 이번 달 차량 지출 기록입니다.'
 
 /** 수수료 설정 표시: "10%"는 그대로, 금액은 "건당 5,000원" @param {string} setting */
 function perTripSetting(setting) {

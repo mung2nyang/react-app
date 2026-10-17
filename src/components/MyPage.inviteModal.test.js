@@ -52,7 +52,7 @@ test('초대코드 입력 버튼을 누르면 팝업이 뜨고, 4자 미만이�
     assert.ok(container.querySelector('.invite-redeem-modal'), '팝업이 열린다')
     assert.deepEqual(opened, [], '다른 화면으로 이동하지 않는다')
     assert.ok(container.textContent.includes('차주에게 전달받은 초대 코드를 입력해 주세요.'))
-    assert.ok(container.textContent.includes('기사님이 입력한 운행·매출 내역이 차주에게 공유됩니다.'))
+    assert.ok(container.textContent.includes('기사님이 입력한 운행, 매출 내역이 차주에게 공유됩니다.'))
 
     const confirm = container.querySelector('.modal-btn.confirm')
     assert.ok(confirm instanceof window.HTMLButtonElement)

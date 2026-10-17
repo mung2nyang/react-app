@@ -40,7 +40,7 @@ test('차주·개인 회원: 가로줄 바로 아래(공지사항 위)에 데이
     assert.deepEqual(view.labels.slice(-3), ['데이터 다운로드', '공지사항', '고객센터'])
     assert.equal(view.entry, '데이터 다운로드', '가로줄은 데이터 다운로드 위에 있다')
     await act(async () => { view.download?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-    assert.ok(view.container.textContent.includes('지금까지 입력한 운행·정산·차량 기록 전체를 내 기기로 다운로드합니다.'))
+    assert.ok(view.container.textContent.includes('지금까지 입력한 운행, 정산, 차량 기록 전체를 내 기기로 다운로드합니다.'))
     assert.ok(view.container.textContent.includes('계좌번호 등 개인정보'))
     const buttons = [...view.container.querySelectorAll('.modal-btns button')].map((b) => b.textContent)
     assert.deepEqual(buttons, ['취소', '불러오기', '다운로드'], '22-A: 불러오기 추가')

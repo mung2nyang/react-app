@@ -115,7 +115,7 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast, employ
         {(employed || plan.skipped > 0) && (
           <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
             {employed
-              ? '일지만 불러옵니다. 거래처·지출·세금계산서와 다른 차량 기록은 건너뜁니다.'
+              ? '일지만 불러옵니다. 거래처, 지출, 세금계산서와 다른 차량 기록은 건너뜁니다.'
               : '내 차량에 없거나 기사가 연동된 차량의 기록은 건너뜁니다.'}
           </p>
         )}
@@ -151,13 +151,13 @@ export default function DataDownloadModal({ ownerKey, onClose, showToast, employ
     <ModalShell onClose={onClose} closeOnOverlay={!busy} closeOnEscape={!busy} label="데이터 다운로드 / 불러오기">
       <div className="modal-title">데이터 다운로드 / 불러오기</div>
       <p className="confirm-modal-text" style={TEXT_STYLE}>
-        {'지금까지 입력한 운행·정산·차량 기록 전체를 내 기기로 다운로드합니다.'}
+        {'지금까지 입력한 운행, 정산, 차량 기록 전체를 내 기기로 다운로드합니다.'}
       </p>
       <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
-        {'파일에는 계좌번호 등 개인정보가 들어 있으니 안전하게 보관해 주세요.\n세무 신고용 서류는 서류 발급에서 PDF·엑셀로도 받을 수 있습니다.'}
+        {'파일에는 계좌번호 등 개인정보가 들어 있으니 안전하게 보관해 주세요.\n세무 신고용 서류는 서류 발급에서 PDF나 엑셀로도 받을 수 있습니다.'}
       </p>
       <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
-        {'불러오기는 받아 둔 파일에서 지금 없는 일지·거래처·지출·세금계산서만 더합니다.'}
+        {'불러오기는 받아 둔 파일에서 지금 없는 일지, 거래처, 지출, 세금계산서만 더합니다.'}
       </p>
       <div className="modal-btns">
         <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>

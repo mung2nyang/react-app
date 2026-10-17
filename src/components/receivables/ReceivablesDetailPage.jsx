@@ -61,7 +61,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', isEmployedDr
           <strong>{formatWon(detailTotal)}</strong>
         </div>
         <div className="receivable-detail-meta">
-          {detailItems.length}건 · {dueDates.length ? `입금 예정일 ${dueDates[0].replace(/-/g, '.')}` : '입금 예정일 미등록'}
+          {detailItems.length}건, {dueDates.length ? `입금 예정일 ${dueDates[0].replace(/-/g, '.')}` : '입금 예정일 미등록'}
         </div>
       </section>
 

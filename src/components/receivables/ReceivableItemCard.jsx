@@ -79,7 +79,7 @@ export default function ReceivableItemCard({
       {item.remarks && <p className="receivable-detail-remarks">{item.remarks}</p>}
       <div className={`receivable-payment-status ${isPartial ? 'partial' : 'unpaid'}`}>
         {isPartial
-          ? `${formatWon(item.paidAmount)} 입금 · ${formatWon(item.remainingAmount)} 남음`
+          ? `${formatWon(item.paidAmount)} 입금, ${formatWon(item.remainingAmount)} 남음`
           : '미수'}
         <span className="receivable-original-fare"> (전체 {formatWon(item.fare)})</span>
       </div>

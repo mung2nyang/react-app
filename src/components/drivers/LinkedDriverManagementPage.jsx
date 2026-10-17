@@ -122,8 +122,8 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
   const driverName = link?.driverName || '기사'
   const carDriverName = unlinked ? String(ctx.car?.driverName || '').trim() : ''
   const nameLine = unlinked
-    ? (carDriverName ? `${carDriverName} · ${plate}` : plate)
-    : `${driverName} · ${plate || '차량 미지정'}`
+    ? (carDriverName ? `${carDriverName}, ${plate}` : plate)
+    : `${driverName}, ${plate || '차량 미지정'}`
   const initial = String(unlinked ? (carDriverName || plate) : driverName).slice(0, 1)
 
   return (

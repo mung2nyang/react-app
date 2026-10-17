@@ -3,7 +3,7 @@
 /** @typedef {import('./clientTypes.js').ClientLike} ClientLike */
 
 export const PAYMENT_TERMS = [
-  { value: 'same_day', label: '당일·수시 정산' },
+  { value: 'same_day', label: '당일/수시 정산' },
   { value: 'after_days', label: '운행 건별 정산 (N일 후)' },
   { value: 'next_month_day', label: '익월 지정일 정산' },
   { value: 'next_month_end', label: '익월 말일 정산' },
@@ -26,7 +26,7 @@ export function getPaymentTermLabel(term, value) {
   if (term === 'next_month_day') return `익월 ${value || ''}일 정산`
   if (term === 'second_month_day') return `익익월 ${value || ''}일 정산`
   if (term === 'after_days') return `운행 건별 ${value || ''}일 후 정산`
-  return '당일·수시 정산'
+  return '당일/수시 정산'
 }
 
 /** @param {Date} date */

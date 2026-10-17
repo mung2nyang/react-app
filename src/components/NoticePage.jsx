@@ -33,7 +33,7 @@ export default function NoticePage({ onBack, onOpenMenu }) {
             className={`faq-item${openIndex === index ? ' open' : ''}`}
             onClick={() => toggle(index)}
           >
-            <span>{notice.title} · {notice.date}</span>
+            <span>{notice.title} ({notice.date})</span>
             <i>{openIndex === index ? '−' : '+'}</i>
             <div className="support-detail">{notice.body}</div>
           </button>

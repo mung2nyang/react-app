@@ -28,7 +28,7 @@ const FAQ_ITEMS = [
   },
   {
     q: '문의 답변은 어디서 확인하나요?',
-    a: '"나의 문의·건의 확인" 탭에서 접수 내역과 답변 상태를 확인하실 수 있습니다.',
+    a: '"나의 문의/건의 확인" 탭에서 접수 내역과 답변 상태를 확인하실 수 있습니다.',
   },
 ]
 
@@ -127,7 +127,7 @@ function MyInquiriesList({ userId, showToast }) {
   }, [userId, showToast])
 
   if (loading) return <SkeletonLines lines={3} label="문의 목록 불러오는 중" />
-  if (!items.length) return <div className="support-panel-empty">아직 접수한 문의·건의가 없습니다.</div>
+  if (!items.length) return <div className="support-panel-empty">아직 접수한 문의나 건의가 없습니다.</div>
 
   return (
     <div className="my-inquiries-list">
@@ -186,7 +186,7 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
       <div className="support-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={tab === 'faq'} className={`support-tab${tab === 'faq' ? ' active' : ''}`} onClick={() => setTab('faq')}>FAQ</button>
         <button type="button" role="tab" aria-selected={tab === 'inquiry'} className={`support-tab${tab === 'inquiry' ? ' active' : ''}`} onClick={() => setTab('inquiry')}>1:1 문의/건의</button>
-        <button type="button" role="tab" aria-selected={tab === 'myInquiries'} className={`support-tab${tab === 'myInquiries' ? ' active' : ''}`} onClick={() => setTab('myInquiries')}>나의 문의·건의 확인</button>
+        <button type="button" role="tab" aria-selected={tab === 'myInquiries'} className={`support-tab${tab === 'myInquiries' ? ' active' : ''}`} onClick={() => setTab('myInquiries')}>나의 문의/건의 확인</button>
       </div>
 
       {tab === 'faq' && (
@@ -215,9 +215,9 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
       )}
 
       {tab === 'myInquiries' && (
-        <section className="support-panel" aria-label="나의 문의·건의 확인">
+        <section className="support-panel" aria-label="나의 문의/건의 확인">
           <div className="support-card">
-            <h3>나의 문의·건의 확인</h3>
+            <h3>나의 문의/건의 확인</h3>
             <p>접수하신 문의와 답변 상태를 확인할 수 있습니다.</p>
           </div>
           {userId ? <MyInquiriesList userId={userId} showToast={showToast} /> : <GuestLoginPrompt onGoAuth={onGoAuth} />}

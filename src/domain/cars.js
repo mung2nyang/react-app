@@ -189,5 +189,5 @@ export function getVehicleSupplierIdentity(car, settings = {}) {
     return { key: `owner:${ownerBiz.bizNumber || ownerBiz.name || 'default'}`, biz: ownerBiz, carLabel: car.number, carNumber: car.number }
   }
   const key = `car:${car.number}:${biz.bizNumber || biz.name || 'noinfo'}`
-  return { key, biz, carLabel: biz.name ? `${biz.name} · ${car.number}` : car.number, carNumber: car.number }
+  return { key, biz, carLabel: biz.name ? `${biz.name}, ${car.number}` : car.number, carNumber: car.number }
 }

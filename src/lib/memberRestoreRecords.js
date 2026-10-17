@@ -172,5 +172,5 @@ export function describeRestoreCounts(counts) {
     counts.expenses ? `지출 ${counts.expenses}건` : '',
     counts.invoices ? `세금계산서 ${counts.invoices}건` : '',
     counts.inspections ? `점검표 ${counts.inspections}장` : '',
-  ].filter(Boolean).join(' · ')
+  ].filter(Boolean).join(', ')
 }

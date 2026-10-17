@@ -880,7 +880,7 @@ describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번
     seed(ownerKey, updates, true)
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items: [INVITE], editingId: null, cars: [CAR] })
     assert.equal(result.blocked, null, '초대는 저장됐으니 창은 닫는다')
-    assert.equal(result.toast, '초대는 저장했지만 차량의 기사 이름·전화번호는 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.')
+    assert.equal(result.toast, '초대는 저장했지만 차량의 기사 이름과 전화번호는 저장하지 못했습니다. 잠시 후 다시 저장해 주세요.')
     assert.ok((getState().drivers[ownerKey] || []).some((item) => item.supabaseId === 960))
     assert.equal(carInStore(ownerKey)?.driverName, '옛기사')
     endCloudSession()

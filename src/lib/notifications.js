@@ -59,12 +59,12 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
       id,
       kind: 'overdue',
       page: 'receivables',
-      title: `연체 미수금 · ${item.client}`,
-      body: `${formatWon(item.remainingAmount)} · ${getDdayLabel(item.paymentDueDate)}`,
+      title: `${item.client} 연체 미수금`,
+      body: `${formatWon(item.remainingAmount)}, ${getDdayLabel(item.paymentDueDate)}`,
       dateLabel: [
         shortDate(item.workDate || item.dateKey) && `운행 ${shortDate(item.workDate || item.dateKey)}`,
         shortDate(item.paymentDueDate) && `입금 예정 ${shortDate(item.paymentDueDate)}`,
-      ].filter(Boolean).join(' · '),
+      ].filter(Boolean).join(', '),
     })
   })
 
@@ -75,8 +75,8 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
       id,
       kind: 'driverInvite',
       page: 'drivers',
-      title: `초대 대기 · ${driver.name}`,
-      body: `코드 ${driver.inviteCode}${driver.vehicleNumber ? ` · ${driver.vehicleNumber}` : ''}`,
+      title: `${driver.name} 초대 대기`,
+      body: `코드 ${driver.inviteCode}${driver.vehicleNumber ? `, ${driver.vehicleNumber}` : ''}`,
       dateLabel: '',
     })
   })

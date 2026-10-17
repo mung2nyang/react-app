@@ -158,7 +158,7 @@ describe('입력이 잘못된 칸 표시(로드맵 82-C)', () => {
       const input = /** @type {HTMLInputElement} */ (view.container.querySelector('#callLoadLoc'))
       assert.equal(saves.length, 0)
       assert.equal(input.getAttribute('aria-invalid'), 'true')
-      assert.equal(view.container.querySelector('#callLoadLoc-error')?.textContent, '운임 또는 상·하차지 중 하나를 입력해 주세요.')
+      assert.equal(view.container.querySelector('#callLoadLoc-error')?.textContent, '운임, 상차지, 하차지 중 하나를 입력해 주세요.')
       assert.equal(document.activeElement, input)
       await act(async () => { typeInto(input, '부산') })
       assert.equal(input.getAttribute('aria-invalid'), null)

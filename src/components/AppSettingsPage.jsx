@@ -69,7 +69,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
     ],
     [
       { id: 'platformToggle', label: '플랫폼', checked: !!activeSettings.platformOn, onChange: (/** @type {boolean} */ v) => patchActive({ platformOn: v }) },
-      ...(!logId ? [{ id: 'paymentToggle', label: '결제·수금', checked: !!settings.paymentOn, onChange: (/** @type {boolean} */ v) => patch({ paymentOn: v }) }] : []),
+      ...(!logId ? [{ id: 'paymentToggle', label: '결제/수금', checked: !!settings.paymentOn, onChange: (/** @type {boolean} */ v) => patch({ paymentOn: v }) }] : []),
     ],
   ]
 

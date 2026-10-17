@@ -28,7 +28,7 @@ const clients = [
 describe('콜상세 저장', () => {
   test('운임·상차지·하차지가 모두 비면 저장하지 않는다', () => {
     const result = upsertCallDetail([], { client: '한진' }, -1, dateKey, clients)
-    assert.equal(result.error, '운임 또는 상·하차지 중 하나를 입력해 주세요.')
+    assert.equal(result.error, '운임, 상차지, 하차지 중 하나를 입력해 주세요.')
   })
 
   test('운임만 있어도 저장되고 수수료 스냅샷을 남긴다', () => {
@@ -274,7 +274,7 @@ describe('saveDayRecord — 비용 임베드를 일지에 남기지 않는다', 
 
 describe('저장 전 칸 검사(로드맵 82-C)', () => {
   test('콜 상세 — 운임·상차지·하차지가 모두 비면 상차지 칸, 하나라도 있으면 없음', () => {
-    assert.deepEqual(checkCallDetailDraft({ fare: '', loadLoc: ' ', unloadLoc: '' }), { field: 'loadLoc', message: '운임 또는 상·하차지 중 하나를 입력해 주세요.' })
+    assert.deepEqual(checkCallDetailDraft({ fare: '', loadLoc: ' ', unloadLoc: '' }), { field: 'loadLoc', message: '운임, 상차지, 하차지 중 하나를 입력해 주세요.' })
     assert.equal(checkCallDetailDraft({ unloadLoc: '대구' }), null)
     assert.equal(checkCallDetailDraft({ fare: '100,000' }), null)
   })

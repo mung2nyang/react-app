@@ -7,7 +7,7 @@ import InfoTip from '../shared/InfoTip.jsx'
 
 const INSURANCE_RATE_INFO = `매년 1월 1일 변경되는 법정 요율(${DEFAULT_INSURANCE_RATE}%)입니다. 직접 수정할 수 있으며, '0' 입력 시 계산에서 제외됩니다.`
 const EXPENSE_RATE_INFO = `산재보험료를 계산할 때 쓰는 고시 비율입니다(기본 ${DEFAULT_EXPENSE_RATE}%). 직접 수정할 수 있습니다.
-특수차량(살수차·카고크레인·렉카차)은 43.1%로 고쳐주세요.`
+특수차량(살수차, 카고크레인, 렉카차)은 43.1%로 고쳐주세요.`
 
 /**
  * @param {Object} props

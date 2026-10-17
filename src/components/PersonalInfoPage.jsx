@@ -75,7 +75,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">01</span>
-            <div><h3>사업자 정보</h3><p>{employed ? '차주가 입력한 정보입니다 (수정 불가)' : '세금계산서 · 서류 출력에 사용되는 정보입니다.'}</p></div>
+            <div><h3>사업자 정보</h3><p>{employed ? '차주가 입력한 정보입니다 (수정 불가)' : '세금계산서와 서류 출력에 사용되는 정보입니다.'}</p></div>
           </div>
           <div className="form-group">
             <label htmlFor="bizName">사업자명 (상호)</label>
@@ -128,7 +128,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">02</span>
-            <div><h3>대표자 · 연락처</h3><p>대표자 기본 정보</p></div>
+            <div><h3>대표자/연락처</h3><p>대표자 기본 정보</p></div>
           </div>
           <div className="form-group">
             <label htmlFor="userName">성명 (대표자)</label>

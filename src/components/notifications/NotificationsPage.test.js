@@ -79,9 +79,9 @@ test('목록: 연체 알림에 날짜 줄(운행·입금 예정), 누르면 미�
   let changed = 0
   const view = await renderPage(ownerKey, { onOpenPage: (page) => opened.push(page), onChanged: () => { changed += 1 } })
   try {
-    const item = itemWith(view.container, '연체 미수금 · 연체거래처')
+    const item = itemWith(view.container, '연체거래처 연체 미수금')
     assert.ok(item, '연체 알림이 있어야 한다')
-    assert.equal(item.querySelector('.notif-item-date')?.textContent, '운행 08.30 · 입금 예정 09.01')
+    assert.equal(item.querySelector('.notif-item-date')?.textContent, '운행 08.30, 입금 예정 09.01')
     await act(async () => { item.querySelector('.notif-item-copy')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
     assert.deepEqual(opened, ['receivables'])
 

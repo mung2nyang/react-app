@@ -50,7 +50,7 @@ export default function MessageTemplateSheet({ item, client, onClose, showToast 
         <div className="message-template-head">
           <div>
             <strong>문자 보내기</strong>
-            <span>{company}{client?.phone ? ` · ${client.phone}` : ''}</span>
+            <span>{company}{client?.phone ? `, ${client.phone}` : ''}</span>
           </div>
           <button type="button" onClick={onClose} aria-label="닫기">×</button>
         </div>

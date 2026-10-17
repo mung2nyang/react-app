@@ -34,7 +34,7 @@ import { generateLocalId } from './payments.js'
  */
 export function checkCallDetailDraft(draft) {
   const filled = [draft.fare, draft.loadLoc, draft.unloadLoc].some((value) => String(value ?? '').trim())
-  return filled ? null : { field: 'loadLoc', message: '운임 또는 상·하차지 중 하나를 입력해 주세요.' }
+  return filled ? null : { field: 'loadLoc', message: '운임, 상차지, 하차지 중 하나를 입력해 주세요.' }
 }
 
 /**

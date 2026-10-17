@@ -86,8 +86,7 @@ export default function ReceivablesListPage({ ownerKey = 'guest', isEmployedDriv
                 <div className="receivable-group-summary">
                   <span className="receivable-summary-label">미수금</span>
                   <strong className="receivable-summary-amount">{formatWon(group.total)}</strong>
-                  <span className="receivable-summary-separator" aria-hidden="true">·</span>
-                  <span className="receivable-summary-count">{group.count}건</span>
+                  <span className="receivable-summary-count">({group.count}건)</span>
                 </div>
                 <div className="receivable-card-actions">
                   <button

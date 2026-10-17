@@ -148,6 +148,6 @@ test('지출 저장: 기존 목록 + 새 것으로 저장, 실패하면 안내�
 })
 
 test('개수 문구: 0인 종류는 빼고 이어 붙인다', () => {
-  assert.equal(describeRestoreCounts({ days: 2, clients: 0, expenses: 3, invoices: 1 }), '일지 2일 · 지출 3건 · 세금계산서 1건')
+  assert.equal(describeRestoreCounts({ days: 2, clients: 0, expenses: 3, invoices: 1 }), '일지 2일, 지출 3건, 세금계산서 1건')
   assert.equal(describeRestoreCounts({ days: 0, clients: 0, expenses: 0, invoices: 0 }), '')
 })

@@ -136,7 +136,7 @@ describe('기사 급여 계약 기간 — 연동 중 계약만, 기간·계약 �
   test('연동 중 계약(10/12~)이면 기간 안 30만원분만, 이름에 기간과 계약 밖 운송료', () => {
     const result = run([{ id: 'l1', vehicleNumber: '22가2222', assignmentStart: '2026-10-12', status: 'linked' }])
     assert.equal(result.total, 60000)
-    assert.equal(result.items[0].label, '테스트2 (10/12~) · 계약 밖 운송료 400,000원 제외')
+    assert.equal(result.items[0].label, '테스트2 (10/12~), 계약 밖 운송료 400,000원 제외')
   })
 
   test('종료일이 있으면 시작~종료를 붙인다', () => {

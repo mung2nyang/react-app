@@ -61,7 +61,7 @@ export function getMonthlyDriverRevenueShareExpense(monthKey, settings, subCars,
     if (amount <= 0) continue
 
     const outside = link ? getMonthlyDriverTotals(carData, monthKey, null, settings).grossAmount - totals.grossAmount : 0
-    const outsideNote = outside > 0 ? ` · 계약 밖 운송료 ${outside.toLocaleString('ko-KR')}원 제외` : ''
+    const outsideNote = outside > 0 ? `, 계약 밖 운송료 ${outside.toLocaleString('ko-KR')}원 제외` : ''
     items.push({
       date: monthStart,
       label: `${driverLabel(car, link)}${outsideNote}`,

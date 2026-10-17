@@ -39,7 +39,7 @@ export default function ClientInvoiceGroups({ invoice }) {
               <article key={g.clientName} className="linked-driver-invoice-card">
                 <div className="linked-driver-client-head-row">
                   <strong>{g.clientName}</strong>
-                  <span>{g.count}건{supplierLabel ? ` · ${supplierLabel}` : ''}</span>
+                  <span>{g.count}건{supplierLabel ? `, ${supplierLabel}` : ''}</span>
                 </div>
                 <div className="linked-driver-invoice-money">
                   <span>공급가액 <b>{formatWon(g.supplyAmount)}</b></span>

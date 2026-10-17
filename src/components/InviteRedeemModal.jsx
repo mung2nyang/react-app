@@ -46,7 +46,7 @@ export default function InviteRedeemModal({ session, showToast, onClose, onLinke
       <div className="modal-title">초대 코드 입력</div>
       <p className="invite-redeem-note">
         차주에게 전달받은 초대 코드를 입력해 주세요.<br />
-        연동이 완료되면 기사님이 입력한 운행·매출 내역이 차주에게 공유됩니다.
+        연동이 완료되면 기사님이 입력한 운행, 매출 내역이 차주에게 공유됩니다.
       </p>
       <div className="form-group">
         <label htmlFor="driverInviteCode">초대 코드</label>

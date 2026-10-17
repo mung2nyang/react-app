@@ -22,7 +22,7 @@ export default function FixedRouteClientLink({ ownerKey, scopeKey, showToast }) 
 
   const detail = linked
     ? [`1회 ${formatCurrencyInput(linked.fixedUnitPrice ?? '') || 0}원`, linked.palletOn ? `파렛트 ${formatCurrencyInput(linked.palletPrice ?? '') || 0}원` : '']
-      .filter(Boolean).join(' · ')
+      .filter(Boolean).join(', ')
     : ''
 
   return (
