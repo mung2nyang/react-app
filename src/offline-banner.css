@@ -1,0 +1,32 @@
+/* 인터넷 끊김 띠(app/OfflineBanner.jsx) — 화면 맨 위에 붙음, 실패 알림과 같은 빨강. */
+
+.offline-banner {
+  position: sticky;
+  top: 0;
+  z-index: 850; /* 아래 메뉴(900)·당겨서 새로고침(950)·옆 메뉴(1000)·창(1200)보다 아래 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: -20px -16px 12px; /* 앱 화면 상자의 위·좌우 여백까지 채움(app-shell-base.css) */
+  padding: 10px 16px;
+  background-color: var(--danger-fill);
+  color: #fff;
+  font-size: var(--fs-3);
+  font-weight: 700;
+  text-align: left;
+  word-break: keep-all;
+}
+
+.offline-banner svg {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.offline-banner-line { display: block; } /* 문장마다 새 줄 */
