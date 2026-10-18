@@ -289,3 +289,17 @@ test('빨간 점 설명 줄 — 미수 카드가 있을 때만(로드맵 47-B)',
     await hidden.cleanup()
   }
 })
+
+test('로드맵 61 — 기사 몫 (i) 설명이 기사 몫 기준에 맞게', async () => {
+  for (const [base, phrase] of /** @type {Array<['gross'|'afterClientCommission', string]>} */ ([['gross', '운송료 전체에서 계산해'], ['afterClientCommission', '거래처 수수료를 뺀 운송료에서 계산해']])) {
+    const { container, cleanup } = await renderSummary(emptySummary({ subCarComm: 300000, subCarCommLabel: '2222 차량 30%', subCarCommBase: base, total: 700000, fare: 1000000 }))
+    try {
+      const btn = infoButton(container, '기사 차량 수수료')
+      assert.ok(btn instanceof window.HTMLButtonElement, `${base} (i)`)
+      await act(async () => { btn.click() })
+      const text = container.querySelector('.summary-info-text')?.textContent || ''
+      assert.ok(text.includes(phrase), `${base}: ${text}`)
+      assert.ok(text.includes('수수료(30%)'), text)
+    } finally { await cleanup() }
+  }
+})

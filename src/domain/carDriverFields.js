@@ -19,6 +19,7 @@ import { driverIncomeFieldsFromDraft } from './driverIncomeDeductions.js'
  * @property {boolean} [withholdingOn]
  * @property {string|number} [expenseRate]
  * @property {string|number} [insuranceRate]
+ * @property {string} [driverShareBase]
  */
 
 /**
@@ -35,6 +36,7 @@ import { driverIncomeFieldsFromDraft } from './driverIncomeDeductions.js'
  * @property {boolean} [withholdingOn]
  * @property {string} [expenseRate]
  * @property {string} [insuranceRate]
+ * @property {'gross'|'afterClientCommission'} [driverShareBase] 매출제 기사 몫 기준(로드맵 61)
  */
 
 /**
@@ -65,6 +67,7 @@ export function driverFieldsFromDraft(draft, type) {
     commEnabled,
     commType,
     commission: commEnabled ? String(draft.commission || '').trim() : '',
+    driverShareBase: draft.driverShareBase === 'afterClientCommission' ? 'afterClientCommission' : 'gross',
     ...driverIncomeFieldsFromDraft(draft),
   }
 }

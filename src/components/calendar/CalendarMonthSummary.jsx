@@ -20,11 +20,15 @@ function clientCommInfo(setting) {
   return `거래처 등록 때 적은 수수료${shown}만큼 이 거래처 운송료에서 뺍니다.`
 }
 
-/** 라벨 "3456 차량 10%" / "3456 차량 건당 5,000원" → 설정 부분만 @param {string} label */
-function subCarCommInfo(label) {
+/**
+ * 라벨 "3456 차량 10%" / "3456 차량 건당 5,000원" → 설정 부분만, 기사 몫 기준(로드맵 61)에 맞는 설명.
+ * @param {string} label @param {'gross'|'afterClientCommission'} base
+ */
+function subCarCommInfo(label, base) {
   const setting = label.replace(/^\S+ 차량 (?=건당 |\d)/, '')
   const shown = setting && setting !== label ? `(${setting})` : ''
-  return `차량 관리에 적은 이 차량의 수수료${shown}입니다. 거래처 수수료를 뺀 운송료에서 이만큼 다시 뺍니다.`
+  const from = base === 'afterClientCommission' ? '거래처 수수료를 뺀 운송료에서' : '운송료 전체에서'
+  return `차량 관리에 적은 이 차량의 수수료${shown}입니다. ${from} 계산해 이만큼 뺍니다.`
 }
 
 /**
@@ -102,7 +106,7 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
             label={summary.subCarCommLabel}
             value={`- ${formatWon(summary.subCarComm)}`}
             infoName="기사 차량 수수료"
-            info={subCarCommInfo(summary.subCarCommLabel)}
+            info={subCarCommInfo(summary.subCarCommLabel, summary.subCarCommBase)}
           />
         )}
         {summary.palletFare > 0 && (

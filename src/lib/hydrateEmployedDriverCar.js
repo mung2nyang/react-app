@@ -6,7 +6,7 @@ import { driverIncomeFieldsFromDraft } from '../domain/driverIncomeDeductions.js
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
 
 /**
- * @param {{ id: string, number?: string, type?: string, tonnage?: string, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null, insurance_on?: boolean|null, driver_income_type?: string|null, withholding_on?: boolean|null, expense_rate?: string|null, insurance_rate?: string|null }} row
+ * @param {{ id: string, number?: string, type?: string, tonnage?: string, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean|null, comm_type?: string|null, comm_value?: string|number|null, insurance_on?: boolean|null, driver_income_type?: string|null, withholding_on?: boolean|null, expense_rate?: string|null, insurance_rate?: string|null, driver_share_base?: string|null }} row
  * @returns {LocalCar}
  */
 export function carFromAssignedSummary(row) {
@@ -29,6 +29,8 @@ export function carFromAssignedSummary(row) {
       expenseRate: row.expense_rate ?? undefined,
       insuranceRate: row.insurance_rate ?? undefined,
     }),
+    // 매출제 기사 몫 기준(로드맵 61) — 서버 함수 0024부터 옴. 없거나 모르는 값이면 기본(운송료 전체).
+    driverShareBase: row.driver_share_base === 'afterClientCommission' ? 'afterClientCommission' : 'gross',
     infoType: 'existing',
     driverName: '',
     driverPhone: '',

@@ -77,3 +77,15 @@ describe('기준 금액·거래처 수수료 합', () => {
     assert.equal(getMonthlyDriverClientCommission({ '2026-10-05': { isOff: true, callDetails: [{ id: 'x', fare: '1000', client: '한진' }] } }, MONTH, OPEN_LINK, settings), 0)
   })
 })
+
+describe('기준 값 저장(차량 창 → 차량)', async () => {
+  const { upsertCar } = await import('./cars.js')
+  test('고른 기준이 저장되고, 월급제로 바꿔도 남으며, 모르는 값은 운송료 전체', () => {
+    const draft = { number: PLATE, type: /** @type {'sub'} */ ('sub'), driverName: '박기사', driverPayMode: 'revenue', commission: '30', driverShareBase: 'afterClientCommission' }
+    const saved = upsertCar([], draft, null)
+    assert.equal(saved.cars?.[0]?.driverShareBase, 'afterClientCommission')
+    const salary = upsertCar(saved.cars || [], { ...draft, driverPayMode: 'salary', driverSalaryAmount: '3000000' }, saved.cars?.[0]?.id || null)
+    assert.equal(salary.cars?.[0]?.driverShareBase, 'afterClientCommission')
+    assert.equal(upsertCar([], { ...draft, driverShareBase: 'x' }, null).cars?.[0]?.driverShareBase, 'gross')
+  })
+})

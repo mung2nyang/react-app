@@ -8,6 +8,7 @@ import CarFormModal from './CarFormModal.jsx'
 import CarListItem from './CarListItem.jsx'
 import { hasMainCar, validateDriverLinkFields } from '../../lib/cars.js'
 import { NEW_DRIVER_INCOME_DRAFT, driverIncomeDraftFromCar } from '../../domain/driverIncomeDeductions.js'
+import { resolveDriverShareBase } from '../../domain/driverShareBase.js'
 import { requestVehicleSave } from '../../lib/vehicleMutations.js'
 import { requestDriverDeletion, requestVehicleDeletion } from '../../lib/directMutationActions.js'
 import { requestDriverUnlinkAction } from '../../lib/driverUnlink.js'
@@ -23,7 +24,7 @@ import './car-management.css'
 const emptyDraft = {
   number: '', tonnage: '', type: 'main', driverName: '', driverPhone: '',
   driverPayMode: 'revenue', driverSalaryAmount: '', commEnabled: false, commType: 'percent', commission: '',
-  ...NEW_DRIVER_INCOME_DRAFT,
+  ...NEW_DRIVER_INCOME_DRAFT, driverShareBase: 'gross',
   inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'log',
 }
 const DELETE_CAR_CONFIRM = '이 차량의 운행 기록도 함께 지워지며 되돌릴 수 없습니다.'
@@ -76,7 +77,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
       commEnabled: !!car.commEnabled,
       commType: car.commType === 'direct' ? 'direct' : 'percent',
       commission: String(car.commission ?? ''),
-      ...driverIncomeDraftFromCar(car),
+      ...driverIncomeDraftFromCar(car), driverShareBase: resolveDriverShareBase(car),
       inviteCode: linked?.inviteCode || (car.type === 'sub' && cloud ? generateInviteCode(drivers) : ''),
       inviteStartDate: linked?.startDate || todayIsoDate(),
       inviteDriverId: linked?.id || null,

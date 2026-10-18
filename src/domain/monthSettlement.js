@@ -5,7 +5,7 @@ import { getShortCarNum } from './cars.js'
 import { countCallTrips, getCallDetails, getFixedCount, getPalletCount } from './day-record.js'
 import { monthTotal } from './expenses.js'
 import { calculateDriverVehicleCommission, getCallDetailCommissionAmount } from './financeCore.js'
-import { driverShareBaseAmount } from './driverShareBase.js'
+import { driverShareBaseAmount, resolveDriverShareBase } from './driverShareBase.js'
 import { getFixedRouteCommissionAmount } from './fixedRouteCommission.js'
 import { callInsuranceTotal } from './call-details.js'
 import { parseCurrencyValue } from './money.js'
@@ -155,7 +155,7 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
 
   return {
     trips, callTrips, fixedBaseFare, defaultBaseFare, fareByClient, commissionByClient,
-    commissionLabelByClient, palletFare, subCarComm, subCarCommLabel, distanceKm, fare,
+    commissionLabelByClient, palletFare, subCarComm, subCarCommLabel, subCarCommBase: resolveDriverShareBase(car), distanceKm, fare,
     commissionTotal, insuranceTotal, vat, total, maint, fuel, misc,
   }
 }

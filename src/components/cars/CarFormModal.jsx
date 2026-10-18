@@ -9,6 +9,7 @@ import ClearableInput from '../shared/ClearableInput.jsx'
 import CurrencyInput from '../shared/CurrencyInput.jsx'
 import FieldError, { focusField, invalidProps } from '../shared/FieldError.jsx'
 import ModalShell from '../shared/ModalShell.jsx'
+import CarShareBaseField from './CarShareBaseField.jsx'
 
 /**
  * @typedef {Object} CarFormDraft
@@ -27,6 +28,7 @@ import ModalShell from '../shared/ModalShell.jsx'
  * @property {boolean} [withholdingOn]
  * @property {string} [expenseRate]
  * @property {string} [insuranceRate]
+ * @property {'gross'|'afterClientCommission'} [driverShareBase]
  * @property {string} inviteCode
  * @property {string} inviteStartDate
  * @property {string|null} inviteDriverId
@@ -162,6 +164,7 @@ export default function CarFormModal({
             </div>
             <FieldError problem={shown} field="driverSalaryAmount" inputId="newCarSettlementValue" />
           </div>
+          {!isSalary && draft.commType !== 'direct' && <CarShareBaseField value={draft.driverShareBase} onChange={(next) => setDraft({ ...draft, driverShareBase: next })} />}
           <hr className="car-modal-divider" />
           <CarDriverIncomeFields draft={draft} setDraft={setDraft} />
         </>
