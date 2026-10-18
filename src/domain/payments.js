@@ -5,6 +5,7 @@ import { findCallDetailIndex } from './callDetailIds.js'
 import { getDetailPaymentSummary, syncDetailPaymentStatus } from './finance.js'
 import { parseCurrencyValue } from './money.js'
 import { getCallDetails } from './day-record.js'
+import { generateLocalId } from './localId.js'
 
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayRecordTypes.js').DayRecordLike} DayRecordLike */
@@ -15,14 +16,6 @@ import { getCallDetails } from './day-record.js'
  * @template {WorkDataMap} T
  * @typedef {{ data: T, error?: string }} PaymentMutationResult
  */
-
-/**
- * @param {string} prefix
- * @returns {string}
- */
-export function generateLocalId(prefix) {
-  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-}
 
 /**
  * @template {WorkDataMap} T

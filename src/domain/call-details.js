@@ -1,7 +1,7 @@
 // @ts-check
 // 콜상세(callDetails[]) 한 건을 만들고 배열에 upsert/제거하는 순수 함수.
 import { parseCurrencyValue } from './money.js'
-import { generateLocalId } from './payments.js'
+import { generateLocalId } from './localId.js'
 
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./clients.js').ClientLike} ClientLike */

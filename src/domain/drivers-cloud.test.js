@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { describe, test } from 'node:test'
+import { describe, mock, test } from 'node:test'
 import { upsertDriver } from './drivers.js'
 import { buildClientRow, buildVehicleRow } from '../lib/cloudStorage.js'
 import { deleteClientFromSupabase, deleteVehicleFromSupabase } from '../lib/directMutations.js'
@@ -167,5 +167,31 @@ describe('클라우드 행 매핑 — 원본 supabase-sync와 같은 필드', ()
     await deleteVehicleFromSupabase(null)
     await deleteClientFromSupabase('')
     await deleteClientFromSupabase(null)
+  })
+})
+
+describe('로드맵 81 — 기사 번호', () => {
+  const cars = [{ type: 'sub', number: '11가1111' }, { type: 'sub', number: '22나2222' }]
+  const draft = { name: '박기사', phone: '010-3333-4444', inviteCode: 'B2C3D4E5F6', vehicleNumber: '11가1111', startDate: '2026-10-18', endDate: '' }
+
+  test('81-1: 같은 1/1000초에 만든 기사 두 명도 번호가 다르다', () => {
+    const clock = mock.method(Date, 'now', () => 1760745600123)
+    try {
+      const first = upsertDriver([], draft, null, cars)
+      const second = upsertDriver(first.items || [], { ...draft, name: '최기사', phone: '010-5555-6666', inviteCode: 'C3D4E5F6G7', vehicleNumber: '22나2222' }, null, cars)
+      const items = second.items || []
+      assert.equal(items.length, 2)
+      assert.notEqual(items[0].id, items[1].id)
+      assert.match(String(items[1].id), /^drv_1760745600123_[a-z0-9]+$/)
+    } finally {
+      clock.mock.restore()
+    }
+  })
+
+  test('81-2: 옛 번호(drv-숫자) 기사도 그 번호로 고쳐진다', () => {
+    const old = { id: 'drv-123', status: 'pending', ...draft }
+    const result = upsertDriver([old], { ...draft, name: '박기사2' }, 'drv-123', cars)
+    assert.equal(result.error, undefined)
+    assert.deepEqual((result.items || []).map((item) => [item.id, item.name]), [['drv-123', '박기사2']])
   })
 })

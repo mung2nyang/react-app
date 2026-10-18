@@ -1,4 +1,5 @@
 // @ts-check
+import { generateLocalId } from './localId.js'
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 기사 순수 계산부. localStorage I/O는 lib/drivers.js가 재수출하며 맡는다.
 // 겹침 규칙은 "같은 차량번호는 한 기사에게만" 하나뿐(기간 무관, 연결 해제된 기사는 제외).
@@ -130,7 +131,7 @@ export function upsertDriver(items, draft, editingId = null, cars = []) {
     return { items: list }
   }
 
-  list.push({ id: `drv-${Date.now()}`, status: 'pending', ...next })
+  list.push({ id: generateLocalId('drv'), status: 'pending', ...next })
   return { items: list }
 }
 

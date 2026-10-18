@@ -1,6 +1,6 @@
 // @ts-check
 // 지출 순수 계산부. localStorage I/O는 lib/expenses.js, 타입 정본은 expenseTypes.js.
-import { generateLocalId } from './payments.js'
+import { generateLocalId } from './localId.js'
 /** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('./expenseTypes.js').ExpenseDraft} ExpenseDraft */
 
