@@ -24,6 +24,8 @@ import './call-detail-card.css'
 export default function CallDetailCard({ item, payment, settings, client, onEdit, onDelete, onTogglePayment, onMessage, showToast }) {
   const fare = parseCurrencyValue(item.fare)
   const unpaid = payment.status !== 'paid'
+  // 받을 돈이 없는 0원 운행은 미수가 아니라 결제 단추를 안 보인다(로드맵 62, 미수 목록과 같은 기준).
+  const nothingToCollect = unpaid && payment.remainingAmount <= 0
   const distance = parseFloat(item.distanceKm || '') || 0
   const specs = [
     settings.distanceOn && distance ? `운행거리 ${distance}km` : '',
@@ -65,7 +67,7 @@ export default function CallDetailCard({ item, payment, settings, client, onEdit
           {settings.paymentOn && item.receipt && <span className="detail-badge">{item.receipt}</span>}
           {item.vatExempt && <span className="detail-badge">면세</span>}
         </div>
-        {settings.paymentOn && (
+        {settings.paymentOn && !nothingToCollect && (
           <div className="detail-payment-actions">
             {unpaid && (
               client?.phone

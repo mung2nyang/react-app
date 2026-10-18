@@ -117,3 +117,39 @@ describe('CallDetailCard — 면세 배지 (로드맵 46-A)', () => {
     assert.equal(badges.includes('면세'), false)
   })
 })
+
+describe('CallDetailCard — 0원 운행 결제 단추 (로드맵 62)', () => {
+  async function paymentButtonsFor(detail) {
+    const settings = normalizeSettings({ fixedOn: true, callDetail: true, paymentOn: true })
+    const { container, root } = mountList()
+    try {
+      await act(async () => {
+        root.render(React.createElement(CallDetailList, { ...baseProps, details: [detail], settings, canAdd: false }))
+      })
+      const actions = container.querySelector('.detail-payment-actions')
+      return {
+        toggle: actions?.querySelector('.payment-toggle-btn')?.textContent ?? null,
+        phone: Boolean(actions?.querySelector('.detail-call-phone')),
+        message: Boolean(actions?.querySelector('.detail-message-btn')),
+      }
+    } finally {
+      await act(async () => { root.unmount() })
+      container.remove()
+    }
+  }
+
+  test('운송료 0원 + 입금 없음 카드엔 미수·전화·문자 단추가 없다', async () => {
+    const buttons = await paymentButtonsFor({ id: 'trp-zero', fare: '0', client: '한진' })
+    assert.deepEqual(buttons, { toggle: null, phone: false, message: false })
+  })
+
+  test('운송료 0원이어도 이미 수금이면 수금 단추는 남는다', async () => {
+    const buttons = await paymentButtonsFor({ id: 'trp-zero-paid', fare: '0', client: '한진', payments: [{ id: 'pay-1', amount: '10,000' }] })
+    assert.deepEqual(buttons, { toggle: '수금', phone: false, message: false })
+  })
+
+  test('운송료 있는 미수 카드는 미수·전화·문자 단추 그대로', async () => {
+    const buttons = await paymentButtonsFor({ id: 'trp-fare', fare: '10,000', client: '한진' })
+    assert.deepEqual(buttons, { toggle: '미수', phone: true, message: true })
+  })
+})
