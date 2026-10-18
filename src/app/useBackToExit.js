@@ -4,6 +4,7 @@
 // 같은 홈 주소로 "붙잡기용 기록"을 하나 더 쌓아 두고, 그게 빠지면(뒤로가기) 안내를 띄운 뒤 4초 동안은 다시 안 쌓는다.
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
+import { historyIdx, noteLocation, takeRewind } from './historyMoves.js'
 
 export const EXIT_HINT = '뒤로가기를 한 번 더 누르면 종료됩니다.'
 export const EXIT_WINDOW_MS = 4000 // 안내 문구 표시 시간(useAppSession.js 4초)과 같게
@@ -24,11 +25,6 @@ function isStandalone() {
   }
 }
 
-function historyIdx() {
-  const state = window.history.state
-  return state && typeof state === 'object' ? Reflect.get(state, 'idx') : undefined
-}
-
 /**
  * @param {((message: string) => void) | undefined} showToast
  * @param {number} [windowMs] 테스트용으로만 바꿈
@@ -40,12 +36,15 @@ export default function useBackToExit(showToast, windowMs = EXIT_WINDOW_MS) {
   const armedRef = useRef(false)
 
   useEffect(() => {
-    if (!isExitEdge({ standalone: isStandalone(), pathname: location.pathname, idx: historyIdx() })) return undefined
+    const idx = historyIdx()
+    noteLocation(location.pathname, idx)
+    const rewound = takeRewind()
+    if (!isExitEdge({ standalone: isStandalone(), pathname: location.pathname, idx })) return undefined
     const guard = () => {
       armedRef.current = true
       navigate({ pathname: location.pathname, search: location.search }, { state: { exitGuard: true } })
     }
-    if (navigationType === 'POP' && armedRef.current) {
+    if (navigationType === 'POP' && armedRef.current && !rewound) {
       armedRef.current = false
       showToast?.(EXIT_HINT)
       const timer = setTimeout(guard, windowMs)

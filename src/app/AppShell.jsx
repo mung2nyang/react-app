@@ -17,6 +17,7 @@ import AppShellRoutes from './AppShellRoutes.jsx'
 import useBackToExit from './useBackToExit.js'
 import usePageTransition from './usePageTransition.js'
 import { withFromLogState } from './fromLogNavigation.js'
+import { chooseMove, historyIdx, markRewind } from './historyMoves.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
@@ -67,6 +68,21 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
     if (typeof to === 'number') { rawNavigate(to); return }
     rawNavigate(to, withFromLogState(location.pathname, to, options))
   }
+  /** 아래 메뉴·← 이동(로드맵 63): 홈은 처음 기록으로 되감고, 그 밖엔 홈에서만 쌓고 나머진 교체. @param {string} to */
+  function moveTo(to) {
+    const move = chooseMove({ from: location.pathname, to: to.split('?')[0], idx: historyIdx() })
+    if (move.kind !== 'rewind') { navigate(to, move.kind === 'replace' ? { replace: true } : undefined); return }
+    if (!confirmLeaveIfUnsafe()) return
+    markRewind()
+    rawNavigate(-move.steps)
+  }
+  /** 화면 위 ← : 마이페이지에서 연 화면이면 한 장 돌아가고, 아니면 moveTo. @param {string} target */
+  function goBack(target) {
+    const state = location.state
+    const fromMyPage = state && typeof state === 'object' && Reflect.get(state, 'openedFrom') === 'mypage'
+    if (target === '/app/me' && fromMyPage) navigate(-1)
+    else moveTo(target)
+  }
   const [menuOpen, setMenuOpen] = useState(false)
   const [notifTick, setNotifTick] = useState(0)
   useEffect(() => { preloadSideMenuBanner() }, [])
@@ -110,21 +126,22 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
       navigate(`/app/soon?${query.toString()}`)
       return
     }
-    navigate(backFallback ? `${pagePath(page)}?back=${backFallback}` : pagePath(page))
+    const opened = backFallback === 'mypage' ? { state: { openedFrom: 'mypage' } } : undefined
+    navigate(backFallback ? `${pagePath(page)}?back=${backFallback}` : pagePath(page), opened)
   }
 
   /** @param {string} tab */
   function selectTab(tab) {
     setMenuOpen(false)
     if (tab === 'work') {
-      navigate('/app/calendar')
+      moveTo('/app/calendar')
       return
     }
     if (tab === 'revenue') {
-      navigate('/app/revenue')
+      moveTo('/app/revenue')
       return
     }
-    navigate(tab === 'home' ? '/app' : '/app/me')
+    moveTo(tab === 'home' ? '/app' : '/app/me')
   }
 
   return (
@@ -147,6 +164,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
             onGoAuth={onGoAuth}
             onSessionUpdate={onSessionUpdate}
             navigate={navigate}
+            goBack={goBack}
             goToPage={goToPage}
           />
         </Suspense>
