@@ -204,6 +204,18 @@ describe('mergeCarsFromRows', () => {
     assert.equal(merged[1].id, 'unsynced')
   })
 
+  test('로드맵 61 — 기사 몫 기준(driverShareBase)은 raw에서 그대로 꺼내고, 모르는 값·없는 값은 칸을 안 만든다', () => {
+    const rows = [
+      { id: 601, number: '22나2222', type: 'sub', raw: { driverShareBase: 'afterClientCommission' } },
+      { id: 602, number: '33다3333', type: 'sub', raw: { driverShareBase: 'gross' } },
+      { id: 603, number: '44라4444', type: 'sub', raw: { driverShareBase: 'x' } },
+      { id: 604, number: '55마5555', type: 'sub', raw: {} },
+    ]
+    const merged = mergeCarsFromRows([], rows)
+    assert.deepEqual(merged.map((car) => car.driverShareBase), ['afterClientCommission', 'gross', undefined, undefined])
+    assert.equal('driverShareBase' in merged[2], false)
+  })
+
   test('최소 서버 row는 commType을 기본값으로 정규화하고 옛 settlementMode는 안 읽는다', () => {
     const merged = mergeCarsFromRows([], [{ id: 501, number: '11가1111', type: 'main', raw: {} }])
     assert.equal('settlementMode' in merged[0], false)

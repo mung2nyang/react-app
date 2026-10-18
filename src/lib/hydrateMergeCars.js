@@ -79,6 +79,7 @@ export function mergeCarsFromRows(localCars, vehicleRows) {
     if (raw.driverIncomeType === 'employee' || raw.driverIncomeType === 'business') car.driverIncomeType = raw.driverIncomeType
     if (raw.expenseRate !== undefined && isStringOrFiniteNumber(raw.expenseRate)) car.expenseRate = raw.expenseRate
     if (raw.insuranceRate !== undefined && isStringOrFiniteNumber(raw.insuranceRate)) car.insuranceRate = raw.insuranceRate
+    if (raw.driverShareBase === 'gross' || raw.driverShareBase === 'afterClientCommission') car.driverShareBase = raw.driverShareBase
     const logEnabled = boolOrOmit(raw.logEnabled)
     if (logEnabled !== undefined) car.logEnabled = logEnabled
     const driverLinkEnabled = boolOrOmit(raw.driverLinkEnabled)

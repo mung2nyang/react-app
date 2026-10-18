@@ -56,7 +56,7 @@ const CAR = v.strictObject({
   insuranceOn: opt(bool), withholdingOn: opt(bool), logEnabled: opt(bool), driverLinkEnabled: opt(bool), shareRevenueWithOwner: opt(bool), archived: opt(bool),
   driverIncomeType: opt(v.picklist(['employee', 'business'])), expenseRate: opt(stringOrNumber), insuranceRate: opt(stringOrNumber),
   driverName: opt(str), driverPhone: opt(str), driverLinkId: opt(str), driverPayMode: opt(v.picklist(DRIVER_PAY_MODES)), driverSalaryAmount: opt(str),
-  infoType: opt(v.picklist(INFO_TYPES)),
+  infoType: opt(v.picklist(INFO_TYPES)), driverShareBase: opt(v.picklist(['gross', 'afterClientCommission'])),
   personalInfo: opt(by((value) => isStringRecord(value, PERSONAL_INFO_KEYS))),
   businessInfo: opt(by((value) => isStringRecord(value, BUSINESS_INFO_KEYS))),
 })

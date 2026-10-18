@@ -5,6 +5,7 @@ import { getShortCarNum } from './cars.js'
 import { countCallTrips, getCallDetails, getFixedCount, getPalletCount } from './day-record.js'
 import { monthTotal } from './expenses.js'
 import { calculateDriverVehicleCommission, getCallDetailCommissionAmount } from './financeCore.js'
+import { driverShareBaseAmount } from './driverShareBase.js'
 import { getFixedRouteCommissionAmount } from './fixedRouteCommission.js'
 import { callInsuranceTotal } from './call-details.js'
 import { parseCurrencyValue } from './money.js'
@@ -137,7 +138,7 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
   let subCarComm = 0
   let subCarCommLabel = '기사 차량 수수료'
   if (logId !== 'main' && car) {
-    subCarComm = calculateDriverVehicleCommission(car, fare + palletFare - commissionTotal, trips + callTrips)
+    subCarComm = calculateDriverVehicleCommission(car, driverShareBaseAmount(car, fare + palletFare, commissionTotal), trips + callTrips)
     if (car.commEnabled && car.commission) {
       subCarCommLabel = car.commType === 'direct'
         ? `${getShortCarNum(car.number)} 차량 건당 ${parseCurrencyValue(car.commission).toLocaleString()}원`

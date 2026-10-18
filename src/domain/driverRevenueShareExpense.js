@@ -8,6 +8,7 @@ import {
   getDriverCarWorkData,
   getMonthlyDriverTotals,
 } from './financeCore.js'
+import { driverShareBaseAmount, getMonthlyDriverClientCommission } from './driverShareBase.js'
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./financeTypes.js').DriverLinkLike} DriverLinkLike */
@@ -57,7 +58,8 @@ export function getMonthlyDriverRevenueShareExpense(monthKey, settings, subCars,
     const link = activeLinkForCar(links, car)
     const carData = getDriverCarWorkData(car, workDataByLogId)
     const totals = getMonthlyDriverTotals(carData, monthKey, link, settings)
-    const amount = calculateDriverVehicleCommission(car, totals.grossAmount, totals.count)
+    const base = driverShareBaseAmount(car, totals.grossAmount, getMonthlyDriverClientCommission(carData, monthKey, link, settings))
+    const amount = calculateDriverVehicleCommission(car, base, totals.count)
     if (amount <= 0) continue
 
     const outside = link ? getMonthlyDriverTotals(carData, monthKey, null, settings).grossAmount - totals.grossAmount : 0

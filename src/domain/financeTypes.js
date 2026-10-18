@@ -19,6 +19,7 @@
  * @property {boolean} [withholdingOn] 3.3% 사업소득세 원천징수 여부
  * @property {string|number} [expenseRate] 산재 월보수액 계산용 필요경비율(%)
  * @property {string|number} [insuranceRate] 산재보험료율(%), 0이면 산재 적용 제외
+ * @property {'gross'|'afterClientCommission'} [driverShareBase] 매출제 기사 몫 기준 — 운송료 전체(기본)/거래처 수수료 뗀 뒤(로드맵 61)
  * @property {boolean} [logEnabled]
  * @property {boolean} [driverLinkEnabled]
  * @property {boolean} [shareRevenueWithOwner]

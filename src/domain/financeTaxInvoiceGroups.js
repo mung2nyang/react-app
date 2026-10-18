@@ -8,6 +8,7 @@ import { computeFixedRouteFare, getFixedRouteClient, resolveFixedUnitPrice } fro
 import { isDateWithinAssignment } from './drivers.js'
 import { parseCurrencyValue } from './money.js'
 import { calculateDriverVehicleCommission, getDriverCarWorkData, getMonthlyDriverTotals, logData } from './financeCore.js'
+import { driverShareBaseAmount, getMonthlyDriverClientCommission } from './driverShareBase.js'
 
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('./financeTypes.js').WorkDataByLogId} WorkDataByLogId */
@@ -137,7 +138,8 @@ export function flattenLinkedDriverTrips(data, monthKey, link, settings = {}) {
 /** @param {Record<string, import('./day-record.js').DayRecordLike>} data @param {string} monthKey @param {DriverLinkLike} link @param {CarLike} car @param {FinanceSettings} [settings] */
 export function getLinkedDriverSettlementDetail(data, monthKey, link, car, settings = {}) {
   const totals = getMonthlyDriverTotals(data, monthKey, link, settings)
-  const commissionAmount = calculateDriverVehicleCommission(car, totals.grossAmount, totals.count)
+  const base = driverShareBaseAmount(car, totals.grossAmount, getMonthlyDriverClientCommission(data, monthKey, link, settings))
+  const commissionAmount = calculateDriverVehicleCommission(car, base, totals.count)
   const insuranceAmount = car?.insuranceOn ? totals.insuranceAmount : 0
   const finalAmount = Math.max(0, totals.grossAmount - commissionAmount - insuranceAmount)
   const trips = flattenLinkedDriverTrips(data, monthKey, link, settings)
