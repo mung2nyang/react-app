@@ -1,20 +1,17 @@
 // @ts-check
-// 차량 목록·등록/수정·연동 해제 확인까지 한 화면 오케스트레이션(§6 응집).
+// 차량 목록·등록/수정 창 — 그리기와 창 열기만, 저장·연동 해제·삭제 흐름은 useCarListActions.
 import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
 import ConfirmModal from '../ConfirmModal.jsx'
 import PageHeader from '../PageHeader.jsx'
 import CarFormModal from './CarFormModal.jsx'
 import CarListItem from './CarListItem.jsx'
-import { hasMainCar, validateDriverLinkFields } from '../../lib/cars.js'
+import useCarListActions from './useCarListActions.js'
+import { hasMainCar } from '../../lib/cars.js'
 import { NEW_DRIVER_INCOME_DRAFT, driverIncomeDraftFromCar } from '../../domain/driverIncomeDeductions.js'
 import { resolveDriverShareBase } from '../../domain/driverShareBase.js'
-import { requestVehicleSave } from '../../lib/vehicleMutations.js'
-import { requestDriverDeletion, requestVehicleDeletion } from '../../lib/directMutationActions.js'
-import { requestDriverUnlinkAction } from '../../lib/driverUnlink.js'
 import { getCloudUserId, isCloudSession } from '../../lib/cloudSession.js'
 import { generateInviteCode } from '../../lib/drivers.js'
-import { saveInviteAfterVehicle, todayIsoDate } from '../../lib/carInviteFromDraft.js'
+import { todayIsoDate } from '../../lib/carInviteFromDraft.js'
 import { useOwnerCars, useOwnerDrivers } from '../../store/ownerDataHooks.js'
 import './car-management.css'
 
@@ -41,15 +38,12 @@ const DISCONNECT_CONFIRM = '연동 중인 기사에게는 해제 요청이 가�
 export default function CarListPage({ ownerKey = 'guest', session = null, onBack, showToast, onOpenMenu }) {
   const cars = useOwnerCars(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
-  const navigate = useNavigate()
-  const location = useLocation()
   const viewerIsEmployedDriver = session?.accountType === 'employed_driver'
   const cloud = isCloudSession(session) || !!getCloudUserId()
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
-  const [pendingDelete, setPendingDelete] = useState(/** @type {import('../../domain/financeTypes.js').CarLike|null} */ (null))
-  const [pendingDisconnect, setPendingDisconnect] = useState(false)
+  const actions = useCarListActions({ ownerKey, cars, drivers, cloud, draft, editingId, showToast, closeModal: () => setModalOpen(false) })
 
   function openAdd() {
     setEditingId(null)
@@ -86,102 +80,6 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
     setModalOpen(true)
   }
 
-  /** @returns {string|null} */
-  function linkedDriverIdForDraft() {
-    if (draft.inviteDriverId) return draft.inviteDriverId
-    return drivers.find((d) => d.vehicleNumber === draft.number)?.id || null
-  }
-
-  async function save() {
-    if (cloud && draft.type === 'sub' && draft.connectMode === 'link') {
-      const err = validateDriverLinkFields(draft.driverName, draft.driverPhone)
-      if (err) { showToast?.(err); return }
-    }
-    if (editingId && draft.connectMode === 'log' && linkedDriverIdForDraft()) {
-      setPendingDisconnect(true)
-      return
-    }
-    await commitSave(drivers)
-  }
-
-  async function confirmDisconnect() {
-    const driverId = linkedDriverIdForDraft()
-    if (!driverId) {
-      setPendingDisconnect(false)
-      await commitSave(drivers)
-      return
-    }
-    // 연동 중이면 바로 끊지 않고 해제 요청 — 동의·3일 전까지 연동 유지라 차량은 미연동으로 저장하지 않는다.
-    if (drivers.find((d) => d.id === driverId)?.status === 'linked') {
-      const req = await requestDriverUnlinkAction({ ownerKey, drivers, driverId, action: 'request' })
-      showToast?.(req.toast)
-      setPendingDisconnect(false)
-      if (!req.failed) setModalOpen(false)
-      return
-    }
-    const del = await requestDriverDeletion({
-      ownerKey,
-      userId: getCloudUserId(),
-      drivers,
-      driverId,
-      cloud,
-    })
-    if (del.blocked) {
-      showToast?.(del.blocked)
-      setPendingDisconnect(false)
-      return
-    }
-    if (del.drivers.some((d) => d.id === driverId)) {
-      showToast?.(del.toast || '연동을 해제하지 못했습니다.')
-      setPendingDisconnect(false)
-      return
-    }
-    setPendingDisconnect(false)
-    await commitSave(del.drivers)
-  }
-
-  /** @param {Array<import('../../lib/outboxTypes.js').DriverRecord>} driversNow */
-  async function commitSave(driversNow) {
-    const inviteSnapshot = { ...draft }
-    const result = await requestVehicleSave({ ownerKey, userId: getCloudUserId(), cars, draft, editingId })
-    if (result.failed) {
-      if (result.toast) showToast?.(result.toast)
-      return
-    }
-    const skipInvite = inviteSnapshot.connectMode === 'log'
-    const inviteToast = await saveInviteAfterVehicle({
-      cloud,
-      ownerKey,
-      userId: getCloudUserId() ?? '',
-      drivers: driversNow,
-      cars,
-      saved: result.saved,
-      inviteDraft: inviteSnapshot,
-      skipInvite,
-    })
-    if (inviteToast && inviteToast !== result.toast) showToast?.(inviteToast)
-    else if (result.toast) showToast?.(result.toast)
-    setModalOpen(false)
-    if (result.renamedFrom && result.saved?.number) {
-      const locState = location.state && typeof location.state === 'object'
-        ? /** @type {{ fromLog?: { logId: string, dateKey: string } }} */ (location.state)
-        : null
-      const fromLog = locState?.fromLog
-      if (fromLog && fromLog.logId === result.renamedFrom && fromLog.dateKey) {
-        navigate(`/app/logs/${encodeURIComponent(result.saved.number)}/day/${fromLog.dateKey}`, { replace: true })
-      }
-    }
-  }
-
-  async function confirmRemove() {
-    const car = pendingDelete
-    if (!car?.id) return
-    const result = await requestVehicleDeletion({ ownerKey, userId: getCloudUserId(), cars, vehicleId: car.id })
-    if (result.toast) showToast?.(result.toast)
-    if (result.failed || result.closeModal === false) return
-    setPendingDelete(null)
-  }
-
   return (
     <div className="page car-management-page">
       <PageHeader title="차량 관리" onBack={onBack} onOpenMenu={onOpenMenu} />
@@ -195,7 +93,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
             assignedView={viewerIsEmployedDriver}
             readOnly={viewerIsEmployedDriver}
             onEdit={() => openEdit(car)}
-            onDelete={() => setPendingDelete(car)}
+            onDelete={() => actions.askDelete(car)}
           />
         ))}
       </div>
@@ -207,23 +105,23 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
           draft={draft}
           setDraft={setDraft}
           editingId={editingId}
-          onCancel={() => { setPendingDisconnect(false); setModalOpen(false) }}
-          onSave={save}
+          onCancel={() => { actions.cancelDisconnect(); setModalOpen(false) }}
+          onSave={actions.save}
           cloud={cloud}
           drivers={drivers}
         />
       )}
-      {pendingDelete && (
-        <ConfirmModal title="이 차량을 삭제하시겠습니까?" message={DELETE_CAR_CONFIRM} confirmLabel="삭제" danger onCancel={() => setPendingDelete(null)} onConfirm={confirmRemove} />
+      {actions.pendingDelete && (
+        <ConfirmModal title="이 차량을 삭제하시겠습니까?" message={DELETE_CAR_CONFIRM} confirmLabel="삭제" danger onCancel={actions.cancelDelete} onConfirm={actions.confirmRemove} />
       )}
-      {pendingDisconnect && (
+      {actions.pendingDisconnect && (
         <ConfirmModal
           title="이 차량의 기사 연동을 해제하시겠습니까?"
           message={DISCONNECT_CONFIRM}
           confirmLabel="연동 해제"
           danger
-          onCancel={() => setPendingDisconnect(false)}
-          onConfirm={confirmDisconnect}
+          onCancel={actions.cancelDisconnect}
+          onConfirm={actions.confirmDisconnect}
         />
       )}
     </div>
