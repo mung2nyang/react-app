@@ -18,9 +18,8 @@ import './receivables.css'
  * @param {string} [props.ownerKey]
  * @param {boolean} [props.isEmployedDriver]
  * @param {(message: string) => void} [props.showToast]
- * @param {() => void} [props.onWorkChanged]
  */
-export default function ReceivablesDetailPage({ ownerKey = 'guest', isEmployedDriver = false, showToast, onWorkChanged }) {
+export default function ReceivablesDetailPage({ ownerKey = 'guest', isEmployedDriver = false, showToast }) {
   const navigate = useNavigate()
   const { search } = useLocation()
   const { client: clientParam, month: monthParam } = useParams()
@@ -29,7 +28,7 @@ export default function ReceivablesDetailPage({ ownerKey = 'guest', isEmployedDr
   const { confirm, confirmDialog } = useConfirm()
   const { workDataByLogId, settings, items, hasSubCars } = useReceivablesData(ownerKey, isEmployedDriver)
   const actions = useReceivablesActions({
-    ownerKey, workDataByLogId, settings, showToast, onWorkChanged, confirm,
+    ownerKey, workDataByLogId, settings, showToast, confirm,
   })
 
   const detailItems = useMemo(() => (

@@ -1,15 +1,15 @@
 // @ts-check
-// 알림 화면(🔔 → /app/notifications): 맨 위 "알림 받기" 종류별 스위치 + 알림 목록(날짜 줄·[닫기]). 옆 창(NotificationPanel)을 대체.
-import { useMemo, useState } from 'react'
+// 알림 화면(알림 단추 → /app/notifications): 맨 위 "알림 받기" 종류별 스위치 + 알림 목록(날짜 줄·[닫기]). 옆 창(NotificationPanel)을 대체.
 import { isCloudSession } from '../../lib/cloudSession.js'
-import { collectNotifications, dismissNotification } from '../../lib/notifications.js'
+import { dismissNotification } from '../../lib/notifications.js'
+import useNotifications from './useNotifications.js'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
-import { useOwnerDrivers, useOwnerSettings } from '../../store/ownerDataHooks.js'
+import { useOwnerSettings } from '../../store/ownerDataHooks.js'
 import PageHeader from '../PageHeader.jsx'
 import './notifications-page.css'
 import { SERVER_SAVE_FAIL } from '../../lib/failureMessages.js'
 
-/** @typedef {ReturnType<typeof collectNotifications>[number]} NotificationItem */
+/** @typedef {ReturnType<typeof useNotifications>[number]} NotificationItem */
 
 const SAVE_FAIL = SERVER_SAVE_FAIL
 
@@ -21,13 +21,10 @@ const SAVE_FAIL = SERVER_SAVE_FAIL
  * @param {() => void} props.onBack
  * @param {() => void} [props.onOpenMenu]
  * @param {(page: string) => void} props.onOpenPage 알림을 누르면 그 화면으로
- * @param {() => void} [props.onChanged] 닫기·끄기 뒤 🔔 숫자 다시 세기
  */
-export default function NotificationsPage({ ownerKey, session, showToast, onBack, onOpenMenu, onOpenPage, onChanged }) {
+export default function NotificationsPage({ ownerKey, session, showToast, onBack, onOpenMenu, onOpenPage }) {
   const settings = useOwnerSettings(ownerKey)
-  const drivers = useOwnerDrivers(ownerKey)
-  const [tick, setTick] = useState(0)
-  const items = useMemo(() => collectNotifications(ownerKey, session), [ownerKey, session, settings, drivers, tick])
+  const items = useNotifications(ownerKey, session)
   const off = settings.notifOff || []
   const isGuest = ownerKey === 'guest' && !isCloudSession(session)
   const kinds = [
@@ -44,7 +41,6 @@ export default function NotificationsPage({ ownerKey, session, showToast, onBack
         const now = current.notifOff || []
         return { notifOff: on ? now.filter((name) => name !== kind) : [...now.filter((name) => name !== kind), kind] }
       })
-      onChanged?.()
     } catch {
       showToast?.(SAVE_FAIL)
     }
@@ -53,13 +49,11 @@ export default function NotificationsPage({ ownerKey, session, showToast, onBack
   /** @param {string} id */
   function dismiss(id) {
     dismissNotification(ownerKey, id)
-    setTick((n) => n + 1)
-    onChanged?.()
   }
 
   function turnOnInspection() {
     savePracticeSettings(ownerKey, { dailyInspectionOn: true })
-      .then(() => { showToast?.('일상점검표를 켰습니다.'); onChanged?.() })
+      .then(() => showToast?.('일상점검표를 켰습니다.'))
       .catch(() => showToast?.(SAVE_FAIL))
   }
 

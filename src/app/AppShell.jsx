@@ -6,9 +6,9 @@ import BottomNav from '../components/BottomNav.jsx'
 import { PageSkeleton } from '../components/shared/Skeleton.jsx'
 import SideMenu, { preloadSideMenuBanner } from '../components/SideMenu.jsx'
 import PullRefreshIndicator from '../components/PullRefreshIndicator.jsx'
-import { collectNotifications } from '../lib/notifications.js'
+import useNotifications from '../components/notifications/useNotifications.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
-import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers } from '../store/ownerDataHooks.js'
 import PageLoadErrorBoundary from '../components/PageLoadErrorBoundary.jsx'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import OfflineBanner from './OfflineBanner.jsx'
@@ -89,13 +89,11 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
     else moveTo(target)
   }
   const [menuOpen, setMenuOpen] = useState(false)
-  const [notifTick, setNotifTick] = useState(0)
   useEffect(() => { preloadSideMenuBanner() }, [])
   useBackToExit(showToast)
   const pageBoxRef = usePageTransition()
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
-  const settings = useOwnerSettings(ownerKey)
   const isOwnerSession = !session?.linkedOwnerId
   const subLogItems = useMemo(
     () => buildSubLogMenuItems(cars, drivers, isOwnerSession),
@@ -111,8 +109,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
       }))
   }, [drivers, isOwnerSession])
 
-  const notifications = useMemo(() => collectNotifications(ownerKey), [ownerKey, notifTick, drivers, settings])
-  const bumpNotifTick = () => setNotifTick((n) => n + 1)
+  const notifications = useNotifications(ownerKey, null, location.pathname)
 
   const activeNav = location.pathname === '/app' || location.pathname === '/app/notifications'
     || (location.pathname.startsWith('/app/logs/') && !location.pathname.includes('/day/'))
@@ -161,10 +158,9 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
             ownerKey={ownerKey}
             session={session}
             showToast={showToast}
-            bumpNotifTick={bumpNotifTick}
             notifCount={notifications.length}
             onOpenMenu={() => setMenuOpen(true)}
-            onOpenNotifs={() => { bumpNotifTick(); navigate('/app/notifications') }}
+            onOpenNotifs={() => navigate('/app/notifications')}
             onBackToAuth={onBackToAuth}
             onGoAuth={onGoAuth}
             onSessionUpdate={onSessionUpdate}

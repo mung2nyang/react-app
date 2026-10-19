@@ -29,11 +29,10 @@ export const partialInputId = (key) => `receivablePartial-${key}`
  * @param {import('../../domain/financeTypes.js').WorkDataByLogId} params.workDataByLogId
  * @param {import('../../domain/financeTypes.js').FinanceSettings} params.settings
  * @param {(message: string) => void} [params.showToast]
- * @param {() => void} [params.onWorkChanged]
  * @param {(message: string, options?: { confirmLabel?: string, danger?: boolean, message?: string }) => Promise<boolean>} params.confirm
  */
 export function useReceivablesActions({
-  ownerKey, workDataByLogId, settings, showToast, onWorkChanged, confirm,
+  ownerKey, workDataByLogId, settings, showToast, confirm,
 }) {
   const [saving, setSaving] = useState(false)
   const [partialKey, setPartialKey] = useState('')
@@ -55,15 +54,11 @@ export function useReceivablesActions({
       const result = await persistReceivableWorkDataChange(ownerKey, next)
       if (!result.ok) {
         if (result.toast) showToast?.(result.toast)
-        if (result.partial) {
-          clearPartialUi()
-          onWorkChanged?.()
-        }
+        if (result.partial) clearPartialUi()
         return false
       }
       clearPartialUi()
       if (successMessage) showToast?.(successMessage)
-      onWorkChanged?.()
       return true
     } finally {
       setSaving(false)
@@ -110,11 +105,9 @@ export function useReceivablesActions({
       const result = await persistReceivableWorkDataChange(ownerKey, next)
       if (!result.ok) {
         if (result.toast) showToast?.(result.toast)
-        if (result.partial) onWorkChanged?.()
         return false
       }
       showToast?.(`${clientName} ${parseInt(monthKey.slice(5, 7), 10)}월분 미수금을 수금 완료 처리했습니다.`)
-      onWorkChanged?.()
       return !stay
     } finally {
       setSaving(false)

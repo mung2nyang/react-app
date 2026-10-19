@@ -150,7 +150,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
     }
   }
 
-  // 알림 화면 "알림 받기"에서 끈 종류는 목록·🔔 숫자에서 뺌(일상점검 의무화 안내는 끌 수 없음).
+  // 알림 화면 "알림 받기"에서 끈 종류는 목록·알림 숫자에서 뺌(일상점검 의무화 안내는 끌 수 없음).
   const off = readOwnerSettings(ownerKey).notifOff || []
   return items.filter((item) => !off.includes(item.kind))
 }

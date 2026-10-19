@@ -24,7 +24,7 @@ const { normalizeSettings } = await import('../../domain/practiceSettings.js')
 
 /**
  * @param {string} ownerKey
- * @param {{ onOpenPage?: (page: string) => void, onChanged?: () => void, showToast?: (m: string) => void }} [more]
+ * @param {{ onOpenPage?: (page: string) => void, showToast?: (m: string) => void }} [more]
  */
 async function renderPage(ownerKey, more = {}) {
   const container = document.createElement('div')
@@ -38,7 +38,6 @@ async function renderPage(ownerKey, more = {}) {
         ownerKey,
         onBack: () => {},
         onOpenPage: more.onOpenPage || (() => {}),
-        onChanged: more.onChanged,
         showToast: more.showToast,
       }),
     ))
@@ -71,13 +70,12 @@ function seedOverdue(ownerKey) {
   })
 }
 
-test('목록: 연체 알림에 날짜 줄(운행·입금 예정), 누르면 미수금 화면, [닫기]하면 사라지고 🔔 다시 세기', async () => {
+test('목록: 연체 알림에 날짜 줄(운행·입금 예정), 누르면 미수금 화면, [닫기]하면 사라진다', async () => {
   const ownerKey = 'np-list'
   seedOverdue(ownerKey)
   /** @type {string[]} */
   const opened = []
-  let changed = 0
-  const view = await renderPage(ownerKey, { onOpenPage: (page) => opened.push(page), onChanged: () => { changed += 1 } })
+  const view = await renderPage(ownerKey, { onOpenPage: (page) => opened.push(page) })
   try {
     const item = itemWith(view.container, '연체거래처 연체 미수금')
     assert.ok(item, '연체 알림이 있어야 한다')
@@ -89,7 +87,6 @@ test('목록: 연체 알림에 날짜 줄(운행·입금 예정), 누르면 미�
     assert.ok(dismiss)
     await act(async () => { dismiss.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
     assert.equal(itemWith(view.container, '연체거래처'), undefined, '닫으면 목록에서 사라져야 한다')
-    assert.equal(changed, 1, '🔔 숫자를 다시 세게 알려야 한다')
   } finally {
     await view.cleanup()
   }
@@ -107,11 +104,28 @@ test('알림이 없으면 "알림이 없습니다."', async () => {
   }
 })
 
-test('끄기: 연체 미수금 스위치를 끄면 목록·🔔 계산에서 빠지고, 다시 켜면 돌아온다', async () => {
+test('신호 없이 일지만 바뀌어도 알림 목록이 다시 센다(로드맵 90 — 알림 숫자와 같은 훅)', async () => {
+  const ownerKey = 'np-subscribe'
+  commitSettings(ownerKey, normalizeSettings({ paymentOn: true, notifOff: ['today'] }))
+  commitWorkData(ownerKey, {})
+  const view = await renderPage(ownerKey)
+  try {
+    assert.equal(itemWith(view.container, '연체거래처'), undefined)
+    await act(async () => {
+      commitWorkData(ownerKey, {
+        '2026-08-30': { isOff: false, callDetails: [{ id: 'od-sub', client: '연체거래처', fare: 120000, payments: [], paymentDueDate: '2026-09-01' }] },
+      })
+    })
+    assert.ok(itemWith(view.container, '연체거래처 연체 미수금'), '저장 신호 없이도 새 연체 알림이 보여야 한다')
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('끄기: 연체 미수금 스위치를 끄면 목록·알림 숫자 계산에서 빠지고, 다시 켜면 돌아온다', async () => {
   const ownerKey = 'np-toggle'
   seedOverdue(ownerKey)
-  let changed = 0
-  const view = await renderPage(ownerKey, { onChanged: () => { changed += 1 } })
+  const view = await renderPage(ownerKey)
   try {
     const sw = switchOf(view.container, 'overdue')
     assert.ok(sw)
@@ -120,8 +134,7 @@ test('끄기: 연체 미수금 스위치를 끄면 목록·🔔 계산에서 빠
     assert.deepEqual(readOwnerSettings(ownerKey).notifOff, ['overdue'])
     assert.equal(switchOf(view.container, 'overdue')?.checked, false)
     assert.equal(itemWith(view.container, '연체거래처'), undefined, '끈 종류는 목록에서 빠져야 한다')
-    assert.equal(collectNotifications(ownerKey).some((item) => item.kind === 'overdue'), false, '🔔 숫자 계산에서도 빠져야 한다')
-    assert.equal(changed, 1)
+    assert.equal(collectNotifications(ownerKey).some((item) => item.kind === 'overdue'), false, '알림 숫자 계산에서도 빠져야 한다')
 
     await act(async () => { switchOf(view.container, 'overdue')?.click() })
     assert.deepEqual(readOwnerSettings(ownerKey).notifOff, [])

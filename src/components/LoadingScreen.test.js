@@ -1,4 +1,4 @@
-// 10-L: 로딩 표시 "🚚 운행일지 ● ● ●"(index.html과 같은 클래스), 테마를 바꾸면 다음 첫 로딩 화면 색용 lastTheme을 기억.
+// 10-L: 로딩 표시 "운행일지 ● ● ●"(index.html과 같은 클래스), 테마를 바꾸면 다음 첫 로딩 화면 색용 lastTheme을 기억.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 

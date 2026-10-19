@@ -31,7 +31,6 @@ import {
  * @param {string} props.ownerKey
  * @param {AppSession|null} props.session
  * @param {(message: string) => void} [props.showToast]
- * @param {() => void} props.bumpNotifTick
  * @param {number} props.notifCount
  * @param {() => void} props.onOpenMenu
  * @param {() => void} props.onOpenNotifs
@@ -43,7 +42,7 @@ import {
  * @param {(page: string, title?: string, backFallback?: string) => void} props.goToPage
  */
 export default function AppShellRoutes({
-  ownerKey, session, showToast, bumpNotifTick, notifCount,
+  ownerKey, session, showToast, notifCount,
   onOpenMenu, onOpenNotifs, onBackToAuth, onGoAuth, onSessionUpdate, navigate, goBack, goToPage,
 }) {
   const [params] = useSearchParams()
@@ -56,7 +55,6 @@ export default function AppShellRoutes({
         session={session}
         userName={session?.name}
         showToast={showToast}
-        onWorkChanged={bumpNotifTick}
         onOpenMenu={onOpenMenu}
         onBackToAuth={onBackToAuth}
       />
@@ -89,17 +87,17 @@ export default function AppShellRoutes({
       <Route path="me/profile" element={<PersonalInfoPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => goBack(backTarget)} onGoAuth={onGoAuth} onOpenMenu={onOpenMenu} onUnlinked={(/** @type {AppSession} */ next) => { onSessionUpdate?.(next); goBack('/app') }} />} />
       <Route path="me/settings" element={<AppSettingsPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => goBack(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="expenses" element={<MaintFuelPage ownerKey={ownerKey} showToast={showToast} onBack={() => goBack(backTarget)} onOpenMenu={onOpenMenu} />} />
-      <Route path="receivables/*" element={<ReceivablesPage ownerKey={ownerKey} isEmployedDriver={session?.accountType === 'employed_driver'} showToast={showToast} onWorkChanged={bumpNotifTick} onBack={() => { goBack(backTarget); bumpNotifTick() }} onOpenMenu={onOpenMenu} />} />
+      <Route path="receivables/*" element={<ReceivablesPage ownerKey={ownerKey} isEmployedDriver={session?.accountType === 'employed_driver'} showToast={showToast} onBack={() => goBack(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="report" element={<DocumentIssuePage ownerKey={ownerKey} isEmployedDriver={session?.accountType === 'employed_driver'} showToast={showToast} onBack={() => goBack(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="tax" element={<Navigate to="/app/report" replace />} />
       <Route path="drivers/:linkId/clients" element={<LinkedDriverClientsPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
       <Route path="drivers/:linkId" element={<LinkedDriverManagementPage ownerKey={ownerKey} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />
-      <Route path="drivers" element={<DriverConnectionPage ownerKey={ownerKey} session={session} showToast={showToast} navigate={navigate} onBack={() => { goBack('/app/me'); bumpNotifTick() }} />} />
+      <Route path="drivers" element={<DriverConnectionPage ownerKey={ownerKey} session={session} showToast={showToast} navigate={navigate} onBack={() => goBack('/app/me')} />} />
       <Route path="revenue" element={<RevenuePage ownerKey={ownerKey} session={session ?? undefined} onOpenMenu={onOpenMenu} />} />
       <Route path="support" element={<CustomerCenterPage session={session} showToast={showToast} onGoAuth={onGoAuth} onBack={() => goBack('/app')} onOpenMenu={onOpenMenu} />} />
       <Route path="notice" element={<NoticePage onBack={() => goBack(backTarget)} onOpenMenu={onOpenMenu} />} />
       <Route path="message-settings" element={<MessageSettingsPage onBack={() => goBack(backTarget)} showToast={showToast} />} />
-      <Route path="notifications" element={<NotificationsPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} onOpenPage={(/** @type {string} */ page) => goToPage(page)} onChanged={bumpNotifTick} />} />
+      <Route path="notifications" element={<NotificationsPage ownerKey={ownerKey} session={session} showToast={showToast} onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} onOpenPage={(/** @type {string} */ page) => goToPage(page)} />} />
       <Route path="soon" element={<ComingSoonRoute />} />
     </Routes>
   )

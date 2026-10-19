@@ -1108,8 +1108,8 @@ test('새 홈 1단계 — 달력 탭은 달력 화면, 홈 [운행 기록하기]
   }
 })
 
-// 알림 화면 — 🔔를 누르면 옆 창 대신 화면 전체(/app/notifications), 뒤로가기 = 홈, 홈 탭 강조.
-test('알림 화면 — 🔔 → /app/notifications(옆 창 없음) → 뒤로가기 → 홈', async () => {
+// 알림 화면 — 알림 단추를 누르면 옆 창 대신 화면 전체(/app/notifications), 뒤로가기 = 홈, 홈 탭 강조.
+test('알림 화면 — 알림 단추 → /app/notifications(옆 창 없음) → 뒤로가기 → 홈', async () => {
   window.history.pushState({}, '', '/app')
   const container = document.createElement('div')
   document.body.appendChild(container)

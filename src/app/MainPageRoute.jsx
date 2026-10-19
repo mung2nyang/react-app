@@ -19,7 +19,6 @@ import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
  * @param {AppSession|null} [props.session]
  * @param {string} [props.userName]
  * @param {(message: string) => void} [props.showToast]
- * @param {(() => void)} [props.onWorkChanged]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(() => void)} [props.onBackToAuth]
  */
@@ -28,7 +27,6 @@ export default function MainPageRoute({
   session,
   userName,
   showToast,
-  onWorkChanged,
   onOpenMenu,
   onBackToAuth,
 }) {
@@ -77,7 +75,6 @@ export default function MainPageRoute({
         clients={clients}
         settings={settings}
         showToast={showToast}
-        onWorkChanged={onWorkChanged}
         onClose={closeWorkLog}
         onOpenMenu={onOpenMenu}
         isEmployedDriver={session?.accountType === 'employed_driver'}
