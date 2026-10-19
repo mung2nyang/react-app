@@ -1,5 +1,4 @@
-// app-store.js는 (scheduleCloudSync를 통해) cloudSync.js를 임포트하고, cloudSync.js는
-// 다시 supabaseClient.js를 임포트한다. 정적 import로 이 파일 맨 위에서 app-store.js를
+// app-store.js가 (다른 모듈을 거쳐) supabaseClient.js를 임포트할 수 있다. 정적 import로 이 파일 맨 위에서 app-store.js를
 // 끌어오면 mock.module()이 실행되기 전에 이미 모듈 그래프 전체가 링크돼 버려서 스텁이
 // 안 먹는다(ESM은 최상위 정적 import를 전부 링크한 뒤에야 각 모듈의 본문을 실행한다) —
 // 그래서 여기서도 cloudSync.test.js와 마찬가지로 mock.module 등록 뒤 동적 import를 쓴다.
@@ -65,8 +64,7 @@ describe('app-store — commit* options.syncToCloud:false는 예약을 건너뛴
     commitCars(owner, [{ id: 'car-1', number: '12가3456' }], { syncToCloud: false })
     assert.deepEqual(getState().cars[owner], [{ id: 'car-1', number: '12가3456' }])
     // 감사 지적 9번: state만 보고 "동기화 안 했겠지"라고 넘기지 않는다 — 스텁 호출
-    // 횟수를 직접 센다. syncToCloud:false는 scheduleCloudSync() 자체를 안 부르므로
-    // idle이든 ready든 상관없이 0이어야 한다.
+    // 횟수를 직접 센다. idle이든 ready든 상관없이 0이어야 한다.
     assert.equal(totalStubCalls(), 0, 'syncToCloud:false면 Supabase 호출이 0회여야 한다')
   })
 })
@@ -137,6 +135,6 @@ describe('commitBatch — dirty journal 쓰기 실패는 도메인/journal/state
     assert.equal(localStorage.getItem(journalKey), journalRawBefore, 'journal localStorage도 원래 값 그대로여야 한다(실패한 키라 애초에 안 바뀐다)')
     assert.deepEqual(getState().cars[owner], stateBefore, 'store state는 그대로여야 한다 — writeAllOrNothing이 던지면 applyDomainToState는 아예 안 불린다')
     assert.equal(notifyCount, 0, 'notify가 호출되면 안 된다')
-    assert.equal(totalStubCalls(), 0, 'Supabase 호출이 있으면 안 된다(notify가 없으니 scheduleCloudSync도 안 불린다)')
+    assert.equal(totalStubCalls(), 0, 'Supabase 호출이 있으면 안 된다')
   })
 })

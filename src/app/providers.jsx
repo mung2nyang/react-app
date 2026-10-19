@@ -1,21 +1,7 @@
 // @ts-check
 // 앱 루트 전용 리스너 모음. App.jsx가 한 번만 마운트한다.
 import { useEffect } from 'react'
-import { attachSyncFlushListeners } from './syncFlushListeners.js'
 import { attachPendingWriteRetryListeners } from './pendingWriteRetryListeners.js'
-
-/**
- * online / visibilitychange(hidden) / pagehide 시 클라우드 동기화를 즉시 flush한다.
- * 모바일에서 setTimeout 디바운스가 백그라운드 전환 중 죽어 저장이 클라우드에 반영되지
- * 않는 것을 막는다.
- * flushCloudSync 자체는 hydrate 전/게스트/로그아웃 상태에서 no-op이라 항상 마운트해도 된다.
- * @returns {null}
- */
-export function SyncFlushBridge() {
-  useEffect(() => attachSyncFlushListeners(window, document), [])
-
-  return null
-}
 
 /**
  * quota 초과 등으로 실패한 일지 자동 저장을

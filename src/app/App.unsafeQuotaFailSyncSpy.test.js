@@ -1,6 +1,4 @@
-// 재감사 15·16차 — App.test.js는 이미 실제 syncQueue를 붙잡은 뒤라 mock.module이
-// scheduleCloudSync를 못 센다. 이 파일은 mock.module을 DayLogPage/app-store보다
-// 먼저 올려, oops+quota 실패가 디바운스·unmount 뒤에도 scheduleCloudSync를 0회 부르는지 센다.
+// 재감사 16차 — oops+quota 실패가 디바운스·unmount 뒤에도 Store·저장소를 작업 전 값으로 두는지 본다.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -8,14 +6,6 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 
 import { mock, test } from 'node:test'
 import assert from 'node:assert/strict'
-
-let scheduleCloudSyncCallCount = 0
-mock.module('../lib/syncQueue.js', {
-  namedExports: {
-    scheduleCloudSync: () => { scheduleCloudSyncCallCount += 1 },
-    flushCloudSync: async () => {},
-  },
-})
 
 import '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
@@ -95,41 +85,7 @@ function assertSaveFailError(call) {
   assert.equal(call.second.message, 'quota exceeded (simulated, schedule spy)')
 }
 
-test('재감사 15차 — 양성 대조: 정상 일지 커밋은 scheduleCloudSync를 1회 부른다', async () => {
-  const ownerKey = 'spy-unsafe-positive'
-  const dateKey = '2026-10-04'
-  commitClients(ownerKey, spyClients, { syncToCloud: false })
-  commitSettings(ownerKey, normalizeSettings({ fixedOn: true }), { syncToCloud: false })
-  commitWorkData(ownerKey, {
-    [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} },
-  }, { syncToCloud: false })
-  const container = document.createElement('div')
-  document.body.appendChild(container)
-  const root = createRoot(container)
-  const before = scheduleCloudSyncCallCount
-  try {
-    await act(async () => {
-      root.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
-        month: 10, day: 4, dateKey, ownerKey,
-        clients: spyClients,
-        settings: normalizeSettings({ fixedOn: true }),
-        onClose: () => {},
-      })))
-    })
-    await act(async () => {
-      const deadline = Date.now() + 2000
-      while (!container.querySelector('#modalFixedCountInput') && Date.now() < deadline) await wait(20)
-    })
-    await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '9') })
-    await act(async () => { await wait(700) })
-    assert.equal(scheduleCloudSyncCallCount, before + 1, '정상 커밋은 scheduleCloudSync를 정확히 1회 불러야 한다')
-  } finally {
-    await act(async () => { root.unmount() })
-    container.remove()
-  }
-})
-
-test('재감사 16차 — oops+quota 실패는 unmount/cleanup 뒤에도 scheduleCloudSync 0회다', async () => {
+test('재감사 16차 — oops+quota 실패는 unmount/cleanup 뒤에도 Store·저장소가 작업 전 값이다', async () => {
   const ownerKey = 'spy-unsafe-fail'
   const dateKey = '2026-10-05'
   commitClients(ownerKey, spyClients, { syncToCloud: false })
@@ -152,7 +108,6 @@ test('재감사 16차 — oops+quota 실패는 unmount/cleanup 뒤에도 schedul
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const before = scheduleCloudSyncCallCount
   const workDataRawBefore = localStorage.getItem(failKey)
   const workDataBefore = structuredClone(readWorkData(ownerKey))
   const storeFixedBefore = committedRecord(ownerKey, dateKey)?.fixedCount
@@ -181,7 +136,6 @@ test('재감사 16차 — oops+quota 실패는 unmount/cleanup 뒤에도 schedul
     })
     assert.equal(shouldFail, true, '실패 조건을 풀면 안 된다')
     assert.equal(hasUnsafeRegistration(ownerKey, dateKey), true)
-    assert.equal(scheduleCloudSyncCallCount, before, '디바운스 실패는 scheduleCloudSync를 부르면 안 된다')
     assert.equal(errSpy.count(), 1, '디바운스 실패 console.error는 정확히 1회여야 한다')
     const afterDebounce = errSpy.calls()[0]
     if (!afterDebounce) throw new Error('디바운스 실패 console.error가 없습니다')
@@ -191,7 +145,6 @@ test('재감사 16차 — oops+quota 실패는 unmount/cleanup 뒤에도 schedul
     unmounted = true
 
     assert.equal(shouldFail, true, 'unmount 전후에 quota를 풀면 안 된다')
-    assert.equal(scheduleCloudSyncCallCount, before, 'unmount flush 실패 후에도 scheduleCloudSync는 0회여야 한다')
     assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, storeFixedBefore)
     assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 2, 'Store는 작업 전 fixedCount=2여야 한다')
     assert.equal(localStorage.getItem(failKey), workDataRawBefore)

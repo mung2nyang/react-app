@@ -1,5 +1,5 @@
 // @ts-check
-// hydrate 전체 — 조회 전부 성공 판정, dirty journal 재적용, single-flight/세대 보호, outbox tombstone·pending 재적용.
+// hydrate 전체 — 조회 전부 성공 판정, dirty journal 재적용, single-flight/세대 보호.
 import { supabase } from '../supabaseClient.js'
 import { getState, setHydration } from '../store/app-store.js'
 import { replaceOwnerState } from '../store/owner-state.js'
@@ -9,9 +9,6 @@ import { singleFlight } from './singleFlight.js'
 import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, isSessionStillCurrent } from './cloudSession.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 import { readPersistDomain } from '../store/persistDomainRead.js'
-import { hasPendingOps } from './mutationOutbox.js'
-import { flushMutationOutbox } from './outboxFlush.js'
-import { reconcileCars, reconcileClients, reconcileDrivers } from './outboxReconcile.js'
 import {
   throwIfAnyHydrateError,
   mergeProfileRow,
@@ -77,9 +74,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
         // driverExpenses는 차주 hydrate 전용 — 소속기사 세션에서는 빈 배열로 replace(스테일 제거).
         replaceOwnerState(ownerKey, { ...nextSnapshot, driverExpenses: [] }, { sync: false, persist: false })
         finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
-        if (hasPendingOps(ownerKey)) {
-          flushMutationOutbox(ownerKey).catch((error) => console.error('outbox 플러시 실패:', error))
-        }
+        dropLegacyOutbox(ownerKey)
       } else {
         finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
       }
@@ -119,10 +114,9 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     let nextInvoices = /** @type {Array<import('../domain/financeTaxInvoiceEntries.js').InvoiceLike>} */ ([])
 
     const nextProfile = mergeProfileRow({}, profileRes.data)
-    nextCars = reconcileCars(ownerKey, mergeCarsFromRows(nextCars, vehiclesRes.data || []))
-    nextClients = reconcileClients(ownerKey, mergeClientsFromRows(nextClients, clientsRes.data || []))
-    const localDrivers = getState().drivers[ownerKey] || []
-    nextDrivers = reconcileDrivers(ownerKey, mergeDriversFromRows(localDrivers, nextCars, linksRes.data || []), localDrivers)
+    nextCars = mergeCarsFromRows(nextCars, vehiclesRes.data || [])
+    nextClients = mergeClientsFromRows(nextClients, clientsRes.data || [])
+    nextDrivers = mergeDriversFromRows(getState().drivers[ownerKey] || [], nextCars, linksRes.data || [])
 
     // supabaseId 있는 전 차량(main+기사) daily_logs/transport 병합.
     // tombstone은 메인만 적용(서브는 서버 직접 저장이라 tombstone을 쓰지 않는다).
@@ -172,7 +166,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
       replaceOwnerState(ownerKey, nextSnapshot, { sync: false, persist: false })
       finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
-      if (hasPendingOps(ownerKey)) flushMutationOutbox(ownerKey).catch((error) => console.error('outbox 플러시 실패:', error))
+      dropLegacyOutbox(ownerKey)
     } else {
       // 스냅샷은 반영하지 않는다. 이 세대가 아직 hydrating이면 스위치를 닫아 영원히 잠기지 않게 한다.
       finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
@@ -186,6 +180,12 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
       finishHydration(myEpoch, { status: 'failed', userId, ownerKey })
     }
   }
+}
+
+// 옛 보낼 편지함 기록은 보내지 않고 지운다 — 저장은 서버 직접 1회라 더 쓰지 않음(로드맵 88).
+/** @param {string} ownerKey */
+function dropLegacyOutbox(ownerKey) {
+  try { localStorage.removeItem(`reactPracticeMutationOutbox:${ownerKey}`) } catch { /* 저장소를 못 쓰면 그대로 둠 */ }
 }
 
 export async function retryHydrate() {

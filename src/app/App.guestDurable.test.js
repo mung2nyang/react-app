@@ -50,7 +50,6 @@ const {
 } = await import('../lib/pendingWorkDataWrites.js')
 const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../lib/durableWriteGuard.js')
 const { hasDirty, clearDirty } = await import('../lib/dirtyJournal.js')
-const { flushCloudSync } = await import('../lib/syncQueue.js')
 const { endCloudSession } = await import('../lib/cloudSession.js')
 const { durableKey } = await import('../lib/durableStorage.js')
 const { clearGuestModePersisted } = await import('./guestSessionPersist.js')
@@ -119,7 +118,7 @@ async function waitForDurableBroken() {
   await waitUntil(() => isDurableWriteBroken(), { timeoutMs: 3000 })
 }
 
-/** 게스트는 scheduleCloudSync no-op이라 dirty가 자동으로 안 지워진다 — 테스트 격리용. */
+/** 게스트는 dirty가 자동으로 안 지워진다 — 테스트 격리용. */
 function settleGuestDirty(ownerKey) {
   clearDirty(ownerKey)
 }
@@ -186,7 +185,6 @@ test.afterEach(async () => {
   localStorage.removeItem(storageKeyFor('expenses', 'guest'))
   localStorage.removeItem(`reactPracticeDurablePendingWrites:guest`)
   clearDirty('guest')
-  await flushCloudSync()
 })
 
 // 재감사 4차(FAIL 지적 3번) — durable 기록 자체가 실패한 상태(durableWriteGuard.js가
@@ -320,8 +318,7 @@ test('재감사 4차 FAIL 지적 3번 — durable 기록이 깨진 상태에서 
   const root = createTrackedRoot(container)
 
   // 부트/hydrate가 끝나기 전에 workData 쓰기를 막으면 hydrate 자신의
-  // replaceOwnerState 쓰기까지 막혀 hydration.status가 'failed'로 굳고, 그 뒤로는
-  // scheduleCloudSync가 계속 아무 것도 안 해서 dirty가 영영 안 지워진다(실측 확인 —
+  // replaceOwnerState 쓰기까지 막혀 hydration.status가 'failed'로 굳는다(실측 확인 —
   // 다른 quota 테스트들과 같은 이유) — 반드시 부트가 끝난 뒤에만 스파이를 심는다.
   const confirmSpy = mock.method(window, 'confirm', () => false)
   let spy
@@ -501,7 +498,7 @@ test('재감사 FAIL 지적 9번 — 자동 저장 quota 초과: store/localStor
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey], undefined, '실패한 쓰기는 store에 전혀 반영되면 안 된다')
     assert.equal(readWorkData(ownerKey)[dateKey], undefined, '실패한 쓰기는 localStorage에도 전혀 반영되면 안 된다')
     assert.equal(notifyCount, 0, 'writeAllOrNothing이 던지면 commitBatch의 notify()에 도달하면 안 된다 — 구독자가 한 번도 안 불려야 한다')
-    assert.equal(totalSupabaseCalls(), supabaseCallsBefore, 'notify() 뒤에 있는 scheduleCloudSync()까지 못 갔으니 Supabase 호출이 늘면 안 된다')
+    assert.equal(totalSupabaseCalls(), supabaseCallsBefore, '저장이 실패했으니 Supabase 호출이 늘면 안 된다')
 
     const toastText = container.querySelector('.toast-message')?.textContent || ''
     assert.ok(toastText.includes('저장'), `실패 토스트가 떠야 한다 — 실제: "${toastText}"`)
@@ -576,7 +573,7 @@ test('재감사 3차 FAIL 지적 5번 — 비용 저장 quota 초과: store/loca
     assert.deepEqual(getState().expenses[ownerKey], [e1], '실패한 저장은 store에 전혀 반영되면 안 된다(e1만 그대로)')
     assert.deepEqual(readJsonKey('expenses', ownerKey, []), [e1], '실패한 저장은 localStorage에도 전혀 반영되면 안 된다')
     assert.equal(notifyCount, 0, 'writeAllOrNothing이 던지면 commitBatch의 notify()에 도달하면 안 된다')
-    assert.equal(totalSupabaseCalls(), supabaseCallsBefore, 'notify() 이후의 scheduleCloudSync까지 못 갔으니 Supabase 호출이 늘면 안 된다')
+    assert.equal(totalSupabaseCalls(), supabaseCallsBefore, '저장이 실패했으니 Supabase 호출이 늘면 안 된다')
     assert.equal(errSpy.count(), 1, '저장 시도 1회로 정확히 1번 로깅돼야 한다')
     errSpy.restore()
 
@@ -857,7 +854,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     assert.equal(totalSupabaseCalls(), supabaseAfterRetry, '언마운트 후 Supabase 호출이 늘면 안 된다')
     assert.deepEqual(committedRecord(ownerKey, dateKey), storeAfterRetry, '언마운트 후 Store가 또 바뀌면 안 된다')
     assert.equal(localStorage.getItem(workDataKey), workDataAfterRetry, '언마운트 후 workData localStorage가 또 바뀌면 안 된다')
-    assert.equal(hasDirty(ownerKey), false, '언마운트 후 추가 scheduleCloudSync가 있으면 dirty가 다시 선다')
+    assert.equal(hasDirty(ownerKey), false, '언마운트 후 추가 저장이 있으면 dirty가 다시 선다')
   } finally {
     unsubscribe?.()
     unsubscribe2?.()
@@ -870,7 +867,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
       await unmountTracked(root)
       container.remove()
     }
-    await flushCloudSync()
   }
 })
 
@@ -999,7 +995,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
     assert.equal(totalSupabaseCalls(), supabaseAfterRetry, '언마운트 후 Supabase 호출이 늘면 안 된다')
     assert.deepEqual(committedRecord(ownerKey, dateKey), storeAfterRetry, '언마운트 후 Store가 또 바뀌면 안 된다')
     assert.equal(localStorage.getItem(storageKeyFor('workData', ownerKey)), workDataAfterRetry, '언마운트 후 workData localStorage가 또 바뀌면 안 된다')
-    assert.equal(hasDirty(ownerKey), false, '언마운트 후 추가 scheduleCloudSync가 있으면 dirty가 다시 선다')
+    assert.equal(hasDirty(ownerKey), false, '언마운트 후 추가 저장이 있으면 dirty가 다시 선다')
   } finally {
     unsubscribe?.()
     unsubscribe2?.()
@@ -1011,7 +1007,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
       await unmountTracked(root)
       container.remove()
     }
-    await flushCloudSync()
   }
 })
 
@@ -1091,7 +1086,6 @@ test('재감사 11차 — confirm으로 이동을 허용한 뒤 재진입해도 
     clearUnsafeRegistrationFailure(ownerKey, dateKey)
     await unmountTracked(root)
     container.remove()
-    await flushCloudSync()
   }
 })
 
@@ -1185,6 +1179,5 @@ test('재감사 12차 — persistent quota 실패 후 마운트 중 retry 성공
       await unmountTracked(root)
       container.remove()
     }
-    await flushCloudSync()
   }
 })

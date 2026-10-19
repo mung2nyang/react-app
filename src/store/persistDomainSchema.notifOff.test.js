@@ -3,11 +3,7 @@
 import '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { mock, test } from 'node:test'
-
-mock.module('../lib/syncQueue.js', {
-  namedExports: { scheduleCloudSync: () => {}, flushCloudSync: async () => {} },
-})
+import { test } from 'node:test'
 
 const { storageKeyFor } = await import('./persist.js')
 const { readPersistDomain } = await import('./persistDomainRead.js')

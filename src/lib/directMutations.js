@@ -77,13 +77,12 @@ export async function findOverlappingDriverLinkOnSupabase(vehicleId, start, end,
  *
  * 조회 자체가 실패하면(네트워크 등) "없다"로 삼키고 insert로
  * 넘어가면 안 된다 — 실제로는 있는데 조회만 실패한 경우 중복 insert로 이어질 수
- * 있다. 이제는 그대로 던져 retryable 실패로 처리되게 한다(outboxFlush.js가 이걸
- * outbox에 남겨 다음 flush가 다시 조회부터 시도하게 한다).
+ * 있다. 이제는 그대로 던져 실패로 알린다(다시 저장하면 조회부터 다시 시도한다).
  *
  * 알려진 한계(DB 변경 필요): 이 자연키(vehicle_id
  * + assignment_start + invite_code) 조회는 "응답 유실"과 "그 사이 invite_code가
  * 23505 충돌로 재발급됨"이 동시에 일어나면 같은 시도를 못 알아본다 — 재발급된
- * 코드는 이 outbox op의 payload에 없기 때문이다. 완전히 닫으려면 driver_links에
+ * 코드는 처음 시도한 값에 없기 때문이다. 완전히 닫으려면 driver_links에
  * op.id 기반 불변 idempotency_key 컬럼 + 고유 제약(또는 그걸 쓰는 원자적 upsert
  * RPC)이 필요하다 — supabase/migrations/0001_driver_links_idempotency_key.sql 참고.
  * @param {number|string} vehicleId

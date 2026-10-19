@@ -17,7 +17,6 @@ import {
 } from './driverLinkRpc.js'
 import { carFromAssignedSummary } from './hydrateEmployedDriverCar.js'
 import { mergeClientsFromRows, mergeDriversFromRows, mergeExpenseKind } from './hydrateMerge.js'
-import { reconcileClients } from './outboxReconcile.js'
 import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
 import { supabase } from '../supabaseClient.js'
 import { fetchAllRows } from './fetchAllRows.js'
@@ -164,8 +163,7 @@ export async function buildEmployedDriverSnapshot({
     : []
 
   /** @type {Array<import('../domain/clientTypes.js').ClientLike>} */
-  let nextClients = []
-  nextClients = reconcileClients(ownerKey, mergeClientsFromRows(nextClients, clientRows))
+  const nextClients = mergeClientsFromRows([], clientRows)
 
   return {
     workData: workLogs.main || {},

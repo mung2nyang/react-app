@@ -88,8 +88,7 @@ export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
   // linkRows가 배열이면(빈 배열 포함) 서버가 정본이다.
   // merged가 비었다는 건 "서버에 활성 기사 연동이 없다"는 뜻 — 로컬 스냅샷으로
   // 되돌리면 방금 삭제한 기사가 hydrate ~0.6초 뒤 부활한다. localDrivers fallback은
-  // linkRows가 배열이 아닐 때(위 early return)만. 서버에 아직 없는 pending 생성 건은
-  // reconcileDrivers가 outbox 기준으로 되찾는다.
+  // linkRows가 배열이 아닐 때(위 early return)만.
   return merged
 }
 

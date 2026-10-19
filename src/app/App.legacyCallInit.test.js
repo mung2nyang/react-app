@@ -6,14 +6,6 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import { mock, test } from 'node:test'
 import assert from 'node:assert/strict'
 
-let scheduleCloudSyncCallCount = 0
-mock.module('../lib/syncQueue.js', {
-  namedExports: {
-    scheduleCloudSync: () => { scheduleCloudSyncCallCount += 1 },
-    flushCloudSync: async () => {},
-  },
-})
-
 import '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
 import { wait } from '../testSupport/fakeSupabaseClient.js'
@@ -66,7 +58,6 @@ test('id 없는 레거시 콜은 initialize 후 첫 mount에서 ID를 한 번만
   })
   let notifyCount = 0
   const unsub = subscribe(() => { notifyCount += 1 })
-  const scheduleBefore = scheduleCloudSyncCallCount
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
@@ -87,12 +78,10 @@ test('id 없는 레거시 콜은 initialize 후 첫 mount에서 ID를 한 번만
     assert.equal(readWorkData(ownerKey)[dateKey]?.callDetails?.[0]?.id, firstId)
     assert.equal(workWrites, 1)
     assert.equal(notifyCount, 1)
-    assert.equal(scheduleCloudSyncCallCount, scheduleBefore + 1)
 
     await act(async () => { root.unmount() })
     const writesAfterUnmount = workWrites
     const notifyAfterUnmount = notifyCount
-    const scheduleAfterUnmount = scheduleCloudSyncCallCount
     const root2 = createRoot(container)
     await act(async () => {
       root2.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
@@ -106,7 +95,6 @@ test('id 없는 레거시 콜은 initialize 후 첫 mount에서 ID를 한 번만
     assert.equal(readWorkData(ownerKey)[dateKey]?.callDetails?.[0]?.id, firstId)
     assert.equal(workWrites, writesAfterUnmount)
     assert.equal(notifyCount, notifyAfterUnmount)
-    assert.equal(scheduleCloudSyncCallCount, scheduleAfterUnmount)
     await act(async () => { root2.unmount() })
   } finally {
     unsub()

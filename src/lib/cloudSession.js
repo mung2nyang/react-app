@@ -1,5 +1,5 @@
 // @ts-check
-// 로그인 세션·세대(epoch) 상태와 그 판정 함수. hydrate·outboxFlush·directMutationActions가 getSessionEpoch()로 "시작 때와 같은 세션인지" 재확인한다.
+// 로그인 세션·세대(epoch) 상태와 그 판정 함수. hydrate·directMutationActions가 getSessionEpoch()로 "시작 때와 같은 세션인지" 재확인한다.
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
 /** @typedef {import('./outboxTypes.js').AppSession} AppSession */
 import { getState, setHydration } from '../store/app-store.js'
@@ -19,10 +19,8 @@ function hydrateSingleFlightKey(ownerKey) {
 let cloudUserId = null
 /** @type {string|null} */
 let cloudOwnerKey = null
-// 로그인/로그아웃/재로그인/새 hydrate 시작마다 올라가는 세대(epoch) 카운터. hydrate뿐
-// 아니라 outbox flush도 이 같은 카운터로 "내가 캡처했던 세션이 지금도 최신인가"를
-// 재검증한다 — 두 기능이 별도 카운터를 쓰면 한쪽만 무효화되는 사고가 날 수 있어서
-// 하나로 통일했다.
+// 로그인/로그아웃/재로그인/새 hydrate 시작마다 올라가는 세대(epoch) 카운터. hydrate와
+// 직접 저장이 이 카운터로 "내가 캡처했던 세션이 지금도 최신인가"를 재검증한다.
 let sessionEpoch = 0
 
 /** @returns {SessionCapture} */
@@ -61,7 +59,7 @@ export function isSessionStillCurrent(captured) {
 }
 
 /**
- * 다단계 원격 작업 중 매 await 직후 부른다. 세션이 바뀌었으면 StaleSessionError를 던져 남은 단계를 멈추고, outboxFlush·syncQueue는 이 에러면 op를 그대로 보존한다.
+ * 다단계 원격 작업 중 매 await 직후 부른다. 세션이 바뀌었으면 StaleSessionError를 던져 남은 단계를 멈춘다.
  * @param {SessionCapture} captured
  */
 export function assertSessionStillCurrent(captured) {
@@ -92,7 +90,7 @@ export function endCloudSession() {
 }
 
 /**
- * queueSync/scheduleCloudSync/outboxFlush 큐를 거치지 않고 UI에서 직접 부르는 Supabase
+ * UI에서 직접 부르는 Supabase
  * mutation이 공통으로 거치는 관문. hydrate가 ready가 아니면(아직 안 됐거나 실패했으면)
  * 던진다.
  */

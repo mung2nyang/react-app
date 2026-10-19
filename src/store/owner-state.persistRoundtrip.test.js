@@ -1,15 +1,7 @@
 import { resetStubSupabaseCallCounts, stubSupabaseCallCounts } from '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { mock, test } from 'node:test'
-
-let scheduleCloudSyncCallCount = 0
-mock.module('../lib/syncQueue.js', {
-  namedExports: {
-    scheduleCloudSync: () => { scheduleCloudSyncCallCount += 1 },
-    flushCloudSync: async () => {},
-  },
-})
+import { test } from 'node:test'
 
 const { storageKeyFor, storageKeyForLog } = await import('./persist.js')
 const { getState, subscribe, commitBatch } = await import('./app-store.js')
@@ -19,7 +11,6 @@ const { commitCars, commitClients, commitInvoices } = await import('./commitHelp
 const { saveExpenses, upsertExpense, emptyExpenseDraft } = await import('../lib/expenses.js')
 const { persistInvoiceRecord } = await import('../domain/invoices.js')
 const { buildTaxInvoiceEntry } = await import('../domain/financeTaxInvoiceEntries.js')
-const { getPendingOps, outboxStorageKey } = await import('../lib/mutationOutbox.js')
 const { pendingDayWriteCount, hasUnsafePendingWrites } = await import('../lib/pendingWorkDataWrites.js')
 const { readPersistDomain } = await import('./persistDomainRead.js')
 const { readLogWorkData } = await import('./persist.js')
@@ -36,12 +27,9 @@ function layers(owner) {
     invoicesRaw: localStorage.getItem(storageKeyFor('invoices', owner)),
     workRaw: localStorage.getItem(storageKeyFor('workData', owner)),
     journal: localStorage.getItem(`reactPracticeDirtyJournal:${owner}`),
-    outbox: localStorage.getItem(outboxStorageKey(owner)),
-    pendingOps: JSON.stringify(getPendingOps(owner)),
     pendingCount: pendingDayWriteCount(),
     unsafe: hasUnsafePendingWrites(),
     supabase: methodCounts(),
-    schedule: scheduleCloudSyncCallCount,
   }
 }
 
@@ -62,7 +50,6 @@ test('saveProfile 결과는 persist 왕복 후 initialize에서 복원된다', a
   const before = layers(owner)
   wipeOwnerMemory(owner)
   assert.equal(getState().profile[owner]?.bizRepresentative, undefined)
-  scheduleCloudSyncCallCount = before.schedule
   resetStubSupabaseCallCounts()
   let notifyCount = 0
   const unsub = subscribe(() => { notifyCount += 1 })
@@ -76,12 +63,9 @@ test('saveProfile 결과는 persist 왕복 후 initialize에서 복원된다', a
   const after = layers(owner)
   assert.equal(after.profileRaw, before.profileRaw)
   assert.equal(after.journal, before.journal)
-  assert.equal(after.outbox, before.outbox)
-  assert.equal(after.pendingOps, before.pendingOps)
   assert.equal(after.pendingCount, before.pendingCount)
   assert.equal(after.unsafe, before.unsafe)
   assert.deepEqual(after.supabase, before.supabase)
-  assert.equal(after.schedule, before.schedule)
 })
 
 test('계산서 draft/issued는 persist 왕복 후 supabaseId가 남는다', () => {
@@ -112,7 +96,6 @@ test('계산서 draft/issued는 persist 왕복 후 supabaseId가 남는다', () 
   assert.equal(readPersistDomain('cars', owner).kind, 'value')
   const before = layers(owner)
   wipeOwnerMemory(owner)
-  scheduleCloudSyncCallCount = before.schedule
   resetStubSupabaseCallCounts()
   let notifyCount = 0
   const unsub = subscribe(() => { notifyCount += 1 })
@@ -130,11 +113,8 @@ test('계산서 draft/issued는 persist 왕복 후 supabaseId가 남는다', () 
   assert.equal(after.carsRaw, before.carsRaw)
   assert.equal(after.invoicesRaw, before.invoicesRaw)
   assert.equal(after.journal, before.journal)
-  assert.equal(after.outbox, before.outbox)
-  assert.equal(after.pendingOps, before.pendingOps)
   assert.equal(after.unsafe, before.unsafe)
   assert.deepEqual(after.supabase, before.supabase)
-  assert.equal(after.schedule, before.schedule)
 })
 
 test('레거시 off·dailyDistance·insuranceFee·바닐라 비용은 initialize 왕복 후 보존된다', () => {
@@ -155,7 +135,6 @@ test('레거시 off·dailyDistance·insuranceFee·바닐라 비용은 initialize
   assert.equal(readLogWorkData(owner, 'main').kind, 'value')
   const before = layers(owner)
   wipeOwnerMemory(owner)
-  scheduleCloudSyncCallCount = before.schedule
   resetStubSupabaseCallCounts()
   let notifyCount = 0
   const unsub = subscribe(() => { notifyCount += 1 })
@@ -172,12 +151,9 @@ test('레거시 off·dailyDistance·insuranceFee·바닐라 비용은 initialize
   const after = layers(owner)
   assert.equal(after.workRaw, before.workRaw)
   assert.equal(after.journal, before.journal)
-  assert.equal(after.outbox, before.outbox)
-  assert.equal(after.pendingOps, before.pendingOps)
   assert.equal(after.pendingCount, before.pendingCount)
   assert.equal(after.unsafe, before.unsafe)
   assert.deepEqual(after.supabase, before.supabase)
-  assert.equal(after.schedule, before.schedule)
 })
 
 test('로드맵 25: 비회원 기사 차량 지출(vehicleNumber)이 있어도 다시 켜면 차량·거래처·지출이 그대로 불러와진다', async () => {

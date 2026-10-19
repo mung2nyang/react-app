@@ -1,16 +1,8 @@
-// 번호 변경의 scheduleCloudSync 횟수를 hasDirty 간접 신호가 아니라 mock.module로 직접 센다.
+// 차량 번호 변경·삭제의 저장 결과와 Supabase 호출 횟수를 직접 센다.
 import { resetStubSupabaseCallCounts, stubSupabaseCallCounts, stubSupabaseMethodImpls } from '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
-
-let scheduleCloudSyncCallCount = 0
-mock.module('./syncQueue.js', {
-  namedExports: {
-    scheduleCloudSync: () => { scheduleCloudSyncCallCount += 1 },
-    flushCloudSync: async () => {},
-  },
-})
 
 const { commitCars, commitLogWorkData } = await import('../store/commitHelpers.js')
 const { getState, subscribe, setHydration } = await import('../store/app-store.js')
@@ -26,7 +18,7 @@ function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)
 }
 
-test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패는 0회다', async () => {
+test('번호 변경 성공은 저장되고 persist 실패는 저장 전 값이다', async () => {
   resetStubSupabaseCallCounts()
   const ownerOk = 'veh-sync-ok'
   const ownerFail = 'veh-sync-fail'
@@ -34,7 +26,6 @@ test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패
     id: 'car-ok', type: 'sub', number: '81가8101', driverName: '성', driverPhone: '010-8101-8101',
   }], { syncToCloud: false })
   commitLogWorkData(ownerOk, '81가8101', { '2026-08-23': { isOff: false, fixedCount: 1 } })
-  const beforeOk = scheduleCloudSyncCallCount
   const apiBefore = totalStubCalls()
   let notifyCount = 0
   const unsubOk = subscribe(() => { notifyCount += 1 })
@@ -47,7 +38,6 @@ test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패
   unsubOk()
   assert.equal(ok.failed, false)
   assert.equal(notifyCount, 1)
-  assert.equal(scheduleCloudSyncCallCount, beforeOk + 1)
   assert.equal(totalStubCalls(), apiBefore)
 
   commitCars(ownerFail, [{
@@ -64,7 +54,6 @@ test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패
     if (key === storageKeyForLog(ownerFail, '82나8202')) throw new Error('quota exceeded (simulated)')
     return original.call(localStorage, key, value)
   })
-  const beforeFail = scheduleCloudSyncCallCount
   let failNotify = 0
   const unsubFail = subscribe(() => { failNotify += 1 })
   const originalError = console.error
@@ -85,7 +74,6 @@ test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패
     })
     assert.equal(failed.failed, true)
     assert.equal(failNotify, 0)
-    assert.equal(scheduleCloudSyncCallCount, beforeFail)
     assert.equal(getPendingDayWrite(oldPending, '2026-08-23')?.fixedCount, 4)
     assert.equal(localStorage.getItem(durableKey(oldPending)) != null || getPendingDayWrite(oldPending, '2026-08-23') != null, true)
     const matched = errSpy.mock.calls.filter((call) => (
@@ -102,18 +90,16 @@ test('번호 변경 성공은 scheduleCloudSync를 1회 부르고 persist 실패
   }
 })
 
-test('로컬 차량 삭제는 scheduleCloudSync 1회·Supabase 0회다', async () => {
+test('로컬 차량 삭제는 Supabase 0회다', async () => {
   resetStubSupabaseCallCounts()
   endCloudSession()
   const owner = 'veh-sync-local-del'
   commitCars(owner, [{ id: 'car-local', type: 'sub', number: '70가7000' }], { syncToCloud: false })
-  const before = scheduleCloudSyncCallCount
   const apiBefore = { ...stubSupabaseCallCounts }
   const result = await requestVehicleDeletion({
     ownerKey: owner, userId: null, cars: getState().cars[owner], vehicleId: 'car-local',
   })
   assert.equal(result.failed, false)
-  assert.equal(scheduleCloudSyncCallCount, before + 1)
   assert.equal(stubSupabaseCallCounts.delete || 0, apiBefore.delete || 0)
   assert.equal(stubSupabaseCallCounts.select || 0, apiBefore.select || 0)
   assert.equal(stubSupabaseCallCounts.upsert || 0, apiBefore.upsert || 0)
@@ -121,19 +107,17 @@ test('로컬 차량 삭제는 scheduleCloudSync 1회·Supabase 0회다', async (
   assert.equal(stubSupabaseCallCounts.update || 0, apiBefore.update || 0)
 })
 
-test('Supabase 차량 삭제 성공은 scheduleCloudSync 0회·delete 1회다(37-B: vehicles 한 줄만)', async () => {
+test('Supabase 차량 삭제 성공은 delete 1회다(37-B: vehicles 한 줄만)', async () => {
   resetStubSupabaseCallCounts()
   beginSessionEpoch('user-sync-del', 'veh-sync-remote-del')
   setHydration({ status: 'ready', userId: 'user-sync-del', ownerKey: 'veh-sync-remote-del' })
   const owner = 'veh-sync-remote-del'
   commitCars(owner, [{ id: 'car-rem', number: '71가7100', supabaseId: 7100 }], { syncToCloud: false })
-  const before = scheduleCloudSyncCallCount
   const result = await requestVehicleDeletion({
     ownerKey: owner, userId: 'user-sync-del', cars: getState().cars[owner], vehicleId: 'car-rem',
   })
   assert.equal(result.failed, false)
   assert.match(String(result.toast), /삭제했습니다/)
-  assert.equal(scheduleCloudSyncCallCount, before)
   assert.equal(stubSupabaseCallCounts.delete, 1)
   assert.equal(stubSupabaseCallCounts.select || 0, 0)
   assert.equal(stubSupabaseCallCounts.upsert || 0, 0)
@@ -141,14 +125,13 @@ test('Supabase 차량 삭제 성공은 scheduleCloudSync 0회·delete 1회다(37
   assert.equal(stubSupabaseCallCounts.update || 0, 0)
 })
 
-test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 scheduleCloudSync 0회, vehicles delete 1회만 나간다', async () => {
+test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 vehicles delete 1회만 나간다', async () => {
   resetStubSupabaseCallCounts()
   stubSupabaseMethodImpls.delete = async () => { throw new Error('network down') }
   beginSessionEpoch('user-sync-retry', 'veh-sync-retry-del')
   setHydration({ status: 'ready', userId: 'user-sync-retry', ownerKey: 'veh-sync-retry-del' })
   const owner = 'veh-sync-retry-del'
   commitCars(owner, [{ id: 'car-r', number: '72가7200', supabaseId: 7200 }], { syncToCloud: false })
-  const before = scheduleCloudSyncCallCount
   const errSpy = mock.method(console, 'error', /**
    * @param {string|Error} [_first]
    * @param {string|Error} [_second]
@@ -161,7 +144,6 @@ test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 sch
     assert.equal(result.failed, true)
     assert.equal(String(result.toast), '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
     assert.deepEqual(getState().cars[owner].map((c) => c.id), ['car-r'], 'Store는 저장 전 값이어야 한다')
-    assert.equal(scheduleCloudSyncCallCount, before)
     assert.equal(stubSupabaseCallCounts.delete, 1)
     assert.equal(stubSupabaseCallCounts.select || 0, 0)
     assert.equal(stubSupabaseCallCounts.upsert || 0, 0)
@@ -174,7 +156,7 @@ test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 sch
   }
 })
 
-test('persist/remove 실패 삭제는 scheduleCloudSync 0회·Supabase 0회다', async () => {
+test('persist/remove 실패 삭제는 Supabase 0회다', async () => {
   resetStubSupabaseCallCounts()
   endCloudSession()
   const owner = 'veh-sync-persist-fail'
@@ -185,7 +167,6 @@ test('persist/remove 실패 삭제는 scheduleCloudSync 0회·Supabase 0회다',
     if (key === storageKeyFor('cars', owner)) throw new Error('quota exceeded (simulated)')
     return originalSet.call(localStorage, key, value)
   })
-  const before = scheduleCloudSyncCallCount
   const originalError = console.error
   const errSpy = mock.method(console, 'error', /**
    * @param {string|Error} first
@@ -200,7 +181,6 @@ test('persist/remove 실패 삭제는 scheduleCloudSync 0회·Supabase 0회다',
       ownerKey: owner, userId: null, cars: getState().cars[owner], vehicleId: 'car-p',
     })
     assert.equal(result.failed, true)
-    assert.equal(scheduleCloudSyncCallCount, before)
     assert.equal(stubSupabaseCallCounts.delete || 0, 0)
     assert.equal(stubSupabaseCallCounts.select || 0, 0)
     assert.equal(stubSupabaseCallCounts.upsert || 0, 0)
@@ -217,7 +197,6 @@ test('persist/remove 실패 삭제는 scheduleCloudSync 0회·Supabase 0회다',
     if (key === storageKeyForLog(owner, '73가7300')) throw new Error('quota exceeded (simulated)')
     return originalRemove.call(localStorage, key)
   })
-  const beforeRemove = scheduleCloudSyncCallCount
   const errSpy2 = mock.method(console, 'error', /**
    * @param {string|Error} first
    * @param {string|Error} [second]
@@ -231,7 +210,6 @@ test('persist/remove 실패 삭제는 scheduleCloudSync 0회·Supabase 0회다',
       ownerKey: owner, userId: null, cars: getState().cars[owner], vehicleId: 'car-p',
     })
     assert.equal(removed.failed, true)
-    assert.equal(scheduleCloudSyncCallCount, beforeRemove)
     assert.equal(stubSupabaseCallCounts.delete || 0, 0)
     assert.equal(stubSupabaseCallCounts.select || 0, 0)
     assert.equal(stubSupabaseCallCounts.upsert || 0, 0)

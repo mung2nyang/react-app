@@ -1,4 +1,4 @@
-// Step 0-4 감사 보완 4차: hydrate/outbox/syncQueue 테스트가 공유하는 가짜 supabase
+// Step 0-4 감사 보완 4차: hydrate 등 테스트가 공유하는 가짜 supabase
 // 클라이언트. mock.module()로 실제 supabaseClient.js를 바꿔치기하는 각 테스트 파일이
 // 이 팩토리로 handlers/callCounts를 매번 새로 만든다(파일 간 상태 공유 없음 — 테스트
 // 독립성).

@@ -12,13 +12,6 @@ const { getState } = await import('../store/app-store.js')
 const { markDirty, getDirtyDomains } = await import('./dirtyJournal.js')
 const { readJsonKey, writeJsonKey } = await import('../store/persist.js')
 const { commitDrivers } = await import('../store/commitHelpers.js')
-const { buildTombstoneOp, buildMutationOp, planOutboxAppend } = await import('./mutationOutbox.js')
-const { writeAllOrNothing } = await import('../store/atomicPersist.js')
-
-function seedOutboxOp(ownerKey, op) {
-  const { key, value } = planOutboxAppend(ownerKey, op)
-  writeAllOrNothing([{ key, value }])
-}
 
 describe('hydrateFromSupabase — 조회 실패는 전부 failed로, 부분 반영 없음', () => {
   test('profiles 조회가 실패하면 status가 failed로 남고, 로컬/store는 그대로다', async () => {
@@ -267,41 +260,29 @@ describe('hydrate 종료 시 hydrating에 남지 않는다', () => {
   })
 })
 
-describe('hydrate — outbox tombstone/pending 재적용 (사용자 지시 4번)', () => {
-  test('활성 tombstone이 있는 차량은 서버 응답에 있어도 hydrate 결과에서 제외된다', async () => {
+describe('hydrate — 옛 보낼 편지함 기록은 보내지 않고 지운다 (로드맵 88)', () => {
+  test('옛 편지함 키가 있어도 기사·차량은 서버 병합 결과 그대로, 키는 지워진다', async () => {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
-    const ownerKey = 'audit4-hydrate-tombstone-car'
-    const userId = 'user-hydrate-tombstone-car'
-    handlers.vehicles = { select: () => ({ data: [{ id: 900, type: 'main', number: '77가7777', raw: {} }], error: null }) }
-
-    seedOutboxOp(ownerKey, buildTombstoneOp({ ownerKey, userId, resourceType: 'vehicle', resourceId: 900, operation: 'delete', sessionEpoch: 0 }))
-
-    await hydrateFromSupabase(userId, ownerKey)
-    assert.equal(getState().hydration.status, 'ready')
-    const cars = getState().cars[ownerKey] || []
-    assert.equal(cars.some((car) => car.supabaseId === 900), false, '삭제 대기 중인 차량이 hydrate로 부활하면 안 된다')
-    endCloudSession()
-  })
-
-  test('대기 중인 기사 상태변경은 서버 값이 아니라 로컬 pending 값으로 유지된다', async () => {
-    resetHandlers()
-    Object.assign(handlers, emptyOkHandlers())
-    const ownerKey = 'audit4-hydrate-pending-driver'
-    const userId = 'user-hydrate-pending-driver'
+    const ownerKey = 'roadmap88-legacy-outbox'
+    const userId = 'user-roadmap88-legacy-outbox'
+    const outboxKey = `reactPracticeMutationOutbox:${ownerKey}`
     commitDrivers(ownerKey, [{ id: 'local-driver-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '기사' }], { syncToCloud: false })
+    handlers.vehicles = { select: () => ({ data: [{ id: 900, type: 'main', number: '77가7777', raw: {} }], error: null }) }
     handlers.driver_links = { select: () => ({ data: [{ id: 700, invite_code: '123456', status: 'pending', vehicle_id: null, assignment_start: '2026-08-01', assignment_end: null }], error: null }) }
-
-    seedOutboxOp(ownerKey, buildMutationOp({
-      ownerKey, userId, resourceType: 'driverLink', resourceId: 'local-driver-1', operation: 'updateStatus',
-      payload: { supabaseId: 700, status: 'linked' }, sessionEpoch: 0,
-    }))
+    localStorage.setItem(outboxKey, JSON.stringify([
+      { id: 'op-1', ownerKey, userId, resourceType: 'vehicle', resourceId: '900', kind: 'tombstone', operation: 'delete', payload: {}, sessionEpoch: 0, createdAt: '2026-10-01T00:00:00.000Z' },
+      { id: 'op-2', ownerKey, userId, resourceType: 'driverLink', resourceId: 'local-driver-1', kind: 'mutation', operation: 'updateStatus', payload: { supabaseId: 700, status: 'linked' }, sessionEpoch: 0, createdAt: '2026-10-01T00:00:00.000Z' },
+    ]))
 
     await hydrateFromSupabase(userId, ownerKey)
     assert.equal(getState().hydration.status, 'ready')
+    assert.equal(localStorage.getItem(outboxKey), null, '옛 편지함 키는 지워진다')
+    assert.equal((getState().cars[ownerKey] || []).some((car) => car.supabaseId === 900), true, '서버 차량 그대로')
     const drivers = getState().drivers[ownerKey] || []
-    const driver = drivers.find((item) => item.id === 'local-driver-1')
-    assert.equal(driver?.status, 'linked', '서버가 아직 pending을 반환해도 로컬의 pending mutation(linked 의도)이 유지돼야 한다')
+    assert.equal(drivers.length, 1, '기사 목록이 비지 않는다')
+    assert.equal(drivers[0]?.status, 'pending', '옛 편지함 값이 아니라 서버 값')
+    assert.equal(countOf('driver_links', 'update'), 0, '옛 편지함을 서버로 보내지 않는다')
     endCloudSession()
   })
 })

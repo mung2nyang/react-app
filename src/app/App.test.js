@@ -41,14 +41,8 @@ mock.module('../supabaseClient.js', {
 resetHandlers()
 Object.assign(handlers, emptyOkHandlers())
 handlers.profiles.select = () => ({ data: { id: 'user-boot-nav', name: '테스트 사용자', settings: {} }, error: null })
-// 재감사 2차(FAIL 지적 5번) — 이 파일의 여러 테스트가 commitClients/commitCars로
-// supabaseId 없는 항목을 store에 넣고, 그 뒤 다른 편집(예: 일지 입력)이 debounce된
-// scheduleCloudSync를 예약하면 syncQueue.js의 syncAll이 "관계없는 도메인까지 전부"
-// 동기화한다(dirty 여부와 무관 — 도메인별로 안 나뉜다). emptyOkHandlers()는
-// clients/vehicles의 insert에 기본 핸들러가 없어 `{data:null}`이 되고, syncClients/
-// syncVehicles가 `data.id`를 읽다 TypeError로 죽어서 "클라우드 동기화 실패" 콘솔
-// 에러가 매번 새어 나왔다 — 테스트 자체는 그 값을 안 쓰지만 로그가 지저분했다.
-// 실제 있을 법한 응답(가짜 id)을 기본값으로 채워서 이 배경 실패를 원천 차단한다.
+// 재감사 2차(FAIL 지적 5번) — emptyOkHandlers()는 clients/vehicles의 insert에 기본
+// 핸들러가 없어 `{data:null}`이 된다. 저장 경로가 `data.id`를 읽다 죽지 않게 기본값을 준다.
 handlers.clients.insert = () => ({ data: { id: `fake-client-${Math.random().toString(36).slice(2, 8)}` }, error: null })
 handlers.vehicles.insert = () => ({ data: { id: `fake-vehicle-${Math.random().toString(36).slice(2, 8)}` }, error: null })
 handlers.daily_logs = {
@@ -79,7 +73,6 @@ const {
 } = await import('../lib/pendingWorkDataWrites.js')
 const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../lib/durableWriteGuard.js')
 const { hasDirty } = await import('../lib/dirtyJournal.js')
-const { flushCloudSync } = await import('../lib/syncQueue.js')
 test.afterEach(async () => {
   const leftover = [...liveRoots]
   liveRoots.clear()
@@ -91,10 +84,6 @@ test.afterEach(async () => {
   // 초기화하지 않는다).
   handlers.vehicles.select = () => ({ data: [], error: null })
   handlers.clients.select = () => ({ data: [], error: null })
-  // 예약된 600ms 클라우드 동기화가 다음 테스트의 Supabase 카운트를 오염시키지 않게
-  // 디바운스를 즉시 비운다. App이 이미 실제 syncQueue를 붙잡은 뒤에는 mock.module이
-  // 횟수를 못 센다 — 횟수 spy는 pendingWorkDataWritesSyncSpy.test.js가 맡는다.
-  await flushCloudSync()
 })
 const { getState, subscribe } = await import('../store/app-store.js')
 const { readJsonKey, storageKeyFor } = await import('../store/persist.js')
@@ -931,7 +920,6 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     if (prevRpc) handlers.rpc = prevRpc
     else delete handlers.rpc
     if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
-    await flushCloudSync()
   }
 })
 
@@ -1006,7 +994,6 @@ test('로드맵 35 — 로그인 일지 서버 저장 실패 중 뒤로가기: �
     if (prevRpc) handlers.rpc = prevRpc
     else delete handlers.rpc
     if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
-    await flushCloudSync()
   }
 })
 
@@ -1066,7 +1053,6 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 저장은 성공�
     dailyLogs.restore()
     handlers.daily_logs = prevDailyLogs
     if (liveRoots.has(root)) { await unmountTracked(root); container.remove() }
-    await flushCloudSync()
   }
 })
 

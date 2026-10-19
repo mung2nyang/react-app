@@ -55,7 +55,6 @@ const { default: App } = await import('./App.jsx')
 const { commitCars, commitClients, commitLogWorkData } = await import('../store/commitHelpers.js')
 const { getState, setHydration, subscribe } = await import('../store/app-store.js')
 const { readJsonKey, storageKeyFor } = await import('../store/persist.js')
-const { flushCloudSync } = await import('../lib/syncQueue.js')
 const { parseAppLogPath, withFromLogState } = await import('./fromLogNavigation.js')
 const { pendingOwnerForLog } = await import('../lib/pendingLogOwner.js')
 const { registerPendingDayWrite, getPendingDayWrite } = await import('../lib/pendingWorkDataWrites.js')
@@ -63,7 +62,6 @@ const { initializeOwnerFromPersist } = await import('../store/owner-state.js')
 const { default: ClientListPage } = await import('../components/clients/ClientListPage.jsx')
 const { default: CarListPage } = await import('../components/cars/CarListPage.jsx')
 const { beginSessionEpoch, getCloudUserId, endCloudSession } = await import('../lib/cloudSession.js')
-const { outboxStorageKey } = await import('../lib/mutationOutbox.js')
 const { resetOwnerSaveQueueForTests } = await import('../lib/ownerSaveQueue.js')
 
 function restoreDefaultHandlers() {
@@ -82,10 +80,6 @@ test.afterEach(async () => {
   for (const leftoverRoot of leftover) {
     await act(async () => { leftoverRoot.unmount() })
   }
-  await Promise.race([
-    flushCloudSync(),
-    wait(2000),
-  ])
   resetOwnerSaveQueueForTests()
   // 슬라이스 E: 이 파일의 여러 테스트가 렌더 전 commitCars/commitClients로 시드한다.
   // 로그인 세션이 새면 그 시드가 memory-only가 돼 LS에 안 남고, 다음 hydrate가
@@ -359,7 +353,6 @@ test('UI 거래처 추가 후 Store에 supabaseId가 붙고, LS에는 안 남으
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '신거래') })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '신거래'))
-  await act(async () => { await flushCloudSync() })
   // 슬라이스 E: 로그인 저장은 서버 직접 1회 → Store(메모리)만. supabaseId도 Store에 붙는다.
   await waitUntil(() => getState().clients[ownerKey].find((item) => item.companyName === '신거래')?.supabaseId === 'sb-ui-client')
   assert.equal(
@@ -372,7 +365,6 @@ test('UI 거래처 추가 후 Store에 supabaseId가 붙고, LS에는 안 남으
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '신거래수정') })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '신거래수정'))
-  await act(async () => { await flushCloudSync() })
   assert.equal(inserts.length, 1)
   await unmountTracked(root)
 })
@@ -410,7 +402,6 @@ test('저장이 겹쳐도(느린 insert 중 재편집) 서버 insert는 1회, �
   await act(async () => { setNativeInputValue(requireHtmlInput(container, '#clientCompanyName'), '최신상호') })
   await act(async () => { findButtonByText(container, '저장')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
   await waitUntil(() => getState().clients[ownerKey]?.some((item) => item.companyName === '최신상호'))
-  await act(async () => { await flushCloudSync() })
   assert.equal(inserts.length, 1)
   await unmountTracked(root)
 })
@@ -434,7 +425,6 @@ test('서버 응답이 에러면 로그인 거래처 추가는 Fail-Fast로 Stor
     await waitUntil(() => insertCount === 1)
     // Fail-Fast: Store에서 롤백되어 이 거래처가 남지 않는다(재시도/durable 큐 없음).
     await waitUntil(() => !(getState().clients[ownerKey] || []).some((item) => item.companyName === '유실거래처'))
-    await act(async () => { await flushCloudSync() })
     assert.equal(insertCount, 1, '재시도 큐가 없으므로 flush로도 다시 insert하지 않는다')
     assert.equal((getState().clients[ownerKey] || []).some((item) => item.companyName === '유실거래처'), false)
   } finally {
@@ -482,7 +472,6 @@ test('차량 insert 대기 중 번호를 바꿔도 서버 insert는 1회다', as
   await waitUntil(() => serverVehicles.length === 1)
   await act(async () => { release?.() })
   await waitUntil(() => getState().cars[ownerKey]?.some((item) => item.number === '41가4141'))
-  await act(async () => { await flushCloudSync() })
   assert.equal(serverVehicles.length, 1)
   assert.equal(getState().cars[ownerKey].find((item) => item.number === '41가4141')?.supabaseId, serverVehicles[0].id)
   } finally {
@@ -556,7 +545,7 @@ test('차량 관리 UI에서 한 대를 삭제해도 다른 차량과 일지는 
   assert.equal(getState().workLogs[ownerKey]['82라8282']['2026-08-24'].fixedCount, 6)
 })
 
-test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store/outbox/API가 불변이다', async () => {
+test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store/API가 불변이다', async () => {
   const ownerKey = 'user-boot-nav'
   mirrorServerFromStore(ownerKey)
   commitClients(ownerKey, [
@@ -567,7 +556,6 @@ test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store
   await waitUntil(() => getState().hydration.status === 'ready')
   const beforeStore = JSON.stringify(getState().clients[ownerKey])
   const beforeLs = localStorage.getItem(storageKeyFor('clients', ownerKey))
-  const beforeOutbox = localStorage.getItem(outboxStorageKey(ownerKey))
   const beforeJournal = localStorage.getItem(`reactPracticeDirtyJournal:${ownerKey}`)
   await act(async () => { setHydration({ status: 'failed', userId: 'user-boot-nav', ownerKey }) })
   await waitUntil(() => !!container.querySelector('.action-icon-btn.del'))
@@ -584,7 +572,6 @@ test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store
   assert.ok(container.querySelector('.modal-btn.confirm'), 'ConfirmModal이 닫히면 안 된다')
   assert.equal(JSON.stringify(getState().clients[ownerKey]), beforeStore)
   assert.equal(localStorage.getItem(storageKeyFor('clients', ownerKey)), beforeLs)
-  assert.equal(localStorage.getItem(outboxStorageKey(ownerKey)), beforeOutbox)
   assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${ownerKey}`), beforeJournal)
   assert.equal(notifyCount, 0)
   assert.equal(callCounts['clients.delete'] || 0, apiBefore)
@@ -592,7 +579,7 @@ test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store
   await unmountTracked(root)
 })
 
-test('hydration failed에서 차량 삭제 ConfirmModal이 유지되고 Store/outbox/API가 불변이다', async () => {
+test('hydration failed에서 차량 삭제 ConfirmModal이 유지되고 Store/API가 불변이다', async () => {
   const ownerKey = 'user-boot-nav'
   mirrorServerFromStore(ownerKey)
   commitCars(ownerKey, [
@@ -604,7 +591,6 @@ test('hydration failed에서 차량 삭제 ConfirmModal이 유지되고 Store/ou
   const beforeStore = JSON.stringify(getState().cars[ownerKey])
   const beforeLs = localStorage.getItem(storageKeyFor('cars', ownerKey))
   const beforeLogs = JSON.stringify(getState().workLogs[ownerKey] || {})
-  const beforeOutbox = localStorage.getItem(outboxStorageKey(ownerKey))
   await act(async () => { setHydration({ status: 'failed', userId: 'user-boot-nav', ownerKey }) })
   await waitUntil(() => !!container.querySelector('.action-icon-btn.del'))
   let notifyCount = 0
@@ -621,7 +607,6 @@ test('hydration failed에서 차량 삭제 ConfirmModal이 유지되고 Store/ou
   assert.equal(JSON.stringify(getState().cars[ownerKey]), beforeStore)
   assert.equal(localStorage.getItem(storageKeyFor('cars', ownerKey)), beforeLs)
   assert.equal(JSON.stringify(getState().workLogs[ownerKey] || {}), beforeLogs)
-  assert.equal(localStorage.getItem(outboxStorageKey(ownerKey)), beforeOutbox)
   assert.equal(notifyCount, 0)
   assert.equal(callCounts['vehicles.delete'] || 0, apiBefore)
   assert.equal((container.querySelector('.toast-message')?.textContent || '').includes('삭제했습니다'), false)
@@ -648,8 +633,6 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
     lsVB: localStorage.getItem(storageKeyFor('cars', ownerB)),
     jA: localStorage.getItem(`reactPracticeDirtyJournal:${ownerA}`),
     jB: localStorage.getItem(`reactPracticeDirtyJournal:${ownerB}`),
-    oA: localStorage.getItem(outboxStorageKey(ownerA)),
-    oB: localStorage.getItem(outboxStorageKey(ownerB)),
   }
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -710,8 +693,6 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
   assert.equal(localStorage.getItem(storageKeyFor('cars', ownerB)), snap.lsVB)
   assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${ownerA}`), snap.jA)
   assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${ownerB}`), snap.jB)
-  assert.equal(localStorage.getItem(outboxStorageKey(ownerA)), snap.oA)
-  assert.equal(localStorage.getItem(outboxStorageKey(ownerB)), snap.oB)
   endCloudSession()
 })
 

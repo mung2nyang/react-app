@@ -10,7 +10,7 @@ export class StaleSessionError extends Error {
   }
 }
 
-/** 재시도해도 결과가 같은 확정 validation 실패일 때 던진다(mutationOutbox.js/outboxFlush.js). */
+/** 재시도해도 결과가 같은 확정 validation 실패일 때 던진다. */
 export class PermanentFailureError extends Error {
   /** @param {string} message */
   constructor(message) {

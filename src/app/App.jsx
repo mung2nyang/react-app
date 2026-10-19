@@ -10,7 +10,7 @@ import { ensureProfileRow } from '../supabaseClient.js'
 import { endCloudSession } from '../lib/cloudSession.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
 import { ownerKeyFromSession } from './boot.js'
-import { AccountFlowBodyClass, PendingWriteRetryBridge, SyncFlushBridge } from './providers.jsx'
+import { AccountFlowBodyClass, PendingWriteRetryBridge } from './providers.jsx'
 import AuthRoute from './AuthRoute.jsx'
 import AppShell from './AppShell.jsx'
 import RequireSession from './RequireSession.jsx'
@@ -59,7 +59,6 @@ export default function App() {
 
   return (
     <>
-      <SyncFlushBridge />
       <PendingWriteRetryBridge />
       <AccountFlowBodyClass active={inAccountFlow} />
 

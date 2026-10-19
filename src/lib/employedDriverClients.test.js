@@ -12,7 +12,6 @@ const { upsertClientFromList } = await import('./syncVehiclesClients.js')
 const { requestClientSave } = await import('./clientMutations.js')
 const { buildEmployedDriverSnapshot } = await import('./hydrateEmployedDriver.js')
 const { mergeClientsFromRows } = await import('./hydrateMergeClients.js')
-const { reconcileClients } = await import('./outboxReconcile.js')
 const { beginSessionEpoch, captureSession, endCloudSession } = await import('./cloudSession.js')
 const { setHydration } = await import('../store/app-store.js')
 
@@ -155,11 +154,10 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
     ]
 
     const merged = mergeClientsFromRows(localClients, serverRows)
-    const reconciled = reconcileClients('owner-1', merged)
 
-    assert.equal(reconciled.length, 2)
-    assert.ok(reconciled.some((/** @type {import('../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '기존거래처'))
-    assert.ok(reconciled.some((/** @type {import('../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '방금추가한거래처'))
+    assert.equal(merged.length, 2)
+    assert.ok(merged.some((/** @type {import('../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '기존거래처'))
+    assert.ok(merged.some((/** @type {import('../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '방금추가한거래처'))
   })
 
   test('buildEmployedDriverSnapshot: 배정 차량 스코프로 clients를 좁혀 조회하고 에러 시 throw한다', async () => {

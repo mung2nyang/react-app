@@ -20,7 +20,6 @@ const {
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { setHydration, getState, subscribe } = await import('../store/app-store.js')
 const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../store/persist.js')
-const { hasPendingOps } = await import('./mutationOutbox.js')
 const { STORAGE_FAIL_TOAST } = await import('./outboxCommit.js')
 const { commitCars } = await import('../store/commitHelpers.js')
 
@@ -117,13 +116,12 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
     assert.deepEqual(readJsonKey('cars', ownerKey, []), cars)
     assert.deepEqual(getState().cars[ownerKey], [], 'Store에서도 사라져야 한다')
     assert.equal(countOf('vehicles', 'delete'), 1)
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.equal(result.failed, false)
     assert.equal(result.toast, '차량을 삭제했습니다.')
     endCloudSession()
   })
 
-  test('슬라이스 C — ready + 원격 삭제 throw: Fail-Fast 토스트, Store/localStorage 저장 전 값, hasPendingOps false', async () => {
+  test('슬라이스 C — ready + 원격 삭제 throw: Fail-Fast 토스트, Store/localStorage 저장 전 값', async () => {
     const ownerKey = 'dma-vehicle-remote-fail'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 902 }]
@@ -140,12 +138,11 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
     assert.deepEqual(result.cars, cars, '호출부에는 저장 전 cars를 돌려줘야 한다')
     assert.deepEqual(readJsonKey('cars', ownerKey, []), cars, 'localStorage도 저장 전 값이어야 한다')
     assert.equal(getState().cars[ownerKey], undefined, 'Store에 이 owner의 cars가 새로 생기면 안 된다')
-    assert.equal(hasPendingOps(ownerKey), false, '재시도 큐/tombstone에 남으면 안 된다')
     assert.equal(notifyCount, 0)
     endCloudSession()
   })
 
-  test('슬라이스 C — ready + { data: null, error }: Fail-Fast 토스트, hasPendingOps false, 저장 전 값', async () => {
+  test('슬라이스 C — ready + { data: null, error }: Fail-Fast 토스트, 저장 전 값', async () => {
     const ownerKey = 'dma-vehicle-data-error'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '11가1111', supabaseId: 903 }]
@@ -155,7 +152,6 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
     const result = await requestVehicleDeletion({ ownerKey, userId: 'user-1', cars, vehicleId: 'car-1' })
 
     assert.equal(result.toast, FAIL_FAST_TOAST)
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.equal(getState().cars[ownerKey], undefined)
     assert.deepEqual(readJsonKey('cars', ownerKey, []), cars)
     endCloudSession()
@@ -175,7 +171,6 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
     assert.equal(countOf('vehicles', 'delete'), 1)
     assert.equal(getState().cars[ownerKey], undefined)
     assert.deepEqual(readJsonKey('cars', ownerKey, []), cars, '0행 삭제는 Store/LS를 건드리면 안 된다')
-    assert.equal(hasPendingOps(ownerKey), false)
     endCloudSession()
   })
 
@@ -201,7 +196,6 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
     assert.equal(notifyCount, 0)
     assert.equal(getState().cars[ownerKey], undefined)
     assert.deepEqual(readJsonKey('cars', ownerKey, []), cars)
-    assert.equal(hasPendingOps(ownerKey), false)
   })
 
   test('retry 성공 후(hydrate 등으로 ready 전환) 같은 작업을 다시 하면 로컬·서버가 최종적으로 일치한다', async () => {
@@ -222,7 +216,6 @@ describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오'
     assert.deepEqual(getState().cars[ownerKey], [])
     assert.deepEqual(readJsonKey('cars', ownerKey, []), cars)
     assert.equal(countOf('vehicles', 'delete'), 1)
-    assert.equal(hasPendingOps(ownerKey), false)
     endCloudSession()
   })
 
@@ -361,13 +354,12 @@ describe('requestClientDeletion — 사용자 지시 10번 필수 시나리오',
     assert.deepEqual(result.clients, [])
     assert.equal(countOf('clients', 'delete'), 1)
     assert.deepEqual(getState().clients[ownerKey], [], 'Store에서도 사라져야 한다')
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.equal(result.failed, false)
     assert.match(result.toast, /거래처를 삭제했습니다/)
     endCloudSession()
   })
 
-  test('슬라이스 C — ready + 원격 삭제 throw: Fail-Fast 토스트, Store 저장 전 값, hasPendingOps false', async () => {
+  test('슬라이스 C — ready + 원격 삭제 throw: Fail-Fast 토스트, Store 저장 전 값', async () => {
     const ownerKey = 'dma-client-throw'
     beginReady('user-1', ownerKey)
     const clients = [{ id: 'client-1', companyName: '한진', supabaseId: 702 }]
@@ -381,7 +373,6 @@ describe('requestClientDeletion — 사용자 지시 10번 필수 시나리오',
     assert.deepEqual(result.clients, clients)
     assert.deepEqual(readJsonKey('clients', ownerKey, []), clients)
     assert.equal(getState().clients[ownerKey], undefined)
-    assert.equal(hasPendingOps(ownerKey), false)
     endCloudSession()
   })
 
@@ -399,7 +390,6 @@ describe('requestClientDeletion — 사용자 지시 10번 필수 시나리오',
     assert.equal(countOf('clients', 'delete'), 1)
     assert.equal(getState().clients[ownerKey], undefined)
     assert.deepEqual(readJsonKey('clients', ownerKey, []), clients)
-    assert.equal(hasPendingOps(ownerKey), false)
     endCloudSession()
   })
 
@@ -441,7 +431,6 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers)
     assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
     assert.equal(countOf('driver_links', 'update'), 0)
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.doesNotMatch(result.toast, /연동 중으로 바꿨습니다/)
     endCloudSession()
   })
@@ -457,7 +446,6 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
     assert.deepEqual(result.drivers, drivers)
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers)
     assert.equal(countOf('driver_links', 'delete'), 0)
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.doesNotMatch(result.toast, /초대를 삭제했습니다/)
     endCloudSession()
   })
@@ -473,10 +461,9 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
 
     assert.deepEqual(result.drivers, expected)
     assert.equal(countOf('driver_links', 'update'), 1)
-    assert.equal(countOf('driver_links', 'insert'), 0, '새 op을 outbox에 넣지 않는다')
+    assert.equal(countOf('driver_links', 'insert'), 0, '새 행을 넣지 않는다')
     assert.deepEqual(getState().drivers[ownerKey], expected, 'Store에도 새 상태가 반영돼야 한다(4대 기준 2)')
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, '로그인 성공은 drivers LS 미러를 쓰지 않는다')
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.match(result.toast, /연동 중으로 바꿨습니다/)
     endCloudSession()
   })
@@ -494,7 +481,6 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
     assert.equal(countOf('driver_links', 'delete'), 1)
     assert.deepEqual(getState().drivers[ownerKey], [], 'Store에서도 제거돼야 한다')
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, '로그인 삭제는 drivers LS 미러를 쓰지 않는다')
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.match(result.toast, /초대를 삭제했습니다/)
     endCloudSession()
   })
@@ -516,12 +502,11 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
     assert.equal(countOf('driver_links', 'delete'), 1)
     assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, 'localStorage도 저장 전 값이어야 한다')
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.equal(notifyCount, 0)
     endCloudSession()
   })
 
-  test('ready + 서버 throw: 상태변경 Fail-Fast 토스트, update 1회, hasPendingOps false, Store 저장 전 값', async () => {
+  test('ready + 서버 throw: 상태변경 Fail-Fast 토스트, update 1회, Store 저장 전 값', async () => {
     const ownerKey = 'dma-driver-status-throw'
     beginReady('user-1', ownerKey)
     const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 603, status: 'pending' }])
@@ -535,14 +520,13 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
 
     assert.equal(result.toast, FAIL_FAST_TOAST)
     assert.equal(countOf('driver_links', 'update'), 1)
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, 'localStorage도 저장 전 값이어야 한다')
     assert.equal(notifyCount, 0)
     endCloudSession()
   })
 
-  test('ready + { data: null, error }: 삭제 Fail-Fast 토스트, delete 1회, hasPendingOps false, Store 저장 전 값', async () => {
+  test('ready + { data: null, error }: 삭제 Fail-Fast 토스트, delete 1회, Store 저장 전 값', async () => {
     const ownerKey = 'dma-driver-delete-dataerror'
     beginReady('user-1', ownerKey)
     const drivers = asDrivers([{ id: 'drv-1', name: '기사', supabaseId: 604, status: 'linked' }])
@@ -553,7 +537,6 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
 
     assert.equal(result.toast, FAIL_FAST_TOAST)
     assert.equal(countOf('driver_links', 'delete'), 1)
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.equal(getState().drivers[ownerKey], undefined)
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, 'localStorage도 저장 전 값이어야 한다')
     endCloudSession()
@@ -583,7 +566,6 @@ describe('requestDriverStatusChange / requestDriverDeletion — 슬라이스 B: 
     assert.equal(notifyCount, 0, '로그아웃 이후 이 시도가 Store에 아무 반영도 하면 안 된다')
     assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), drivers, 'localStorage도 원래 값 그대로여야 한다')
-    assert.equal(hasPendingOps(ownerKey), false)
   })
 
   test('cloud:false(로컬 전용)면 hydration 상태와 무관하게 로컬만 반영한다', async () => {
@@ -648,7 +630,7 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
     endCloudSession()
   })
 
-  test('성공: driver_links.insert 0, rpc 1, Store/result.items에 서버 id, hasPendingOps false', async () => {
+  test('성공: driver_links.insert 0, rpc 1, Store/result.items에 서버 id', async () => {
     const ownerKey = 'dma-invite-success'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '77가7777', type: 'sub', supabaseId: 800 }]
@@ -670,11 +652,10 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
     assert.ok(Array.isArray(inStore) && inStore.some((item) => item.supabaseId === 950), 'Store에도 서버 id가 반영돼야 한다(4대 기준 2)')
     const stored = readJsonKey('drivers', ownerKey, [])
     assert.equal(stored.length, 0, '로그인 성공은 drivers LS 미러를 쓰지 않는다')
-    assert.equal(hasPendingOps(ownerKey), false)
     endCloudSession()
   })
 
-  test('RPC { data: null, error }: 지정 Fail-Fast 토스트, insert 0, outbox 비어 있음, Store가 실패 전 값', async () => {
+  test('RPC { data: null, error }: 지정 Fail-Fast 토스트, insert 0, Store가 실패 전 값', async () => {
     const ownerKey = 'dma-invite-rpc-error'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '77가7777', type: 'sub', supabaseId: 803 }]
@@ -691,7 +672,6 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
     assert.equal(result.blocked, FAIL_FAST_TOAST)
     assert.equal(countOf('rpc', RPC_FN), 1)
     assert.equal(countOf('driver_links', 'insert'), 0)
-    assert.equal(hasPendingOps(ownerKey), false)
     assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), [], 'localStorage도 실패 전(빈) 값이어야 한다')
     assert.equal(notifyCount, 0)
@@ -774,8 +754,8 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
   })
 
   // AGENTS §9: RPC 응답 대기 중 로그아웃하면 결과를 폐기하고 Store/localStorage/
-  // outbox에 아무 반영도 하지 않는다 — session은 RPC 시작 전 캡처, await 직후 재검증.
-  test('RPC 응답 대기 중 로그아웃하면 결과를 폐기하고 Store/localStorage/outbox가 그대로다', async () => {
+  // session은 RPC 시작 전 캡처, await 직후 재검증.
+  test('RPC 응답 대기 중 로그아웃하면 결과를 폐기하고 Store/localStorage가 그대로다', async () => {
     const ownerKey = 'dma-invite-epoch-logout'
     beginReady('user-1', ownerKey)
     const cars = [{ id: 'car-1', number: '11가1111', type: 'sub', supabaseId: 900 }]
@@ -800,7 +780,6 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
     assert.equal(notifyCount, 0, '로그아웃 이후 이 저장 시도가 Store에 아무 반영도 하면 안 된다(notify 0회)')
     assert.equal(getState().drivers[ownerKey], undefined, 'Store에 이 owner의 drivers가 새로 생기면 안 된다')
     assert.deepEqual(readJsonKey('drivers', ownerKey, []), [], 'localStorage도 원래 값 그대로여야 한다')
-    assert.equal(hasPendingOps(ownerKey), false, 'outbox에도 아무것도 안 남아야 한다')
     assert.equal(countOf('driver_links', 'insert'), 0, 'insert가 없어야 한다')
     assert.equal(countOf('driver_links', 'update'), 0, '재검증 실패 뒤 보정 update가 나가면 안 된다')
   })

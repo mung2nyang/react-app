@@ -1,21 +1,12 @@
 import { resetStubSupabaseCallCounts, stubSupabaseCallCounts } from '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { mock, test } from 'node:test'
-
-let scheduleCloudSyncCallCount = 0
-mock.module('../lib/syncQueue.js', {
-  namedExports: {
-    scheduleCloudSync: () => { scheduleCloudSyncCallCount += 1 },
-    flushCloudSync: async () => {},
-  },
-})
+import { test } from 'node:test'
 
 const { writeJsonKey, storageKeyFor, storageKeyForLog } = await import('./persist.js')
 const { getState, subscribe } = await import('./app-store.js')
 const { initializeOwnerFromPersist } = await import('./owner-state.js')
 const { commitCars, commitWorkData, commitLogWorkData } = await import('./commitHelpers.js')
-const { getPendingOps, outboxStorageKey, buildTombstoneOp, planOutboxAppend } = await import('../lib/mutationOutbox.js')
 const { inspectLogPending } = await import('../lib/logPendingLifecycle.js')
 const {
   pendingDayWriteCount, hasUnsafePendingWrites, registerPendingDayWrite, retryPendingDayWrites,
@@ -52,7 +43,6 @@ function snapshotMemory(owner, other = 'init-schema-other', subNumber = '99하99
     clients: JSON.stringify(getState().clients[owner]),
     journal: localStorage.getItem(`reactPracticeDirtyJournal:${owner}`),
     otherJournal: localStorage.getItem(`reactPracticeDirtyJournal:${other}`),
-    outbox: localStorage.getItem(outboxStorageKey(owner)),
     carsRaw: localStorage.getItem(storageKeyFor('cars', owner)),
     clientsRaw: localStorage.getItem(storageKeyFor('clients', owner)),
     workRaw: localStorage.getItem(storageKeyFor('workData', owner)),
@@ -60,8 +50,6 @@ function snapshotMemory(owner, other = 'init-schema-other', subNumber = '99하99
     subLogRaw: localStorage.getItem(storageKeyForLog(owner, subNumber)),
     otherCarsRaw: localStorage.getItem(storageKeyFor('cars', other)),
     deletedDatesRaw: localStorage.getItem(storageKeyFor('workDataDeletedDates', owner)),
-    pendingOps: JSON.stringify(getPendingOps(owner)),
-    tombstones: JSON.stringify(getPendingOps(owner).filter((/** @type {{ kind: string }} */ op) => op.kind === 'tombstone')),
     pendingInspect: JSON.stringify(inspectLogPending(owner, 'main')),
     subInspect: JSON.stringify(inspectLogPending(owner, subNumber)),
     otherInspect: JSON.stringify(inspectLogPending(other, 'main')),
@@ -70,7 +58,6 @@ function snapshotMemory(owner, other = 'init-schema-other', subNumber = '99하99
     unsafeItems: JSON.stringify(listUnsafeRegistrations()),
     fallbackKeys: JSON.stringify([...fallback.keys()]),
     supabase: methodCounts(),
-    schedule: scheduleCloudSyncCallCount,
   }
 }
 
@@ -87,9 +74,6 @@ function assertSharedUnchanged(before, after) {
   assert.equal(after.otherJournal, before.otherJournal)
   assert.equal(after.deletedDatesRaw, before.deletedDatesRaw)
   assert.equal(after.journal, before.journal)
-  assert.equal(after.outbox, before.outbox)
-  assert.equal(after.pendingOps, before.pendingOps)
-  assert.equal(after.tombstones, before.tombstones)
   assert.equal(after.pendingInspect, before.pendingInspect)
   assert.equal(after.subInspect, before.subInspect)
   assert.equal(after.otherInspect, before.otherInspect)
@@ -98,7 +82,6 @@ function assertSharedUnchanged(before, after) {
   assert.equal(after.unsafeItems, before.unsafeItems)
   assert.equal(after.fallbackKeys, before.fallbackKeys)
   assert.deepEqual(after.supabase, before.supabase)
-  assert.equal(after.schedule, before.schedule)
 }
 
 /** @param {string} owner @param {string} other @param {(ok: boolean) => void} onSettled */
@@ -113,11 +96,6 @@ function seedLayers(owner, other, onSettled) {
   commitCars(other, [{ id: 'other-car', number: '20나2000', type: 'main' }], { syncToCloud: false })
   markDirty(owner, 'cars')
   markDirty(other, 'clients')
-  const planned = planOutboxAppend(owner, buildTombstoneOp({
-    ownerKey: owner, userId: 'user-schema', resourceType: 'vehicle', resourceId: '900',
-    operation: 'delete', sessionEpoch: 1,
-  }))
-  localStorage.setItem(planned.key, JSON.stringify(planned.value))
   const registered = registerPendingDayWrite(owner, '2026-08-03', PATCH, onSettled)
   assert.equal(registered, true)
   fallback.set(keyOf(owner, '2026-08-02'), PATCH)
@@ -135,7 +113,6 @@ test('스키마 실패 initializeOwnerFromPersist는 시드된 계층을 불변�
   seedLayers(owner, other, (ok) => { callbackHits.push(ok) })
   const before = snapshotMemory(owner, other)
   assert.equal(before.journal != null && before.journal !== '{}', true)
-  assert.equal(JSON.parse(before.tombstones || '[]').length > 0, true)
   assert.equal(JSON.parse(before.pendingInspect).hasCallback, true)
   assert.equal(JSON.parse(before.pendingInspect).fallbackItems.length > 0, true)
   assert.equal(JSON.parse(before.unsafeItems).length > 0, true)

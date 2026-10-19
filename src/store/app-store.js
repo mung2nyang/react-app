@@ -4,7 +4,6 @@
 
 import { writeAllOrNothing } from './atomicPersist.js'
 import { allEntriesCloudMemoryOnly, buildBatchWrites } from './batchWrites.js'
-import { scheduleCloudSync } from '../lib/syncQueue.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
@@ -164,7 +163,6 @@ export function commitBatch(entries, options = {}) {
     state.driverExpenses = { ...state.driverExpenses, [replaceDriverExpenses.ownerKey]: replaceDriverExpenses.next }
   }
   notify()
-  if (syncToCloud && entries.length && !memoryOnly) scheduleCloudSync()
   return entries.map((entry) => entry.value)
 }
 

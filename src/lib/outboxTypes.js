@@ -1,12 +1,11 @@
 // @ts-check
-// outbox·직접 mutation 파일들이 공유하는 JSDoc 타입(런타임 코드 없음) — 한 곳에 둬야 모양이 어긋나지 않는다.
+// 직접 mutation 파일들이 공유하는 JSDoc 타입(런타임 코드 없음) — 한 곳에 둬야 모양이 어긋나지 않는다.
 
 /** @typedef {'vehicle'|'client'|'driverLink'} OutboxResourceType */
 /** @typedef {'tombstone'|'mutation'} OutboxKind */
 
 /**
- * 기사 레코드. driverLink upsert op의 payload.previousDriverSnapshot과
- * outboxRollback.js의 롤백 대상이 이 모양이다.
+ * 기사 레코드.
  * @typedef {object} DriverRecord
  * @property {string} id
  * @property {string} [name]
