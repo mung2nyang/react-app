@@ -2,15 +2,7 @@
 // 파일 보내기 공용 창 — 카카오톡(파일+문구 공유)·문자(파일 저장 뒤 문자 앱) × PDF·이미지. 운송비 내역서·일상점검표가 같이 쓴다.
 import '../report/report.css'
 import ModalShell from './ModalShell.jsx'
-
-/**
- * @param {string} phone
- * @param {string} body
- */
-export function buildShareSmsUrl(phone, body) {
-  const separator = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?'
-  return `sms:${phone}${separator}body=${encodeURIComponent(body)}`
-}
+import { buildSmsHref } from '../../domain/smsHref.js'
 
 /** @param {'pdf'|'image'} type */
 const formatLabel = (type) => (type === 'image' ? '이미지' : 'PDF')
@@ -71,7 +63,7 @@ export default function ShareFileModal({
       document.body.appendChild(link)
       link.click()
       link.remove()
-      window.location.href = buildShareSmsUrl(target.phone, target.message)
+      window.location.href = buildSmsHref(target.phone, target.message, navigator.userAgent)
     } catch (error) {
       console.error(`문자용 ${logLabel} 저장 실패:`, error)
       showToast?.('문자용 파일 저장에 실패했습니다.')

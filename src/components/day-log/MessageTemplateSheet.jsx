@@ -3,20 +3,12 @@ import { parseCurrencyValue } from '../../domain/money.js'
 import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../lib/messageTemplates.js'
 import './message-template.css'
 import ModalShell from '../shared/ModalShell.jsx'
+import { buildSmsHref } from '../../domain/smsHref.js'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 
 const TEMPLATE_TITLES = ['미수금 안내', '입금 요청', '운행 완료']
-
-/**
- * @param {string} phone
- * @param {string} body
- */
-export function buildTemplateSmsUrl(phone, body) {
-  const separator = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?'
-  return `sms:${phone}${separator}body=${encodeURIComponent(body)}`
-}
 
 /**
  * @param {Object} props
@@ -41,7 +33,7 @@ export default function MessageTemplateSheet({ item, client, onClose, showToast 
       showToast?.('거래처에 등록된 연락처가 없습니다.')
       return
     }
-    window.location.href = buildTemplateSmsUrl(phone, body)
+    window.location.href = buildSmsHref(phone, body, navigator.userAgent)
     onClose()
   }
 

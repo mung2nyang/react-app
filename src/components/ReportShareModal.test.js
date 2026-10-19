@@ -29,7 +29,6 @@ const React = await import('react')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: ReportShareModal } = await import('./ReportShareModal.jsx')
-const { buildShareSmsUrl } = await import('./shared/ShareFileModal.jsx')
 
 /**
  * @param {Object} [props]
@@ -229,27 +228,6 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
       })
       await act(async () => { root.unmount() })
       container.remove()
-    }
-  })
-
-  test('buildShareSmsUrl: 기본 UA는 ?, iPhone UA는 &', () => {
-    const body = '안녕 테스트'
-    const defaultUrl = buildShareSmsUrl('01012345678', body)
-    assert.equal(defaultUrl, `sms:01012345678?body=${encodeURIComponent(body)}`)
-
-    const originalUa = navigator.userAgent
-    Object.defineProperty(navigator, 'userAgent', {
-      configurable: true,
-      get() { return 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' },
-    })
-    try {
-      const iphoneUrl = buildShareSmsUrl('01012345678', body)
-      assert.equal(iphoneUrl, `sms:01012345678&body=${encodeURIComponent(body)}`)
-    } finally {
-      Object.defineProperty(navigator, 'userAgent', {
-        configurable: true,
-        get() { return originalUa },
-      })
     }
   })
 })

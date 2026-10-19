@@ -20,7 +20,6 @@ const React = await import('react')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const {
-  buildTemplateSmsUrl,
   default: MessageTemplateSheet,
 } = await import('./MessageTemplateSheet.jsx')
 
@@ -153,27 +152,6 @@ describe('MessageTemplateSheet — 문자 양식 3종 + ②-1 설정 반영', ()
     } finally {
       await act(async () => { root.unmount() })
       container.remove()
-    }
-  })
-
-  test('buildTemplateSmsUrl: 기본 UA는 ?, iPhone UA는 &', () => {
-    const body = '안녕 테스트'
-    const defaultUrl = buildTemplateSmsUrl('01012345678', body)
-    assert.equal(defaultUrl, `sms:01012345678?body=${encodeURIComponent(body)}`)
-
-    const originalUa = navigator.userAgent
-    Object.defineProperty(navigator, 'userAgent', {
-      configurable: true,
-      get() { return 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' },
-    })
-    try {
-      const iphoneUrl = buildTemplateSmsUrl('01012345678', body)
-      assert.equal(iphoneUrl, `sms:01012345678&body=${encodeURIComponent(body)}`)
-    } finally {
-      Object.defineProperty(navigator, 'userAgent', {
-        configurable: true,
-        get() { return originalUa },
-      })
     }
   })
 })
