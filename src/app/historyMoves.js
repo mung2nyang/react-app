@@ -46,3 +46,28 @@ export function chooseMove({ from, to, idx, startedAtHome: atHome = startedAtHom
   }
   return from === HOME ? { kind: 'push' } : { kind: 'replace' }
 }
+
+// 일지 입력 칸의 붙잡기 기록(로드맵 63-B). 조용히 뺄 때는 확인 창을 건너뛰게 표시한다.
+let skipGuardPop = false
+
+/** 맨 위 기록이 입력 칸 붙잡기 기록인가. */
+export function panelGuardOnTop() {
+  const state = window.history.state
+  const usr = state && typeof state === 'object' ? Reflect.get(state, 'usr') : undefined
+  return Boolean(usr && typeof usr === 'object' && Reflect.get(usr, 'panelGuard'))
+}
+
+/** 조용히 뺀 것이면 한 번만 true. */
+export function takeGuardSkip() {
+  const was = skipGuardPop
+  skipGuardPop = false
+  return was
+}
+
+/** 붙잡기 기록이 맨 위면 조용히 한 장 빼고 나서 next, 아니면 바로 next. @param {() => void} next */
+export function popPanelGuardThen(next) {
+  if (!panelGuardOnTop()) { next(); return }
+  skipGuardPop = true
+  window.addEventListener('popstate', () => { setTimeout(next, 0) }, { once: true })
+  window.history.back()
+}

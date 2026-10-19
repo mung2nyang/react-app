@@ -17,7 +17,7 @@ import AppShellRoutes from './AppShellRoutes.jsx'
 import useBackToExit from './useBackToExit.js'
 import usePageTransition from './usePageTransition.js'
 import { withFromLogState } from './fromLogNavigation.js'
-import { chooseMove, historyIdx, markRewind } from './historyMoves.js'
+import { chooseMove, historyIdx, markRewind, popPanelGuardThen } from './historyMoves.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
@@ -66,10 +66,15 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   function navigate(to, options) {
     if (!confirmLeaveIfUnsafe()) return
     if (typeof to === 'number') { rawNavigate(to); return }
-    rawNavigate(to, withFromLogState(location.pathname, to, options))
+    // 일지 입력 칸 붙잡기 기록(로드맵 63-B)은 먼저 빼고 이동한다 — 빈 일지 기록이 남지 않게.
+    popPanelGuardThen(() => rawNavigate(to, withFromLogState(location.pathname, to, options)))
   }
   /** 아래 메뉴·← 이동(로드맵 63): 홈은 처음 기록으로 되감고, 그 밖엔 홈에서만 쌓고 나머진 교체. @param {string} to */
   function moveTo(to) {
+    popPanelGuardThen(() => moveNow(to))
+  }
+  /** @param {string} to */
+  function moveNow(to) {
     const move = chooseMove({ from: location.pathname, to: to.split('?')[0], idx: historyIdx() })
     if (move.kind !== 'rewind') { navigate(to, move.kind === 'replace' ? { replace: true } : undefined); return }
     if (!confirmLeaveIfUnsafe()) return

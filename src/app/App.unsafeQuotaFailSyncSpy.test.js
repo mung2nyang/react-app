@@ -27,6 +27,7 @@ const React = await import('react')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: DayLogPage } = await import('../components/day-log/DayLogPage.jsx')
+const { MemoryRouter } = await import('react-router-dom')
 const { commitClients, commitSettings, commitWorkData } = await import('../store/commitHelpers.js')
 const { hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../lib/durableWriteGuard.js')
 const { normalizeSettings } = await import('../domain/practiceSettings.js')
@@ -108,12 +109,12 @@ test('재감사 15차 — 양성 대조: 정상 일지 커밋은 scheduleCloudSy
   const before = scheduleCloudSyncCallCount
   try {
     await act(async () => {
-      root.render(React.createElement(DayLogPage, {
+      root.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
         month: 10, day: 4, dateKey, ownerKey,
         clients: spyClients,
         settings: normalizeSettings({ fixedOn: true }),
         onClose: () => {},
-      }))
+      })))
     })
     await act(async () => {
       const deadline = Date.now() + 2000
@@ -159,12 +160,12 @@ test('재감사 16차 — oops+quota 실패는 unmount/cleanup 뒤에도 schedul
   let unmounted = false
   try {
     await act(async () => {
-      root.render(React.createElement(DayLogPage, {
+      root.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
         month: 10, day: 5, dateKey, ownerKey,
         clients: spyClients,
         settings: normalizeSettings({ fixedOn: true, callDetail: true }),
         onClose: () => {},
-      }))
+      })))
     })
     await act(async () => {
       const deadline = Date.now() + 2000

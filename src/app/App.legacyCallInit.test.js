@@ -24,6 +24,7 @@ const React = await import('react')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: DayLogPage } = await import('../components/day-log/DayLogPage.jsx')
+const { MemoryRouter } = await import('react-router-dom')
 const { commitBatch, getState, subscribe } = await import('../store/app-store.js')
 const { initializeOwnerFromPersist } = await import('../store/owner-state.js')
 const { storageKeyFor, readJsonKey } = await import('../store/persist.js')
@@ -72,9 +73,9 @@ test('id 없는 레거시 콜은 initialize 후 첫 mount에서 ID를 한 번만
   const settings = normalizeSettings({ callDetail: true })
   try {
     await act(async () => {
-      root.render(React.createElement(DayLogPage, {
+      root.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
         month: 8, day: 21, dateKey, ownerKey, clients: [], settings, onClose: () => {},
-      }))
+      })))
     })
     await act(async () => {
       const deadline = Date.now() + 2000
@@ -94,9 +95,9 @@ test('id 없는 레거시 콜은 initialize 후 첫 mount에서 ID를 한 번만
     const scheduleAfterUnmount = scheduleCloudSyncCallCount
     const root2 = createRoot(container)
     await act(async () => {
-      root2.render(React.createElement(DayLogPage, {
+      root2.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
         month: 8, day: 21, dateKey, ownerKey, clients: [], settings, onClose: () => {},
-      }))
+      })))
     })
     await act(async () => { await wait(50) })
     assert.equal(storeCallId(ownerKey, dateKey), firstId)
