@@ -1,8 +1,8 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 기사 persist 배럴(loadDrivers)과 saveDrivers→commitDrivers + domain/drivers.js 재수출. 화면 읽기는 useOwnerDrivers / readOwnerDrivers.
-import { readJsonKey } from '../store/persist.js'
-import { commitDrivers } from '../store/commitHelpers.js'
+import { readJsonKey } from '../data/store/persist.js'
+import { commitDrivers } from '../data/store/commitHelpers.js'
 
 /** @param {string} [ownerKey] */
 export function loadDrivers(ownerKey = 'guest') {

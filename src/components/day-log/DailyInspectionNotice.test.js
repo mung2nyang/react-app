@@ -29,7 +29,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DailyInspectionNotice } = await import('./DailyInspectionNotice.jsx')
-const { commitCars, commitProfile } = await import('../../store/commitHelpers.js')
+const { commitCars, commitProfile } = await import('../../data/store/commitHelpers.js')
 const { EMPTY_PROFILE } = await import('../../lib/profile.js')
 const { allGoodItems } = await import('../../domain/dailyInspectionItems.js')
 

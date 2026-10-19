@@ -14,9 +14,9 @@ const {
   hasPendingDayWrites, hasUnsafePendingWrites, pendingDayWriteCount, retryPendingDayWrites,
 } = await import('./pendingWorkDataWrites.js')
 const { isDurableWriteBroken } = await import('./durableWriteGuard.js')
-const { getState, subscribe } = await import('../store/app-store.js')
-const { readJsonKey } = await import('../store/persist.js')
-const { commitWorkData } = await import('../store/commitHelpers.js')
+const { getState, subscribe } = await import('../data/store/app-store.js')
+const { readJsonKey } = await import('../data/store/persist.js')
+const { commitWorkData } = await import('../data/store/commitHelpers.js')
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 

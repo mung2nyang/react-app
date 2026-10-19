@@ -4,10 +4,10 @@
 // 독립성).
 
 /** @typedef {Record<string, string|number>} EqFilters */
-/** @typedef {{ data?: import('../store/atomicPersist.js').JsonValue, error?: { message?: string } | null }} FakeQueryResult */
-/** @typedef {(arg?: EqFilters | import('../store/atomicPersist.js').JsonValue, extra?: EqFilters | import('../store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeHandler */
+/** @typedef {{ data?: import('../data/store/atomicPersist.js').JsonValue, error?: { message?: string } | null }} FakeQueryResult */
+/** @typedef {(arg?: EqFilters | import('../data/store/atomicPersist.js').JsonValue, extra?: EqFilters | import('../data/store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeHandler */
 /** @typedef {Record<string, Record<string, FakeHandler>>} FakeHandlers */
-/** @typedef {(args?: import('../store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeRpcHandler */
+/** @typedef {(args?: import('../data/store/atomicPersist.js').JsonValue) => FakeQueryResult | Promise<FakeQueryResult>} FakeRpcHandler */
 
 /**
  * @param {(filters: EqFilters) => FakeQueryResult | Promise<FakeQueryResult>} getResult
@@ -42,7 +42,7 @@ export function chainable(getResult) {
   return api
 }
 
-/** @returns {{ fakeSupabase: { from: (table: string) => ReturnType<typeof chainable>, rpc: (fn: string, args?: import('../store/atomicPersist.js').JsonValue) => Promise<FakeQueryResult>, auth: { signOut: () => Promise<{ error: null }> } }, handlers: FakeHandlers, callCounts: Record<string, number>, resetHandlers: () => void, countOf: (table: string, method: string) => number, emptyOkHandlers: () => FakeHandlers }} */
+/** @returns {{ fakeSupabase: { from: (table: string) => ReturnType<typeof chainable>, rpc: (fn: string, args?: import('../data/store/atomicPersist.js').JsonValue) => Promise<FakeQueryResult>, auth: { signOut: () => Promise<{ error: null }> } }, handlers: FakeHandlers, callCounts: Record<string, number>, resetHandlers: () => void, countOf: (table: string, method: string) => number, emptyOkHandlers: () => FakeHandlers }} */
 export function createFakeSupabase() {
   /** @type {FakeHandlers} */
   const handlers = {}
@@ -81,11 +81,11 @@ export function createFakeSupabase() {
       const h = handlers[table] || {}
       return {
         select: () => { bump(table, 'select'); return chainable(h.select || (() => ({ data: [], error: null }))) },
-        /** @param {import('../store/atomicPersist.js').JsonValue} row @param {import('../store/atomicPersist.js').JsonValue} [options] */
+        /** @param {import('../data/store/atomicPersist.js').JsonValue} row @param {import('../data/store/atomicPersist.js').JsonValue} [options] */
         upsert: (row, options) => { bump(table, 'upsert'); return chainable(() => (h.upsert ? h.upsert(row, options) : { data: null, error: null })) },
-        /** @param {import('../store/atomicPersist.js').JsonValue} row */
+        /** @param {import('../data/store/atomicPersist.js').JsonValue} row */
         insert: (row) => { bump(table, 'insert'); return chainable(() => (h.insert ? h.insert(row) : { data: null, error: null })) },
-        /** @param {import('../store/atomicPersist.js').JsonValue} row */
+        /** @param {import('../data/store/atomicPersist.js').JsonValue} row */
         update: (row) => { bump(table, 'update'); return chainable((filters) => (h.update ? h.update(row, filters) : { data: null, error: null })) },
         delete: () => { bump(table, 'delete'); return chainable(h.delete || (() => ({ data: null, error: null }))) },
       }
@@ -93,7 +93,7 @@ export function createFakeSupabase() {
     /**
      * 슬라이스 A: upsert_driver_link_idempotent 등 RPC. handlers.rpc[fnName]가 있으면
      * 그걸 부르고, 없으면 no-op { data: null, error: null }. countOf('rpc', fnName)로 카운트.
-     * @param {string} fnName @param {import('../store/atomicPersist.js').JsonValue} [args]
+     * @param {string} fnName @param {import('../data/store/atomicPersist.js').JsonValue} [args]
      */
     rpc(fnName, args) {
       bump('rpc', fnName)
@@ -118,10 +118,10 @@ export function wait(ms) {
 
 /**
  * @param {Array<import('../domain/financeTypes.js').CarLike>} cars
- * @returns {Array<import('../store/atomicPersist.js').JsonValue>}
+ * @returns {Array<import('../data/store/atomicPersist.js').JsonValue>}
  */
 export function vehicleRowsFor(cars) {
-  /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+  /** @type {Array<import('../data/store/atomicPersist.js').JsonValue>} */
   const rows = []
   for (const car of cars || []) {
     if (!car || car.supabaseId == null) continue
@@ -139,10 +139,10 @@ export function vehicleRowsFor(cars) {
 
 /**
  * @param {Array<import('../domain/clientTypes.js').ClientLike>} clients
- * @returns {Array<import('../store/atomicPersist.js').JsonValue>}
+ * @returns {Array<import('../data/store/atomicPersist.js').JsonValue>}
  */
 export function clientRowsFor(clients) {
-  /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+  /** @type {Array<import('../data/store/atomicPersist.js').JsonValue>} */
   const rows = []
   for (const client of clients || []) {
     if (!client || client.supabaseId == null) continue

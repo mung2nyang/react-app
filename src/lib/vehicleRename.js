@@ -1,14 +1,14 @@
 // @ts-check
 // 기사 차량 번호를 바꾸면 그 번호에 묶인 일지·지출·전용 거래처·기사 연결·차량 설정을 새 번호로 함께 옮긴다.
 // 서버는 rename_sub_vehicle(DB 0022) 한 번으로 차량 번호·전용 거래처·설정 키를 같이 바꾼다.
-import { supabase } from '../supabaseClient.js'
-import { getState } from '../store/app-store.js'
-import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
-import { assertSessionStillCurrent } from './cloudSession.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
+import { getState } from '../data/store/app-store.js'
+import { readLogWorkData, storageKeyForLog } from '../data/store/persist.js'
+import { assertSessionStillCurrent } from '../data/cloud/cloudSession.js'
 import { planPendingLogMove } from './logPendingLifecycle.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../store/app-store.js').BatchEntry} BatchEntry */
+/** @typedef {import('../data/store/app-store.js').BatchEntry} BatchEntry */
 
 /** @param {Record<string, DayRecordLike>|undefined} data */
 function hasDates(data) {
@@ -19,7 +19,7 @@ function hasDates(data) {
  * @param {string} ownerKey
  * @param {string} oldNumber
  * @param {string} newNumber
- * @returns {{ error: string } | { extraWrites: Array<import('../store/atomicPersist.js').KeyedWrite>, nextLogs: Record<string, Record<string, DayRecordLike>>, afterPersist: () => void }}
+ * @returns {{ error: string } | { extraWrites: Array<import('../data/store/atomicPersist.js').KeyedWrite>, nextLogs: Record<string, Record<string, DayRecordLike>>, afterPersist: () => void }}
  */
 export function planSubLogRename(ownerKey, oldNumber, newNumber) {
   const fromRead = readLogWorkData(ownerKey, oldNumber)
@@ -40,7 +40,7 @@ export function planSubLogRename(ownerKey, oldNumber, newNumber) {
   const prev = getState().workLogs[ownerKey] || {}
   const nextLogs = { ...prev, [newNumber]: moved }
   delete nextLogs[oldNumber]
-  const jsonMoved = /** @type {import('../store/atomicPersist.js').JsonValue} */ (moved)
+  const jsonMoved = /** @type {import('../data/store/atomicPersist.js').JsonValue} */ (moved)
   return {
     extraWrites: [
       { key: storageKeyForLog(ownerKey, newNumber), value: jsonMoved },

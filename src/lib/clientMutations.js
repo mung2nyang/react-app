@@ -8,9 +8,9 @@ import {
   updateClientTaxInfo,
   upsertClient,
 } from '../domain/clients.js'
-import { blockedReasonForOwnerDataWrite } from './cloudSession.js'
+import { blockedReasonForOwnerDataWrite } from '../data/cloud/cloudSession.js'
 import { isCloudClientOwner, reorderedClientIds, saveClientsToCloud } from './clientCloudSave.js'
-import { commitClients } from '../store/commitHelpers.js'
+import { commitClients } from '../data/store/commitHelpers.js'
 import { STORAGE_FAIL_TOAST } from './outboxCommit.js'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */

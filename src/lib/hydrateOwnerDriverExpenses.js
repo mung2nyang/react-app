@@ -1,7 +1,7 @@
 // @ts-check
 // 차주 hydrate: 서브 차량 fuel/maint/misc(차량번호 태그) → 차주 목록(expenses). 연동 서브도 공용 장부(5-B-2).
 // hydrateEmployedDriver는 이 모듈을 쓰지 않는다.
-import { supabase } from '../supabaseClient.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
 import { mergeExpenseKind } from './hydrateMerge.js'
 import { expenseFromFuelRecord, replaceFuelExpenses } from '../domain/fuelRecords.js'
 import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../domain/maintenanceRecords.js'

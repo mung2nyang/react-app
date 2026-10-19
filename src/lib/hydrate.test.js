@@ -4,13 +4,13 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase, wait } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { hydrateFromSupabase, retryHydrate } = await import('./hydrate.js')
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
-const { getState } = await import('../store/app-store.js')
-const { readJsonKey, writeJsonKey } = await import('../store/persist.js')
-const { commitDrivers } = await import('../store/commitHelpers.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
+const { getState } = await import('../data/store/app-store.js')
+const { readJsonKey, writeJsonKey } = await import('../data/store/persist.js')
+const { commitDrivers } = await import('../data/store/commitHelpers.js')
 
 describe('hydrateFromSupabase — 조회 실패는 전부 failed로, 부분 반영 없음', () => {
   test('profiles 조회가 실패하면 status가 failed로 남고, 로컬/store는 그대로다', async () => {
@@ -463,7 +463,7 @@ describe('로드맵 5-A — 서브차량 정비/주유/기타 불러오기', () 
 
 // 로드맵 67-A — 서버(Max rows 1000)처럼 한 번에 1,000줄까지만 주는 가짜 서버로 끝까지 받는지.
 /**
- * @param {Array<import('../store/atomicPersist.js').JsonValue>} rows
+ * @param {Array<import('../data/store/atomicPersist.js').JsonValue>} rows
  * @param {Record<string, string|number>|undefined} filters
  */
 function pageLikeServer(rows, filters) {

@@ -4,7 +4,7 @@
 import { hasPendingDayWrites, retryPendingDayWrites } from '../lib/pendingWorkDataWrites.js'
 import { guardBeforeUnload } from '../lib/durableWriteGuard.js'
 import { setPendingRetryPulse } from '../lib/pendingRetryPulse.js'
-import { getCloudOwnerKey } from '../lib/cloudSession.js'
+import { getCloudOwnerKey } from '../data/cloud/cloudSession.js'
 import { shouldCommitDayLogToCloud } from '../lib/mainDayLogRouting.js'
 
 const RETRY_INTERVAL_MS = 5000

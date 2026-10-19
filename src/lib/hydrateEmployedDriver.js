@@ -18,7 +18,7 @@ import {
 import { carFromAssignedSummary } from './hydrateEmployedDriverCar.js'
 import { mergeClientsFromRows, mergeDriversFromRows, mergeExpenseKind } from './hydrateMerge.js'
 import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
-import { supabase } from '../supabaseClient.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
 import { fetchAllRows } from './fetchAllRows.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */

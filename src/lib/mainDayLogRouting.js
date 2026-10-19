@@ -1,8 +1,8 @@
 // @ts-check
 // "이 일지 저장이 클라우드 직접 저장 경로인가"를 logId(메인·기사 차량번호)별로 한 곳에서 판정한다(useDayDraft·dayLogCloudCommit·pendingWriteRetryListeners 공유).
 // 무거운 supabase 실행기를 끌어오지 않도록 app-store·cloudSession만 의존한다.
-import { getState } from '../store/app-store.js'
-import { getCloudUserId } from './cloudSession.js'
+import { getState } from '../data/store/app-store.js'
+import { getCloudUserId } from '../data/cloud/cloudSession.js'
 
 /**
  * logId에 해당하는 차량의 supabaseId. `main`(또는 빈 값)이면 메인 차량,

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 /** @type {Array<{ table: string, row: Record<string, unknown> }>} */
 const captured = []
 
-mock.module('../supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.js', {
   namedExports: {
     supabase: {
       from: (/** @type {string} */ table) => ({

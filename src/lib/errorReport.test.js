@@ -5,10 +5,10 @@ import { beforeEach, mock, test } from 'node:test'
 import { createFakeSupabase, wait } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { MAX_REPORTS_PER_LOAD, describeError, installErrorReporting, reportClientError, resetErrorReportsForTests } = await import('./errorReport.js')
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 
 /** @type {Array<Record<string, string>>} */
 let inserted = []

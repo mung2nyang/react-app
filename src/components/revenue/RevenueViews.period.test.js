@@ -16,7 +16,7 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: OwnerRevenueView } = await import('./OwnerRevenueView.jsx')
 const { default: DriverRevenueView } = await import('./DriverRevenueView.jsx')
-const { commitCars, commitExpenses } = await import('../../store/commitHelpers.js')
+const { commitCars, commitExpenses } = await import('../../data/store/commitHelpers.js')
 
 const now = new Date()
 const YEAR = now.getFullYear()

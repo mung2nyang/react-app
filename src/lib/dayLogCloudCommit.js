@@ -6,18 +6,18 @@
 // §6: 단건/복수건 커밋이 헬퍼 4개(writeDayKeyToServer 등)를 공유하는 응집 단위. 빈 날 서버 삭제 규칙은 dailyLogRemoval.js.
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
-import { supabase } from '../supabaseClient.js'
-import { getState } from '../store/app-store.js'
-import { commitLogWorkData } from '../store/commitHelpers.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
+import { getState } from '../data/store/app-store.js'
+import { commitLogWorkData } from '../data/store/commitHelpers.js'
 import {
   assertCloudWriteReady,
   assertSessionStillCurrent,
   captureSession,
   getCloudUserId,
-} from './cloudSession.js'
+} from '../data/cloud/cloudSession.js'
 import { StaleSessionError } from './outboxErrors.js'
 import { shouldCommitDayLogToCloud, vehicleSupabaseIdForLog } from './mainDayLogRouting.js'
-import { parseEntityNumber } from './cloudStorage.js'
+import { parseEntityNumber } from '../data/cloud/cloudStorage.js'
 import { removeDayLogOnServer } from './dailyLogRemoval.js'
 import { upsertDailyLog } from './syncWorkData.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'

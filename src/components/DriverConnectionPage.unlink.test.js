@@ -15,8 +15,8 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
-const { commitDrivers } = await import('../store/commitHelpers.js')
-const { beginSessionEpoch, endCloudSession } = await import('../lib/cloudSession.js')
+const { commitDrivers } = await import('../data/store/commitHelpers.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 
 /** @param {Element} card */
 function buttons(card) {

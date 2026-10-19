@@ -15,9 +15,9 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: PersonalInfoPage } = await import('./PersonalInfoPage.jsx')
-const { commitProfile } = await import('../store/commitHelpers.js')
-const { getState, setHydration } = await import('../store/app-store.js')
-const { beginSessionEpoch, endCloudSession } = await import('../lib/cloudSession.js')
+const { commitProfile } = await import('../data/store/commitHelpers.js')
+const { getState, setHydration } = await import('../data/store/app-store.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 const { EMPTY_PROFILE } = await import('../lib/profile.js')
 const { SAVE_DELAY_MS } = await import('./usePersonalInfoDraft.js')
 

@@ -26,7 +26,7 @@ fakeSupabase.auth.getSession = async () => ({
   data: { session: { user: { id: 'user-boot-nav', user_metadata: {}, phone: null } } },
   error: null,
 })
-mock.module('../supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.js', {
   namedExports: {
     supabase: fakeSupabase,
     getSupabaseAuthErrorMessage: (error) => error?.message || '',
@@ -66,7 +66,7 @@ async function unmountTracked(root) {
 }
 const { BrowserRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
-const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../store/commitHelpers.js')
+const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.js')
 const {
   hasPendingDayWrites, pendingDayWriteCount, retryPendingDayWrites,
   registerPendingDayWrite, getPendingDayWrite,
@@ -84,8 +84,8 @@ test.afterEach(async () => {
   handlers.vehicles.select = () => ({ data: [], error: null })
   handlers.clients.select = () => ({ data: [], error: null })
 })
-const { getState, subscribe } = await import('../store/app-store.js')
-const { readJsonKey, storageKeyFor } = await import('../store/persist.js')
+const { getState, subscribe } = await import('../data/store/app-store.js')
+const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
 const { todayWorkLogSelection } = await import('../domain/calendar.js')
 const { normalizeSettings } = await import('../domain/practiceSettings.js')
 

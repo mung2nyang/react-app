@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { isVehicleRevenueSharedWithOwner } from '../../domain/cars.js'
 import { getOwnerMonthlyFinanceDetail } from '../../lib/finance.js'
-import { useOwnerCars, useOwnerDriverExpenses, useOwnerExpenses, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDriverExpenses, useOwnerExpenses, useOwnerWorkDataByLogId } from '../../data/store/ownerDataHooks.js'
 import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { RevenuePeriodBar, RevenueYearList } from './RevenuePeriodParts.jsx'
 import { buildYearlyRows, useRevenueFinanceSettings, useRevenuePeriod } from './revenuePeriod.js'

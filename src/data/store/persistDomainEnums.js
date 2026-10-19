@@ -1,0 +1,29 @@
+// @ts-check
+/** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+
+// 옛 저장분 읽기용(2026-10-02 "계산서 처리 방식" 삭제): 받아 주기만 하고 화면·계산은 안 씀 — 빼면 옛 값 1건에 목록·설정 전체가 거부됨.
+export const CAR_SETTLEMENT_MODES = /** @type {const} */ ([
+  'default', 'company', 'driver_direct', 'employee', 'none',
+])
+export const COMM_TYPES = /** @type {const} */ (['percent', 'direct'])
+export const INFO_TYPES = /** @type {const} */ (['existing', 'new'])
+export const PAYMENT_TERM_VALUES = /** @type {const} */ ([
+  'same_day', 'after_days', 'next_month_day', 'next_month_end', 'second_month_day', 'second_month_end',
+])
+export const DRIVER_PAY_MODES = /** @type {const} */ (['revenue', 'salary'])
+export const DRIVER_SETTLEMENT_MODES = /** @type {const} */ ([
+  'company', 'driver_direct', 'employee', 'none',
+])
+// 옛 저장분 읽기용(2026-10-02 기사 매입·수수료 발행 삭제): 받아 주기만 하고 화면·계산은 매출만 씀 — 빼면 옛 값 1건에 묶음 전체가 거부됨.
+export const DRIVER_INVOICE_BASES = /** @type {const} */ (['net', 'gross'])
+export const INVOICE_FLOWS = /** @type {const} */ (['sales', 'purchase', 'commission'])
+export const INVOICE_STATUSES = /** @type {const} */ (['draft', 'issued'])
+export const PARTY_TYPES = /** @type {const} */ (['client', 'driver'])
+
+/**
+ * @param {JsonValue} value
+ * @param {ReadonlyArray<string>} allowed
+ */
+export function isAllowedEnum(value, allowed) {
+  return typeof value === 'string' && allowed.includes(value)
+}

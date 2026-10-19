@@ -15,7 +15,7 @@ import {
   blockedReasonForCloudWrite,
   blockedReasonForOwnerDataWrite,
   captureSession,
-} from './cloudSession.js'
+} from '../data/cloud/cloudSession.js'
 import { commitLocalOnly } from './outboxCommit.js'
 import {
   deleteClientFromSupabase,
@@ -23,7 +23,7 @@ import {
   updateDriverLinkStatusOnSupabase,
 } from './directMutations.js'
 import { StaleSessionError } from './outboxErrors.js'
-import { commitClients, commitDrivers } from '../store/commitHelpers.js'
+import { commitClients, commitDrivers } from '../data/store/commitHelpers.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 export { requestDriverInviteSave } from './requestDriverInviteSave.js'

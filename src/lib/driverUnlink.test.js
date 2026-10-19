@@ -5,12 +5,12 @@ import { beforeEach, describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { requestDriverUnlinkAction, fetchOwnerDriverLinks, unlinkAutoDateLabel } = await import('./driverUnlink.js')
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
-const { getState, setHydration } = await import('../store/app-store.js')
-const { commitDrivers } = await import('../store/commitHelpers.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
+const { getState, setHydration } = await import('../data/store/app-store.js')
+const { commitDrivers } = await import('../data/store/commitHelpers.js')
 
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 
@@ -21,9 +21,9 @@ const DRIVERS = [{ id: 'd1', name: '기사', status: 'linked', vehicleNumber: '1
 /** @type {Array<string>} */
 let calls = []
 
-/** @param {import('../store/atomicPersist.js').JsonValue} row */
+/** @param {import('../data/store/atomicPersist.js').JsonValue} row */
 function rpcReturning(row) {
-  return (/** @type {import('../store/atomicPersist.js').JsonValue|undefined} */ args) => {
+  return (/** @type {import('../data/store/atomicPersist.js').JsonValue|undefined} */ args) => {
     calls.push(JSON.stringify(args))
     return { data: [row], error: null }
   }

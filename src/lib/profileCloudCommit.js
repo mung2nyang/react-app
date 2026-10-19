@@ -1,6 +1,6 @@
 // @ts-check
 // 로그인 프로필·설정 저장: profiles upsert 1회. practiceSnapshot(LS 미러)은 넣지 않는다.
-import { supabase } from '../supabaseClient.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalProfile} LocalProfile */
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */

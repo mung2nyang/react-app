@@ -14,7 +14,7 @@ import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../.
 import { clearPendingDayWrite, getPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
 import { commitMainDayLogToCloud } from '../../lib/dayLogCloudCommit.js'
 import { shouldCommitDayLogToCloud } from '../../lib/mainDayLogRouting.js'
-import { readOwnerLogWorkData } from '../../store/ownerDataHooks.js'
+import { readOwnerLogWorkData } from '../../data/store/ownerDataHooks.js'
 import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../lib/dayDraftActivity.js'
 import { commitLocalDayWrite, settleCloudDayWrite, useMountedRef } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'

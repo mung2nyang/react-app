@@ -13,7 +13,7 @@ import { locationShortcutList, togglePinnedLocation } from '../../domain/locatio
 import { toggleCallPaymentStatus } from '../../domain/payments.js'
 import { confirmLeaveIfUnsafe } from '../../lib/durableWriteGuard.js'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
-import { useOwnerDrivers, useOwnerWorkData, useOwnerWorkDataByLogId } from '../../store/ownerDataHooks.js'
+import { useOwnerDrivers, useOwnerWorkData, useOwnerWorkDataByLogId } from '../../data/store/ownerDataHooks.js'
 import { useDayDraft } from './useDayDraft.js'
 import { useExpenseForm } from './useExpenseForm.js'
 import { bindInlinePanelActions } from './inlinePanelActions.js'

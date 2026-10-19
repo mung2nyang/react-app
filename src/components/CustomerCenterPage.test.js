@@ -18,8 +18,8 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: CustomerCenterPage } = await import('./CustomerCenterPage.jsx')
 const { default: SideMenu } = await import('./SideMenu.jsx')
-const { beginSessionEpoch, endCloudSession } = await import('../lib/cloudSession.js')
-const { setHydration } = await import('../store/app-store.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
+const { setHydration } = await import('../data/store/app-store.js')
 
 /**
  * @param {import('../lib/outboxTypes.js').AppSession|null} session

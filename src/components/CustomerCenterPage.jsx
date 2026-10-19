@@ -1,7 +1,7 @@
 // @ts-check
 // 고객센터 한 화면(FAQ·문의 작성·내 문의) — 하위 패널을 파일 분리하면 같이 읽어야 해서 응집 유지(§6).
 import { useEffect, useState } from 'react'
-import { isCloudSession } from '../lib/cloudSession.js'
+import { isCloudSession } from '../data/cloud/cloudSession.js'
 import { fetchMyInquiries, requestSupportInquirySave } from '../lib/supportInquiryMutations.js'
 import PageHeader from '../shared/ui/PageHeader.jsx'
 import AppDropdown from '../shared/ui/AppDropdown.jsx'

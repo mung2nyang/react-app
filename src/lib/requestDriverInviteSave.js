@@ -5,9 +5,9 @@
 /** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('./outboxTypes.js').CarRecord} CarRecord */
 /** @typedef {import('./outboxTypes.js').DriverLinkRow} DriverLinkRow */
-import { assertCloudWriteReady, assertSessionStillCurrent, captureSession, getCloudUserId } from './cloudSession.js'
-import { commitCars, commitDrivers } from '../store/commitHelpers.js'
-import { readOwnerCars } from '../store/ownerDataHooks.js'
+import { assertCloudWriteReady, assertSessionStillCurrent, captureSession, getCloudUserId } from '../data/cloud/cloudSession.js'
+import { commitCars, commitDrivers } from '../data/store/commitHelpers.js'
+import { readOwnerCars } from '../data/store/ownerDataHooks.js'
 import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
 import { upsertVehicleFromList } from './syncVehiclesClients.js'
 import { StaleSessionError } from './outboxErrors.js'

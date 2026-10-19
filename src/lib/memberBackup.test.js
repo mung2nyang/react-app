@@ -14,7 +14,7 @@ const inspectionCalls = []
 let cloudOwner = 'owner-1'
 let ready = true
 
-mock.module('../store/ownerDataHooks.js', {
+mock.module('../data/store/ownerDataHooks.js', {
   namedExports: {
     readOwnerCars: () => cars,
     readOwnerClients: () => [{ name: '한빛물류' }],
@@ -26,7 +26,7 @@ mock.module('../store/ownerDataHooks.js', {
     readOwnerWorkDataByLogId: () => workLogs,
   },
 })
-mock.module('./cloudSession.js', {
+mock.module('../data/cloud/cloudSession.js', {
   namedExports: { getCloudOwnerKey: () => cloudOwner, isHydrationReady: () => ready },
 })
 mock.module('./dailyInspections.js', {

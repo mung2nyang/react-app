@@ -8,8 +8,8 @@ import {
   captureSession,
   getCloudOwnerKey,
   getCloudUserId,
-} from './cloudSession.js'
-import { commitBatch } from '../store/app-store.js'
+} from '../data/cloud/cloudSession.js'
+import { commitBatch } from '../data/store/app-store.js'
 import { planRenamedPlateEntries, planSubLogRename, renameSubVehicleOnServer } from './vehicleRename.js'
 import { StaleSessionError } from './outboxErrors.js'
 import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
@@ -51,14 +51,14 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
     ? nextCars.find((item) => item.id === editingId)
     : nextCars[nextCars.length - 1]
   const cloud = getCloudOwnerKey() === ownerKey
-  /** @type {Array<import('../store/atomicPersist.js').KeyedWrite>} */
+  /** @type {Array<import('../data/store/atomicPersist.js').KeyedWrite>} */
   let extraWrites = []
-  /** @type {import('../store/app-store.js').WorkLogsReplace|undefined} */
+  /** @type {import('../data/store/app-store.js').WorkLogsReplace|undefined} */
   let replaceWorkLogs
   let renamedFrom = /** @type {string|null} */ (null)
   /** @type {() => void} */
   let afterPersist = () => {}
-  /** @type {Array<import('../store/app-store.js').BatchEntry>} */
+  /** @type {Array<import('../data/store/app-store.js').BatchEntry>} */
   let renameEntries = []
   if (previous?.type === 'sub' && saved?.type === 'sub' && previous.number && saved.number && previous.number !== saved.number) {
     const planned = planSubLogRename(ownerKey, previous.number, saved.number)

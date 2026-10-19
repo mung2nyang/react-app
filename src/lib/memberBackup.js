@@ -11,8 +11,8 @@ import {
   readOwnerProfile,
   readOwnerSettings,
   readOwnerWorkDataByLogId,
-} from '../store/ownerDataHooks.js'
-import { getCloudOwnerKey, isHydrationReady } from './cloudSession.js'
+} from '../data/store/ownerDataHooks.js'
+import { getCloudOwnerKey, isHydrationReady } from '../data/cloud/cloudSession.js'
 import { fetchVehiclesDailyInspections } from './dailyInspections.js'
 
 /**

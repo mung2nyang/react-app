@@ -17,8 +17,8 @@ const { MemoryRouter, Routes, Route } = await import('react-router-dom')
 const { act } = React
 const { default: OwnerScopedClientsView } = await import('./OwnerScopedClientsView.jsx')
 const { default: LinkedDriverClientsPage } = await import('../drivers/LinkedDriverClientsPage.jsx')
-const { replaceOwnerState } = await import('../../store/owner-state.js')
-const { getState } = await import('../../store/app-store.js')
+const { replaceOwnerState } = await import('../../data/store/owner-state.js')
+const { getState } = await import('../../data/store/app-store.js')
 
 const OWNER = 'guest'
 const MINE = { id: 'c-1', companyName: '한빛물류', managerName: '김담당', phone: '010-1111-2222', bizNumber: '123-45-67890', scopedToVehicleNumber: '12가3456' }
@@ -28,7 +28,7 @@ const MAIN_ONLY = { id: 'c-3', companyName: '차주거래처' }
 /** @param {object} state */
 function seed(state) {
   localStorage.clear()
-  replaceOwnerState(OWNER, /** @type {import('../../store/owner-state.js').OwnerSnapshot} */ (state))
+  replaceOwnerState(OWNER, /** @type {import('../../data/store/owner-state.js').OwnerSnapshot} */ (state))
 }
 
 /** @param {import('react').ReactElement} element @param {string} path @param {string} pattern */

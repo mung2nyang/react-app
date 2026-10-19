@@ -1,14 +1,14 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
-import { readPersistDomain } from '../store/persistDomainRead.js'
-import { matchesDomainSchema } from '../store/persistDomainSchema.js'
-import { parsePersistedWorkDataMap } from '../store/persistDayRecord.js'
-import { isPlainObject } from '../store/persistDomainRecords.js'
-import { replaceOwnerState } from '../store/owner-state.js'
-import { getState } from '../store/app-store.js'
+import { readLogWorkData, storageKeyForLog } from '../data/store/persist.js'
+import { readPersistDomain } from '../data/store/persistDomainRead.js'
+import { matchesDomainSchema } from '../data/store/persistDomainSchema.js'
+import { parsePersistedWorkDataMap } from '../data/store/persistDayRecord.js'
+import { isPlainObject } from '../data/store/persistDomainRecords.js'
+import { replaceOwnerState } from '../data/store/owner-state.js'
+import { getState } from '../data/store/app-store.js'
 
-/** @typedef {import('../store/persist.js').PersistDomain} PersistDomain */
+/** @typedef {import('../data/store/persist.js').PersistDomain} PersistDomain */
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
 /** @type {Array<PersistDomain>} */
@@ -124,7 +124,7 @@ export function applyGuestBackupData(parsed) {
   const subWorkData = 'subWorkData' in record ? parseLogs(record.subWorkData) : undefined
   if (workData === null || workLogs === null || subWorkData === null) return { ok: false, error: INVALID_FILE }
 
-  /** @type {import('../store/owner-state.js').OwnerSnapshot} */
+  /** @type {import('../data/store/owner-state.js').OwnerSnapshot} */
   const snapshot = {}
   if (workLogs) snapshot.workLogs = workLogs
   else if (subWorkData) snapshot.workLogs = { main: workData || {}, ...subWorkData }
@@ -139,7 +139,7 @@ export function applyGuestBackupData(parsed) {
   if (Array.isArray(record.dismissedNotifications)) snapshot.dismissedNotifications = /** @type {Array<string>} */ (record.dismissedNotifications)
   if (isPlainObject(record.workDataDeletedDates)) snapshot.workDataDeletedDates = /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones} */ (record.workDataDeletedDates)
 
-  /** @type {Array<import('../store/atomicPersist.js').KeyedWrite>} */
+  /** @type {Array<import('../data/store/atomicPersist.js').KeyedWrite>} */
   const extraWrites = []
   if (snapshot.workLogs) {
     // 기사 차량 일지도 메인과 같은 저장으로 기기에 쓰고, 백업에 없는 차량의 옛 일지 키는 지운다.

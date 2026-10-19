@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
-import { useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
-import { isCloudSession } from '../lib/cloudSession.js'
+import { useOwnerDrivers, useOwnerProfile } from '../data/store/ownerDataHooks.js'
+import { isCloudSession } from '../data/cloud/cloudSession.js'
 import InviteRedeemModal from './InviteRedeemModal.jsx'
 import DataDownloadModal from './DataDownloadModal.jsx'
 import PageHeader from '../shared/ui/PageHeader.jsx'

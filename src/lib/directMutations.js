@@ -2,8 +2,8 @@
 // Supabase를 직접 부르는 실행기 함수. 즉시 시도와 outbox 재시도가 같은 함수를 쓴다. 삭제는 이미 없는 행 삭제도 성공이라 중간부터 다시 돌아도 안전하다.
 // 모든 함수는 captured를 받아 원격 await마다 assertSessionStillCurrent로 세션을 재확인한다.
 /** @typedef {import('./outboxTypes.js').SessionCapture} SessionCapture */
-import { supabase } from '../supabaseClient.js'
-import { assertCloudWriteReady, assertSessionStillCurrent } from './cloudSession.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
+import { assertCloudWriteReady, assertSessionStillCurrent } from '../data/cloud/cloudSession.js'
 
 /**
  * @param {number|string|null|undefined} vehicleSupabaseId

@@ -5,7 +5,7 @@ import FixedRouteClientModal from './FixedRouteClientModal.jsx'
 import { fixedRouteCandidates } from '../domain/clientDraft.js'
 import { getFixedRouteClient } from '../domain/clients.js'
 import { formatCurrencyInput } from '../lib/money.js'
-import { useOwnerClients } from '../store/ownerDataHooks.js'
+import { useOwnerClients } from '../data/store/ownerDataHooks.js'
 
 /**
  * @param {Object} props

@@ -11,7 +11,7 @@ import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
 fakeSupabase.auth.getSession = async () => ({ data: { session: { user: { id: 'driver-1', user_metadata: { name: '기사' }, phone: null } } }, error: null })
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 /** @type {Array<{ userId: string, ownerKey: string, employedDriver: boolean }>} */
 const hydrated = []

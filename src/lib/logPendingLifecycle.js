@@ -10,7 +10,7 @@ import { pendingOwnerForLog } from './pendingLogOwner.js'
 import { fallback, KEY_SEP, settledCallbacks } from './pendingWorkDataWritesState.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
-/** @typedef {import('../store/atomicPersist.js').KeyedWrite} KeyedWrite */
+/** @typedef {import('../data/store/atomicPersist.js').KeyedWrite} KeyedWrite */
 
 /**
  * @typedef {Object} PendingDatePatch
@@ -127,7 +127,7 @@ export function planPendingLogMove(ownerKey, oldNumber, newNumber) {
   oldInspect.fallbackItems.forEach((item) => { merged[item.dateKey] = item.patch })
   /** @type {Array<KeyedWrite>} */
   const extraWrites = []
-  const jsonMerged = /** @type {import('../store/atomicPersist.js').JsonValue} */ (merged)
+  const jsonMerged = /** @type {import('../data/store/atomicPersist.js').JsonValue} */ (merged)
   if (Object.keys(merged).length > 0) extraWrites.push({ key: durableKey(newInspect.pendingOwner), value: jsonMerged })
   extraWrites.push({ key: durableKey(oldInspect.pendingOwner), remove: true })
   return {

@@ -9,7 +9,7 @@ import {
   useOwnerProfile,
   useOwnerSettings,
   useOwnerWorkDataByLogId,
-} from '../../store/ownerDataHooks.js'
+} from '../../data/store/ownerDataHooks.js'
 
 /** @param {string} ownerKey @param {boolean} [isEmployedDriver] */
 export function useReceivablesData(ownerKey, isEmployedDriver = false) {

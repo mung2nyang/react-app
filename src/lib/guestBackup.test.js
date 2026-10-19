@@ -8,9 +8,9 @@ import {
   getLastBackupAt,
   markBackupDone,
 } from './guestBackup.js'
-import { initializeOwnerFromPersist, replaceOwnerState } from '../store/owner-state.js'
-import { commitBatch, getState } from '../store/app-store.js'
-import { commitDismissedNotifications } from '../store/commitHelpers.js'
+import { initializeOwnerFromPersist, replaceOwnerState } from '../data/store/owner-state.js'
+import { commitBatch, getState } from '../data/store/app-store.js'
+import { commitDismissedNotifications } from '../data/store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 
 describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => {
@@ -47,7 +47,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
   })
 
   test('왕복: buildGuestBackupData → applyGuestBackupData 후 각 도메인 값 일치', () => {
-    /** @type {import('../store/owner-state.js').OwnerSnapshot} */
+    /** @type {import('../data/store/owner-state.js').OwnerSnapshot} */
     const seedSnapshot = {
       cars: [
         { id: 'car-1', number: '11가1111', type: 'main' },

@@ -20,7 +20,7 @@ const order = []
 /** @type {Record<string, boolean>} */
 const failStep = {}
 
-mock.module('../store/ownerDataHooks.js', {
+mock.module('../data/store/ownerDataHooks.js', {
   namedExports: {
     readOwnerCars: () => cars,
     readOwnerDrivers: () => drivers,
@@ -30,7 +30,7 @@ mock.module('../store/ownerDataHooks.js', {
     readOwnerInvoices: () => [],
   },
 })
-mock.module('./cloudSession.js', { namedExports: { getCloudUserId: () => 'o-1' } })
+mock.module('../data/cloud/cloudSession.js', { namedExports: { getCloudUserId: () => 'o-1' } })
 mock.module('./clientCloudSave.js', {
   namedExports: {
     saveClientsToCloud: async (/** @type {{ next: object[] }} */ args) => {

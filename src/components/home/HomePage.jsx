@@ -3,7 +3,7 @@
 import { resolveLogSettings } from '../../domain/carSettingsScope.js'
 import { todayWorkLogSelection } from '../../domain/calendar.js'
 import { isOffDay } from '../../domain/day-record.js'
-import { useOwnerCars } from '../../store/ownerDataHooks.js'
+import { useOwnerCars } from '../../data/store/ownerDataHooks.js'
 import useMonthSettlement from '../calendar/useMonthSettlement.js'
 import AppTopBar from '../../shared/ui/AppTopBar.jsx'
 import { useReceivablesData } from '../receivables/useReceivablesData.js'

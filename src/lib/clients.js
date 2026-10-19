@@ -1,6 +1,6 @@
 // @ts-check
 // 거래처 저장 + domain/clients.js 재수출 배럴.
-import { commitClients } from '../store/commitHelpers.js'
+import { commitClients } from '../data/store/commitHelpers.js'
 
 /**
  * @param {string} ownerKey

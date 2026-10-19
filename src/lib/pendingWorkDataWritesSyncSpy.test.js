@@ -6,9 +6,9 @@ import { test } from 'node:test'
 
 const { registerPendingDayWrite, retryPendingDayWrites, pendingDayWriteCount } = await import('./pendingWorkDataWrites.js')
 const { isDurableWriteBroken } = await import('./durableWriteGuard.js')
-const { getState, subscribe } = await import('../store/app-store.js')
-const { commitWorkData } = await import('../store/commitHelpers.js')
-const { readJsonKey } = await import('../store/persist.js')
+const { getState, subscribe } = await import('../data/store/app-store.js')
+const { commitWorkData } = await import('../data/store/commitHelpers.js')
+const { readJsonKey } = await import('../data/store/persist.js')
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 

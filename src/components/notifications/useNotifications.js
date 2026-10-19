@@ -2,14 +2,14 @@
 // 알림 숫자·알림 목록 — 알림에 쓰는 Store 값을 구독해 바뀌면 다시 센다. refreshKey는 시간이 지나 생기는 알림용(화면 주소).
 import { useMemo, useSyncExternalStore } from 'react'
 import { collectNotifications } from '../../lib/notifications.js'
-import { getState, subscribe } from '../../store/app-store.js'
+import { getState, subscribe } from '../../data/store/app-store.js'
 import {
   useOwnerClients,
   useOwnerDrivers,
   useOwnerProfile,
   useOwnerSettings,
   useOwnerWorkDataByLogId,
-} from '../../store/ownerDataHooks.js'
+} from '../../data/store/ownerDataHooks.js'
 
 /**
  * @param {string} ownerKey

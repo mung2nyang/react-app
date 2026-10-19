@@ -20,7 +20,7 @@ import {
   useOwnerProfile,
   useOwnerSettings,
   useOwnerWorkDataByLogId,
-} from '../../store/ownerDataHooks.js'
+} from '../../data/store/ownerDataHooks.js'
 import CarBusinessInfoSection from './CarBusinessInfoSection.jsx'
 import ClientInvoiceGroups from './ClientInvoiceGroups.jsx'
 import SettlementSummaryCard from './SettlementSummaryCard.jsx'

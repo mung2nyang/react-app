@@ -13,7 +13,7 @@ Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 /** @type {{ error: { message: string } | null }} */
 let googleResult = { error: null }
 let googleCalls = 0
-mock.module('../supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.js', {
   namedExports: {
     ensureProfileRow: async () => {},
     getSupabaseAuthErrorMessage: (/** @type {{ message?: string } | null} */ error) => error?.message || '오류',

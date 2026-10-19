@@ -1,9 +1,9 @@
 // @ts-check
 // 차량/거래처 클라우드 upsert. 로그인 저장은 목록을 인자로 받아 Store 반영 전에 서버에
 // 쓰고 remote id를 돌려준다.
-import { supabase } from '../supabaseClient.js'
-import { buildClientRow, buildVehicleRow } from './cloudStorage.js'
-import { assertSessionStillCurrent } from './cloudSession.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
+import { buildClientRow, buildVehicleRow } from '../data/cloud/cloudStorage.js'
+import { assertSessionStillCurrent } from '../data/cloud/cloudSession.js'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */

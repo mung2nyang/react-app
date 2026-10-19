@@ -7,7 +7,7 @@ import CalendarPage from '../components/calendar/CalendarPage.jsx'
 import DayLogPage from '../components/day-log/DayLogPage.jsx'
 import { resolveLogSettings } from '../domain/carSettingsScope.js'
 import { parseDateKeySelection } from '../lib/calendar.js'
-import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../data/store/ownerDataHooks.js'
 import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
 

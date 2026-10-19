@@ -4,16 +4,16 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
-const { setHydration, getState } = await import('../store/app-store.js')
-const { commitCars, commitClients, commitDrivers, commitExpenses, commitInvoices, commitProfile, commitWorkData } = await import('../store/commitHelpers.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
+const { setHydration, getState } = await import('../data/store/app-store.js')
+const { commitCars, commitClients, commitDrivers, commitExpenses, commitInvoices, commitProfile, commitWorkData } = await import('../data/store/commitHelpers.js')
 const { saveProfile, EMPTY_PROFILE } = await import('./profile.js')
 const { savePracticeSettings } = await import('./practiceSettings.js')
 const { saveExpenses } = await import('./expenses.js')
 const { saveInvoices } = await import('./invoices.js')
-const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../store/persist.js')
+const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../data/store/persist.js')
 
 /** @param {string} userId @param {string} ownerKey */
 function beginReady(userId, ownerKey) {
@@ -31,7 +31,7 @@ function beginFailed(userId, ownerKey) {
   setHydration({ status: 'failed', userId, ownerKey })
 }
 
-/** @type {Array<import('../store/persist.js').PersistDomain>} */
+/** @type {Array<import('../data/store/persist.js').PersistDomain>} */
 const BUSINESS_DOMAINS = ['cars', 'clients', 'drivers', 'workData', 'expenses', 'invoices', 'profile']
 
 /**
@@ -55,29 +55,29 @@ async function withBusinessSetItemCount(ownerKey, fn) {
   }
 }
 
-/** @param {import('../store/app-store.js').DomainValue|undefined} value */
+/** @param {import('../data/store/app-store.js').DomainValue|undefined} value */
 function profileName(value) {
   return value && typeof value === 'object' && !Array.isArray(value) && 'name' in value ? value.name : undefined
 }
 
-/** @param {import('../store/app-store.js').DomainValue|undefined} value */
+/** @param {import('../data/store/app-store.js').DomainValue|undefined} value */
 function settingsUnitPrice(value) {
   return value && typeof value === 'object' && !Array.isArray(value) && 'unitPrice' in value ? value.unitPrice : undefined
 }
 
-/** @param {import('../store/app-store.js').DomainValue|undefined} value */
+/** @param {import('../data/store/app-store.js').DomainValue|undefined} value */
 function settingsCallDetail(value) {
   return value && typeof value === 'object' && !Array.isArray(value) && 'callDetail' in value ? value.callDetail : undefined
 }
 
-/** @param {import('../store/app-store.js').DomainValue|undefined} value */
+/** @param {import('../data/store/app-store.js').DomainValue|undefined} value */
 function firstItemId(value) {
   if (!Array.isArray(value) || value.length === 0) return undefined
   const first = value[0]
   return first && typeof first === 'object' && first !== null && 'id' in first ? first.id : undefined
 }
 
-/** @param {import('../store/app-store.js').DomainValue|undefined} value */
+/** @param {import('../data/store/app-store.js').DomainValue|undefined} value */
 function firstInvoiceRemoteId(value) {
   if (!Array.isArray(value) || value.length === 0) return undefined
   const first = value[0]
@@ -198,7 +198,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
    * 로드맵 5-A: 메인 501·서브 802. 70번부터 항목 단위 — fuelRows는 차량 칸별 서버 주유 줄.
    * @param {string} ownerKey
    * @param {Array<import('./outboxTypes.js').DriverRecord>} drivers
-   * @param {Record<string, Array<import('../store/atomicPersist.js').JsonValue>>} [fuelRows]
+   * @param {Record<string, Array<import('../data/store/atomicPersist.js').JsonValue>>} [fuelRows]
    */
   function seedSubVehicleSave(ownerKey, drivers, fuelRows = {}) {
     beginReady(ownerKey, ownerKey)

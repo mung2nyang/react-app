@@ -3,9 +3,9 @@
 // 일지는 여기서, 거래처·지출·세금계산서는 memberRestoreRecords.js, 점검표는 memberRestoreInspections.js.
 // 저장 순서는 거래처 → 일지 → 지출 → 계산서 → 점검표.
 // 하루 기록의 주유·정비·기타 칸은 지출 기록으로 따로 저장되므로 일지에서는 뺀다.
-import { readOwnerWorkDataByLogId } from '../store/ownerDataHooks.js'
-import { parsePersistedWorkDataMap } from '../store/persistDayRecord.js'
-import { isPlainObject } from '../store/persistDomainRecords.js'
+import { readOwnerWorkDataByLogId } from '../data/store/ownerDataHooks.js'
+import { parsePersistedWorkDataMap } from '../data/store/persistDayRecord.js'
+import { isPlainObject } from '../data/store/persistDomainRecords.js'
 import { commitMainDayLogMapToCloud } from './dayLogCloudCommit.js'
 import { memberBackupBlockedReason } from './memberBackup.js'
 import { isOwnUnlinkedCar, pickMemberRecords, restoreClients, restoreExpenses, restoreInvoices } from './memberRestoreRecords.js'

@@ -1,8 +1,8 @@
 // @ts-check
 import { dedupeCallDetailsById, withCoercedCallDetailId } from '../domain/callDetailIds.js'
 import { ALLOWED_CALL_DETAIL_KEYS, isPersistedCallDetail } from './callDetailSchema.js'
-import { DAY_RECORD_KEYS } from '../store/persistDayRecord.js'
-import { isPlainObject } from '../store/persistDomainRecords.js'
+import { DAY_RECORD_KEYS } from '../data/store/persistDayRecord.js'
+import { isPlainObject } from '../data/store/persistDomainRecords.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').DailyLogRow} DailyLogRow */
 /** @typedef {import('./hydrateMergeTypes.js').DetailRow} DetailRow */

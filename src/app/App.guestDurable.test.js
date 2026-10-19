@@ -16,7 +16,7 @@ function totalSupabaseCalls() {
 }
 
 fakeSupabase.auth.getSession = async () => ({ data: { session: null }, error: null })
-mock.module('../supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.js', {
   namedExports: {
     supabase: fakeSupabase,
     getSupabaseAuthErrorMessage: (error) => error?.message || '',
@@ -43,17 +43,17 @@ async function unmountTracked(root) {
 }
 const { BrowserRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
-const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../store/commitHelpers.js')
+const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.js')
 const {
   hasPendingDayWrites, pendingDayWriteCount, retryPendingDayWrites,
   getPendingDayWrite,
 } = await import('../lib/pendingWorkDataWrites.js')
 const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../lib/durableWriteGuard.js')
-const { endCloudSession } = await import('../lib/cloudSession.js')
+const { endCloudSession } = await import('../data/cloud/cloudSession.js')
 const { durableKey } = await import('../lib/durableStorage.js')
 const { clearGuestModePersisted } = await import('./guestSessionPersist.js')
-const { getState, subscribe } = await import('../store/app-store.js')
-const { readJsonKey, storageKeyFor } = await import('../store/persist.js')
+const { getState, subscribe } = await import('../data/store/app-store.js')
+const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
 const { normalizeSettings } = await import('../domain/practiceSettings.js')
 const { DEVICE_SAVE_FAIL } = await import('../lib/failureMessages.js')
 

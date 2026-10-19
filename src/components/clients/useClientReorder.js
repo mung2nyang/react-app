@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
 import { requestClientReorder } from '../../lib/clientMutations.js'
-import { getCloudUserId } from '../../lib/cloudSession.js'
+import { getCloudUserId } from '../../data/cloud/cloudSession.js'
 
 /**
  * @param {string} ownerKey

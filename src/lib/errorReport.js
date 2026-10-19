@@ -1,8 +1,8 @@
 // @ts-check
 // 앱에서 난 오류를 서버 client_errors 표에 한 줄 남긴다(로드맵 55-B) — 로그인 사용자만, 보내고 끝(기다림·재시도·기기 저장 없음).
 // 화면 주소는 경로만(? 뒤 안 보냄), 한 번 켠 앱에서 최대 10건, 같은 문구는 한 번만.
-import { supabase } from '../supabaseClient.js'
-import { getCloudUserId } from './cloudSession.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
+import { getCloudUserId } from '../data/cloud/cloudSession.js'
 
 export const MAX_REPORTS_PER_LOAD = 10
 /** @type {Set<string>} */

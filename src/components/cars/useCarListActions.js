@@ -6,7 +6,7 @@ import { validateDriverLinkFields } from '../../lib/cars.js'
 import { requestVehicleSave } from '../../lib/vehicleMutations.js'
 import { requestDriverDeletion, requestVehicleDeletion } from '../../lib/directMutationActions.js'
 import { requestDriverUnlinkAction } from '../../lib/driverUnlink.js'
-import { getCloudUserId } from '../../lib/cloudSession.js'
+import { getCloudUserId } from '../../data/cloud/cloudSession.js'
 import { saveInviteAfterVehicle } from '../../lib/carInviteFromDraft.js'
 
 /** @typedef {import('./CarFormModal.jsx').CarFormDraft} CarFormDraft */

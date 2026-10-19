@@ -9,10 +9,10 @@ import {
   blockedReasonForCloudWrite,
   blockedReasonForOwnerDataWrite,
   captureSession,
-} from './cloudSession.js'
+} from '../data/cloud/cloudSession.js'
 import { commitLocalOnly } from './outboxCommit.js'
-import { commitBatch, getState } from '../store/app-store.js'
-import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
+import { commitBatch, getState } from '../data/store/app-store.js'
+import { readLogWorkData, storageKeyForLog } from '../data/store/persist.js'
 import { planPendingLogDiscard } from './logPendingLifecycle.js'
 import { deleteVehicleFromSupabase } from './directMutations.js'
 import { StaleSessionError } from './outboxErrors.js'
@@ -38,7 +38,7 @@ export async function requestVehicleDeletion({ ownerKey, userId, cars, vehicleId
     return { cars, blocked: LINKED_VEHICLE_TOAST, toast: LINKED_VEHICLE_TOAST, failed: true, closeModal: false }
   }
 
-  /** @type {Array<import('../store/atomicPersist.js').KeyedWrite>} */
+  /** @type {Array<import('../data/store/atomicPersist.js').KeyedWrite>} */
   const extraWrites = []
   /** @type {() => void} */
   let afterPersist = () => {}

@@ -15,7 +15,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: PersonalInfoPage } = await import('./PersonalInfoPage.jsx')
-const { commitDrivers } = await import('../store/commitHelpers.js')
+const { commitDrivers } = await import('../data/store/commitHelpers.js')
 
 const LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습니다.'
 const CONFIRM_MSG = '정말 탈퇴하시겠습니까?'

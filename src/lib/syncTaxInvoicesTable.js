@@ -1,6 +1,6 @@
 // @ts-check
 // 세금계산서 upsert. 로그인 저장은 invoices 배열을 인자로 받고 Store/LS를 먼저 쓰지 않는다.
-import { supabase } from '../supabaseClient.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
 import {
   applyInsertedTaxInvoiceId,
   buildTaxInvoiceRow,
@@ -8,7 +8,7 @@ import {
   resolveTaxInvoiceVehicleId,
   TAX_INVOICE_VEHICLE_RETRY_ERROR,
 } from '../domain/taxInvoices.js'
-import { getState } from '../store/app-store.js'
+import { getState } from '../data/store/app-store.js'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 

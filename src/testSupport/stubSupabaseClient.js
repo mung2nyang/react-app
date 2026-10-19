@@ -62,7 +62,7 @@ function createQuery(method) {
   return query
 }
 
-mock.module('../supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.js', {
   namedExports: {
     supabase: {
       from() {

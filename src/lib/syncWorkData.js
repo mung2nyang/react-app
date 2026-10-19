@@ -1,8 +1,8 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 일지 한 줄(daily_logs) 저장 — 로그인 일지·지출 저장이 같이 쓴다.
-import { supabase } from '../supabaseClient.js'
-import { parseEntityNumber } from './cloudStorage.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
+import { parseEntityNumber } from '../data/cloud/cloudStorage.js'
 
 /**
  * @param {string} userId

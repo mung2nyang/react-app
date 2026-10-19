@@ -8,7 +8,7 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase, wait } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const {
   requestClientDeletion,
@@ -17,11 +17,11 @@ const {
   requestDriverStatusChange,
   requestVehicleDeletion,
 } = await import('./directMutationActions.js')
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
-const { setHydration, getState, subscribe } = await import('../store/app-store.js')
-const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../store/persist.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
+const { setHydration, getState, subscribe } = await import('../data/store/app-store.js')
+const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../data/store/persist.js')
 const { STORAGE_FAIL_TOAST } = await import('./outboxCommit.js')
-const { commitCars } = await import('../store/commitHelpers.js')
+const { commitCars } = await import('../data/store/commitHelpers.js')
 
 /**
  * 로드맵 29: 비회원 로컬 저장 실패 — 예상 console.error 1건만 확인하고 나머지는 그대로 통과시킨다.
@@ -805,7 +805,7 @@ describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번
   const CAR = { id: 'car-80', number: '80가8080', type: /** @type {'sub'} */ ('sub'), supabaseId: 880, driverName: '옛기사', driverPhone: '010-0000-0000' }
   const INVITE = { id: 'drv-80', name: '시험기사80', phone: '010-8080-8080', vehicleNumber: '80가8080', startDate: '2026-10-15', endDate: '', inviteCode: '808080' }
 
-  /** @param {string} ownerKey @param {Array<import('../store/atomicPersist.js').JsonValue>} vehicleUpdates */
+  /** @param {string} ownerKey @param {Array<import('../data/store/atomicPersist.js').JsonValue>} vehicleUpdates */
   function seed(ownerKey, vehicleUpdates, vehicleFails = false) {
     beginReady('user-1', ownerKey)
     commitCars(ownerKey, [CAR])
@@ -826,7 +826,7 @@ describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번
 
   test('80-1: 이름이 다르면 초대 저장 뒤 차량 저장 1번, 화면 차량 이름·전화번호가 바뀜', async () => {
     const ownerKey = 'dma-80-sync'
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../data/store/atomicPersist.js').JsonValue>} */
     const updates = []
     seed(ownerKey, updates)
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items: [INVITE], editingId: null, cars: [CAR] })
@@ -843,7 +843,7 @@ describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번
 
   test('80-2: 차량 이름·전화번호가 이미 같으면 차량 저장 0번', async () => {
     const ownerKey = 'dma-80-same'
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../data/store/atomicPersist.js').JsonValue>} */
     const updates = []
     seed(ownerKey, updates)
     commitCars(ownerKey, [{ ...CAR, driverName: '시험기사80', driverPhone: '010-8080-8080' }])
@@ -854,7 +854,7 @@ describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번
 
   test('80-3: 차량 저장만 실패하면 초대는 저장, 안내, 화면 차량 값 그대로', async () => {
     const ownerKey = 'dma-80-carfail'
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../data/store/atomicPersist.js').JsonValue>} */
     const updates = []
     seed(ownerKey, updates, true)
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items: [INVITE], editingId: null, cars: [CAR] })
@@ -867,7 +867,7 @@ describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번
 
   test('80-4: 초대 저장이 실패하면 차량 저장 0번', async () => {
     const ownerKey = 'dma-80-invitefail'
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../data/store/atomicPersist.js').JsonValue>} */
     const updates = []
     seed(ownerKey, updates)
     handlers.rpc = { [RPC_FN]: () => ({ data: null, error: { message: 'RLS violation' } }) }

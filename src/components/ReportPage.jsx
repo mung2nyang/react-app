@@ -12,7 +12,7 @@ import {
 } from '../lib/report.js'
 import { buildDetailReport, detailReportClientOptions } from '../lib/reportDetail.js'
 import { buildMonthReport } from '../lib/reportSummary.js'
-import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../data/store/ownerDataHooks.js'
 import MonthNavigator from './documents/MonthNavigator.jsx'
 import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'

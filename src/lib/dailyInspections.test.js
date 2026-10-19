@@ -6,11 +6,11 @@ import { beforeEach, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { fetchDailyInspection, saveDailyInspection } = await import('./dailyInspections.js')
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
-const { setHydration } = await import('../store/app-store.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
+const { setHydration } = await import('../data/store/app-store.js')
 
 beforeEach(() => { resetHandlers(); endCloudSession() })
 
@@ -51,7 +51,7 @@ test('로그인 안 했으면 저장하지 않고 던짐', async () => {
 test('9-C-1 한 달 읽기: 그 달 첫날~끝날 범위, 날짜별 항목(형식 검사)·점검자·조치 기록(9-D)', async () => {
   /** @type {Array<import('../testSupport/fakeSupabaseClient.js').EqFilters>} */
   const filters = []
-  /** @type {import('../store/atomicPersist.js').JsonValue} */
+  /** @type {import('../data/store/atomicPersist.js').JsonValue} */
   const rows = [{ work_date: '2026-02-03', items: { tires: 'bad', x: 'good' }, action_note: '타이어 교체', inspector_name: '김기사' }, { work_date: '2026-02-04', items: { lamps: 'good' }, action_note: null, inspector_name: null }]
   handlers.daily_inspections = { select: (f) => { filters.push(/** @type {import('../testSupport/fakeSupabaseClient.js').EqFilters} */ (f)); return { data: rows, error: null } } }
   const { fetchMonthDailyInspections } = await import('./dailyInspections.js')

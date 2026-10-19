@@ -4,11 +4,11 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { fetchMyInquiries, requestSupportInquirySave } = await import('./supportInquiryMutations.js')
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
-const { setHydration } = await import('../store/app-store.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
+const { setHydration } = await import('../data/store/app-store.js')
 
 /** @param {string} userId @param {string} ownerKey */
 function beginReady(userId, ownerKey) {

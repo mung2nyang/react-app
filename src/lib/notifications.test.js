@@ -4,8 +4,8 @@ import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, mock, test } from 'node:test'
 import { collectNotifications, dismissNotification } from './notifications.js'
 import { markBackupDone } from './guestBackup.js'
-import { commitWorkData } from '../store/commitHelpers.js'
-import { commitBatch } from '../store/app-store.js'
+import { commitWorkData } from '../data/store/commitHelpers.js'
+import { commitBatch } from '../data/store/app-store.js'
 import { todayKey } from './expenses.js'
 
 describe('notifications — 데이터 백업 권장 알림 및 게스트/로그인 분기', () => {
@@ -56,7 +56,7 @@ describe('notifications — 데이터 백업 권장 알림 및 게스트/로그�
     assert.equal(notifsOwner.some((item) => item.id.startsWith('backup:')), false)
 
     // 2. ownerKey는 'guest'여도 cloud session인 경우
-    /** @type {import('./cloudSession.js').AppSession} */
+    /** @type {import('../data/cloud/cloudSession.js').AppSession} */
     const cloudSession = { userId: 'u1', guestMode: false }
     const notifsCloud = collectNotifications('guest', cloudSession)
     assert.equal(notifsCloud.some((item) => item.id.startsWith('backup:')), false)

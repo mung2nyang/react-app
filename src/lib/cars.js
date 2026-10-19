@@ -1,8 +1,8 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 차량 localStorage I/O + domain/cars.js 재수출 배럴.
-import { readJsonKey } from '../store/persist.js'
-import { commitCars } from '../store/commitHelpers.js'
+import { readJsonKey } from '../data/store/persist.js'
+import { commitCars } from '../data/store/commitHelpers.js'
 import { dedupeCarsById } from '../domain/cars.js'
 
 /** @param {string} [ownerKey] */

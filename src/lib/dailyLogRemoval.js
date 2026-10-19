@@ -1,6 +1,6 @@
 // @ts-check
 // 비용 행은 daily_logs에 ON DELETE CASCADE로 묶여 있다 — 그날 비용이 남아 있으면 줄을 지우지 않고 빈 기록으로 둔다.
-import { supabase } from '../supabaseClient.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
 
 const EXPENSE_TABLES = ['fuel_records', 'maintenance_records', 'misc_expense_records']
 

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import { shiftMonth } from '../../lib/calendar.js'
 import { buildFinanceSettings } from '../../lib/ownerFinance.js'
-import { useOwnerCars, useOwnerDrivers, useOwnerProfile, useOwnerSettings } from '../../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerProfile, useOwnerSettings } from '../../data/store/ownerDataHooks.js'
 import { monthKeyOf } from './revenueFormat.js'
 
 /** 년 매출이면 1년, 월 매출이면 1달씩 옮긴다. */

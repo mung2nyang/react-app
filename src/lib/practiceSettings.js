@@ -1,15 +1,15 @@
 // @ts-check
 // 앱 설정 localStorage I/O와 화면 테마 적용(applyTheme) + domain/practiceSettings.js 재수출 배럴.
-import { commitSettings } from '../store/commitHelpers.js'
+import { commitSettings } from '../data/store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
-import { readOwnerProfile, readOwnerSettings } from '../store/ownerDataHooks.js'
+import { readOwnerProfile, readOwnerSettings } from '../data/store/ownerDataHooks.js'
 import {
   assertSessionStillCurrent,
   blockedReasonForOwnerDataWrite,
   captureSession,
   getCloudOwnerKey,
   getCloudUserId,
-} from './cloudSession.js'
+} from '../data/cloud/cloudSession.js'
 import { upsertProfileOnSupabase } from './profileCloudCommit.js'
 
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */

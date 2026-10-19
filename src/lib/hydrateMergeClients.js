@@ -1,7 +1,7 @@
 // @ts-check
 // CLIENT_KEYS에 있는 필드만 정본 타입으로 정규화한다(이유는 hydrateMergeCars.js 상단과 같다).
-import { COMM_TYPES, PAYMENT_TERM_VALUES, isAllowedEnum } from '../store/persistDomainEnums.js'
-import { isStringOrFiniteNumber } from '../store/persistDomainRecords.js'
+import { COMM_TYPES, PAYMENT_TERM_VALUES, isAllowedEnum } from '../data/store/persistDomainEnums.js'
+import { isStringOrFiniteNumber } from '../data/store/persistDomainRecords.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalClient} LocalClient */
 /** @typedef {import('./hydrateMergeTypes.js').RawClientBackup} RawClientBackup */

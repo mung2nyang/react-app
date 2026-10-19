@@ -1,9 +1,9 @@
 // @ts-check
 import { dedupeCarsById } from '../domain/cars.js'
-import { COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, isAllowedEnum } from '../store/persistDomainEnums.js'
+import { COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, isAllowedEnum } from '../data/store/persistDomainEnums.js'
 import {
   BUSINESS_INFO_KEYS, PERSONAL_INFO_KEYS, isPlainObject, isStringOrFiniteNumber, isStringRecord,
-} from '../store/persistDomainRecords.js'
+} from '../data/store/persistDomainRecords.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
 /** @typedef {import('./hydrateMergeTypes.js').RawCarBackup} RawCarBackup */

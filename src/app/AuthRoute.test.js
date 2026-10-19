@@ -11,7 +11,7 @@ import { mock, test } from 'node:test'
 
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
-mock.module('../supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.js', {
   namedExports: {
     getSupabaseAuthErrorMessage: () => '',
     signInWithGoogle: async () => ({ error: null }),

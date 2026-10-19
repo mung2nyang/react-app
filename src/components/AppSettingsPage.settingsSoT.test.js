@@ -14,7 +14,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: AppSettingsPage } = await import('./AppSettingsPage.jsx')
-const { commitSettings } = await import('../store/commitHelpers.js')
+const { commitSettings } = await import('../data/store/commitHelpers.js')
 const { normalizeSettings } = await import('../domain/practiceSettings.js')
 
 test('설정을 커밋하면 앱 설정 화면이 리마운트 없이 표시 방식을 갱신한다', async () => {

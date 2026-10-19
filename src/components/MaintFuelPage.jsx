@@ -14,8 +14,8 @@ import {
   monthTotal, removeExpense, saveExpenses, upsertExpense,
 } from '../lib/expenses.js'
 import { formatWon } from '../lib/money.js'
-import { readOwnerExpenses, useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../store/ownerDataHooks.js'
-import { getCloudOwnerKey } from '../lib/cloudSession.js'
+import { readOwnerExpenses, useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../data/store/ownerDataHooks.js'
+import { getCloudOwnerKey } from '../data/cloud/cloudSession.js'
 import { saveFailMessage } from '../lib/failureMessages.js'
 import './maint-fuel.css'
 

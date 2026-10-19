@@ -3,9 +3,9 @@ import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, describe, test } from 'node:test'
 import { applyOnboardingWizard, buildOnboardingSettingsPatch } from './onboardingFinish.js'
-import { getState } from '../store/app-store.js'
-import { readOwnerSettings } from '../store/ownerDataHooks.js'
-import { replaceOwnerState } from '../store/owner-state.js'
+import { getState } from '../data/store/app-store.js'
+import { readOwnerSettings } from '../data/store/ownerDataHooks.js'
+import { replaceOwnerState } from '../data/store/owner-state.js'
 
 describe('buildOnboardingSettingsPatch', () => {
   test('workStyle fixed: fixedOn true, callDetail false', () => {

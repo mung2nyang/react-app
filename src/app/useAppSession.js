@@ -3,14 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { applyTheme } from '../lib/practiceSettings.js'
-import { endCloudSession } from '../lib/cloudSession.js'
+import { endCloudSession } from '../data/cloud/cloudSession.js'
 import { confirmReloadIfUnsaved } from '../lib/durableWriteGuard.js'
 import { buzz } from '../lib/haptic.js'
 import { isFailureMessage } from '../lib/failureMessages.js'
-import { supabase } from '../supabaseClient.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
 import { restoreSessionOnBoot, ownerKeyFromSession } from './boot.js'
-import { initializeOwnerFromPersist } from '../store/owner-state.js'
-import { useOwnerCars, useOwnerSettings } from '../store/ownerDataHooks.js'
+import { initializeOwnerFromPersist } from '../data/store/owner-state.js'
+import { useOwnerCars, useOwnerSettings } from '../data/store/ownerDataHooks.js'
 import { isAlreadyInAppOnBoot } from './bootHomeGuard.js'
 import {
   clearGuestModePersisted,

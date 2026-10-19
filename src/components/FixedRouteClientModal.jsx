@@ -8,7 +8,7 @@ import { clientToDraft } from '../domain/clientDraft.js'
 import { formatCurrencyInput } from '../lib/money.js'
 import CurrencyInput from '../shared/ui/CurrencyInput.jsx'
 import { requestClientSave } from '../lib/clientMutations.js'
-import { getCloudUserId } from '../lib/cloudSession.js'
+import { getCloudUserId } from '../data/cloud/cloudSession.js'
 import ModalShell from '../shared/ui/ModalShell.jsx'
 import FieldError, { focusField } from '../shared/ui/FieldError.jsx'
 

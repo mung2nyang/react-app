@@ -1,16 +1,16 @@
 // @ts-check
 // 지출 저장(saveExpenses) + domain/expenses.js 재수출 배럴. 화면 읽기는 useOwnerExpenses.
-import { commitExpenses } from '../store/commitHelpers.js'
+import { commitExpenses } from '../data/store/commitHelpers.js'
 import { dedupeExpensesById } from '../domain/expenses.js'
 import { planExpenseVehicleTargets } from '../domain/expenseVehicleRouting.js'
-import { getState } from '../store/app-store.js'
+import { getState } from '../data/store/app-store.js'
 import {
   assertSessionStillCurrent,
   blockedReasonForOwnerDataWrite,
   captureSession,
   getCloudOwnerKey,
   getCloudUserId,
-} from './cloudSession.js'
+} from '../data/cloud/cloudSession.js'
 import { syncExpenseItemsForVehicle } from './syncExpenseItems.js'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */

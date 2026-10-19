@@ -18,7 +18,7 @@ const fetched = []
 const saved = []
 let failOnSave = 0
 
-mock.module('../store/ownerDataHooks.js', {
+mock.module('../data/store/ownerDataHooks.js', {
   namedExports: { readOwnerCars: () => cars, readOwnerDrivers: () => drivers },
 })
 mock.module('./memberRestoreRecords.js', {

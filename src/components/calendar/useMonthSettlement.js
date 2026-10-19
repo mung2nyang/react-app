@@ -7,7 +7,7 @@ import { monthSettlementSummary } from '../../domain/monthSettlement.js'
 import {
   useOwnerCars, useOwnerClients, useOwnerExpenses,
   useOwnerSettings, useOwnerWorkData, useOwnerWorkDataByLogId,
-} from '../../store/ownerDataHooks.js'
+} from '../../data/store/ownerDataHooks.js'
 
 const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ ({})
 

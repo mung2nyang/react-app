@@ -1,6 +1,6 @@
 // @ts-check
 import { useParams } from 'react-router-dom'
-import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../data/store/ownerDataHooks.js'
 import { applyTheme, savePracticeSettings } from '../lib/practiceSettings.js'
 import { defaultCarSettings } from '../domain/practiceSettings.js'
 import { resolveDriverOrPlateLabel } from '../domain/driverManagementContext.js'

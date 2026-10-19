@@ -3,7 +3,7 @@
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
 import { useState } from 'react'
-import { getCloudUserId, isCloudSession } from '../lib/cloudSession.js'
+import { getCloudUserId, isCloudSession } from '../data/cloud/cloudSession.js'
 import {
   requestDriverDeletion,
   requestDriverInviteSave,
@@ -11,7 +11,7 @@ import {
 } from '../lib/directMutationActions.js'
 import { countByStatus, formatInviteCode, generateInviteCode, saveDrivers, upsertDriver } from '../lib/drivers.js'
 import { requestDriverUnlinkAction } from '../lib/driverUnlink.js'
-import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../data/store/ownerDataHooks.js'
 import DriverUnlinkControls from './drivers/DriverUnlinkControls.jsx'
 import DriverFormModal from './DriverFormModal.jsx'
 import PageHeader from '../shared/ui/PageHeader.jsx'

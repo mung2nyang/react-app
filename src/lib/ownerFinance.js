@@ -2,7 +2,7 @@
 import { getReceivableItems } from './finance.js'
 import { markReceivableItemPaid, saveWorkData } from './workData.js'
 import { resolveFixedUnitPrice } from '../domain/clients.js'
-import { commitLogWorkData } from '../store/commitHelpers.js'
+import { commitLogWorkData } from '../data/store/commitHelpers.js'
 import {
   readOwnerCars,
   readOwnerClients,
@@ -12,7 +12,7 @@ import {
   readOwnerSettings,
   readOwnerWorkData,
   readOwnerWorkDataByLogId,
-} from '../store/ownerDataHooks.js'
+} from '../data/store/ownerDataHooks.js'
 import {
   changedDayLogDateKeys,
   commitMainDayLogMapToCloud,

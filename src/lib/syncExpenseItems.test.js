@@ -5,7 +5,7 @@ import { beforeEach, describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { syncExpenseItemsForVehicle } = await import('./syncExpenseItems.js')
 
@@ -16,7 +16,7 @@ function field(value, key) {
   return value && typeof value === 'object' && !Array.isArray(value) ? /** @type {Record<string, unknown>} */ (value)[key] : undefined
 }
 
-/** @type {Array<Record<string, import('../store/atomicPersist.js').JsonValue>>} */
+/** @type {Array<Record<string, import('../data/store/atomicPersist.js').JsonValue>>} */
 const MAINT_ROWS = [
   { id: 'srv-owner', work_date: '2026-09-10', sequence: 0, raw: { id: 'owner-m1', kind: 'maint', date: '2026-09-10', cost: 300 } },
   { id: 'srv-drv', work_date: '2026-09-10', sequence: 1, raw: { id: 'drv-m1', kind: 'maint', date: '2026-09-10', cost: 100 } },

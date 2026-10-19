@@ -9,10 +9,10 @@ import useCarListActions from './useCarListActions.js'
 import { hasMainCar } from '../../lib/cars.js'
 import { NEW_DRIVER_INCOME_DRAFT, driverIncomeDraftFromCar } from '../../domain/driverIncomeDeductions.js'
 import { resolveDriverShareBase } from '../../domain/driverShareBase.js'
-import { getCloudUserId, isCloudSession } from '../../lib/cloudSession.js'
+import { getCloudUserId, isCloudSession } from '../../data/cloud/cloudSession.js'
 import { generateInviteCode } from '../../lib/drivers.js'
 import { todayIsoDate } from '../../lib/carInviteFromDraft.js'
-import { useOwnerCars, useOwnerDrivers } from '../../store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers } from '../../data/store/ownerDataHooks.js'
 import './car-management.css'
 
 /** @typedef {import('./CarFormModal.jsx').CarFormDraft} CarFormDraft */

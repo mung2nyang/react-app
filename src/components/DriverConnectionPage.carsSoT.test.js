@@ -14,7 +14,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
-const { commitCars } = await import('../store/commitHelpers.js')
+const { commitCars } = await import('../data/store/commitHelpers.js')
 
 test('차량을 커밋하면 기사 초대 모달이 리마운트 없이 할당 목록을 갱신한다', async () => {
   const ownerKey = 'sot-cars-drivers'

@@ -3,7 +3,7 @@
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 
 import { requestClientTaxInfo } from '../lib/clientMutations.js'
-import { getCloudUserId } from '../lib/cloudSession.js'
+import { getCloudUserId } from '../data/cloud/cloudSession.js'
 import { getTaxInvoiceFlowMeta } from '../lib/finance.js'
 import { invoiceCanIssue, persistInvoiceRecord } from '../lib/invoices.js'
 import { SERVER_SAVE_FAIL } from './failureMessages.js'

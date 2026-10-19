@@ -5,8 +5,8 @@
 // pendingWorkDataWritesState.js.
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
 import { saveDayRecord } from '../domain/day-record.js'
-import { readOwnerLogWorkData } from '../store/ownerDataHooks.js'
-import { commitLogWorkData } from '../store/commitHelpers.js'
+import { readOwnerLogWorkData } from '../data/store/ownerDataHooks.js'
+import { commitLogWorkData } from '../data/store/commitHelpers.js'
 import { readDurable, writeDurable } from './durableStorage.js'
 import { isValidPatch } from './durablePatchSchema.js'
 import { pulsePendingRetry } from './pendingRetryPulse.js'

@@ -3,11 +3,11 @@ import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
 
-const { commitCars } = await import('../store/commitHelpers.js')
-const { getState, setHydration, subscribe } = await import('../store/app-store.js')
+const { commitCars } = await import('../data/store/commitHelpers.js')
+const { getState, setHydration, subscribe } = await import('../data/store/app-store.js')
 const { requestCarBusinessInfoSave } = await import('./vehicleMutations.js')
-const { readJsonKey } = await import('../store/persist.js')
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
+const { readJsonKey } = await import('../data/store/persist.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 
 /** @type {import('../domain/carBusinessInfo.js').CarBusinessForm} */
 const FORM = {

@@ -1,7 +1,7 @@
 // @ts-check
 import PageHeader from '../../shared/ui/PageHeader.jsx'
 import ScopedClientsList from './ScopedClientsList.jsx'
-import { useOwnerCars } from '../../store/ownerDataHooks.js'
+import { useOwnerCars } from '../../data/store/ownerDataHooks.js'
 
 /**
  * 연동 기사 앱의 거래처 화면 — 내 차량(첫 차량) 거래처만.

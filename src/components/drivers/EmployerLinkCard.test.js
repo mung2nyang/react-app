@@ -10,7 +10,7 @@ import { beforeEach, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
-mock.module('../../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 /** @type {Array<string>} */
 let flow = []
@@ -35,9 +35,9 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: EmployerLinkCard } = await import('./EmployerLinkCard.jsx')
-const { commitDrivers } = await import('../../store/commitHelpers.js')
-const { setHydration } = await import('../../store/app-store.js')
-const { beginSessionEpoch } = await import('../../lib/cloudSession.js')
+const { commitDrivers } = await import('../../data/store/commitHelpers.js')
+const { setHydration } = await import('../../data/store/app-store.js')
+const { beginSessionEpoch } = await import('../../data/cloud/cloudSession.js')
 
 const OWNER = 'owner-1'
 const DRIVER = 'driver-1'

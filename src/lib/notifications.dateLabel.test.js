@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, mock, test } from 'node:test'
 import { collectNotifications } from './notifications.js'
 import { markBackupDone } from './guestBackup.js'
-import { commitSettings } from '../store/commitHelpers.js'
+import { commitSettings } from '../data/store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 
 describe('notifications — 날짜 줄·끈 종류', () => {

@@ -13,7 +13,7 @@ fakeSupabase.auth.getSession = async () => ({
   data: { session: { user: { id: 'user-boot-nav', user_metadata: {}, phone: null } } },
   error: null,
 })
-mock.module('../supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.js', {
   namedExports: {
     supabase: fakeSupabase,
     /** @param {string} phone */
@@ -52,16 +52,16 @@ async function unmountTracked(root) {
 }
 const { BrowserRouter, MemoryRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
-const { commitCars, commitClients, commitLogWorkData } = await import('../store/commitHelpers.js')
-const { getState, setHydration, subscribe } = await import('../store/app-store.js')
-const { readJsonKey, storageKeyFor } = await import('../store/persist.js')
+const { commitCars, commitClients, commitLogWorkData } = await import('../data/store/commitHelpers.js')
+const { getState, setHydration, subscribe } = await import('../data/store/app-store.js')
+const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
 const { parseAppLogPath, withFromLogState } = await import('./fromLogNavigation.js')
 const { pendingOwnerForLog } = await import('../lib/pendingLogOwner.js')
 const { registerPendingDayWrite, getPendingDayWrite } = await import('../lib/pendingWorkDataWrites.js')
-const { initializeOwnerFromPersist } = await import('../store/owner-state.js')
+const { initializeOwnerFromPersist } = await import('../data/store/owner-state.js')
 const { default: ClientListPage } = await import('../components/clients/ClientListPage.jsx')
 const { default: CarListPage } = await import('../components/cars/CarListPage.jsx')
-const { beginSessionEpoch, getCloudUserId, endCloudSession } = await import('../lib/cloudSession.js')
+const { beginSessionEpoch, getCloudUserId, endCloudSession } = await import('../data/cloud/cloudSession.js')
 const { resetOwnerSaveQueueForTests } = await import('../lib/ownerSaveQueue.js')
 
 function restoreDefaultHandlers() {
@@ -248,7 +248,7 @@ test('같은 핀 그룹 드래그 순서는 persist와 hydrate 뒤에 유지된�
   })
   await waitUntil(() => getState().clients[ownerKey].map((item) => item.id).join() === 'p2,p1')
   await unmountTracked(root)
-  const { initializeOwnerFromPersist } = await import('../store/owner-state.js')
+  const { initializeOwnerFromPersist } = await import('../data/store/owner-state.js')
   initializeOwnerFromPersist(ownerKey)
   assert.deepEqual(getState().clients[ownerKey].map((item) => item.id), ['p2', 'p1'], '로그인 initialize는 LS에서 clients를 덮지 않아 Store 순서가 남는다')
 })
@@ -449,7 +449,7 @@ test('차량 insert 대기 중 번호를 바꿔도 서버 insert는 1회다', as
   // 슬라이스 C: hydrate가 빈 배열을 "삭제됨"으로 보므로, 시드한 supabaseId 차량(main-hold)도
   // 서버 목록에 있어야 hydrate가 지우지 않는다.
   handlers.vehicles.select = () => ({
-    data: /** @type {import('../store/atomicPersist.js').JsonValue} */ ([
+    data: /** @type {import('../data/store/atomicPersist.js').JsonValue} */ ([
       { id: 'main-already', number: '10하1010', type: 'main', raw: { id: 'main-hold' }, legacy_log_id: '10하1010' },
       ...serverVehicles.map((row) => ({ id: row.id, number: row.number || '', type: 'sub', raw: row.raw || {}, legacy_log_id: row.number || '' })),
     ]),

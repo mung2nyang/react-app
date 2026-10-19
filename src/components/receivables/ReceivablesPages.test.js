@@ -16,7 +16,7 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
 const { default: ReceivablesPage } = await import('../ReceivablesPage.jsx')
-const { commitCars, commitWorkData } = await import('../../store/commitHelpers.js')
+const { commitCars, commitWorkData } = await import('../../data/store/commitHelpers.js')
 
 /**
  * @param {string} ownerKey

@@ -18,8 +18,8 @@ const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
 const { default: NotificationsPage } = await import('./NotificationsPage.jsx')
 const { collectNotifications, DAILY_INSPECTION_NOTICE_ID } = await import('../../lib/notifications.js')
-const { commitSettings, commitWorkData } = await import('../../store/commitHelpers.js')
-const { readOwnerSettings } = await import('../../store/ownerDataHooks.js')
+const { commitSettings, commitWorkData } = await import('../../data/store/commitHelpers.js')
+const { readOwnerSettings } = await import('../../data/store/ownerDataHooks.js')
 const { normalizeSettings } = await import('../../domain/practiceSettings.js')
 
 /**

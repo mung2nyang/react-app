@@ -22,7 +22,7 @@ const cars = [
 ]
 const drivers = [{ id: 'd-1', status: 'linked', vehicleNumber: '56다7890' }]
 
-mock.module('../store/ownerDataHooks.js', {
+mock.module('../data/store/ownerDataHooks.js', {
   namedExports: {
     readOwnerCars: () => cars,
     readOwnerDrivers: () => drivers,
@@ -31,7 +31,7 @@ mock.module('../store/ownerDataHooks.js', {
     readOwnerInvoices: () => invoices,
   },
 })
-mock.module('./cloudSession.js', { namedExports: { getCloudUserId: () => 'o-1' } })
+mock.module('../data/cloud/cloudSession.js', { namedExports: { getCloudUserId: () => 'o-1' } })
 mock.module('./clientCloudSave.js', {
   namedExports: {
     saveClientsToCloud: async (/** @type {{ next: Array<Record<string, unknown>>, changedIds: string[] }} */ args) => {

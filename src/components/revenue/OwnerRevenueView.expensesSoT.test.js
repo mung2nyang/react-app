@@ -14,7 +14,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: OwnerRevenueView } = await import('./OwnerRevenueView.jsx')
-const { commitExpenses } = await import('../../store/commitHelpers.js')
+const { commitExpenses } = await import('../../data/store/commitHelpers.js')
 
 test('일지에서 비용을 커밋하면 매출 화면이 리마운트 없이 지출 합계를 갱신한다', async () => {
   const ownerKey = 'sot-expenses-revenue'

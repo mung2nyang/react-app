@@ -5,15 +5,15 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
-mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
-const { buildClientRow } = await import('./cloudStorage.js')
+const { buildClientRow } = await import('../data/cloud/cloudStorage.js')
 const { upsertClientFromList } = await import('./syncVehiclesClients.js')
 const { requestClientSave } = await import('./clientMutations.js')
 const { buildEmployedDriverSnapshot } = await import('./hydrateEmployedDriver.js')
 const { mergeClientsFromRows } = await import('./hydrateMergeClients.js')
-const { beginSessionEpoch, captureSession, endCloudSession } = await import('./cloudSession.js')
-const { setHydration } = await import('../store/app-store.js')
+const { beginSessionEpoch, captureSession, endCloudSession } = await import('../data/cloud/cloudSession.js')
+const { setHydration } = await import('../data/store/app-store.js')
 
 describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 편집 검증', () => {
   test('buildClientRow는 전달된 ownerId를 user_id로 기록한다 (userId와 무관)', () => {

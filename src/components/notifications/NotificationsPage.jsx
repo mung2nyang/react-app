@@ -1,10 +1,10 @@
 // @ts-check
 // 알림 화면(알림 단추 → /app/notifications): 맨 위 "알림 받기" 종류별 스위치 + 알림 목록(날짜 줄·[닫기]). 옆 창(NotificationPanel)을 대체.
-import { isCloudSession } from '../../lib/cloudSession.js'
+import { isCloudSession } from '../../data/cloud/cloudSession.js'
 import { dismissNotification } from '../../lib/notifications.js'
 import useNotifications from './useNotifications.js'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
-import { useOwnerSettings } from '../../store/ownerDataHooks.js'
+import { useOwnerSettings } from '../../data/store/ownerDataHooks.js'
 import PageHeader from '../../shared/ui/PageHeader.jsx'
 import './notifications-page.css'
 import { SERVER_SAVE_FAIL } from '../../lib/failureMessages.js'

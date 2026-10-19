@@ -15,7 +15,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: MyPage } = await import('./MyPage.jsx')
-const { replaceOwnerState } = await import('../store/owner-state.js')
+const { replaceOwnerState } = await import('../data/store/owner-state.js')
 
 const OWNER = 'cloud:driver-85'
 const LINK = { id: 'link-1', name: '홍길동', phone: '010-1111-2222', inviteCode: '123456', status: 'linked', vehicleNumber: '12가3456', startDate: '2026-10-01', endDate: '' }

@@ -2,8 +2,8 @@
 // 로그인 사용자의 기사 초대 저장을 upsert_driver_link_idempotent RPC 1회로 끝낸다(outbox·재시도 큐 없음) — 그 RPC 호출과,
 // RPC no-op update로는 못 바꾸는 기존 행 필드 보정만 담는다. 같은 차량번호 1명 규칙은 domain/drivers.js upsertDriver가 저장 전에 본다.
 /** @typedef {import('./outboxTypes.js').DriverLinkRow} DriverLinkRow */
-import { supabase } from '../supabaseClient.js'
-import { assertCloudWriteReady } from './cloudSession.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
+import { assertCloudWriteReady } from '../data/cloud/cloudSession.js'
 import { normalizeInviteCode } from '../domain/drivers.js'
 
 /**

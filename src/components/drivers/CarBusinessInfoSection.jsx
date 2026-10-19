@@ -6,7 +6,7 @@ import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../domain/formatPhon
 import BizNumberHint from '../../shared/ui/BizNumberHint.jsx'
 import ClearableInput from '../../shared/ui/ClearableInput.jsx'
 import { requestCarBusinessInfoSave } from '../../lib/vehicleMutations.js'
-import { getCloudUserId } from '../../lib/cloudSession.js'
+import { getCloudUserId } from '../../data/cloud/cloudSession.js'
 import './car-business-info.css'
 
 /** @typedef {import('../../domain/carBusinessInfo.js').CarBusinessForm} CarBusinessForm */

@@ -1,13 +1,13 @@
 // @ts-check
 // hydrate 전체 — 조회 전부 성공 판정, single-flight/세대 보호.
-import { supabase } from '../supabaseClient.js'
-import { getState, setHydration } from '../store/app-store.js'
-import { replaceOwnerState } from '../store/owner-state.js'
-import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
+import { supabase } from '../data/cloud/supabaseClient.js'
+import { getState, setHydration } from '../data/store/app-store.js'
+import { replaceOwnerState } from '../data/store/owner-state.js'
+import { readOwnerWorkDataTombstones } from '../data/store/ownerDataHooks.js'
 import { singleFlight } from './singleFlight.js'
-import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, isSessionStillCurrent } from './cloudSession.js'
+import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, isSessionStillCurrent } from '../data/cloud/cloudSession.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
-import { readPersistDomain } from '../store/persistDomainRead.js'
+import { readPersistDomain } from '../data/store/persistDomainRead.js'
 import {
   throwIfAnyHydrateError,
   mergeProfileRow,

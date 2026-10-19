@@ -4,12 +4,12 @@ import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
-const { commitCars, commitLogWorkData } = await import('../store/commitHelpers.js')
-const { getState, subscribe, setHydration } = await import('../store/app-store.js')
+const { commitCars, commitLogWorkData } = await import('../data/store/commitHelpers.js')
+const { getState, subscribe, setHydration } = await import('../data/store/app-store.js')
 const { requestVehicleSave } = await import('./vehicleMutations.js')
 const { requestVehicleDeletion } = await import('./directMutationActions.js')
-const { storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
-const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
+const { storageKeyFor, storageKeyForLog } = await import('../data/store/persist.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 const { pendingOwnerForLog } = await import('./pendingLogOwner.js')
 const { registerPendingDayWrite, getPendingDayWrite } = await import('./pendingWorkDataWrites.js')
 const { durableKey } = await import('./durableStorage.js')

@@ -13,12 +13,12 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
-const { commitDrivers } = await import('../store/commitHelpers.js')
-const { beginSessionEpoch, endCloudSession } = await import('../lib/cloudSession.js')
+const { commitDrivers } = await import('../data/store/commitHelpers.js')
+const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 
 const GUEST_NOTICE = '기사 초대는 로그인 후 쓸 수 있습니다. 로그인하면 배정 차량과 시작일을 넣어 초대할 수 있습니다.'
 
-/** @param {Record<string, import('../store/atomicPersist.js').JsonValue|null>} session */
+/** @param {Record<string, import('../data/store/atomicPersist.js').JsonValue|null>} session */
 async function renderPage(ownerKey, session) {
   const container = document.createElement('div')
   document.body.appendChild(container)

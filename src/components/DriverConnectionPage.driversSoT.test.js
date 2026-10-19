@@ -14,7 +14,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
-const { commitDrivers } = await import('../store/commitHelpers.js')
+const { commitDrivers } = await import('../data/store/commitHelpers.js')
 
 test('기사를 커밋하면 연동 목록이 리마운트 없이 갱신한다', async () => {
   const ownerKey = 'sot-drivers-page'

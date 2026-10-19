@@ -16,8 +16,8 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
 const { default: AppSettingsPage } = await import('./AppSettingsPage.jsx')
-const { commitSettings } = await import('../store/commitHelpers.js')
-const { readOwnerSettings } = await import('../store/ownerDataHooks.js')
+const { commitSettings } = await import('../data/store/commitHelpers.js')
+const { readOwnerSettings } = await import('../data/store/ownerDataHooks.js')
 const { normalizeSettings } = await import('../domain/practiceSettings.js')
 
 /** @param {string} ownerKey @param {string} path */

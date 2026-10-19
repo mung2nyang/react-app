@@ -4,7 +4,7 @@ import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, test } from 'node:test'
 import { collectNotifications, dismissNotification, DAILY_INSPECTION_NOTICE_ID } from './notifications.js'
-import { commitSettings } from '../store/commitHelpers.js'
+import { commitSettings } from '../data/store/commitHelpers.js'
 import { normalizeCarSettings, normalizeSettings } from '../domain/practiceSettings.js'
 
 /** @param {string} ownerKey */
@@ -45,8 +45,8 @@ test('설정 정규화: 처음 값 꺼짐, 메인·기사차량 따로 유지', 
 })
 
 test('기기 저장값 검사: 새 이름(dailyInspectionOn)은 허용, 참거짓이 아니면 거부', async () => {
-  const { writeJsonKey } = await import('../store/persist.js')
-  const { readPersistDomain } = await import('../store/persistDomainRead.js')
+  const { writeJsonKey } = await import('../data/store/persist.js')
+  const { readPersistDomain } = await import('../data/store/persistDomainRead.js')
   writeJsonKey('settings', 'di-persist', { dailyInspectionOn: true, subCarSettings: { '11가1111': { dailyInspectionOn: false } } })
   assert.notEqual(readPersistDomain('settings', 'di-persist').kind, 'schema')
   writeJsonKey('settings', 'di-persist', { dailyInspectionOn: 'yes' })

@@ -36,7 +36,7 @@ mock.module('../../lib/driverUnlink.js', {
     requestDriverUnlinkAction: async () => { calls.push('unlinkRequest'); return { toast: '해제 요청을 보냈습니다.', failed: false } },
   },
 })
-const { commitCars } = await import('../../store/commitHelpers.js')
+const { commitCars } = await import('../../data/store/commitHelpers.js')
 mock.module('../../lib/directMutationActions.js', {
   namedExports: {
     requestDriverDeletion: async (/** @type {{ drivers: Array<{ id: string }>, driverId: string }} */ { drivers, driverId }) => {
@@ -56,8 +56,8 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { MemoryRouter, useLocation } = await import('react-router-dom')
 const { default: CarListPage } = await import('./CarListPage.jsx')
-const { commitDrivers } = await import('../../store/commitHelpers.js')
-const { beginSessionEpoch, endCloudSession } = await import('../../lib/cloudSession.js')
+const { commitDrivers } = await import('../../data/store/commitHelpers.js')
+const { beginSessionEpoch, endCloudSession } = await import('../../data/cloud/cloudSession.js')
 
 /** @type {{ pathname: string }} */
 const seen = { pathname: '' }
