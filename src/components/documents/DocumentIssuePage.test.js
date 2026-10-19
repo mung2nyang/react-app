@@ -39,10 +39,10 @@ const OWNER = 'doc-issue-owner'
 beforeEach(() => {
   hasAny = false
   monthRecords = {}
-  commitCars(OWNER, [{ id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' }], { syncToCloud: false })
-  commitProfile(OWNER, { ...EMPTY_PROFILE, name: '김운행', bizRepresentative: '김대표' }, { syncToCloud: false })
-  commitWorkData(OWNER, {}, { syncToCloud: false })
-  commitInvoices(OWNER, [], { syncToCloud: false })
+  commitCars(OWNER, [{ id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' }])
+  commitProfile(OWNER, { ...EMPTY_PROFILE, name: '김운행', bizRepresentative: '김대표' })
+  commitWorkData(OWNER, {})
+  commitInvoices(OWNER, [])
 })
 
 /** @param {{ path?: string, owner?: boolean }} [opts] owner = 차주(세금계산서 탭 있음), 기본은 연동 기사 앱 */
@@ -62,7 +62,7 @@ async function render({ path = '/report', owner = false } = {}) {
 }
 
 test('스위치 꺼짐 + 저장분 없음 → 탭 줄 없이 운송비 내역서만, 제목 "서류 발급"', async () => {
-  commitSettings(OWNER, normalizeSettings({}), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({}))
   const view = await render()
   try {
     assert.equal(!!view.container.querySelector('.doc-tabs'), false)
@@ -74,7 +74,7 @@ test('스위치 꺼짐 + 저장분 없음 → 탭 줄 없이 운송비 내역서
 })
 
 test('스위치 꺼짐이어도 서버에 점검표가 있으면 탭이 보임', async () => {
-  commitSettings(OWNER, normalizeSettings({}), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({}))
   hasAny = true
   const view = await render()
   try {
@@ -85,7 +85,7 @@ test('스위치 꺼짐이어도 서버에 점검표가 있으면 탭이 보임',
 })
 
 test('스위치 켜짐 → 처음 탭 [일상점검표]: 머리 칸·오늘 칸 O/X, 휴무 미 → [운송비 내역서] 탭 전환', async () => {
-  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
   const today = todayKey()
   monthRecords = { [today]: { items: { ...allGoodItems(), tires: 'bad' }, actionNote: '', inspectorName: '기사' } }
   const view = await render()
@@ -116,9 +116,9 @@ test('스위치 켜짐 → 처음 탭 [일상점검표]: 머리 칸·오늘 칸 
 })
 
 test('휴무 날은 저장분이 있어도 미', async () => {
-  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
   const today = todayKey()
-  commitWorkData(OWNER, { [today]: { isOff: true } }, { syncToCloud: false })
+  commitWorkData(OWNER, { [today]: { isOff: true } })
   monthRecords = { [today]: { items: allGoodItems(), actionNote: '', inspectorName: '기사' } }
   const view = await render()
   try {
@@ -132,8 +132,8 @@ test('휴무 날은 저장분이 있어도 미', async () => {
 })
 
 test('연동 기사 앱처럼 메인 종류 차량이 없으면 첫 차량(배정 차량) 번호를 머리 칸에', async () => {
-  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
-  commitCars(OWNER, [{ id: 'c-assigned', type: 'sub', number: '11가1111', supabaseId: 'veh-assigned' }], { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
+  commitCars(OWNER, [{ id: 'c-assigned', type: 'sub', number: '11가1111', supabaseId: 'veh-assigned' }])
   const view = await render()
   try {
     const head = view.container.querySelector('.doc-sheet-head')?.textContent || ''
@@ -145,7 +145,7 @@ test('연동 기사 앱처럼 메인 종류 차량이 없으면 첫 차량(배�
 })
 
 test('서류 탭 줄은 위 카드 안 달 이동 아래, 점검표 탭에서 옮긴 달을 운송비 내역서 탭도 그대로', async () => {
-  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
   const view = await render()
   try {
     const card = view.container.querySelector('.report-top-card')
@@ -173,7 +173,7 @@ test('서류 탭 줄은 위 카드 안 달 이동 아래, 점검표 탭에서 �
 })
 
 test('9-D 점검표 탭 아래 버튼 3개·안내 문구, 화면 밖 법정 서식 = 그 달 끝날까지 칸·○/×/미·점검자 이름·조치 기록', async () => {
-  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
   const today = todayKey()
   const year = Number(today.slice(0, 4))
   const month = Number(today.slice(5, 7)) - 1
@@ -209,7 +209,7 @@ test('9-D 점검표 탭 아래 버튼 3개·안내 문구, 화면 밖 법정 서
 })
 
 test('9-D 그 달 점검표를 읽기 전이면 내보내기 버튼 잠김', async () => {
-  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
   pendingFetch = new Promise(() => {})
   const view = await render()
   try {
@@ -224,7 +224,7 @@ test('9-D 그 달 점검표를 읽기 전이면 내보내기 버튼 잠김', asy
 })
 
 test('세금계산서 정리 ② 차주: 탭 [세금계산서][운송비 내역서][일상점검표], 처음 [세금계산서], 위 카드에 [작성 전][발급 완료]', async () => {
-  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
   const view = await render({ owner: true })
   try {
     assert.deepEqual([...view.container.querySelectorAll('.doc-tab')].map((el) => el.textContent), ['세금계산서', '운송비 내역서', '일상점검표'])
@@ -237,14 +237,14 @@ test('세금계산서 정리 ② 차주: 탭 [세금계산서][운송비 내역�
 })
 
 test('세금계산서 정리 ② 연동 기사 본인 앱엔 세금계산서 탭 없음(스위치 꺼짐이면 탭 줄도 없음)', async () => {
-  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
   const on = await render()
   try {
     assert.deepEqual([...on.container.querySelectorAll('.doc-tab')].map((el) => el.textContent), ['운송비 내역서', '일상점검표'])
   } finally {
     await on.cleanup()
   }
-  commitSettings(OWNER, normalizeSettings({}), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({}))
   const off = await render()
   try {
     assert.equal(!!off.container.querySelector('.doc-tabs'), false)
@@ -255,18 +255,18 @@ test('세금계산서 정리 ② 연동 기사 본인 앱엔 세금계산서 탭
 })
 
 test('세금계산서 정리 ② 차량별: 메인 서류 발급 = 메인 차량 계산서만, 기사차량 서류 발급 = 그 차량 것만(저장된 발급 완료분 포함)', async () => {
-  commitSettings(OWNER, normalizeSettings({}), { syncToCloud: false })
+  commitSettings(OWNER, normalizeSettings({}))
   commitCars(OWNER, [
     { id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' },
     { id: 'c-sub', type: 'sub', number: '22가2222', supabaseId: 'veh-sub' },
-  ], { syncToCloud: false })
+  ])
   const today = todayKey()
   const monthKey = today.slice(0, 7)
-  commitWorkData(OWNER, { [today]: { callDetails: [{ client: '메인거래처', fare: '100000' }] } }, { syncToCloud: false })
+  commitWorkData(OWNER, { [today]: { callDetails: [{ client: '메인거래처', fare: '100000' }] } })
   commitLogWorkData(OWNER, '22가2222', { [today]: { callDetails: [{ client: '기사거래처', fare: '50000' }] } })
   commitInvoices(OWNER, [
     { id: `sales|${monthKey}|옛발급__22가2222`, flow: 'sales', monthKey, status: 'issued', partyKey: '옛발급__22가2222', clientName: '옛발급', supplyAmount: 1000, taxAmount: 100 },
-  ], { syncToCloud: false })
+  ])
   const cardsText = (/** @type {Element} */ root) => [...root.querySelectorAll('.tax-invoice-entry-card')].map((el) => el.textContent || '').join('|')
   /** @param {Element} root */
   const issuedTab = (root) => [...root.querySelectorAll('.doc-scope-tab')].find((el) => (el.textContent || '').startsWith('발급 완료'))

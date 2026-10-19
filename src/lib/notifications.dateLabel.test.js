@@ -30,7 +30,7 @@ describe('notifications — 날짜 줄·끈 종류', () => {
   test('끈 종류는 빠지고, 일상점검 의무화 안내는 끌 수 없다', () => {
     mock.timers.enable({ apis: ['Date'], now: new Date(2026, 9, 10, 18, 30, 0).getTime() })
     const owner = 'label-off'
-    commitSettings(owner, normalizeSettings({ notifOff: ['today', 'inspectionRequired'] }), { syncToCloud: false })
+    commitSettings(owner, normalizeSettings({ notifOff: ['today', 'inspectionRequired'] }))
     const kinds = collectNotifications(owner).map((n) => n.kind)
     assert.equal(kinds.includes('today'), false)
     assert.equal(kinds.includes('inspectionRequired'), true, '의무화 안내는 notifOff에 넣어도(모르는 이름이라 저장 전에 빠짐) 그대로')

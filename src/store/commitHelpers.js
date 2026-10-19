@@ -19,19 +19,18 @@ import { getCloudOwnerKey } from '../lib/cloudSession.js'
  * @param {import('./persist.js').PersistDomain} domain
  * @param {string} ownerKey
  * @param {T} value
- * @param {{ syncToCloud?: boolean }} [options]
  * @returns {T}
  */
-function commit(domain, ownerKey, value, options = {}) {
-  const [result] = commitBatch([{ domain, ownerKey, value }], options)
+function commit(domain, ownerKey, value) {
+  const [result] = commitBatch([{ domain, ownerKey, value }])
   // commitBatch는 entries 순서 그대로 각 값을 돌려준다(app-store.js) — 여기선 항상
   // 방금 넘긴 그 T값 하나뿐이라, 넓어진 DomainValue를 원래 T로 좁혀 돌려준다.
   return /** @type {T} */ (result)
 }
 
-/** @param {string} ownerKey @param {Record<string, DayRecordLike>} data 날짜별 운행 기록 @param {{ syncToCloud?: boolean }} [options] */
-export function commitWorkData(ownerKey, data, options = {}) {
-  return commit('workData', ownerKey, data, options)
+/** @param {string} ownerKey @param {Record<string, DayRecordLike>} data 날짜별 운행 기록 */
+export function commitWorkData(ownerKey, data) {
+  return commit('workData', ownerKey, data)
 }
 
 /**
@@ -47,46 +46,45 @@ export function commitLogWorkData(ownerKey, logId, data) {
   const cloud = getCloudOwnerKey() === ownerKey
   commitBatch([], {
     persist: !cloud,
-    syncToCloud: false,
     extraWrites: cloud ? [] : [{ key: storageKeyForLog(ownerKey, logId), value: jsonValue }],
     mergeWorkLogs: { ownerKey, extra: { [logId]: data } },
   })
   return data
 }
 
-/** @param {string} ownerKey @param {Array<CarLike>} cars @param {{ syncToCloud?: boolean }} [options] */
-export function commitCars(ownerKey, cars, options = {}) {
-  return commit('cars', ownerKey, dedupeCarsById(cars), options)
+/** @param {string} ownerKey @param {Array<CarLike>} cars */
+export function commitCars(ownerKey, cars) {
+  return commit('cars', ownerKey, dedupeCarsById(cars))
 }
 
-/** @param {string} ownerKey @param {Array<ClientLike>} clients @param {{ syncToCloud?: boolean }} [options] */
-export function commitClients(ownerKey, clients, options = {}) {
-  return commit('clients', ownerKey, clients, options)
+/** @param {string} ownerKey @param {Array<ClientLike>} clients */
+export function commitClients(ownerKey, clients) {
+  return commit('clients', ownerKey, clients)
 }
 
-/** @param {string} ownerKey @param {FinanceSettings} settings 이미 normalizeSettings를 거친 값 @param {{ syncToCloud?: boolean }} [options] */
-export function commitSettings(ownerKey, settings, options = {}) {
-  return commit('settings', ownerKey, settings, options)
+/** @param {string} ownerKey @param {FinanceSettings} settings 이미 normalizeSettings를 거친 값 */
+export function commitSettings(ownerKey, settings) {
+  return commit('settings', ownerKey, settings)
 }
 
-/** @param {string} ownerKey @param {Array<ExpenseItem>} items @param {{ syncToCloud?: boolean }} [options] */
-export function commitExpenses(ownerKey, items, options = {}) {
-  return commit('expenses', ownerKey, items, options)
+/** @param {string} ownerKey @param {Array<ExpenseItem>} items */
+export function commitExpenses(ownerKey, items) {
+  return commit('expenses', ownerKey, items)
 }
 
-/** @param {string} ownerKey @param {Array<InvoiceLike>} items @param {{ syncToCloud?: boolean }} [options] */
-export function commitInvoices(ownerKey, items, options = {}) {
-  return commit('invoices', ownerKey, items, options)
+/** @param {string} ownerKey @param {Array<InvoiceLike>} items */
+export function commitInvoices(ownerKey, items) {
+  return commit('invoices', ownerKey, items)
 }
 
-/** @param {string} ownerKey @param {Array<DriverRecord>} items @param {{ syncToCloud?: boolean }} [options] */
-export function commitDrivers(ownerKey, items, options = {}) {
-  return commit('drivers', ownerKey, items, options)
+/** @param {string} ownerKey @param {Array<DriverRecord>} items */
+export function commitDrivers(ownerKey, items) {
+  return commit('drivers', ownerKey, items)
 }
 
-/** @param {string} ownerKey @param {ProfileLike} profile 이미 EMPTY_PROFILE과 병합된 값 @param {{ syncToCloud?: boolean }} [options] */
-export function commitProfile(ownerKey, profile, options = {}) {
-  return commit('profile', ownerKey, profile, options)
+/** @param {string} ownerKey @param {ProfileLike} profile 이미 EMPTY_PROFILE과 병합된 값 */
+export function commitProfile(ownerKey, profile) {
+  return commit('profile', ownerKey, profile)
 }
 
 /**
@@ -96,13 +94,13 @@ export function commitProfile(ownerKey, profile, options = {}) {
  * @returns {Array<string>}
  */
 export function commitDismissedNotifications(ownerKey, ids) {
-  return commit('dismissedNotifications', ownerKey, ids, { syncToCloud: false })
+  return commit('dismissedNotifications', ownerKey, ids)
 }
 
 /**
  * 빈 날 삭제 목록(domain/workDataTombstones.js) 저장. lib/workData.js는 workData 삭제와 같은 commitBatch에 묶어 쓴다.
- * @param {string} ownerKey @param {import('../domain/workDataTombstones.js').WorkDataTombstones} tombstones @param {{ syncToCloud?: boolean }} [options]
+ * @param {string} ownerKey @param {import('../domain/workDataTombstones.js').WorkDataTombstones} tombstones
  */
-export function commitWorkDataDeletedDates(ownerKey, tombstones, options = {}) {
-  return commit('workDataDeletedDates', ownerKey, tombstones, options)
+export function commitWorkDataDeletedDates(ownerKey, tombstones) {
+  return commit('workDataDeletedDates', ownerKey, tombstones)
 }

@@ -153,7 +153,7 @@ export function applyGuestBackupData(parsed) {
   }
 
   try {
-    replaceOwnerState('guest', snapshot, { sync: false, extraWrites })
+    replaceOwnerState('guest', snapshot, { extraWrites })
     return { ok: true }
   } catch (err) {
     return { ok: false, error: err instanceof Error ? err.message : '백업을 적용하지 못했습니다.' }

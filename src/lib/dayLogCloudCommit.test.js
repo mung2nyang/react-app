@@ -26,12 +26,12 @@ function beginLoggedIn(userId, ownerKey, ready = true) {
   handlers.daily_logs = { upsert: () => ({ data: { id: 5001 }, error: null }) }
   beginSessionEpoch(userId, ownerKey)
   setHydration({ status: ready ? 'ready' : 'failed', userId, ownerKey })
-  commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 }], { syncToCloud: false })
+  commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 }])
 }
 
 /** @param {string} ownerKey @param {import('../domain/dayRecordTypes.js').DayRecordLike} record */
 function withDay(ownerKey, record) {
-  commitWorkData(ownerKey, { [DK]: record }, { syncToCloud: false })
+  commitWorkData(ownerKey, { [DK]: record })
 }
 
 describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
@@ -53,7 +53,7 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
     commitCars('dlc-sub-ok', [
       { id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 },
       { id: 'car-sub', type: 'sub', number: '11가1111', supabaseId: 801, driverName: '김기사', driverPhone: '01012345678' },
-    ], { syncToCloud: false })
+    ])
     withDay('dlc-sub-ok', { fixedCount: 1, callDetails: [] })
 
     const r = await commitMainDayLogToCloud({
@@ -73,7 +73,7 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
     Object.assign(handlers, emptyOkHandlers())
     beginSessionEpoch('u1', 'dlc-nocar')
     setHydration({ status: 'ready', userId: 'u1', ownerKey: 'dlc-nocar' })
-    commitCars('dlc-nocar', [{ id: 'c', type: 'main', number: '9' }], { syncToCloud: false })
+    commitCars('dlc-nocar', [{ id: 'c', type: 'main', number: '9' }])
     const r = await commitMainDayLogToCloud({ ownerKey: 'dlc-nocar', logId: 'main', dateKey: DK, previousData: {}, nextData: { [DK]: { fixedCount: 1 } } })
     assert.deepEqual(r, { cloud: false })
     assert.equal(shouldCommitDayLogToCloud('dlc-nocar', 'main'), false)

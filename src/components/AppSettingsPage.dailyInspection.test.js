@@ -44,7 +44,7 @@ async function toggle(container) {
 }
 
 test('메인 앱 설정: 스위치를 켜면 계정 설정 dailyInspectionOn=true, 기사차량 설정은 그대로', async () => {
-  commitSettings('di-page-1', normalizeSettings({}), { syncToCloud: false })
+  commitSettings('di-page-1', normalizeSettings({}))
   const view = await render('di-page-1', '/settings')
   try {
     await toggle(view.container)
@@ -55,7 +55,7 @@ test('메인 앱 설정: 스위치를 켜면 계정 설정 dailyInspectionOn=tru
 })
 
 test('기사차량 운행일지 설정: 그 차량 설정만 켜지고 메인은 꺼진 그대로', async () => {
-  commitSettings('di-page-2', normalizeSettings({}), { syncToCloud: false })
+  commitSettings('di-page-2', normalizeSettings({}))
   const view = await render('di-page-2', '/logs/11%EA%B0%801111/settings')
   try {
     await toggle(view.container)

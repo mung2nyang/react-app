@@ -57,7 +57,7 @@ function saveCarDriverInfo(ownerKey, carId, driver, captured) {
     try {
       await upsertVehicleFromList(/** @type {string} */ (getCloudUserId()), ownerKey, nextCars, carId, captured)
       assertSessionStillCurrent(captured)
-      commitCars(ownerKey, nextCars, { syncToCloud: false })
+      commitCars(ownerKey, nextCars)
       return true
     } catch (error) {
       console.error('[requestDriverInviteSave] 차량 기사 정보 저장 실패:', error)
@@ -123,7 +123,7 @@ export async function requestDriverInviteSave({ ownerKey, items, editingId, cars
     }
 
     const nextItems = applyServerRow(items, idx, row)
-    commitDrivers(ownerKey, nextItems, { syncToCloud: false })
+    commitDrivers(ownerKey, nextItems)
     const carSaved = await saveCarDriverInfo(ownerKey, car.id, driver, captured)
     return {
       items: nextItems,

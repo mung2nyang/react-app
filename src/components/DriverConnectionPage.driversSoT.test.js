@@ -18,7 +18,7 @@ const { commitDrivers } = await import('../store/commitHelpers.js')
 
 test('기사를 커밋하면 연동 목록이 리마운트 없이 갱신한다', async () => {
   const ownerKey = 'sot-drivers-page'
-  commitDrivers(ownerKey, [], { syncToCloud: false })
+  commitDrivers(ownerKey, [])
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -40,7 +40,7 @@ test('기사를 커밋하면 연동 목록이 리마운트 없이 갱신한다',
         phone: '010-0000-0000',
         inviteCode: 'ABC123',
         status: 'pending',
-      }], { syncToCloud: false })
+      }])
     })
     assert.ok(
       container.textContent.includes('소트기사'),

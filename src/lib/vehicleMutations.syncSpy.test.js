@@ -24,7 +24,7 @@ test('번호 변경 성공은 저장되고 persist 실패는 저장 전 값이�
   const ownerFail = 'veh-sync-fail'
   commitCars(ownerOk, [{
     id: 'car-ok', type: 'sub', number: '81가8101', driverName: '성', driverPhone: '010-8101-8101',
-  }], { syncToCloud: false })
+  }])
   commitLogWorkData(ownerOk, '81가8101', { '2026-08-23': { isOff: false, fixedCount: 1 } })
   const apiBefore = totalStubCalls()
   let notifyCount = 0
@@ -42,7 +42,7 @@ test('번호 변경 성공은 저장되고 persist 실패는 저장 전 값이�
 
   commitCars(ownerFail, [{
     id: 'car-fail', type: 'sub', number: '82나8201', driverName: '패', driverPhone: '010-8201-8201',
-  }], { syncToCloud: false })
+  }])
   commitLogWorkData(ownerFail, '82나8201', { '2026-08-23': { isOff: false, fixedCount: 1 } })
   const oldPending = pendingOwnerForLog(ownerFail, '82나8201')
   registerPendingDayWrite(oldPending, '2026-08-23', {
@@ -94,7 +94,7 @@ test('로컬 차량 삭제는 Supabase 0회다', async () => {
   resetStubSupabaseCallCounts()
   endCloudSession()
   const owner = 'veh-sync-local-del'
-  commitCars(owner, [{ id: 'car-local', type: 'sub', number: '70가7000' }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'car-local', type: 'sub', number: '70가7000' }])
   const apiBefore = { ...stubSupabaseCallCounts }
   const result = await requestVehicleDeletion({
     ownerKey: owner, userId: null, cars: getState().cars[owner], vehicleId: 'car-local',
@@ -112,7 +112,7 @@ test('Supabase 차량 삭제 성공은 delete 1회다(37-B: vehicles 한 줄만)
   beginSessionEpoch('user-sync-del', 'veh-sync-remote-del')
   setHydration({ status: 'ready', userId: 'user-sync-del', ownerKey: 'veh-sync-remote-del' })
   const owner = 'veh-sync-remote-del'
-  commitCars(owner, [{ id: 'car-rem', number: '71가7100', supabaseId: 7100 }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'car-rem', number: '71가7100', supabaseId: 7100 }])
   const result = await requestVehicleDeletion({
     ownerKey: owner, userId: 'user-sync-del', cars: getState().cars[owner], vehicleId: 'car-rem',
   })
@@ -131,7 +131,7 @@ test('슬라이스 C — 원격 삭제 throw는 Fail-Fast(failed:true)이고 veh
   beginSessionEpoch('user-sync-retry', 'veh-sync-retry-del')
   setHydration({ status: 'ready', userId: 'user-sync-retry', ownerKey: 'veh-sync-retry-del' })
   const owner = 'veh-sync-retry-del'
-  commitCars(owner, [{ id: 'car-r', number: '72가7200', supabaseId: 7200 }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'car-r', number: '72가7200', supabaseId: 7200 }])
   const errSpy = mock.method(console, 'error', /**
    * @param {string|Error} [_first]
    * @param {string|Error} [_second]
@@ -160,7 +160,7 @@ test('persist/remove 실패 삭제는 Supabase 0회다', async () => {
   resetStubSupabaseCallCounts()
   endCloudSession()
   const owner = 'veh-sync-persist-fail'
-  commitCars(owner, [{ id: 'car-p', type: 'sub', number: '73가7300' }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'car-p', type: 'sub', number: '73가7300' }])
   const proto = Object.getPrototypeOf(localStorage)
   const originalSet = proto.setItem
   const spy = mock.method(proto, 'setItem', /** @this {Storage} @param {string} key @param {string} value */ function patched(key, value) {

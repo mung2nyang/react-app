@@ -20,7 +20,7 @@ const { EMPTY_PROFILE } = await import('../lib/profile.js')
 
 test('프로필을 커밋하면 개인정보 화면이 리마운트 없이 상호를 갱신한다', async () => {
   const ownerKey = 'sot-profile-page'
-  commitProfile(ownerKey, { ...EMPTY_PROFILE, bizName: '예전상호' }, { syncToCloud: false })
+  commitProfile(ownerKey, { ...EMPTY_PROFILE, bizName: '예전상호' })
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -34,7 +34,7 @@ test('프로필을 커밋하면 개인정보 화면이 리마운트 없이 상�
     assert.equal(input.value, '예전상호')
 
     await act(async () => {
-      commitProfile(ownerKey, { ...EMPTY_PROFILE, bizName: '새상호' }, { syncToCloud: false })
+      commitProfile(ownerKey, { ...EMPTY_PROFILE, bizName: '새상호' })
     })
     assert.equal(
       input.value,
@@ -49,7 +49,7 @@ test('프로필을 커밋하면 개인정보 화면이 리마운트 없이 상�
 
 test('프로필을 커밋하면 마이페이지 이름이 리마운트 없이 바뀐다', async () => {
   const ownerKey = 'sot-profile-mypage'
-  commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '이전이름' }, { syncToCloud: false })
+  commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '이전이름' })
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -66,7 +66,7 @@ test('프로필을 커밋하면 마이페이지 이름이 리마운트 없이 �
     assert.equal(container.querySelector('.mypage-user-name')?.textContent, '이전이름')
 
     await act(async () => {
-      commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '다음이름' }, { syncToCloud: false })
+      commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '다음이름' })
     })
     assert.equal(
       container.querySelector('.mypage-user-name')?.textContent,

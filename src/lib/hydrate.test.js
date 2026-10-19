@@ -266,7 +266,7 @@ describe('hydrate — 옛 보낼 편지함 기록은 보내지 않고 지운다 
     const outboxKey = `reactPracticeMutationOutbox:${ownerKey}`
     const journalKey = `reactPracticeDirtyJournal:${ownerKey}`
     localStorage.setItem(journalKey, JSON.stringify({ cars: 1 }))
-    commitDrivers(ownerKey, [{ id: 'local-driver-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '기사' }], { syncToCloud: false })
+    commitDrivers(ownerKey, [{ id: 'local-driver-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '기사' }])
     handlers.vehicles = { select: () => ({ data: [{ id: 900, type: 'main', number: '77가7777', raw: {} }], error: null }) }
     handlers.driver_links = { select: () => ({ data: [{ id: 700, invite_code: '123456', status: 'pending', vehicle_id: null, assignment_start: '2026-08-01', assignment_end: null }], error: null }) }
     localStorage.setItem(outboxKey, JSON.stringify([

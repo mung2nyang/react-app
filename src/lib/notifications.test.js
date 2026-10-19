@@ -103,7 +103,7 @@ describe('notifications — 오늘 운행일지 알림 (시간 게이트·미입
     mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 19, 30, 0).getTime() })
     const ownerKey = 'today-owner-empty'
     const dateKey = todayKey()
-    commitWorkData(ownerKey, { [dateKey]: {} }, { syncToCloud: false })
+    commitWorkData(ownerKey, { [dateKey]: {} })
     const notifs = collectNotifications(ownerKey)
     assert.ok(notifs.some((item) => item.id === `today:${dateKey}`), '빈 객체는 미입력으로 본다')
   })
@@ -113,13 +113,13 @@ describe('notifications — 오늘 운행일지 알림 (시간 게이트·미입
     const ownerKey = 'today-owner-filled'
     const dateKey = todayKey()
 
-    commitWorkData(ownerKey, { [dateKey]: { isOff: true } }, { syncToCloud: false })
+    commitWorkData(ownerKey, { [dateKey]: { isOff: true } })
     assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
 
-    commitWorkData(ownerKey, { [dateKey]: { callDetails: [{ fare: 50000 }] } }, { syncToCloud: false })
+    commitWorkData(ownerKey, { [dateKey]: { callDetails: [{ fare: 50000 }] } })
     assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
 
-    commitWorkData(ownerKey, { [dateKey]: { fixedCount: 2 } }, { syncToCloud: false })
+    commitWorkData(ownerKey, { [dateKey]: { fixedCount: 2 } })
     assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
   })
 
@@ -128,7 +128,7 @@ describe('notifications — 오늘 운행일지 알림 (시간 게이트·미입
     mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 20, 0, 0).getTime() })
     const ownerKey = 'today-owner-memory'
     const dateKey = todayKey()
-    commitBatch([{ domain: 'workData', ownerKey, value: { [dateKey]: { fixedCount: 3 } } }], { persist: false, syncToCloud: false })
+    commitBatch([{ domain: 'workData', ownerKey, value: { [dateKey]: { fixedCount: 3 } } }], { persist: false })
     assert.equal(localStorage.length, 0, '기기 저장소에는 아무것도 없어야 한다')
     assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
   })
@@ -136,7 +136,7 @@ describe('notifications — 오늘 운행일지 알림 (시간 게이트·미입
   test('18시 이후: 메모리에 다른 날 기록만 있으면 알림이 있다', () => {
     mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 20, 0, 0).getTime() })
     const ownerKey = 'today-owner-memory-other-day'
-    commitBatch([{ domain: 'workData', ownerKey, value: { '2026-09-04': { fixedCount: 3 } } }], { persist: false, syncToCloud: false })
+    commitBatch([{ domain: 'workData', ownerKey, value: { '2026-09-04': { fixedCount: 3 } } }], { persist: false })
     assert.ok(collectNotifications(ownerKey).some((item) => item.id === `today:${todayKey()}`))
   })
 })

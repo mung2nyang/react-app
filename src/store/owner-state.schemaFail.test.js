@@ -84,11 +84,11 @@ function seedLayers(owner, other, onSettled) {
   commitCars(owner, [
     { id: 'keep', number: '10가1000', type: 'main' },
     { id: 'sub-keep', number: '99하9999', type: 'sub', driverName: '김기사', driverPhone: '010-1111-2222' },
-  ], { syncToCloud: false })
-  commitWorkData(owner, { '2026-08-01': { isOff: true, fixedCount: 2 } }, { syncToCloud: false })
+  ])
+  commitWorkData(owner, { '2026-08-01': { isOff: true, fixedCount: 2 } })
   commitLogWorkData(owner, '99하9999', { '2026-08-01': { isOff: false, fixedCount: 1 } })
   writeJsonKey('clients', owner, [{ id: 'keep-cli', companyName: '유지' }])
-  commitCars(other, [{ id: 'other-car', number: '20나2000', type: 'main' }], { syncToCloud: false })
+  commitCars(other, [{ id: 'other-car', number: '20나2000', type: 'main' }])
   const registered = registerPendingDayWrite(owner, '2026-08-03', PATCH, onSettled)
   assert.equal(registered, true)
   fallback.set(keyOf(owner, '2026-08-02'), PATCH)

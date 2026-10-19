@@ -32,7 +32,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
         paymentOn: false,
       }),
       workLogs: { main: {} },
-    }, { sync: false })
+    })
   })
 
   test('타임스탬프: getLastBackupAt 초기값 null, markBackupDone 후 갱신', () => {
@@ -85,7 +85,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
       },
     }
 
-    replaceOwnerState('guest', seedSnapshot, { sync: false })
+    replaceOwnerState('guest', seedSnapshot)
     // 서브 차량 로컬 일지 저장 (실제 앱에서는 commitLogWorkData 로 쓰임)
     localStorage.setItem('reactPracticeWorkData:guest:log:22나2222', JSON.stringify({
       '2026-09-02': { isOff: true },
@@ -123,7 +123,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
         paymentOn: false,
       }),
       workLogs: { main: {} },
-    }, { sync: false })
+    })
 
     assert.equal((getState().cars.guest || []).length, 0)
     assert.equal((getState().clients.guest || []).length, 0)
@@ -184,7 +184,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
 
   /** @param {import('./pendingWorkDataWritesTypes.js').JsonValue} file */
   function assertRejectedUnchanged(file) {
-    replaceOwnerState('guest', { cars: [{ id: 'car-1', number: '11가1111', type: 'main' }], workLogs: { main: { '2026-09-01': { count: 1 } } } }, { sync: false })
+    replaceOwnerState('guest', { cars: [{ id: 'car-1', number: '11가1111', type: 'main' }], workLogs: { main: { '2026-09-01': { count: 1 } } } })
     const before = storageSnapshot()
     const res = applyGuestBackupData(file)
     assert.deepEqual(res, { ok: false, error: '백업 파일이 손상되었거나 운행일지 백업 파일이 아닙니다.' })
@@ -231,7 +231,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
     replaceOwnerState('guest', {
       cars: [{ id: 'car-3', number: '33다3333', type: 'sub' }],
       workLogs: { main: {}, '33다3333': { '2026-04-01': { count: 1 } } },
-    }, { sync: false, extraWrites: [{ key: 'reactPracticeWorkData:guest:log:33다3333', value: { '2026-04-01': { count: 1 } } }] })
+    }, { extraWrites: [{ key: 'reactPracticeWorkData:guest:log:33다3333', value: { '2026-04-01': { count: 1 } } }] })
     assert.ok(localStorage.getItem('reactPracticeWorkData:guest:log:33다3333'))
 
     const res = applyGuestBackupData({
@@ -245,7 +245,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
   /** 기기에 닫은 알림·빈 날 삭제 목록을 심는다. @param {Array<string>} ids @param {Record<string, string>} tombstones */
   function seedMarks(ids, tombstones) {
     commitDismissedNotifications('guest', ids)
-    commitWorkDataDeletedDates('guest', tombstones, { syncToCloud: false })
+    commitWorkDataDeletedDates('guest', tombstones)
   }
 
   test('78: 닫은 알림·빈 날 삭제 목록도 백업 시점으로 복원(교체), 앱 다시 켜도 남음', () => {

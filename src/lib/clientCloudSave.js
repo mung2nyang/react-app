@@ -47,7 +47,7 @@ export function saveClientsToCloud({ ownerKey, userId, previous, next, changedId
         }
       }
       assertSessionStillCurrent(captured)
-      commitBatch([{ domain: 'clients', ownerKey, value: working }], { syncToCloud: false })
+      commitBatch([{ domain: 'clients', ownerKey, value: working }])
       return { clients: working, toast: okToast, failed: false }
     } catch (error) {
       if (error instanceof StaleSessionError) {

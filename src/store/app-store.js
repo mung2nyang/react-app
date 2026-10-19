@@ -135,7 +135,7 @@ function applyDomainToState(domain, ownerKey, value) {
  * persist 성공 후에만 state/notify. extraWrites는 서브 로그 키처럼 persist 도메인 밖
  * 키를 같은 all-or-nothing에 넣는다.
  * @param {Array<BatchEntry>} entries
- * @param {{ persist?: boolean, syncToCloud?: boolean, extraWrites?: Array<import('./atomicPersist.js').KeyedWrite>, mergeWorkLogs?: WorkLogsMerge, replaceWorkLogs?: WorkLogsReplace, replaceDriverExpenses?: DriverExpensesReplace }} [options]
+ * @param {{ persist?: boolean, extraWrites?: Array<import('./atomicPersist.js').KeyedWrite>, mergeWorkLogs?: WorkLogsMerge, replaceWorkLogs?: WorkLogsReplace, replaceDriverExpenses?: DriverExpensesReplace }} [options]
  * @returns {Array<DomainValue>}
  */
 export function commitBatch(entries, options = {}) {

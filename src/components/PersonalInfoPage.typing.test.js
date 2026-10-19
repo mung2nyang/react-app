@@ -70,7 +70,7 @@ function setup(owner, mode) {
   } else {
     endCloudSession()
   }
-  commitProfile(owner, { ...EMPTY_PROFILE, bizName: '기존상호', bizItem: '기존종목' }, { syncToCloud: false })
+  commitProfile(owner, { ...EMPTY_PROFILE, bizName: '기존상호', bizItem: '기존종목' })
 }
 
 /** @param {string} owner @param {Array<string>} [toasts] */
@@ -192,7 +192,7 @@ test('치고 있지 않은 칸은 외부 프로필 변경을 따라가고, 치�
   try {
     await typeInto(input(container, '#bizName'), '내가치는값')
     await act(async () => {
-      commitProfile(owner, { ...EMPTY_PROFILE, bizName: '외부상호', bizItem: '외부종목' }, { syncToCloud: false })
+      commitProfile(owner, { ...EMPTY_PROFILE, bizName: '외부상호', bizItem: '외부종목' })
     })
     assert.equal(input(container, '#bizItem').value, '외부종목')
     assert.equal(input(container, '#bizName').value, '내가치는값')

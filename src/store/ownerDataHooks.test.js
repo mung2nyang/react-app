@@ -22,7 +22,7 @@ describe('Step 9 slice C — readOwnerWorkDataByLogId', () => {
   test('sub logIds are included and raise all/driver fare and receivables', () => {
     const owner = 'slice-c-revenue-hooks'
     const subNumber = '서울12가3456'
-    commitWorkData(owner, FIXTURE_WORK.main, { syncToCloud: false })
+    commitWorkData(owner, FIXTURE_WORK.main)
     commitLogWorkData(owner, subNumber, FIXTURE_WORK[subNumber])
     commitLogWorkData(owner, '부산33나1111', FIXTURE_WORK['부산33나1111'])
 

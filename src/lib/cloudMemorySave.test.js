@@ -90,7 +90,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     const userId = 'user-cms-profile-ok'
     beginReady(userId, ownerKey)
     writeJsonKey('profile', ownerKey, { name: '옛LS' })
-    commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '이전' }, { syncToCloud: false })
+    commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '이전' })
     handlers.profiles = { upsert: () => ({ data: null, error: null }) }
 
     const hits = await withBusinessSetItemCount(ownerKey, async () => {
@@ -106,7 +106,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   test('saveProfile hydration failed: Store·LS 불변, upsert 0회', async () => {
     const ownerKey = 'cms-profile-failed'
     beginFailed('user-1', ownerKey)
-    commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '유지' }, { syncToCloud: false })
+    commitProfile(ownerKey, { ...EMPTY_PROFILE, name: '유지' })
     writeJsonKey('profile', ownerKey, { name: 'LS유지' })
     await assert.rejects(() => saveProfile(ownerKey, { ...EMPTY_PROFILE, name: '막힘' }), /아직 기록을 불러오는 중입니다/)
     assert.equal(countOf('profiles', 'upsert'), 0)
@@ -144,7 +144,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     const ownerKey = 'cms-exp-ok'
     const userId = ownerKey // 차주 세션은 로그인 id = ownerKey(boot.js ownerKeyFromSession)
     beginReady(userId, ownerKey)
-    commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }], { syncToCloud: false })
+    commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }])
     writeJsonKey('expenses', ownerKey, [{ id: 'old', kind: 'fuel', date: '2026-08-01' }])
     handlers.daily_logs = {
       select: () => ({ data: [{ id: 10, work_date: '2026-08-01' }], error: null }),
@@ -172,7 +172,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     beginReady(userId, ownerKey)
     commitCars(ownerKey, [{
       id: 'car-sub-1', type: 'sub', number: '서울12가3456', supabaseId: 'veh-assigned-1',
-    }], { syncToCloud: false })
+    }])
     handlers.daily_logs = {
       select: () => ({ data: [{ id: 77, work_date: '2026-09-04' }], error: null }),
       upsert: () => ({ data: { id: 77 }, error: null }),
@@ -205,8 +205,8 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     commitCars(ownerKey, [
       { id: 'car-main', type: 'main', number: '11가1111', supabaseId: 501 },
       { id: 'car-sub', type: 'sub', number: '22나2222', supabaseId: 802 },
-    ], { syncToCloud: false })
-    commitDrivers(ownerKey, drivers, { syncToCloud: false })
+    ])
+    commitDrivers(ownerKey, drivers)
     /** @type {Array<string>} */
     const events = []
     handlers.daily_logs = {
@@ -264,7 +264,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   test('5-B-2·70 미연동 서브의 마지막 항목을 지우면 서브 칸 그 줄을 지운다(화면 일지에 그 날짜가 없어도)', async () => {
     const ownerKey = 'cms-exp-sub-last-delete'
     const events = seedSubVehicleSave(ownerKey, [], { 802: [{ id: 'srv-sub-last', work_date: '2026-08-05', sequence: 0, raw: { id: 'fuel-sub-last' } }] })
-    commitExpenses(ownerKey, [{ id: 'fuel-sub-last', kind: 'fuel', date: '2026-08-05', name: '주유', cost: 1, vehicleNumber: '22나2222' }], { syncToCloud: false })
+    commitExpenses(ownerKey, [{ id: 'fuel-sub-last', kind: 'fuel', date: '2026-08-05', name: '주유', cost: 1, vehicleNumber: '22나2222' }])
     await saveExpenses(ownerKey, [])
     assert.deepEqual(events, ['fuel.delete:srv-sub-last'], `서브 칸 2026-08-05 줄만 지워져야 한다: ${events.join(',')}`)
     endCloudSession()
@@ -286,9 +286,9 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     /** @type {Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>} */
     const days = {}
     for (let d = 1; d <= 30; d += 1) days[`2026-09-${String(d).padStart(2, '0')}`] = { fixedCount: 1 }
-    commitWorkData(ownerKey, days, { syncToCloud: false })
+    commitWorkData(ownerKey, days)
     const before = [fuelItem('f1', '2026-09-01', 1000), fuelItem('f2', '2026-09-02', 2000), fuelItem('f3', '2026-09-03', 3000)]
-    commitExpenses(ownerKey, before, { syncToCloud: false })
+    commitExpenses(ownerKey, before)
     handlers.fuel_records.select = (filters) => ({ data: filterValue(filters, 'vehicle_id') === '501' ? before.map((item, i) => fuelRow(item, `srv-${i}`)) : [], error: null })
     handlers.fuel_records.update = (_row, filters) => { events.push(`fuel.update:${filterValue(filters, 'id')}`); return { data: null, error: null } }
     const baseSelect = handlers.daily_logs.select
@@ -308,7 +308,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     const ownerKey = 'cms-70-move'
     const item = fuelItem('f-move', '2026-08-03', 4000)
     const events = seedSubVehicleSave(ownerKey, [], { 501: [fuelRow(item, 'srv-main-move')] })
-    commitExpenses(ownerKey, [item], { syncToCloud: false })
+    commitExpenses(ownerKey, [item])
 
     await saveExpenses(ownerKey, [{ ...item, vehicleNumber: '22나2222' }])
 
@@ -320,7 +320,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     const ownerKey = 'cms-70-restore'
     const events = seedSubVehicleSave(ownerKey, [])
     const keep = fuelItem('f-keep', '2026-08-03', 5000)
-    commitExpenses(ownerKey, [keep], { syncToCloud: false })
+    commitExpenses(ownerKey, [keep])
 
     await saveExpenses(ownerKey, [keep])
 
@@ -332,7 +332,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     const ownerKey = 'cms-70-linked'
     const events = seedSubVehicleSave(ownerKey, [{ id: 'drv-1', status: 'linked', vehicleNumber: '22나2222' }])
     const gone = fuelItem('f-gone', '2026-08-03', 6000, '22나2222')
-    commitExpenses(ownerKey, [gone], { syncToCloud: false })
+    commitExpenses(ownerKey, [gone])
 
     await saveExpenses(ownerKey, [gone])
 
@@ -343,10 +343,10 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   test('saveExpenses 서버 실패: Store 유지', async () => {
     const ownerKey = 'cms-exp-fail'
     beginReady(ownerKey, ownerKey)
-    commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }], { syncToCloud: false })
+    commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }])
     /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */
     const previous = [{ id: 'keep', kind: 'fuel', date: '2026-08-01', name: '주유', cost: 1 }]
-    commitExpenses(ownerKey, previous, { syncToCloud: false })
+    commitExpenses(ownerKey, previous)
     handlers.daily_logs = { select: () => ({ data: null, error: { message: 'daily down' } }) }
     /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */
     const attempted = [{ id: 'new', kind: 'fuel', date: '2026-08-01', name: '주유', cost: 2 }]
@@ -359,8 +359,8 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     const ownerKey = 'cms-inv-ok'
     const userId = 'user-cms-inv-ok'
     beginReady(userId, ownerKey)
-    commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }], { syncToCloud: false })
-    commitClients(ownerKey, [{ id: 'c1', companyName: '거래', supabaseId: 8 }], { syncToCloud: false })
+    commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }])
+    commitClients(ownerKey, [{ id: 'c1', companyName: '거래', supabaseId: 8 }])
     writeJsonKey('invoices', ownerKey, [{ id: 'old-inv' }])
     handlers.tax_invoices = { insert: () => ({ data: { id: 99 }, error: null }) }
     const draft = {
@@ -381,9 +381,9 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   test('saveInvoices 서버 실패: Store 유지', async () => {
     const ownerKey = 'cms-inv-fail'
     beginReady('user-1', ownerKey)
-    commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }], { syncToCloud: false })
+    commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }])
     const previous = [{ id: 'keep-inv', clientName: '거래', carNumber: '11가1111' }]
-    commitInvoices(ownerKey, previous, { syncToCloud: false })
+    commitInvoices(ownerKey, previous)
     handlers.tax_invoices = { insert: () => ({ data: null, error: { message: 'tax down' } }) }
     await assert.rejects(() => saveInvoices(ownerKey, [{
       id: 'new-inv', clientName: '거래', carNumber: '11가1111', monthKey: '2026-08',

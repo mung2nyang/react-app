@@ -72,8 +72,8 @@ async function checkPeriod(view) {
 
 test('차주 매출: 달·해 이동, 년 매출 12줄·합계, 손해 달·합계 빨강', async () => {
   const ownerKey = 'revenue-58b-owner'
-  commitCars(ownerKey, [{ id: 'c-main', type: 'main', number: '11가1111' }], { syncToCloud: false })
-  commitExpenses(ownerKey, [{ id: 'm-1', kind: 'maint', date: DATE_KEY, name: '정비', cost: 12345 }], { syncToCloud: false })
+  commitCars(ownerKey, [{ id: 'c-main', type: 'main', number: '11가1111' }])
+  commitExpenses(ownerKey, [{ id: 'm-1', kind: 'maint', date: DATE_KEY, name: '정비', cost: 12345 }])
   const view = await mount(OwnerRevenueView, ownerKey)
   try {
     await checkPeriod(view)
@@ -86,7 +86,7 @@ test('차주 매출: 달·해 이동, 년 매출 12줄·합계, 손해 달·합�
 
 test('연동 기사 매출: 달·해 이동, 년 매출 12줄·합계, 범위 탭 없음', async () => {
   const ownerKey = 'revenue-58b-driver'
-  commitCars(ownerKey, [{ id: 'c-sub', type: 'sub', number: '22가2222' }], { syncToCloud: false })
+  commitCars(ownerKey, [{ id: 'c-sub', type: 'sub', number: '22가2222' }])
   const view = await mount(DriverRevenueView, ownerKey)
   try {
     await checkPeriod(view)

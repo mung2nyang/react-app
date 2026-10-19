@@ -39,7 +39,7 @@ async function mount(ownerKey) {
 
 test('72-5: 비회원이 고친 직후 pagehide면 0.6초를 기다리지 않고 기기에 저장한다', async () => {
   const ownerKey = 'guest-72-pagehide'
-  commitWorkData(ownerKey, {}, { syncToCloud: false })
+  commitWorkData(ownerKey, {})
   const view = await mount(ownerKey)
   try {
     await act(async () => { view.latest.current?.dispatch({ type: 'patchDraft', patch: { fixedCount: 3 } }) })
@@ -53,7 +53,7 @@ test('72-5: 비회원이 고친 직후 pagehide면 0.6초를 기다리지 않고
 
 test('72-6: 비회원이 고친 직후 새로고침 — 저장한 뒤 확인 없이 통과, 앱 안 이동 확인도 그대로', async () => {
   const ownerKey = 'guest-72-unload'
-  commitWorkData(ownerKey, {}, { syncToCloud: false })
+  commitWorkData(ownerKey, {})
   const view = await mount(ownerKey)
   const confirmSpy = mock.method(window, 'confirm', () => false)
   try {

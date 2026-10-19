@@ -808,7 +808,7 @@ describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번
   /** @param {string} ownerKey @param {Array<import('../store/atomicPersist.js').JsonValue>} vehicleUpdates */
   function seed(ownerKey, vehicleUpdates, vehicleFails = false) {
     beginReady('user-1', ownerKey)
-    commitCars(ownerKey, [CAR], { syncToCloud: false })
+    commitCars(ownerKey, [CAR])
     handlers.rpc = { [RPC_FN]: () => INVITE_ROW }
     handlers.vehicles = {
       update: (row) => {
@@ -846,7 +846,7 @@ describe('로드맵 80 — 초대 저장 뒤 그 차량 기사 이름·전화번
     /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
     const updates = []
     seed(ownerKey, updates)
-    commitCars(ownerKey, [{ ...CAR, driverName: '시험기사80', driverPhone: '010-8080-8080' }], { syncToCloud: false })
+    commitCars(ownerKey, [{ ...CAR, driverName: '시험기사80', driverPhone: '010-8080-8080' }])
     await requestDriverInviteSave({ ownerKey, userId: 'user-1', items: [INVITE], editingId: null, cars: [CAR] })
     assert.equal(updates.length, 0)
     endCloudSession()

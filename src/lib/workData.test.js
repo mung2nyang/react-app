@@ -33,7 +33,7 @@ test('날짜가 실제로 지워지면(있었는데 없어짐) workData 커밋�
 test('삭제 대기 중이던 날짜에 재입력이 들어오면(tombstone 있었는데 다시 값이 생김) 같은 트랜잭션에서 tombstone을 지운다', () => {
   const ownerKey = 'wd-tombstone-revive'
   const dateKey = '2026-08-11'
-  commitWorkDataDeletedDates(ownerKey, { [dateKey]: '2026-08-01T00:00:00.000Z' }, { syncToCloud: false })
+  commitWorkDataDeletedDates(ownerKey, { [dateKey]: '2026-08-01T00:00:00.000Z' })
 
   const previous = {} // 화면 입장에선 지워진 채였다
   const next = { [dateKey]: { isOff: false, fixedCount: 2, callDetails: [] } }

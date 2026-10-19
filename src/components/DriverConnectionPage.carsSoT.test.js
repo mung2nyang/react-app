@@ -18,7 +18,7 @@ const { commitCars } = await import('../store/commitHelpers.js')
 
 test('차량을 커밋하면 기사 초대 모달이 리마운트 없이 할당 목록을 갱신한다', async () => {
   const ownerKey = 'sot-cars-drivers'
-  commitCars(ownerKey, [], { syncToCloud: false })
+  commitCars(ownerKey, [])
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -43,7 +43,7 @@ test('차량을 커밋하면 기사 초대 모달이 리마운트 없이 할당 
         id: 'sub-sot-1',
         type: 'sub',
         number: '88나8800',
-      }], { syncToCloud: false })
+      }])
     })
     assert.ok(
       container.querySelector('option[value="88나8800"]'),

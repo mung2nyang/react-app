@@ -171,8 +171,8 @@ test.afterEach(async () => {
   }
   endCloudSession()
   clearGuestModePersisted()
-  commitCars('guest', [], { syncToCloud: false })
-  commitClients('guest', [], { syncToCloud: false })
+  commitCars('guest', [])
+  commitClients('guest', [])
   localStorage.removeItem(storageKeyFor('cars', 'guest'))
   localStorage.removeItem(storageKeyFor('clients', 'guest'))
   localStorage.removeItem(storageKeyFor('workData', 'guest'))
@@ -206,8 +206,8 @@ function seedPalletClient(ownerKey) {
       palletPrice: '10,000', fixedUnitPrice: '250,000', supabaseId: 601,
     }),
   ]
-  commitClients(ownerKey, clients, { syncToCloud: false })
-  commitSettings(ownerKey, normalizeSettings({ fixedOn: true }), { syncToCloud: false })
+  commitClients(ownerKey, clients)
+  commitSettings(ownerKey, normalizeSettings({ fixedOn: true }))
 }
 
 /** @returns {Event} */
@@ -534,7 +534,7 @@ test('재감사 3차 FAIL 지적 5번 — 비용 저장 quota 초과: store/loca
 
   try {
     await setupGuestDayLog(container, root, dateKey, () => {
-      commitExpenses(ownerKey, [e1], { syncToCloud: false })
+      commitExpenses(ownerKey, [e1])
     })
     await waitUntil(() => !!container.querySelector('.maint-section'))
 
@@ -594,7 +594,7 @@ test('재감사 3차 FAIL 지적 5번 — 비용 삭제 quota 초과: store/loca
 
   try {
     await setupGuestDayLog(container, root, dateKey, () => {
-      commitExpenses(ownerKey, [e1], { syncToCloud: false })
+      commitExpenses(ownerKey, [e1])
     })
     await waitUntil(() => !!container.querySelector('.maint-section'))
 
@@ -730,7 +730,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
           callDetails: [{ id: 'trp-legacy-1', fare: '10,000', client: '한진', payments: legacyPayments }],
           fixedRouteCounts: {},
         },
-      }, { syncToCloud: false })
+      })
     })
     await waitUntil(() => !!container.querySelector('#modalPalletCount'))
     assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '2', '기존 fixedCount(2)가 그대로 보여야 한다')
@@ -877,7 +877,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
           callDetails: [{ id: 'trp-legacy-2', fare: '10,000', client: '한진', payments: legacyPayments }],
           fixedRouteCounts: {},
         },
-      }, { syncToCloud: false })
+      })
     })
     await waitUntil(() => !!container.querySelector('#modalPalletCount'))
     const storeBefore = structuredClone(committedRecord(ownerKey, dateKey))
@@ -1019,7 +1019,7 @@ test('재감사 11차 — confirm으로 이동을 허용한 뒤 재진입해도 
           callDetails: [{ id: 'trp-unsafe-1', fare: '10,000', client: '한진', payments: rejectedPayments }],
           fixedRouteCounts: {},
         },
-      }, { syncToCloud: false, persist: false })
+      }, { persist: false })
       window.history.pushState({}, '', '/app')
       window.dispatchEvent(new window.PopStateEvent('popstate'))
     })
@@ -1096,7 +1096,7 @@ test('재감사 12차 — persistent quota 실패 후 마운트 중 retry 성공
           callDetails: [{ id: 'trp-mounted-retry', fare: '10,000', client: '한진', payments: [{ amount: '1,000' }] }],
           fixedRouteCounts: {},
         },
-      }, { syncToCloud: false })
+      })
     })
     await waitUntil(() => !!container.querySelector('#modalPalletCount'))
     errSpy = spyConsoleError('일지 자동 저장 실패:')

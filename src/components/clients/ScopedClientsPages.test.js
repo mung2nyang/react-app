@@ -28,7 +28,7 @@ const MAIN_ONLY = { id: 'c-3', companyName: '차주거래처' }
 /** @param {object} state */
 function seed(state) {
   localStorage.clear()
-  replaceOwnerState(OWNER, /** @type {import('../../store/owner-state.js').OwnerSnapshot} */ (state), { sync: false })
+  replaceOwnerState(OWNER, /** @type {import('../../store/owner-state.js').OwnerSnapshot} */ (state))
 }
 
 /** @param {import('react').ReactElement} element @param {string} path @param {string} pattern */

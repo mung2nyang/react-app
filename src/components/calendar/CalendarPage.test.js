@@ -36,9 +36,9 @@ test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 �
 
   commitClients(ownerKey, [
     { id: 'client-1', companyName: '테스트거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
-  ], { syncToCloud: false })
-  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] } }, { syncToCloud: false })
-  commitSettings(ownerKey, normalizeSettings({ unitPrice: 5000 }), { syncToCloud: false })
+  ])
+  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] } })
+  commitSettings(ownerKey, normalizeSettings({ unitPrice: 5000 }))
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -62,7 +62,7 @@ test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 �
     await act(async () => {
       commitClients(ownerKey, [
         { id: 'client-1', companyName: '테스트거래처', fixedRouteLinked: true, fixedUnitPrice: 15000 },
-      ], { syncToCloud: false })
+      ])
     })
     assert.ok(
       container.textContent.includes('45,000원'),
@@ -83,9 +83,9 @@ test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 �
 
 test('고정노선 거래처가 없으면 정산 카드에 1회 단가가 없고 설정 단가를 쓰지 않는다', async () => {
   const ownerKey = 'test-calendar-unitprice-no-client'
-  commitClients(ownerKey, [], { syncToCloud: false })
-  commitWorkData(ownerKey, { '2026-08-06': { isOff: false, fixedCount: 3, callDetails: [] } }, { syncToCloud: false })
-  commitSettings(ownerKey, normalizeSettings({ unitPrice: 5000 }), { syncToCloud: false })
+  commitClients(ownerKey, [])
+  commitWorkData(ownerKey, { '2026-08-06': { isOff: false, fixedCount: 3, callDetails: [] } })
+  commitSettings(ownerKey, normalizeSettings({ unitPrice: 5000 }))
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -117,10 +117,10 @@ test('홈 월간 정산 카드는 그 화면 자신의 거래처 수수료를 �
     },
   ]
 
-  commitClients(ownerKey, clients, { syncToCloud: false })
+  commitClients(ownerKey, clients)
   commitWorkData(ownerKey, {
     [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-comm', client: '수수료거래처', fare: 100000 }] },
-  }, { syncToCloud: false })
+  })
 
   const workData = getState().workLogs[ownerKey]?.main || {}
   const expected = monthSettlementSummary(workData, 2026, 7, {
@@ -169,10 +169,10 @@ test('driverExpenses가 있어도 owner scope income.commission.total은 불변(
       id: 'client-comm2', companyName: '수수료거래처2', fixedRouteLinked: true, fixedUnitPrice: 10000,
       commEnabled: true, commType: 'percent', commValue: 10,
     },
-  ], { syncToCloud: false })
+  ])
   commitWorkData(ownerKey, {
     [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-comm2', client: '수수료거래처2', fare: 100000 }] },
-  }, { syncToCloud: false })
+  })
   const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
   const settings = buildFinanceSettings(ownerKey)
   const driverExpenses = [
@@ -192,10 +192,10 @@ test('수수료가 없으면 거래처 수수료 행이 없고 합계는 monthSe
     { id: 'client-nocomm', companyName: '무수수료거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
   ]
 
-  commitClients(ownerKey, clients, { syncToCloud: false })
+  commitClients(ownerKey, clients)
   commitWorkData(ownerKey, {
     [dateKey]: { isOff: false, fixedCount: 2, callDetails: [] },
-  }, { syncToCloud: false })
+  })
 
   const workData = getState().workLogs[ownerKey]?.main || {}
   const expected = monthSettlementSummary(workData, 2026, 7, {
@@ -270,10 +270,10 @@ test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생
       id: 'client-main-def', companyName: '메인수수료', fixedRouteLinked: true, fixedUnitPrice: 10000,
       commEnabled: true, commType: 'percent', commValue: 10,
     },
-  ], { syncToCloud: false })
+  ])
   commitWorkData(ownerKey, {
     [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-main-def', client: '메인수수료', fare: 100000 }] },
-  }, { syncToCloud: false })
+  })
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -313,19 +313,19 @@ test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수
   commitCars(ownerKey, [
     { id: 'main-1', type: 'main', number: '서울00가0000' },
     { id: 'sub-1', type: 'sub', number: plate, logEnabled: true, shareRevenueWithOwner: true },
-  ], { syncToCloud: false })
+  ])
   commitClients(ownerKey, [
     { id: 'client-sub', companyName: '서브거래처', fixedRouteLinked: true, fixedUnitPrice: 20000 },
-  ], { syncToCloud: false })
+  ])
   commitSettings(ownerKey, normalizeSettings({
     paymentOn: true,
     subPaymentOn: false,
     fixedOn: true,
     subFixedOn: true,
-  }), { syncToCloud: false })
+  }))
   commitWorkData(ownerKey, {
     '2026-08-15': { isOff: false, fixedCount: 9, callDetails: [] },
-  }, { syncToCloud: false })
+  })
   commitLogWorkData(ownerKey, plate, {
     [dateKey]: {
       isOff: false,
@@ -369,11 +369,11 @@ test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님
   const monthKey = '2026-08'
   commitClients(ownerKey, [
     { id: 'client-fx', companyName: '고정노선', fixedRouteLinked: true, fixedUnitPrice: 25000 },
-  ], { syncToCloud: false })
-  commitSettings(ownerKey, normalizeSettings({ fixedOn: false, paymentOn: true }), { syncToCloud: false })
+  ])
+  commitSettings(ownerKey, normalizeSettings({ fixedOn: false, paymentOn: true }))
   commitWorkData(ownerKey, {
     [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] },
-  }, { syncToCloud: false })
+  })
 
   const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
   const revenue = getOwnerMonthlyFinanceDetail(monthKey, 'owner', buildFinanceSettings(ownerKey), workDataByLogId, [])
@@ -416,9 +416,9 @@ async function renderSubLogCalendar(ownerKey, clients) {
   commitCars(ownerKey, [
     { id: 'main-1', type: 'main', number: '서울00가0000' },
     { id: 'sub-1', type: 'sub', number: plate, logEnabled: true, shareRevenueWithOwner: true },
-  ], { syncToCloud: false })
-  commitClients(ownerKey, clients, { syncToCloud: false })
-  commitSettings(ownerKey, normalizeSettings({ paymentOn: true, subPaymentOn: false, fixedOn: true, subFixedOn: true }), { syncToCloud: false })
+  ])
+  commitClients(ownerKey, clients)
+  commitSettings(ownerKey, normalizeSettings({ paymentOn: true, subPaymentOn: false, fixedOn: true, subFixedOn: true }))
   commitLogWorkData(ownerKey, plate, { '2026-08-15': { isOff: false, fixedCount: 2, callDetails: [] } })
 
   const container = document.createElement('div')
@@ -468,8 +468,8 @@ test('연동기사 본인 달력: clientScopeKey로 배정 차량 스코프 고�
   async function renderDriverCalendar(ownerKey, clientScopeKey) {
     commitClients(ownerKey, [
       { id: 'client-drv', companyName: '기사고정', fixedRouteLinked: true, fixedUnitPrice: 100000, scopedToVehicleNumber: plate },
-    ], { syncToCloud: false })
-    commitWorkData(ownerKey, { '2026-08-06': { isOff: false, fixedCount: 1, callDetails: [] } }, { syncToCloud: false })
+    ])
+    commitWorkData(ownerKey, { '2026-08-06': { isOff: false, fixedCount: 1, callDetails: [] } })
     const container = document.createElement('div')
     document.body.appendChild(container)
     const root = createRoot(container)

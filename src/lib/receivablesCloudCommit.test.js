@@ -30,7 +30,7 @@ function beginLoggedIn(userId, ownerKey, ready = true) {
   handlers.daily_logs = { upsert: () => ({ data: { id: 5001 }, error: null }) }
   beginSessionEpoch(userId, ownerKey)
   setHydration({ status: ready ? 'ready' : 'failed', userId, ownerKey })
-  commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 }], { syncToCloud: false })
+  commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 }])
 }
 
 function clone(value) {
@@ -39,7 +39,7 @@ function clone(value) {
 
 /** @param {Record<string, import('../domain/dayRecordTypes.js').DayRecordLike>} main */
 function seedMain(ownerKey, main) {
-  commitWorkData(ownerKey, main, { syncToCloud: false })
+  commitWorkData(ownerKey, main)
 }
 
 describe('8-B receivables cloud commit — 시나리오 A~G', () => {
@@ -263,7 +263,7 @@ describe('64 receivables cloud commit — 기사 차량', () => {
     commitCars(ownerKey, [
       { id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 },
       { id: 'car-sub', type: 'sub', number: PLATE, supabaseId: 701 },
-    ], { syncToCloud: false })
+    ])
   }
 
   /** @param {string} id */

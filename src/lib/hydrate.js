@@ -70,7 +70,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
       })
       if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
         // driverExpenses는 차주 hydrate 전용 — 소속기사 세션에서는 빈 배열로 replace(스테일 제거).
-        replaceOwnerState(ownerKey, { ...nextSnapshot, driverExpenses: [] }, { sync: false, persist: false })
+        replaceOwnerState(ownerKey, { ...nextSnapshot, driverExpenses: [] }, { persist: false })
         finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
         dropLegacyKeys(ownerKey)
       } else {
@@ -161,7 +161,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     }
 
     if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
-      replaceOwnerState(ownerKey, nextSnapshot, { sync: false, persist: false })
+      replaceOwnerState(ownerKey, nextSnapshot, { persist: false })
       finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
       dropLegacyKeys(ownerKey)
     } else {

@@ -41,16 +41,16 @@ describe('app-store — commitWorkData는 state.workData를 만들지 않는다'
   })
 })
 
-describe('app-store — commit* options.syncToCloud:false는 예약을 건너뛴다', () => {
-  test('syncToCloud:false로 커밋해도 hydration 상태는 그대로고, Supabase 호출은 0회다', () => {
+describe('app-store — 커밋은 Supabase를 부르지 않는다', () => {
+  test('커밋해도 hydration 상태는 그대로고, Supabase 호출은 0회다', () => {
     const owner = 'commit-nosync-owner'
     resetStubSupabaseCallCounts()
     setHydration({ status: 'idle', userId: null, ownerKey: null })
-    commitCars(owner, [{ id: 'car-1', number: '12가3456' }], { syncToCloud: false })
+    commitCars(owner, [{ id: 'car-1', number: '12가3456' }])
     assert.deepEqual(getState().cars[owner], [{ id: 'car-1', number: '12가3456' }])
     // 감사 지적 9번: state만 보고 "동기화 안 했겠지"라고 넘기지 않는다 — 스텁 호출
     // 횟수를 직접 센다. idle이든 ready든 상관없이 0이어야 한다.
-    assert.equal(totalStubCalls(), 0, 'syncToCloud:false면 Supabase 호출이 0회여야 한다')
+    assert.equal(totalStubCalls(), 0, '커밋은 Supabase 호출이 0회여야 한다')
   })
 })
 
@@ -82,7 +82,7 @@ describe('app-store — commitBatch는 원자적이다(notify 정확히 한 번)
       { domain: 'cars', ownerKey: owner, value: [{ id: 'batched-car' }] },
       { domain: 'profile', ownerKey: owner, value: { name: '배치 프로필' } },
       { domain: 'settings', ownerKey: owner, value: { theme: 'light' } },
-    ], { persist: true, syncToCloud: false })
+    ])
 
     unsubscribe()
     assert.equal(notifyCount, 1, 'commitBatch는 항목 수와 상관없이 notify를 한 번만 불러야 한다')

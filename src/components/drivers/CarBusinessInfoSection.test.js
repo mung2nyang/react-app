@@ -71,7 +71,7 @@ async function mount(ownerKey, profile, toasts) {
 
 test('기본은 "내 사업자 정보와 동일"(차주 사업자·계좌 두 줄 표시, 입력칸 없음), 끄면 입력칸 7개+계좌 3개', async () => {
   const owner = 'biz-section-default'
-  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }])
   const { container, cleanup } = await mount(owner, OWNER_PROFILE, [])
   try {
     assert.equal(input(container, '#carBizSameAsOwner').checked, true)
@@ -88,7 +88,7 @@ test('기본은 "내 사업자 정보와 동일"(차주 사업자·계좌 두 �
 
 test('차주 사업자·계좌 정보가 비어 있으면 안내 문구', async () => {
   const owner = 'biz-section-empty'
-  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }])
   const { container, cleanup } = await mount(owner, {}, [])
   try {
     assert.ok((container.textContent ?? '').includes('마이페이지 → 개인정보에서 사업자 정보와 정산 계좌를 등록해 주세요.'))
@@ -97,7 +97,7 @@ test('차주 사업자·계좌 정보가 비어 있으면 안내 문구', async 
 
 test('차주 사업자·계좌 중 하나만 있으면 빠진 쪽만 안내', async () => {
   const owner = 'biz-section-partial'
-  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111' }])
   const accountOnly = await mount(owner, { bankName: '차주은행', accountNumber: '000-111', accountHolder: '차주명의' }, [])
   try {
     const text = accountOnly.container.textContent ?? ''
@@ -114,7 +114,7 @@ test('차주 사업자·계좌 중 하나만 있으면 빠진 쪽만 안내', as
 
 test('끄고 입력 후 저장하면 Store에 반영·"저장했습니다." 토스트, 다시 열면 값이 채워진다', async () => {
   const owner = 'biz-section-save'
-  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111', personalInfo: { driverName: '김기사' } }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'sub-1', type: 'sub', number: '11가1111', personalInfo: { driverName: '김기사' } }])
   /** @type {Array<string>} */
   const toasts = []
   const first = await mount(owner, OWNER_PROFILE, toasts)

@@ -50,10 +50,10 @@ async function renderAt(ownerKey, path, isEmployedDriver) {
 
 /** @param {string} ownerKey @param {Array<object>} cars */
 function seed(ownerKey, cars) {
-  commitCars(ownerKey, cars, { syncToCloud: false })
+  commitCars(ownerKey, cars)
   commitWorkData(ownerKey, {
     '2026-09-03': { isOff: false, callDetails: [{ id: 'u1', client: 'A', fare: 100000, payments: [] }] },
-  }, { syncToCloud: false })
+  })
 }
 
 test('차주(기사 차량 있음): 목록·상세에 "메인 차량" 배지 그대로', async () => {

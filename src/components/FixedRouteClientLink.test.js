@@ -25,8 +25,8 @@ const BASE = { managerName: '김담당', phone: '010-1111-2222', bizNumber: '123
 
 /** @param {string} owner @param {Array<Record<string, unknown>>} clients @param {Record<string, unknown>} [settings] */
 function seed(owner, clients, settings = { fixedOn: true, subFixedOn: true }) {
-  commitSettings(owner, normalizeSettings(settings), { syncToCloud: false })
-  commitClients(owner, clients, { syncToCloud: false })
+  commitSettings(owner, normalizeSettings(settings))
+  commitClients(owner, clients)
 }
 
 /** @param {string} owner */
@@ -168,7 +168,7 @@ test('서브차량 운행일지 설정: 그 차량번호 거래처만, 연결 �
 
 test('연동기사 본인: 배정 차량 거래처만 나오고 저장됨', async () => {
   const owner = 'frl-driver'
-  commitCars(owner, [{ id: 'car-1', type: 'main', number: '33다3333' }], { syncToCloud: false })
+  commitCars(owner, [{ id: 'car-1', type: 'main', number: '33다3333' }])
   seed(owner, [{ id: 'd1', companyName: '배정거래처', ...BASE, scopedToVehicleNumber: '33다3333' }])
   const view = await render(owner, '/settings', { userId: null, linkedOwnerId: 'owner-x', accountType: 'employed_driver' })
   try {

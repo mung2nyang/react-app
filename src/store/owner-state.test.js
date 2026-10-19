@@ -66,7 +66,7 @@ describe('initializeOwnerFromPersist — persist에 있는 값을 읽기만 한�
     const owner = 'init-stale-sub-log'
     const oldNum = '11가1111'
     const newNum = '22나2222'
-    commitCars(owner, [{ id: 'c1', type: 'sub', number: oldNum }], { syncToCloud: false })
+    commitCars(owner, [{ id: 'c1', type: 'sub', number: oldNum }])
     commitLogWorkData(owner, oldNum, { '2026-08-01': { isOff: false, fixedCount: 2 } })
     writeJsonKey('cars', owner, [{ id: 'c1', type: 'sub', number: newNum }])
     localStorage.setItem(storageKeyForLog(owner, newNum), JSON.stringify({ '2026-08-01': { isOff: false, fixedCount: 9 } }))
@@ -80,7 +80,7 @@ describe('initializeOwnerFromPersist — persist에 있는 값을 읽기만 한�
 
   test('서브 일지 읽기 실패면 persist 초기화를 중단하고 Store를 유지한다', () => {
     const owner = 'init-log-schema-fail'
-    commitCars(owner, [{ id: 'c1', type: 'sub', number: '33다3333' }], { syncToCloud: false })
+    commitCars(owner, [{ id: 'c1', type: 'sub', number: '33다3333' }])
     commitLogWorkData(owner, '33다3333', { '2026-08-02': { isOff: false, fixedCount: 4 } })
     writeJsonKey('cars', owner, [{ id: 'c1', type: 'sub', number: '33다3333' }])
     localStorage.setItem(storageKeyForLog(owner, '33다3333'), '[]')
@@ -142,7 +142,7 @@ describe('replaceOwnerState — sync:false는 클라우드 동기화를 예약�
       cars: [{ id: 'car-server' }],
       profile: { name: '서버값' },
       workData: { '2026-08-01': { isOff: false } },
-    }, { sync: false })
+    })
 
     const state = getState()
     assert.deepEqual(state.cars[owner], [{ id: 'car-server' }])
@@ -155,7 +155,7 @@ describe('replaceOwnerState — sync:false는 클라우드 동기화를 예약�
 
   test('스냅샷에 없는 필드는 손대지 않는다(부분 스냅샷도 안전)', () => {
     const owner = 'replace-owner-partial'
-    replaceOwnerState(owner, { cars: [{ id: 'only-cars' }] }, { sync: false })
+    replaceOwnerState(owner, { cars: [{ id: 'only-cars' }] })
     const state = getState()
     assert.deepEqual(state.cars[owner], [{ id: 'only-cars' }])
     assert.equal(state.profile[owner], undefined)
@@ -170,9 +170,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     const owner = 'hydrate-car-roundtrip'
     resetStubSupabaseCallCounts()
     const merged = mergeCarsFromRows([], [{ id: 501, number: '11가1111', type: 'main', raw: {} }])
-    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    replaceOwnerState(owner, { cars: merged })
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
-    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false })
     assert.equal(getState().cars[owner]?.length, 0)
     initializeOwnerFromPersist(owner)
     assert.equal(getState().cars[owner]?.[0]?.number, '11가1111')
@@ -204,9 +204,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
       },
     }])
     assert.equal(merged[0].personalInfo?.phone, '010-1234-5678')
-    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    replaceOwnerState(owner, { cars: merged })
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
-    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false })
     assert.equal(getState().cars[owner]?.length, 0)
     initializeOwnerFromPersist(owner)
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
@@ -230,9 +230,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     // producer는 옛 settlementMode 값을 아예 읽지 않는다(검증기를 느슨하게 만드는 게 아니라
     // producer가 스키마를 맞춘다).
     assert.equal('settlementMode' in merged[0], false)
-    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    replaceOwnerState(owner, { cars: merged })
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
-    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false })
     initializeOwnerFromPersist(owner)
     assert.equal(Object.hasOwn(getState().cars[owner]?.[0] ?? {}, 'settlementMode'), false)
     assert.equal(totalStubCalls(), 0)
@@ -272,9 +272,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     assert.equal(merged.length, 1)
     assert.equal('extraFromVanilla' in merged[0], false)
     assert.equal(merged[0].managerName, '박담당')
-    replaceOwnerState(owner, { clients: merged }, { sync: false })
+    replaceOwnerState(owner, { clients: merged })
     assert.equal(readPersistDomain('clients', owner).kind, 'value')
-    commitBatch([{ domain: 'clients', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    commitBatch([{ domain: 'clients', ownerKey: owner, value: [] }], { persist: false })
     assert.equal(getState().clients[owner]?.length, 0)
     initializeOwnerFromPersist(owner)
     assert.equal(readPersistDomain('clients', owner).kind, 'value')
@@ -300,9 +300,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     const merged = mergeCarsFromRows([], [{ id: 901, number: '44라4444', type: 'sub', raw: {} }])
     assert.equal('shareRevenueWithOwner' in merged[0], false)
     assert.equal(isVehicleRevenueSharedWithOwner(merged[0]), true)
-    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    replaceOwnerState(owner, { cars: merged })
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
-    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false })
     assert.equal(getState().cars[owner]?.length, 0)
     initializeOwnerFromPersist(owner)
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
@@ -320,8 +320,8 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     resetStubSupabaseCallCounts()
     const merged = mergeCarsFromRows([], [{ id: 902, number: '55마5555', type: 'sub', raw: { shareRevenueWithOwner: false } }])
     assert.equal(merged[0].shareRevenueWithOwner, false)
-    replaceOwnerState(owner, { cars: merged }, { sync: false })
-    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    replaceOwnerState(owner, { cars: merged })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false })
     initializeOwnerFromPersist(owner)
     const car = getState().cars[owner]?.[0]
     assert.equal(car?.shareRevenueWithOwner, false)
@@ -340,8 +340,8 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     assert.equal('shareRevenueWithOwner' in cars[0], false)
     const merged = mergeCarsFromRows([], [{ id: 903, number: '66바6666', type: 'sub', raw: cars[0] }])
     assert.equal(isVehicleRevenueSharedWithOwner(merged[0]), true)
-    replaceOwnerState(owner, { cars: merged }, { sync: false })
-    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    replaceOwnerState(owner, { cars: merged })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false })
     initializeOwnerFromPersist(owner)
     const car = getState().cars[owner]?.[0]
     assert.equal(isVehicleRevenueSharedWithOwner(car), true)
@@ -362,9 +362,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     assert.equal(merged[0].withholdingOn, true)
     assert.equal(merged[0].expenseRate, '43.1')
     assert.equal(merged[0].insuranceRate, 2)
-    replaceOwnerState(owner, { cars: merged }, { sync: false })
+    replaceOwnerState(owner, { cars: merged })
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
-    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false })
     assert.equal(getState().cars[owner]?.length, 0)
     initializeOwnerFromPersist(owner)
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
@@ -388,8 +388,8 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     const merged = mergeCarsFromRows([], [{ id: 912, number: '88아8888', type: 'sub', raw }])
     for (const key of ['driverIncomeType', 'withholdingOn', 'expenseRate', 'insuranceRate']) assert.equal(key in merged[0], false, key)
     assert.equal(merged[0].insuranceOn, true)
-    replaceOwnerState(owner, { cars: merged }, { sync: false })
-    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false, syncToCloud: false })
+    replaceOwnerState(owner, { cars: merged })
+    commitBatch([{ domain: 'cars', ownerKey: owner, value: [] }], { persist: false })
     initializeOwnerFromPersist(owner)
     assert.equal(readPersistDomain('cars', owner).kind, 'value')
     assert.equal(getState().cars[owner]?.length, 1, '차량 목록이 통째로 사라지면 안 된다')
@@ -426,7 +426,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
       miscRows: [{ work_date: '2026-08-01', raw: miscRaw }],
     })
     const expenses = replaceFuelExpenses([], [expenseFromFuelRecord({ work_date: '2026-08-01', raw: fuelRaw })])
-    replaceOwnerState(owner, { workData, expenses }, { sync: false })
+    replaceOwnerState(owner, { workData, expenses })
     assert.equal(readLogWorkData(owner, 'main').kind, 'value')
     assert.equal(readPersistDomain('expenses', owner).kind, 'value')
     const day = getState().workLogs[owner]?.main?.['2026-08-01']
@@ -437,7 +437,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     commitBatch([
       { domain: 'workData', ownerKey: owner, value: {} },
       { domain: 'expenses', ownerKey: owner, value: [] },
-    ], { persist: false, syncToCloud: false, replaceWorkLogs: { ownerKey: owner, next: { main: {} } } })
+    ], { persist: false, replaceWorkLogs: { ownerKey: owner, next: { main: {} } } })
     initializeOwnerFromPersist(owner)
     const afterDay = getState().workLogs[owner]?.main?.['2026-08-01']
     assert.equal(afterDay?.fuelItems, undefined)
@@ -460,7 +460,7 @@ describe('initializeOwnerFromPersist — 슬라이스 E 로그인 settings theme
       unitPrice: 9000,
       fixedRoutePresets: presets,
       theme: 'light',
-    }), { syncToCloud: false })
+    }))
     writeJsonKey('settings', owner, { theme: 'dark' })
     initializeOwnerFromPersist(owner)
     const settings = getState().settings[owner]
@@ -475,7 +475,7 @@ describe('initializeOwnerFromPersist — 슬라이스 E 로그인 settings theme
   test('(b) theme LS 복원 — Store callDetail은 유지하고 theme만 dark로', () => {
     const owner = 'init-cloud-theme-only'
     beginSessionEpoch(owner, owner)
-    commitSettings(owner, normalizeSettings({ fixedOn: true, callDetail: true, theme: 'light' }), { syncToCloud: false })
+    commitSettings(owner, normalizeSettings({ fixedOn: true, callDetail: true, theme: 'light' }))
     writeJsonKey('settings', owner, { theme: 'dark' })
     initializeOwnerFromPersist(owner)
     assert.equal(getState().settings[owner]?.theme, 'dark')

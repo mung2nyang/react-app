@@ -1,6 +1,5 @@
 // @ts-check
 // 앱 시작·hydrate가 거치는 두 관문. 둘 다 commitBatch 한 번으로 반영해 구독자가 반쯤 바뀐 상태를 보지 않게 한다.
-// hydrate는 replaceOwnerState에 { sync: false }를 넘겨 받은 값을 서버로 되쏘지 않는다.
 import { readLogWorkData } from './persist.js'
 import { readPersistDomain } from './persistDomainRead.js'
 import { commitBatch, getState } from './app-store.js'
@@ -49,7 +48,7 @@ export function initializeOwnerFromPersist(ownerKey) {
     entries.push({ domain, ownerKey, value })
   }
   if (cloud) {
-    if (entries.length) commitBatch(entries, { persist: false, syncToCloud: false })
+    if (entries.length) commitBatch(entries, { persist: false })
     return true
   }
   const workRead = readLogWorkData(ownerKey, 'main')
@@ -67,7 +66,6 @@ export function initializeOwnerFromPersist(ownerKey) {
   }
   commitBatch(entries, {
     persist: false,
-    syncToCloud: false,
     replaceWorkLogs: { ownerKey, next: { main: workRead.value, ...extra } },
   })
   return true
@@ -101,10 +99,10 @@ export function initializeOwnerFromPersist(ownerKey) {
  * 끝난다 — 중간에 구독자가 절반만 반영된 snapshot을 볼 일이 없다.
  * @param {string} ownerKey
  * @param {OwnerSnapshot} [snapshot]
- * @param {{ sync?: boolean, persist?: boolean, extraWrites?: Array<import('./atomicPersist.js').KeyedWrite> }} [options] extraWrites는 서브 일지 키처럼 도메인 밖 키를 같은 저장에 넣는다.
+ * @param {{ persist?: boolean, extraWrites?: Array<import('./atomicPersist.js').KeyedWrite> }} [options] extraWrites는 서브 일지 키처럼 도메인 밖 키를 같은 저장에 넣는다.
  */
 export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
-  const { sync = true, persist = true, extraWrites = [] } = options
+  const { persist = true, extraWrites = [] } = options
   /** @type {Array<import('./app-store.js').BatchEntry>} */
   const entries = []
   const workLogs = snapshot.workLogs && typeof snapshot.workLogs === 'object' ? snapshot.workLogs : null
@@ -129,8 +127,8 @@ export function replaceOwnerState(ownerKey, snapshot = {}, options = {}) {
     : undefined
   if (!entries.length && !replaceDriverExpenses) return
   if (workLogs) {
-    commitBatch(entries, { persist, syncToCloud: sync, extraWrites, replaceWorkLogs: { ownerKey, next: workLogs }, replaceDriverExpenses })
+    commitBatch(entries, { persist, extraWrites, replaceWorkLogs: { ownerKey, next: workLogs }, replaceDriverExpenses })
     return
   }
-  commitBatch(entries, { persist, syncToCloud: sync, extraWrites, replaceDriverExpenses })
+  commitBatch(entries, { persist, extraWrites, replaceDriverExpenses })
 }

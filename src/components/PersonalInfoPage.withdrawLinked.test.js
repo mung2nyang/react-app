@@ -44,7 +44,7 @@ async function clickWithdraw(ownerKey, session) {
 
 test('차주에게 연동 중인 기사가 있으면 확인 창 없이 안내만 뜬다', async () => {
   const ownerKey = 'owner-7a-linked'
-  commitDrivers(ownerKey, [{ id: 'd1', status: 'linked', vehicleNumber: '11가1111' }], { syncToCloud: false })
+  commitDrivers(ownerKey, [{ id: 'd1', status: 'linked', vehicleNumber: '11가1111' }])
   const result = await clickWithdraw(ownerKey, { name: '차주', phone: '010-1111-2222', accountType: 'owner_driver' })
   assert.deepEqual(result.toasts, [LINKED_MSG])
   assert.equal(result.confirmShown, false)
@@ -52,7 +52,7 @@ test('차주에게 연동 중인 기사가 있으면 확인 창 없이 안내만
 
 test('연동된 기사 계정은 확인 창 없이 안내만 뜬다', async () => {
   const ownerKey = 'owner-of-7a-driver'
-  commitDrivers(ownerKey, [], { syncToCloud: false })
+  commitDrivers(ownerKey, [])
   const result = await clickWithdraw(ownerKey, { name: '기사', phone: '010-3333-4444', accountType: 'employed_driver', linkedOwnerId: ownerKey })
   assert.deepEqual(result.toasts, [LINKED_MSG])
   assert.equal(result.confirmShown, false)
@@ -60,7 +60,7 @@ test('연동된 기사 계정은 확인 창 없이 안내만 뜬다', async () =
 
 test('초대만 있고 연동이 없으면 지금처럼 확인 창이 뜬다', async () => {
   const ownerKey = 'owner-7a-pending'
-  commitDrivers(ownerKey, [{ id: 'd2', status: 'pending', vehicleNumber: '22가2222' }], { syncToCloud: false })
+  commitDrivers(ownerKey, [{ id: 'd2', status: 'pending', vehicleNumber: '22가2222' }])
   const result = await clickWithdraw(ownerKey, { name: '차주', phone: '010-5555-6666', accountType: 'owner_driver' })
   assert.deepEqual(result.toasts, [])
   assert.equal(result.confirmShown, true)

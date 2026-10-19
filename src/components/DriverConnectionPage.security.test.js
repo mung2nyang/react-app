@@ -18,7 +18,7 @@ test('로그인 초대는 수동 연동 버튼 없이 수정·취소만, 비회�
   const ownerKey = 'security-driver-page'
   beginSessionEpoch(ownerKey, ownerKey)
   commitDrivers(ownerKey, [{ id: 'pending-link', supabaseId: 'server-link', name: '시험기사',
-    status: 'pending', inviteCode: '123456', vehicleNumber: '시험차량' }], { syncToCloud: false })
+    status: 'pending', inviteCode: '123456', vehicleNumber: '시험차량' }])
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)

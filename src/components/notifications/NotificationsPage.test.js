@@ -65,10 +65,10 @@ function switchOf(container, kind) {
 
 /** 입금 예정일이 지난 미수 1건(연체 알림) */
 function seedOverdue(ownerKey) {
-  commitSettings(ownerKey, normalizeSettings({ paymentOn: true }), { syncToCloud: false })
+  commitSettings(ownerKey, normalizeSettings({ paymentOn: true }))
   commitWorkData(ownerKey, {
     '2026-08-30': { isOff: false, callDetails: [{ id: 'od-1', client: '연체거래처', fare: 120000, payments: [], paymentDueDate: '2026-09-01' }] },
-  }, { syncToCloud: false })
+  })
 }
 
 test('목록: 연체 알림에 날짜 줄(운행·입금 예정), 누르면 미수금 화면, [닫기]하면 사라지고 🔔 다시 세기', async () => {
@@ -98,7 +98,7 @@ test('목록: 연체 알림에 날짜 줄(운행·입금 예정), 누르면 미�
 test('알림이 없으면 "알림이 없습니다."', async () => {
   const ownerKey = 'np-empty'
   // 오후 6시 이후엔 "오늘 운행일지 비어 있음"이 생기므로 그 종류는 꺼 두고 본다(시간에 따라 흔들리지 않게).
-  commitSettings(ownerKey, normalizeSettings({ dailyInspectionOn: true, notifOff: ['today'] }), { syncToCloud: false })
+  commitSettings(ownerKey, normalizeSettings({ dailyInspectionOn: true, notifOff: ['today'] }))
   const view = await renderPage(ownerKey)
   try {
     assert.equal(view.container.querySelector('.notif-list .empty-state')?.textContent, '알림이 없습니다.')
@@ -170,7 +170,7 @@ test('저장 실패면 안내가 뜨고 스위치·설정은 그대로', async (
 
 test('일상점검 의무화 안내: [바로 사용하기] = 스위치 켜짐 → 목록에서 사라짐, 닫기 이름은 [다시 보지 않기], 끄기 스위치 없음', async () => {
   const ownerKey = 'np-inspection'
-  commitSettings(ownerKey, normalizeSettings({}), { syncToCloud: false })
+  commitSettings(ownerKey, normalizeSettings({}))
   /** @type {string[]} */
   const toasts = []
   const view = await renderPage(ownerKey, { showToast: (m) => toasts.push(m) })

@@ -35,7 +35,7 @@ export async function saveExpenses(ownerKey, items) {
       await syncExpenseItemsForVehicle(/** @type {string} */ (userId), assignedCar.supabaseId, previous, next, logs.main || {})
     }
     assertSessionStillCurrent(captured)
-    commitExpenses(ownerKey, next, { syncToCloud: false })
+    commitExpenses(ownerKey, next)
     return
   }
   const cars = getState().cars[ownerKey]
@@ -54,7 +54,7 @@ export async function saveExpenses(ownerKey, items) {
     await syncExpenseItemsForVehicle(/** @type {string} */ (userId), target.vehicleId, previous, target.expenses, logs[target.logId] || {}, linked ? mainVehicleId : null, !linked)
   }
   assertSessionStillCurrent(captured)
-  commitExpenses(ownerKey, next, { syncToCloud: false })
+  commitExpenses(ownerKey, next)
 }
 
 export * from '../domain/expenses.js'

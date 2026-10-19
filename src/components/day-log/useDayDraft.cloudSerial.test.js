@@ -57,8 +57,8 @@ function beginLoggedIn(userId, ownerKey) {
   Object.assign(handlers, emptyOkHandlers())
   beginSessionEpoch(userId, ownerKey)
   setHydration({ status: 'ready', userId, ownerKey })
-  commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 800 }], { syncToCloud: false })
-  commitWorkData(ownerKey, {}, { syncToCloud: false })
+  commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 800 }])
+  commitWorkData(ownerKey, {})
 }
 
 /** @param {string} ownerKey */

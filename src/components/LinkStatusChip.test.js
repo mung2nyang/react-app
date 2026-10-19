@@ -25,7 +25,7 @@ async function mount({ accountType, drivers }) {
   replaceOwnerState(OWNER, {
     drivers: /** @type {Array<import('../lib/outboxTypes.js').DriverRecord>} */ (drivers),
     profile: { name: '홍길동', phone: '', bizName: '차주로지스' },
-  }, { sync: false, persist: false })
+  }, { persist: false })
   /** @type {Array<string>} */
   const opened = []
   const container = document.createElement('div')

@@ -21,7 +21,7 @@ const { default: DayLogPage } = await import('./DayLogPage.jsx')
 const { default: EmployerLinkCard } = await import('../drivers/EmployerLinkCard.jsx')
 
 const OWNER = 'owner-period'
-commitDrivers(OWNER, [{ id: 'link-1', name: '김기사', phone: '', vehicleNumber: '34나5678', startDate: '2026-10-05', endDate: '2026-12-31', status: 'linked' }], { syncToCloud: false })
+commitDrivers(OWNER, [{ id: 'link-1', name: '김기사', phone: '', vehicleNumber: '34나5678', startDate: '2026-10-05', endDate: '2026-12-31', status: 'linked' }])
 
 /** @param {import('react').ReactElement} element */
 async function render(element) {

@@ -46,7 +46,7 @@ const REQUESTED_AT = '2026-10-01T03:00:00.000Z'
 
 /** @param {Partial<import('../../lib/outboxTypes.js').DriverRecord>} extra */
 function seedLink(extra = {}) {
-  commitDrivers(OWNER, [{ id: 'd1', name: '기사', status: 'linked', vehicleNumber: '11가1111', supabaseId: 'link-1', ...extra }], { syncToCloud: false })
+  commitDrivers(OWNER, [{ id: 'd1', name: '기사', status: 'linked', vehicleNumber: '11가1111', supabaseId: 'link-1', ...extra }])
 }
 
 /** @param {string} status @param {string} requestedBy */

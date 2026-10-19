@@ -36,7 +36,7 @@ export async function saveInvoices(ownerKey, items) {
   const captured = captureSession()
   const next = await syncTaxInvoices(/** @type {string} */ (userId), ownerKey, cars, clients, items)
   assertSessionStillCurrent(captured)
-  commitInvoices(ownerKey, next || items, { syncToCloud: false })
+  commitInvoices(ownerKey, next || items)
 }
 
 export * from '../domain/invoices.js'

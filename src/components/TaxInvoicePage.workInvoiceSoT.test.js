@@ -23,8 +23,8 @@ test('일지를 커밋하면 운송비 내역서가 리마운트 없이 합계�
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-15`
   commitClients(ownerKey, [
     { id: 'c-sot', companyName: '소트거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
-  ], { syncToCloud: false })
-  commitWorkData(ownerKey, {}, { syncToCloud: false })
+  ])
+  commitWorkData(ownerKey, {})
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -39,7 +39,7 @@ test('일지를 커밋하면 운송비 내역서가 리마운트 없이 합계�
     await act(async () => {
       commitWorkData(ownerKey, {
         [dateKey]: { isOff: false, fixedCount: 4 },
-      }, { syncToCloud: false })
+      })
     })
     assert.ok(
       container.textContent.includes('소트거래처 기본 운송료'),
@@ -59,7 +59,7 @@ test('계산서를 커밋하면 세금계산서 발급 목록이 리마운트 �
   const ownerKey = 'sot-invoices-tax'
   const now = new Date()
   const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-  commitInvoices(ownerKey, [], { syncToCloud: false })
+  commitInvoices(ownerKey, [])
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -84,7 +84,7 @@ test('계산서를 커밋하면 세금계산서 발급 목록이 리마운트 �
         clientName: '소트계산서거래처',
         supplyAmount: 10000,
         taxAmount: 1000,
-      }], { syncToCloud: false })
+      }])
     })
     assert.ok(
       container.textContent.includes('소트계산서거래처'),

@@ -44,7 +44,7 @@ function labelText(container, htmlFor) {
 test('71-5: 로그인 회원 초대 창은 배정 차량·계약 시작일에 (필수), 비회원 안내는 안 보임', async () => {
   const ownerKey = 'invite-notice-member'
   beginSessionEpoch(ownerKey, ownerKey)
-  commitDrivers(ownerKey, [], { syncToCloud: false })
+  commitDrivers(ownerKey, [])
   const { container, root } = await renderPage(ownerKey, { userId: ownerKey, name: '차주', phone: '' })
   try {
     assert.equal(container.textContent?.includes(GUEST_NOTICE), false)
@@ -61,7 +61,7 @@ test('71-5: 로그인 회원 초대 창은 배정 차량·계약 시작일에 (�
 
 test('71-6: 비회원은 기사 연결 현황 아래 로그인 안내가 보이고, 옛 초대를 고칠 때 (필수)는 없음', async () => {
   const ownerKey = 'invite-notice-guest'
-  commitDrivers(ownerKey, [{ id: 'old-invite', name: '옛기사', status: 'pending', inviteCode: '123456' }], { syncToCloud: false })
+  commitDrivers(ownerKey, [{ id: 'old-invite', name: '옛기사', status: 'pending', inviteCode: '123456' }])
   const { container, root } = await renderPage(ownerKey, null)
   try {
     assert.ok(container.textContent?.includes(GUEST_NOTICE))

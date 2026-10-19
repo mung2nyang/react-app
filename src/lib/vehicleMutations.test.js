@@ -59,7 +59,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
     const newNum = '22나2222'
     commitCars(owner, [{
       id: 'car-sub-1', type: 'sub', number: oldNum, driverName: '김', driverPhone: '010-1111-1111', supabaseId: 'v1',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { '2026-08-10': { isOff: false, fixedCount: 4 } })
     const result = await requestVehicleSave({
       ownerKey: owner,
@@ -84,7 +84,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
     const newNum = '44라4444'
     commitCars(owner, [{
       id: 'car-sub-2', type: 'sub', number: oldNum, driverName: '박', driverPhone: '010-2222-2222',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { '2026-08-11': { isOff: false, fixedCount: 2 } })
     const proto = Object.getPrototypeOf(localStorage)
     const original = proto.setItem
@@ -122,7 +122,7 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
     const newNum = '66바6666'
     commitCars(owner, [{
       id: 'car-sub-rm', type: 'sub', number: oldNum, driverName: '최', driverPhone: '010-5555-6666',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { '2026-08-12': { isOff: false, fixedCount: 5 } })
     const carsRaw = localStorage.getItem(storageKeyFor('cars', owner))
     const logRaw = localStorage.getItem(storageKeyForLog(owner, oldNum))
@@ -166,7 +166,7 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
     const newNum = '88아8888'
     commitCars(owner, [{
       id: 'car-read-fail', type: 'sub', number: oldNum, driverName: '정', driverPhone: '010-7777-8888',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { '2026-08-13': { isOff: false, fixedCount: 1 } })
     const carsSnap = JSON.stringify(getState().cars[owner])
     const logsSnap = JSON.stringify(getState().workLogs[owner])
@@ -222,7 +222,7 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
       const oldNum = '77사7777'
       commitCars(owner, [{
         id: 'car-nested', type: 'sub', number: oldNum, driverName: '정', driverPhone: '010-7777-8888',
-      }], { syncToCloud: false })
+      }])
       commitLogWorkData(owner, oldNum, { '2026-08-13': patch(1) })
       localStorage.setItem(storageKeyForLog(owner, oldNum), raw)
       const carsSnap = JSON.stringify(getState().cars[owner])
@@ -261,7 +261,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const dateKey = '2026-08-14'
     commitCars(owner, [{
       id: 'car-pend', type: 'sub', number: oldNum, driverName: '한', driverPhone: '010-0001-0002',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { [dateKey]: { isOff: false, fixedCount: 1 } })
     const oldPending = pendingOwnerForLog(owner, oldNum)
     const proto = Object.getPrototypeOf(localStorage)
@@ -307,10 +307,10 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const dateKey = '2026-08-20'
     commitCars(owner, [{
       id: 'car-cb', type: 'sub', number: oldNum, driverName: '콜', driverPhone: '010-4101-4102',
-    }], { syncToCloud: false })
+    }])
     commitCars(other, [{
       id: 'car-keep', type: 'sub', number: keepNum, driverName: '유', driverPhone: '010-9999-9999',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { [dateKey]: { isOff: false, fixedCount: 1 } })
     commitLogWorkData(other, keepNum, { [dateKey]: { isOff: false, fixedCount: 8 } })
     const oldPending = pendingOwnerForLog(owner, oldNum)
@@ -366,7 +366,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const dateKey = '2026-08-21'
     commitCars(owner, [{
       id: 'car-dw', type: 'sub', number: oldNum, driverName: '실', driverPhone: '010-5101-5102',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { [dateKey]: { isOff: false, fixedCount: 2 } })
     const oldPending = pendingOwnerForLog(owner, oldNum)
     /** @type {Array<boolean>} */
@@ -420,7 +420,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const dateKey = '2026-08-18'
     commitCars(owner, [{
       id: 'car-unsafe', type: 'sub', number: oldNum, driverName: '위', driverPhone: '010-2101-2102',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { [dateKey]: { isOff: false, fixedCount: 1 } })
     const oldPending = pendingOwnerForLog(owner, oldNum)
     const unsafePatch = {
@@ -450,7 +450,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const dateKey = '2026-08-15'
     commitCars(owner, [{
       id: 'car-del', type: 'sub', number: num, driverName: '오', driverPhone: '010-1212-1212',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, num, { [dateKey]: { isOff: false, fixedCount: 3 } })
     registerPendingDayWrite(pendingOwnerForLog(owner, num), dateKey, patch(4))
     const result = await requestVehicleDeletion({
@@ -476,10 +476,10 @@ describe('pending 큐와 번호 변경·삭제', () => {
     commitCars(owner, [
       { id: 'car-drop', type: 'sub', number: dropNum, driverName: '삭', driverPhone: '010-6101-6101' },
       { id: 'car-keep', type: 'sub', number: keepNum, driverName: '남', driverPhone: '010-6102-6102' },
-    ], { syncToCloud: false })
+    ])
     commitCars(other, [
       { id: 'car-other', type: 'sub', number: otherNum, driverName: '타', driverPhone: '010-7101-7101' },
-    ], { syncToCloud: false })
+    ])
     commitLogWorkData(owner, dropNum, { [dateKey]: { isOff: false, fixedCount: 1 } })
     commitLogWorkData(owner, keepNum, { [dateKey]: { isOff: false, fixedCount: 5 } })
     commitLogWorkData(other, otherNum, { [dateKey]: { isOff: false, fixedCount: 7 } })
@@ -512,7 +512,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const dateKey = '2026-08-19'
     commitCars(owner, [{
       id: 'car-unsafe-del', type: 'sub', number: num, driverName: '삭', driverPhone: '010-2223-2223',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, num, { [dateKey]: { isOff: false, fixedCount: 2 } })
     const pending = pendingOwnerForLog(owner, num)
     markUnsafeRegistrationFailure(pending, dateKey, {
@@ -537,7 +537,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const dateKey = '2026-08-16'
     commitCars(owner, [{
       id: 'car-cu', type: 'sub', number: oldNum, driverName: '유', driverPhone: '010-1313-1414',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { [dateKey]: { isOff: false, fixedCount: 2 } })
     registerPendingDayWrite(pendingOwnerForLog(owner, oldNum), dateKey, patch(7))
     const moved = await requestVehicleSave({
@@ -569,7 +569,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
     const newNum = '16라1616'
     commitCars(owner, [{
       id: 'car-du', type: 'sub', number: oldNum, driverName: '금', driverPhone: '010-1515-1616',
-    }], { syncToCloud: false })
+    }])
     commitLogWorkData(owner, oldNum, { '2026-08-17': { isOff: false, fixedCount: 2 } })
     const proto = Object.getPrototypeOf(localStorage)
     const originalGet = proto.getItem
@@ -599,7 +599,7 @@ describe('pending 큐와 번호 변경·삭제', () => {
 describe('requestClientSave / requestClientReorder', () => {
   test('거래처 persist 실패 시 Store가 롤백되고 console.error가 1회다', async () => {
     const owner = 'cli-quota-fail'
-    commitClients(owner, [{ id: 'keep', companyName: '유지' }], { syncToCloud: false })
+    commitClients(owner, [{ id: 'keep', companyName: '유지' }])
     const proto = Object.getPrototypeOf(localStorage)
     const original = proto.setItem
     const failKey = storageKeyFor('clients', owner)
@@ -631,7 +631,7 @@ describe('requestClientSave / requestClientReorder', () => {
       { id: 'pin', companyName: '핀', isPinned: true },
       { id: 'rest', companyName: '일반', isPinned: false },
     ]
-    commitClients(owner, clients, { syncToCloud: false })
+    commitClients(owner, clients)
     const result = await requestClientReorder({ ownerKey: owner, clients, fromId: 'pin', toId: 'rest' })
     assert.equal(result.rejected, true)
     assert.deepEqual(getState().clients[owner].map((item) => item.id), ['pin', 'rest'])
@@ -642,7 +642,7 @@ describe('requestClientSave / requestClientReorder', () => {
     resetStubSupabaseCallCounts()
     beginSessionEpoch('user-hyd-fail', owner)
     setHydration({ status: 'failed', userId: 'user-hyd-fail', ownerKey: owner })
-    commitCars(owner, [], { syncToCloud: false })
+    commitCars(owner, [])
     const before = JSON.stringify(getState().cars[owner])
     const result = await requestVehicleSave({
       ownerKey: owner,
@@ -659,7 +659,7 @@ describe('requestClientSave / requestClientReorder', () => {
     const owner = 'cli-hyd-fail'
     beginSessionEpoch('user-cli-hyd', owner)
     setHydration({ status: 'failed', userId: 'user-cli-hyd', ownerKey: owner })
-    commitClients(owner, [], { syncToCloud: false })
+    commitClients(owner, [])
     const beforeStore = JSON.stringify(getState().clients[owner])
     const beforeLs = localStorage.getItem(storageKeyFor('clients', owner))
     const result = await requestClientSave({
@@ -681,7 +681,7 @@ describe('requestClientSave / requestClientReorder', () => {
     commitClients(owner, [
       { id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: 10000, supabaseId: 901 },
       { id: 'c2', companyName: '대한', fixedUnitPrice: 20000 },
-    ], { syncToCloud: false })
+    ])
     const updateBefore = stubSupabaseCallCounts.update
     const ok = await requestClientFixedUnitPrice({
       ownerKey: owner,
@@ -738,7 +738,7 @@ describe('requestClientSave / requestClientReorder', () => {
     commitClients(owner, [
       { id: 't1', companyName: '세무거래처', bizNumber: '111', supabaseId: 801 },
       { id: 't2', companyName: '다른곳', bizNumber: '222' },
-    ], { syncToCloud: false })
+    ])
     const updateBefore = stubSupabaseCallCounts.update
     const ok = await requestClientTaxInfo({
       ownerKey: owner,
@@ -779,10 +779,10 @@ describe('requestClientSave / requestClientReorder', () => {
     const ownerB = 'ready-owner-b'
     beginSessionEpoch('user-b', ownerB)
     setHydration({ status: 'ready', userId: 'user-b', ownerKey: ownerB })
-    commitClients(ownerA, [{ id: 'a1', companyName: '에이' }], { syncToCloud: false })
-    commitClients(ownerB, [{ id: 'b1', companyName: '비' }], { syncToCloud: false })
-    commitCars(ownerA, [{ id: 'ca', number: '11가1111', type: 'main' }], { syncToCloud: false })
-    commitCars(ownerB, [{ id: 'cb', number: '22나2222', type: 'main' }], { syncToCloud: false })
+    commitClients(ownerA, [{ id: 'a1', companyName: '에이' }])
+    commitClients(ownerB, [{ id: 'b1', companyName: '비' }])
+    commitCars(ownerA, [{ id: 'ca', number: '11가1111', type: 'main' }])
+    commitCars(ownerB, [{ id: 'cb', number: '22나2222', type: 'main' }])
     const snap = {
       clientsA: JSON.stringify(getState().clients[ownerA]),
       clientsB: JSON.stringify(getState().clients[ownerB]),
@@ -826,7 +826,7 @@ describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 
     resetStubSupabaseCallCounts()
     beginSessionEpoch('user-e1', owner)
     setHydration({ status: 'ready', userId: 'user-e1', ownerKey: owner })
-    commitCars(owner, [], { syncToCloud: false })
+    commitCars(owner, [])
     const carsKey = storageKeyFor('cars', owner)
     const proto = Object.getPrototypeOf(localStorage)
     const original = proto.setItem
@@ -857,7 +857,7 @@ describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 
     const owner = 'slice-e-veh-fail'
     beginSessionEpoch('user-e2', owner)
     setHydration({ status: 'ready', userId: 'user-e2', ownerKey: owner })
-    commitCars(owner, [{ id: 'keep', number: '00가0000', type: 'main', supabaseId: 1 }], { syncToCloud: false })
+    commitCars(owner, [{ id: 'keep', number: '00가0000', type: 'main', supabaseId: 1 }])
     const before = JSON.stringify(getState().cars[owner])
     const carsKey = storageKeyFor('cars', owner)
     const lsBefore = localStorage.getItem(carsKey)
@@ -891,7 +891,7 @@ describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 
     resetStubSupabaseCallCounts()
     beginSessionEpoch('user-e3', owner)
     setHydration({ status: 'failed', userId: 'user-e3', ownerKey: owner })
-    commitCars(owner, [], { syncToCloud: false })
+    commitCars(owner, [])
     const before = JSON.stringify(getState().cars[owner])
     const result = await requestVehicleSave({
       ownerKey: owner, userId: 'user-e3', cars: getState().cars[owner] || [],
@@ -907,7 +907,7 @@ describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 
   test('게스트 차량 저장은 여전히 reactPracticeCars:guest에 남는다(회귀)', async () => {
     endCloudSession()
     const owner = 'guest'
-    commitCars(owner, [], { syncToCloud: false })
+    commitCars(owner, [])
     localStorage.removeItem(storageKeyFor('cars', owner))
     const result = await requestVehicleSave({
       ownerKey: owner, userId: null, cars: getState().cars[owner] || [],
@@ -922,8 +922,8 @@ describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 
 describe('requestVehicleDeletion — 연동 기사가 있는 차량은 삭제 거절(로드맵 37)', () => {
   /** @param {string} owner @param {string} num @param {'pending'|'linked'|'disconnected'} status */
   function seed(owner, num, status) {
-    commitCars(owner, [{ id: 'car-link', type: 'sub', number: num, driverName: '연', driverPhone: '010-3737-3737' }], { syncToCloud: false })
-    commitDrivers(owner, [{ id: 'drv-link', name: '연', status, vehicleNumber: num }], { syncToCloud: false })
+    commitCars(owner, [{ id: 'car-link', type: 'sub', number: num, driverName: '연', driverPhone: '010-3737-3737' }])
+    commitDrivers(owner, [{ id: 'drv-link', name: '연', status, vehicleNumber: num }])
   }
 
   test('linked면 지우지 않는다 — Store·localStorage·알림·서버 호출 모두 그대로', async () => {
@@ -958,7 +958,7 @@ describe('requestVehicleDeletion — 연동 기사가 있는 차량은 삭제 �
   test('다른 차량 번호에 연동된 기사는 이 차량 삭제를 막지 않는다', async () => {
     const owner = 'veh-del-other-link'
     seed(owner, '37가3703', 'linked')
-    commitCars(owner, [...getState().cars[owner], { id: 'car-free', type: 'sub', number: '37가3704', driverName: '빈', driverPhone: '010-3704-3704' }], { syncToCloud: false })
+    commitCars(owner, [...getState().cars[owner], { id: 'car-free', type: 'sub', number: '37가3704', driverName: '빈', driverPhone: '010-3704-3704' }])
     const result = await requestVehicleDeletion({ ownerKey: owner, userId: null, cars: getState().cars[owner], vehicleId: 'car-free' })
     assert.match(result.toast || '', /삭제했습니다/)
     assert.deepEqual(getState().cars[owner].map((car) => car.id), ['car-link'])

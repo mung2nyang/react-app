@@ -55,7 +55,7 @@ export async function requestClientDeletion({ ownerKey, userId, clients, clientI
   try {
     await deleteClientFromSupabase(client.supabaseId, captured)
     assertSessionStillCurrent(captured)
-    commitClients(ownerKey, nextClients, { syncToCloud: false })
+    commitClients(ownerKey, nextClients)
     return { clients: nextClients, blocked: null, toast: '거래처를 삭제했습니다.', failed: false, closeModal: true }
   } catch (error) {
     if (error instanceof StaleSessionError) {
@@ -87,7 +87,7 @@ export async function requestDriverStatusChange({ ownerKey, drivers, driverId, s
   try {
     await updateDriverLinkStatusOnSupabase(driver.supabaseId, status, captured)
     assertSessionStillCurrent(captured)
-    commitDrivers(ownerKey, nextDrivers, { syncToCloud: false })
+    commitDrivers(ownerKey, nextDrivers)
     return { drivers: nextDrivers, blocked: null, toast: statusToast }
   } catch (error) {
     if (error instanceof StaleSessionError) return { drivers, blocked: null, toast: SESSION_CHANGED_TOAST }
@@ -117,7 +117,7 @@ export async function requestDriverDeletion({ ownerKey, drivers, driverId, cloud
   try {
     await deleteDriverLinkOnSupabase(driver.supabaseId, captured)
     assertSessionStillCurrent(captured)
-    commitDrivers(ownerKey, nextDrivers, { syncToCloud: false })
+    commitDrivers(ownerKey, nextDrivers)
     return { drivers: nextDrivers, blocked: null, toast: '초대를 삭제했습니다.' }
   } catch (error) {
     if (error instanceof StaleSessionError) return { drivers, blocked: null, toast: SESSION_CHANGED_TOAST }

@@ -34,7 +34,7 @@ beforeEach(() => {
   calls = []
   beginSessionEpoch(OWNER, OWNER)
   setHydration({ status: 'ready', userId: OWNER, ownerKey: OWNER })
-  commitDrivers(OWNER, DRIVERS, { syncToCloud: false })
+  commitDrivers(OWNER, DRIVERS)
 })
 
 describe('requestDriverUnlinkAction — 로드맵 7-C-1', () => {

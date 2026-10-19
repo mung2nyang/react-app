@@ -53,8 +53,8 @@ test('[세부 내역 (거래처 선택)] 탭 → 창 [조회] → 세부 보기�
   const ownerKey = 'report-page-detail-tab'
   commitClients(ownerKey, [
     { id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: 10000 },
-  ], { syncToCloud: false })
-  commitWorkData(ownerKey, {}, { syncToCloud: false })
+  ])
+  commitWorkData(ownerKey, {})
 
   const { container, cleanup } = await renderReport(ownerKey)
   try {
@@ -83,7 +83,7 @@ test('[세부 내역 (거래처 선택)] 탭 → 창 [조회] → 세부 보기�
 
 test('[세부내역] 창에서 [취소] → 요약 그대로, 버튼 3개는 내용 아래 카드', async () => {
   const ownerKey = 'report-page-detail-cancel'
-  commitWorkData(ownerKey, {}, { syncToCloud: false })
+  commitWorkData(ownerKey, {})
   const { container, cleanup } = await renderReport(ownerKey)
   try {
     const topCard = /** @type {Element} */ (container.querySelector('.report-top-card'))
@@ -105,7 +105,7 @@ test('[세부내역] 창에서 [취소] → 요약 그대로, 버튼 3개는 내
 
 test('세부 보기에서도 머리 뒤로가기는 화면 나가기', async () => {
   const ownerKey = 'report-page-back'
-  commitWorkData(ownerKey, {}, { syncToCloud: false })
+  commitWorkData(ownerKey, {})
   let backCount = 0
   const { container, cleanup } = await renderReport(ownerKey, () => { backCount += 1 })
   try {

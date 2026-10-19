@@ -87,7 +87,6 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
         commitBatch([{ domain: 'cars', ownerKey, value: withId }, ...renameEntries], {
           extraWrites: [],
           replaceWorkLogs,
-          syncToCloud: false,
         })
         return { cars: withId, toast: okToast, failed: false, saved: withId.find((item) => item.id === saved?.id) || saved, renamedFrom }
       } catch (error) {
@@ -143,7 +142,7 @@ export async function requestCarBusinessInfoSave({ ownerKey, cars, carId, form, 
       const withId = remoteId != null
         ? nextCars.map((item) => (item.id === carId ? { ...item, supabaseId: String(remoteId) } : item))
         : nextCars
-      commitBatch([{ domain: 'cars', ownerKey, value: withId }], { extraWrites: [], syncToCloud: false })
+      commitBatch([{ domain: 'cars', ownerKey, value: withId }], { extraWrites: [] })
       return { cars: withId, toast: SAVED_TOAST, failed: false }
     } catch (error) {
       if (error instanceof StaleSessionError) return { cars, toast: SESSION_CHANGED_TOAST, failed: true }

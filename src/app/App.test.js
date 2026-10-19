@@ -309,7 +309,7 @@ test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 work
       '2026-08-05': { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} },
       '2026-08-06': { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} },
     }
-    await act(async () => { commitWorkData(ownerKey, B, { syncToCloud: false }) })
+    await act(async () => { commitWorkData(ownerKey, B) })
 
     const cell6 = Array.from(container.querySelectorAll('button.date-cell'))
       .find((btn) => btn.querySelector('.cell-date-text')?.textContent === '6' && !btn.disabled)
@@ -433,7 +433,7 @@ test('재감사 FAIL 지적 1번 — 과거 일지에서 오늘 날짜 일지로
       commitWorkData(ownerKey, {
         [dateA]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} },
         [dateB]: { isOff: false, fixedCount: 6, palletCount: 0, callDetails: [], fixedRouteCounts: {} },
-      }, { syncToCloud: false })
+      })
       const main = getState().workLogs[ownerKey]?.main || {}
       handlers.daily_logs = {
         ...(handlers.daily_logs || {}),
@@ -516,7 +516,7 @@ test('재감사 FAIL 지적 8번 — 커밋마다 콜상세의 중첩 payments/c
           }],
           fixedRouteCounts: {},
         },
-      }, { syncToCloud: false })
+      })
       handlers.daily_logs = {
         ...(handlers.daily_logs || {}),
         select: () => ({
@@ -609,8 +609,7 @@ test('재감사 FAIL 지적 4번 — 고정노선+파렛트 거래처가 있으�
     await waitUntil(() => !!container.querySelector('#modalPalletCount'))
     assert.equal(requireHtmlInput(container, '#modalPalletCount').value, '5', '재진입 시 저장된 파렛트 값을 그대로 보여줘야 한다')
 
-    // palletCount 커밋(syncToCloud 기본값 true)이 예약한 클라우드 동기화 디바운스가
-    // 다음 테스트로 새지 않게 기다린다(재감사 2차 — 테스트 격리).
+    // palletCount 커밋의 저장 디바운스가 다음 테스트로 새지 않게 기다린다(재감사 2차 — 테스트 격리).
     await act(async () => { await wait(650) })
   } finally {
     await unmountTracked(root)
@@ -704,9 +703,9 @@ function seedPalletClient(ownerKey) {
       palletPrice: '10,000', fixedUnitPrice: '250,000', supabaseId: 601,
     }),
   ]
-  commitClients(ownerKey, clients, { syncToCloud: false })
+  commitClients(ownerKey, clients)
   handlers.clients.select = () => ({ data: clientRowsFor(clients), error: null })
-  commitSettings(ownerKey, normalizeSettings({ fixedOn: true }), { syncToCloud: false })
+  commitSettings(ownerKey, normalizeSettings({ fixedOn: true }))
 }
 
 /** daily_logs upsert가 실제로 나가려면 메인 차량 supabaseId가 필요하다. */
@@ -715,7 +714,7 @@ function seedMainCar(ownerKey) {
   const cars = [
     /** @type {import('../domain/financeTypes.js').CarLike} */ ({ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 501 }),
   ]
-  commitCars(ownerKey, cars, { syncToCloud: false })
+  commitCars(ownerKey, cars)
   // 슬라이스 C: hydrate가 빈 배열을 "삭제됨"으로 보므로, 시드한 supabaseId 차량을
   // 가짜 서버도 돌려줘야 hydrate가 지우지 않는다. afterEach에서 select를 원복한다.
   handlers.vehicles.select = () => ({ data: vehicleRowsFor(cars), error: null })
@@ -737,14 +736,14 @@ test('재감사 FAIL 지적 6번 — 콜상세 폼을 열면 비용 폼이 닫�
 
   try {
     await act(async () => {
-      commitSettings(ownerKey, normalizeSettings({ fixedOn: true, callDetail: true }), { syncToCloud: false })
+      commitSettings(ownerKey, normalizeSettings({ fixedOn: true, callDetail: true }))
     })
     await act(async () => {
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
     await act(async () => {
-      commitSettings(ownerKey, normalizeSettings({ fixedOn: true, callDetail: true }), { syncToCloud: false })
+      commitSettings(ownerKey, normalizeSettings({ fixedOn: true, callDetail: true }))
     })
 
     const openCallBtn = container.querySelector('.call-detail-section .compact-add-btn')
@@ -799,7 +798,7 @@ test('재감사 2차 FAIL 지적 2번 — 비용 저장이 그 사이 store에 �
 
   try {
     const e1 = { id: 'e1', kind: 'maint', date: dateKey, name: '오일', category: '엔진/미션', payment: '카드', cost: 10000 }
-    await act(async () => { commitExpenses(ownerKey, [e1], { syncToCloud: false }) })
+    await act(async () => { commitExpenses(ownerKey, [e1]) })
 
     await act(async () => {
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
@@ -808,7 +807,7 @@ test('재감사 2차 FAIL 지적 2번 — 비용 저장이 그 사이 store에 �
 
     // 화면이 모르는 사이(외부 경로로) e2가 store에 들어온다 — 다른 탭/hydrate를 흉내낸다.
     const e2 = { id: 'e2', kind: 'misc', date: dateKey, name: '주차비', category: '주차비', payment: '카드', cost: 3000 }
-    await act(async () => { commitExpenses(ownerKey, [e1, e2], { syncToCloud: false }) })
+    await act(async () => { commitExpenses(ownerKey, [e1, e2]) })
 
     const addMaintBtn = Array.from(container.querySelectorAll('button')).find((btn) => btn.textContent.includes('+ 정비 추가'))
     assert.ok(addMaintBtn, '"+ 정비 추가" 버튼을 찾아야 한다')
@@ -880,7 +879,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     await act(async () => {
       seedPalletClient(ownerKey)
       seedMainCar(ownerKey)
-      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } })
     })
     await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(App))) })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
@@ -958,7 +957,7 @@ test('로드맵 35 — 로그인 일지 서버 저장 실패 중 뒤로가기: �
     await act(async () => {
       seedPalletClient(ownerKey)
       seedMainCar(ownerKey)
-      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } })
     })
     await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(App))) })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
@@ -1020,7 +1019,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 저장은 성공�
     await act(async () => {
       seedPalletClient(ownerKey)
       seedMainCar(ownerKey)
-      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 2, palletCount: 0, callDetails: [], fixedRouteCounts: {} } })
     })
     await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(App))) })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))

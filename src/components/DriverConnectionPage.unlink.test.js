@@ -31,7 +31,7 @@ test('연동 중 카드 세 가지 상태: [해제 요청] / 요청 중·[요청
     { id: 'd-none', name: '요청없음기사', status: 'linked', vehicleNumber: '11가1111', supabaseId: 'l1' },
     { id: 'd-mine', name: '내요청기사', status: 'linked', vehicleNumber: '22가2222', supabaseId: 'l2', unlinkRequestedBy: ownerKey, unlinkRequestedAt: requestedAt },
     { id: 'd-theirs', name: '기사요청기사', status: 'linked', vehicleNumber: '33가3333', supabaseId: 'l3', unlinkRequestedBy: 'driver-x', unlinkRequestedAt: requestedAt },
-  ], { syncToCloud: false })
+  ])
 
   const container = document.createElement('div')
   document.body.appendChild(container)

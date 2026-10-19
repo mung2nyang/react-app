@@ -55,7 +55,7 @@ async function saveSettingsNow(ownerKey, patch) {
   const captured = captureSession()
   await upsertProfileOnSupabase(/** @type {string} */ (userId), readOwnerProfile(ownerKey), next, { ownFieldsOnly: userId !== ownerKey })
   assertSessionStillCurrent(captured)
-  return commitSettings(ownerKey, next, { syncToCloud: false })
+  return commitSettings(ownerKey, next)
 }
 
 /** @param {'light' | 'dark'} [theme] */

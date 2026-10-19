@@ -88,15 +88,15 @@ function assertSaveFailError(call) {
 test('재감사 16차 — oops+quota 실패는 unmount/cleanup 뒤에도 Store·저장소가 작업 전 값이다', async () => {
   const ownerKey = 'spy-unsafe-fail'
   const dateKey = '2026-10-05'
-  commitClients(ownerKey, spyClients, { syncToCloud: false })
-  commitSettings(ownerKey, normalizeSettings({ fixedOn: true, callDetail: true }), { syncToCloud: false })
+  commitClients(ownerKey, spyClients)
+  commitSettings(ownerKey, normalizeSettings({ fixedOn: true, callDetail: true }))
   commitWorkData(ownerKey, {
     [dateKey]: {
       isOff: false, fixedCount: 2, palletCount: 0,
       callDetails: [{ id: 'trp-spy', fare: '10,000', client: '한진', payments: [{ amount: 'oops' }] }],
       fixedRouteCounts: {},
     },
-  }, { syncToCloud: false })
+  })
   const proto = Object.getPrototypeOf(localStorage)
   const originalSetItem = proto.setItem
   const failKey = storageKeyFor('workData', ownerKey)

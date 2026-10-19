@@ -38,7 +38,7 @@ function wipeOwnerMemory(owner) {
     { domain: 'profile', ownerKey: owner, value: {} },
     { domain: 'invoices', ownerKey: owner, value: [] },
     { domain: 'workData', ownerKey: owner, value: {} },
-  ], { persist: false, syncToCloud: false, replaceWorkLogs: { ownerKey: owner, next: { main: {} } } })
+  ], { persist: false, replaceWorkLogs: { ownerKey: owner, next: { main: {} } } })
 }
 
 test('saveProfile 결과는 persist 왕복 후 initialize에서 복원된다', async () => {
@@ -85,11 +85,11 @@ test('계산서 draft/issued는 persist 왕복 후 supabaseId가 남는다', () 
   const withIssued = persistInvoiceRecord(withDraft, {
     ...withDraft[0], status: 'issued', issuedAt: '2026-08-30T01:00:00.000Z',
   })
-  commitInvoices(owner, withIssued, { syncToCloud: false })
+  commitInvoices(owner, withIssued)
   commitCars(owner, [{
     id: 'car-1', number: '11가1111', type: 'main', supabaseId: 501,
     commType: 'percent',
-  }], { syncToCloud: false })
+  }])
   assert.equal(readPersistDomain('invoices', owner).kind, 'value')
   assert.equal(readPersistDomain('cars', owner).kind, 'value')
   const before = layers(owner)
@@ -166,7 +166,7 @@ test('로드맵 25: 비회원 기사 차량 지출(vehicleNumber)이 있어도 �
     { domain: 'cars', ownerKey: owner, value: [] },
     { domain: 'clients', ownerKey: owner, value: [] },
     { domain: 'expenses', ownerKey: owner, value: [] },
-  ], { persist: false, syncToCloud: false })
+  ], { persist: false })
   initializeOwnerFromPersist(owner)
   const state = getState()
   assert.equal((state.cars[owner] || []).length, 2)

@@ -74,8 +74,8 @@ export async function requestVehicleDeletion({ ownerKey, userId, cars, vehicleId
     await deleteVehicleFromSupabase(car.supabaseId, captured)
     assertSessionStillCurrent(captured)
     // 서버 삭제 성공 뒤에만 로컬(cars + 서브 일지 키)을 원자적으로 반영한다.
-    // syncToCloud/outbox 없음 — 서버 쓰기는 이미 끝났다.
-    commitBatch([{ domain: 'cars', ownerKey, value: nextCars }], { syncToCloud: false, extraWrites, replaceWorkLogs })
+    // 서버 쓰기는 이미 끝났다.
+    commitBatch([{ domain: 'cars', ownerKey, value: nextCars }], { extraWrites, replaceWorkLogs })
     afterPersist()
     return { cars: nextCars, blocked: null, toast: '차량을 삭제했습니다.', failed: false, closeModal: true }
   } catch (error) {

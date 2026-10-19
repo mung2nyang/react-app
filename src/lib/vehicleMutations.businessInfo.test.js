@@ -40,7 +40,7 @@ describe('requestCarBusinessInfoSave', () => {
   test('게스트: Store와 localStorage에 저장되고 서버 호출은 없다', async () => {
     endCloudSession()
     const owner = 'biz-guest'
-    commitCars(owner, [MAIN, SUB], { syncToCloud: false })
+    commitCars(owner, [MAIN, SUB])
     resetStubSupabaseCallCounts()
     const result = await requestCarBusinessInfoSave({ ownerKey: owner, userId: null, cars: getState().cars[owner], carId: 'sub-1', form: FORM })
     assert.equal(result.failed, false)
@@ -60,7 +60,7 @@ describe('requestCarBusinessInfoSave', () => {
     resetStubSupabaseCallCounts()
     beginSessionEpoch('user-biz1', owner)
     setHydration({ status: 'ready', userId: 'user-biz1', ownerKey: owner })
-    commitCars(owner, [MAIN, SUB], { syncToCloud: false })
+    commitCars(owner, [MAIN, SUB])
     try {
       const result = await requestCarBusinessInfoSave({ ownerKey: owner, userId: 'user-biz1', cars: getState().cars[owner], carId: 'sub-1', form: FORM })
       assert.equal(result.failed, false)
@@ -76,7 +76,7 @@ describe('requestCarBusinessInfoSave', () => {
     const owner = 'biz-cloud-fail'
     beginSessionEpoch('user-biz2', owner)
     setHydration({ status: 'ready', userId: 'user-biz2', ownerKey: owner })
-    commitCars(owner, [MAIN, SUB], { syncToCloud: false })
+    commitCars(owner, [MAIN, SUB])
     const before = JSON.stringify(getState().cars[owner])
     const lsBefore = JSON.stringify(readJsonKey('cars', owner, []))
     const errSpy = mock.method(console, 'error', () => {})
@@ -108,7 +108,7 @@ describe('requestCarBusinessInfoSave', () => {
     resetStubSupabaseCallCounts()
     beginSessionEpoch('user-biz3', owner)
     setHydration({ status: 'failed', userId: 'user-biz3', ownerKey: owner })
-    commitCars(owner, [MAIN, SUB], { syncToCloud: false })
+    commitCars(owner, [MAIN, SUB])
     const before = JSON.stringify(getState().cars[owner])
     try {
       const result = await requestCarBusinessInfoSave({ ownerKey: owner, userId: 'user-biz3', cars: getState().cars[owner], carId: 'sub-1', form: FORM })
@@ -123,7 +123,7 @@ describe('requestCarBusinessInfoSave', () => {
   test('메인 차량이나 없는 차량은 저장하지 않는다', async () => {
     endCloudSession()
     const owner = 'biz-not-sub'
-    commitCars(owner, [MAIN, SUB], { syncToCloud: false })
+    commitCars(owner, [MAIN, SUB])
     const before = JSON.stringify(getState().cars[owner])
     for (const carId of ['main-1', 'nope']) {
       const result = await requestCarBusinessInfoSave({ ownerKey: owner, userId: null, cars: getState().cars[owner], carId, form: FORM })

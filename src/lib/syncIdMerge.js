@@ -18,7 +18,7 @@ export function mergeRemoteIdByLocalId(domain, ownerKey, localId, supabaseId) {
     if (!current) return false
     if (String(current.supabaseId ?? '') === String(supabaseId)) return false
     const next = list.map((item) => (item.id === localId ? { ...item, supabaseId: String(supabaseId) } : item))
-    commitBatch([{ domain: 'cars', ownerKey, value: next }], { persist: true, syncToCloud: false })
+    commitBatch([{ domain: 'cars', ownerKey, value: next }])
     return true
   }
   const list = getState().clients[ownerKey] || []
@@ -26,6 +26,6 @@ export function mergeRemoteIdByLocalId(domain, ownerKey, localId, supabaseId) {
   if (!current) return false
   if (String(current.supabaseId ?? '') === String(supabaseId)) return false
     const next = list.map((item) => (item.id === localId ? { ...item, supabaseId: String(supabaseId) } : item))
-  commitBatch([{ domain: 'clients', ownerKey, value: next }], { persist: true, syncToCloud: false })
+  commitBatch([{ domain: 'clients', ownerKey, value: next }])
   return true
 }

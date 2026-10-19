@@ -23,19 +23,19 @@ function seed(owner) {
   commitCars(owner, [
     { id: 'car-main', type: 'main', number: '11가1111', supabaseId: 'v-main' },
     { id: 'car-sub', type: 'sub', number: OLD, supabaseId: 'v-sub', driverName: '김', driverPhone: '010-1111-2222' },
-  ], { syncToCloud: false })
+  ])
   commitExpenses(owner, [
     { id: 'e-sub', kind: 'fuel', date: '2026-10-10', cost: 50000, vehicleNumber: OLD },
     { id: 'e-main', kind: 'fuel', date: '2026-10-10', cost: 70000 },
-  ], { syncToCloud: false })
+  ])
   commitClients(owner, [
     { id: 'c-sub', companyName: '전용', scopedToVehicleNumber: OLD, fixedRouteLinked: true, fixedUnitPrice: '30000' },
     { id: 'c-all', companyName: '공용' },
-  ], { syncToCloud: false })
+  ])
   commitDrivers(owner, [
     { id: 'd1', name: '김', phone: '010-1111-2222', inviteCode: 'ABCDE12345', vehicleNumber: OLD, startDate: '2026-10-01', endDate: '', status: 'pending' },
-  ], { syncToCloud: false })
-  commitSettings(owner, { theme: 'light', subCarSettings: { [OLD]: { inputMode: 'count', callDetail: true, timeOn: false, platformOn: false, distanceOn: false, cargoTonnageOn: false, dailyInspectionOn: true } } }, { syncToCloud: false })
+  ])
+  commitSettings(owner, { theme: 'light', subCarSettings: { [OLD]: { inputMode: 'count', callDetail: true, timeOn: false, platformOn: false, distanceOn: false, cargoTonnageOn: false, dailyInspectionOn: true } } })
 }
 
 /** @param {string} owner */

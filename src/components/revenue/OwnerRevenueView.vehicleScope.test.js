@@ -31,12 +31,12 @@ test('로드맵 5-A-2: 서브 표시 비용은 "차주" 탭이 아니라 "기사
     { id: 'c-main', type: 'main', number: '11가1111' },
     { id: 'c-sub-a', type: 'sub', number: '22가2222', driverName: '가기사' },
     { id: 'c-sub-b', type: 'sub', number: '33가3333', driverName: '나기사' },
-  ], { syncToCloud: false })
+  ])
   commitExpenses(ownerKey, [
     { id: 'm-main', kind: 'maint', date: dateKey, name: '메인정비', cost: 12345 },
     { id: 'm-sub-a', kind: 'maint', date: dateKey, name: '서브A정비', cost: 777, vehicleNumber: '22가2222' },
     { id: 'm-sub-b', kind: 'maint', date: dateKey, name: '서브B정비', cost: 888, vehicleNumber: '33가3333' },
-  ], { syncToCloud: false })
+  ])
 
   const container = document.createElement('div')
   document.body.appendChild(container)

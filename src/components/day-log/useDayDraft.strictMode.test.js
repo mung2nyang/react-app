@@ -45,7 +45,7 @@ async function mountStrict(ownerKey) {
 
 test('StrictMode에서 일지를 열기만 하면 저장이 돌지 않는다(운행 없는 빈 기록이 지워지지 않음)', async () => {
   const ownerKey = 'guest-0-3-b-open'
-  commitWorkData(ownerKey, { [DK]: { isOff: false, fixedCount: 0, callDetails: [] } }, { syncToCloud: false })
+  commitWorkData(ownerKey, { [DK]: { isOff: false, fixedCount: 0, callDetails: [] } })
   const view = await mountStrict(ownerKey)
   try {
     await act(async () => { await wait(750) })
@@ -58,7 +58,7 @@ test('StrictMode에서 일지를 열기만 하면 저장이 돌지 않는다(운
 
 test('StrictMode에서 편집하면 저장되고 상태가 "저장됨"이 된다', async () => {
   const ownerKey = 'guest-0-3-b-edit'
-  commitWorkData(ownerKey, {}, { syncToCloud: false })
+  commitWorkData(ownerKey, {})
   const view = await mountStrict(ownerKey)
   try {
     await act(async () => { view.latest.current?.dispatch({ type: 'patchDraft', patch: { fixedCount: 2 } }) })

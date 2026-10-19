@@ -13,7 +13,7 @@ const notice = (ownerKey) => collectNotifications(ownerKey).find((item) => item.
 beforeEach(() => { localStorage.clear() })
 
 test('로그인 계정 + 메인 스위치 꺼짐(처음 값) → 알림 1건, 버튼 이름 [바로 사용하기]·[다시 보지 않기]', () => {
-  commitSettings('di-owner-1', normalizeSettings({}), { syncToCloud: false })
+  commitSettings('di-owner-1', normalizeSettings({}))
   const item = notice('di-owner-1')
   assert.ok(item)
   assert.equal(item.title, '일상점검표가 의무화되었습니다')
@@ -23,14 +23,14 @@ test('로그인 계정 + 메인 스위치 꺼짐(처음 값) → 알림 1건, �
 })
 
 test('메인 스위치가 켜져 있으면 알림 없음(기사차량 스위치는 상관없음)', () => {
-  commitSettings('di-owner-2', normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitSettings('di-owner-2', normalizeSettings({ dailyInspectionOn: true }))
   assert.equal(notice('di-owner-2'), undefined)
-  commitSettings('di-owner-3', normalizeSettings({ subCarSettings: { '11가1111': normalizeCarSettings({ dailyInspectionOn: true }) } }), { syncToCloud: false })
+  commitSettings('di-owner-3', normalizeSettings({ subCarSettings: { '11가1111': normalizeCarSettings({ dailyInspectionOn: true }) } }))
   assert.ok(notice('di-owner-3'), '기사차량만 켜져 있으면 메인 기준으로 알림')
 })
 
 test('다시 보지 않기 누르면 그 기기에서 사라짐, 비회원은 알림 없음', () => {
-  commitSettings('di-owner-4', normalizeSettings({}), { syncToCloud: false })
+  commitSettings('di-owner-4', normalizeSettings({}))
   dismissNotification('di-owner-4', DAILY_INSPECTION_NOTICE_ID)
   assert.equal(notice('di-owner-4'), undefined)
   assert.equal(notice('guest'), undefined)

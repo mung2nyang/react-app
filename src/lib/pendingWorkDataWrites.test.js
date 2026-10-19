@@ -579,7 +579,7 @@ MALFORMED_PATCH_CASES.forEach(([label, malformedValue], index) => {
     const durKey = `reactPracticeDurablePendingWrites:${ownerKey}`
 
     // 기존 정상 일지(fixedCount:5)를 미리 심는다 — 사용자가 지정한 정확한 재현 조건.
-    commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+    commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } })
     localStorage.setItem(durKey, JSON.stringify({ [dateKey]: malformedValue }))
 
     const storeBefore = JSON.stringify(getState().workLogs[ownerKey])
@@ -617,7 +617,7 @@ const VALID_PATCH_FOR_DATEKEY_TEST = { isOff: false, fixedCount: 9, palletCount:
     const dateKey = '2026-09-02' // 기존 정상 일지가 있는 진짜 날짜.
     const durKey = `reactPracticeDurablePendingWrites:${ownerKey}`
 
-    commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+    commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } })
     // 같은 durable 객체에 진짜 날짜(dateKey)와 잘못된 달력 날짜(badDateKey)를 함께
     // 넣는다 — owner 단위 격리 계약대로, 하나라도 잘못되면 그 owner 전체가 읽기
     // 실패로 취급돼야 한다(진짜 날짜 항목도 함께 보존/보류된다).
@@ -710,7 +710,7 @@ test('재감사 8차 FAIL 지적 2번 — 손상된 durable owner와 최신 fall
   const calls = []
 
   // 기존 Store fixedCount:5.
-  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } })
   // durable 원문이 손상돼 있다({ date: [] }).
   localStorage.setItem(durKey, JSON.stringify({ [dateKey]: [] }))
   // 같은 owner/date의 최신 fallback B — durable 읽기가 이미 손상돼 있으니

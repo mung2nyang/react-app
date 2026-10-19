@@ -43,7 +43,7 @@ test('id 없는 레거시 콜은 initialize 후 첫 mount에서 ID를 한 번만
   }))
   commitBatch([
     { domain: 'workData', ownerKey, value: {} },
-  ], { persist: false, syncToCloud: false, replaceWorkLogs: { ownerKey, next: { main: {} } } })
+  ], { persist: false, replaceWorkLogs: { ownerKey, next: { main: {} } } })
   assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey], undefined)
   initializeOwnerFromPersist(ownerKey)
   assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey]?.callDetails?.[0]?.id, undefined)

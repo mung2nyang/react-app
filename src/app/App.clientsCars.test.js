@@ -88,8 +88,8 @@ test.afterEach(async () => {
   // 공유 ownerKey('user-boot-nav')에 테스트 간 cars/clients가 누적되지 않게 비운다
   // (게스트 경로라 Store·LS 둘 다). 다음 테스트가 깨끗한 상태에서 시작한다.
   for (const owner of ['user-boot-nav', 'guest']) {
-    commitCars(owner, [], { syncToCloud: false })
-    commitClients(owner, [], { syncToCloud: false })
+    commitCars(owner, [])
+    commitClients(owner, [])
     localStorage.removeItem(storageKeyFor('cars', owner))
     localStorage.removeItem(storageKeyFor('clients', owner))
   }
@@ -179,7 +179,7 @@ test('앱 설정 거래처 연결로 다른 거래처를 연결하면 최종 1�
   commitClients(ownerKey, [
     { id: 'c-a', companyName: '에이', supabaseId: 'sb-a', fixedRouteLinked: true, fixedUnitPrice: '100000' },
     { id: 'c-b', companyName: '비', supabaseId: 'sb-b' },
-  ], { syncToCloud: false })
+  ])
   mirrorServerFromStore(ownerKey)
   const originalProfiles = handlers.profiles.select
   handlers.profiles.select = () => ({ data: { id: 'user-boot-nav', name: '테스트 사용자', settings: { fixedOn: true } }, error: null })
@@ -211,7 +211,7 @@ test('핀/비핀 교차 드래그는 순서를 저장하지 않는다', async ()
   commitClients(ownerKey, [
     { id: 'pin', companyName: '핀', isPinned: true, supabaseId: 'sb-pin' },
     { id: 'rest', companyName: '일반', isPinned: false, supabaseId: 'sb-rest' },
-  ], { syncToCloud: false })
+  ])
   mirrorServerFromStore(ownerKey)
   window.history.pushState({}, '', '/app/clients')
   const { container, root } = await renderApp()
@@ -234,7 +234,7 @@ test('같은 핀 그룹 드래그 순서는 persist와 hydrate 뒤에 유지된�
   commitClients(ownerKey, [
     { id: 'p1', companyName: '핀1', isPinned: true, supabaseId: 'sb-p1' },
     { id: 'p2', companyName: '핀2', isPinned: true, supabaseId: 'sb-p2' },
-  ], { syncToCloud: false })
+  ])
   mirrorServerFromStore(ownerKey)
   window.history.pushState({}, '', '/app/clients')
   const { container, root } = await renderApp()
@@ -255,7 +255,7 @@ test('같은 핀 그룹 드래그 순서는 persist와 hydrate 뒤에 유지된�
 
 test('차량 추가 후 차량 관리 목록에 그대로 머문다', async () => {
   const ownerKey = 'user-boot-nav'
-  commitCars(ownerKey, [{ id: 'main-1', type: 'main', number: '99하9999', supabaseId: 501 }], { syncToCloud: false })
+  commitCars(ownerKey, [{ id: 'main-1', type: 'main', number: '99하9999', supabaseId: 501 }])
   mirrorServerFromStore(ownerKey)
   window.history.pushState({}, '', '/app/cars')
   const { container, root } = await renderApp()
@@ -306,7 +306,7 @@ test('일지에서 차량 관리로 가서 번호를 바꾸면 출처 날짜의 
   const dateKey = '2026-08-01'
   commitCars(ownerKey, [{
     id: 'car-from-log', type: 'sub', number: oldNum, driverName: '남', driverPhone: '010-3131-3232', supabaseId: 3131,
-  }], { syncToCloud: false })
+  }])
   mirrorServerFromStore(ownerKey)
   commitLogWorkData(ownerKey, oldNum, { [dateKey]: { isOff: false, fixedCount: 1 } })
   window.history.pushState({}, '', `/app/logs/${encodeURIComponent(oldNum)}/day/${dateKey}`)
@@ -456,7 +456,7 @@ test('차량 insert 대기 중 번호를 바꿔도 서버 insert는 1회다', as
     error: null,
   })
   handlers.vehicles.update = () => ({ data: null, error: null })
-  commitCars(ownerKey, [{ id: 'main-hold', type: 'main', number: '10하1010', supabaseId: 'main-already' }], { syncToCloud: false })
+  commitCars(ownerKey, [{ id: 'main-hold', type: 'main', number: '10하1010', supabaseId: 'main-already' }])
   window.history.pushState({}, '', '/app/cars')
   const { container, root } = await renderApp()
   try {
@@ -510,7 +510,7 @@ test('차량 관리 UI에서 한 대를 삭제해도 다른 차량과 일지는 
   commitCars(ownerKey, [
     { id: 'car-ui-drop', type: 'sub', number: '81다8181', driverName: '삭', driverPhone: '010-8181-8181', supabaseId: 8181 },
     { id: 'car-ui-keep', type: 'sub', number: '82라8282', driverName: '남', driverPhone: '010-8282-8282', supabaseId: 8282 },
-  ], { syncToCloud: false })
+  ])
   mirrorServerFromStore(ownerKey)
   commitLogWorkData(ownerKey, '81다8181', { '2026-08-24': { isOff: false, fixedCount: 2 } })
   commitLogWorkData(ownerKey, '82라8282', { '2026-08-24': { isOff: false, fixedCount: 6 } })
@@ -550,7 +550,7 @@ test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store
   mirrorServerFromStore(ownerKey)
   commitClients(ownerKey, [
     { id: 'cli-keep', companyName: '유지처', supabaseId: 'sb-keep' },
-  ], { syncToCloud: false })
+  ])
   window.history.pushState({}, '', '/app/clients')
   const { container, root } = await renderApp()
   await waitUntil(() => getState().hydration.status === 'ready')
@@ -582,7 +582,7 @@ test('hydration failed에서 차량 삭제 ConfirmModal이 유지되고 Store/AP
   mirrorServerFromStore(ownerKey)
   commitCars(ownerKey, [
     { id: 'car-keep', type: 'sub', number: '91마9191', driverName: '유', driverPhone: '010-9191-9191', supabaseId: 'sv-keep' },
-  ], { syncToCloud: false })
+  ])
   window.history.pushState({}, '', '/app/cars')
   const { container, root } = await renderApp()
   await waitUntil(() => getState().hydration.status === 'ready')
@@ -616,10 +616,10 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
   const ownerB = 'ready-ui-b'
   beginSessionEpoch('user-b-ui', ownerB)
   setHydration({ status: 'ready', userId: 'user-b-ui', ownerKey: ownerB })
-  commitClients(ownerA, [{ id: 'a1', companyName: '에이' }], { syncToCloud: false })
-  commitClients(ownerB, [{ id: 'b1', companyName: '비' }], { syncToCloud: false })
-  commitCars(ownerA, [{ id: 'ca', number: '11가1111', type: 'main' }], { syncToCloud: false })
-  commitCars(ownerB, [{ id: 'cb', number: '22나2222', type: 'main' }], { syncToCloud: false })
+  commitClients(ownerA, [{ id: 'a1', companyName: '에이' }])
+  commitClients(ownerB, [{ id: 'b1', companyName: '비' }])
+  commitCars(ownerA, [{ id: 'ca', number: '11가1111', type: 'main' }])
+  commitCars(ownerB, [{ id: 'cb', number: '22나2222', type: 'main' }])
   const snap = {
     cA: JSON.stringify(getState().clients[ownerA]),
     cB: JSON.stringify(getState().clients[ownerB]),

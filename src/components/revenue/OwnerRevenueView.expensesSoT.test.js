@@ -20,7 +20,7 @@ test('일지에서 비용을 커밋하면 매출 화면이 리마운트 없이 �
   const ownerKey = 'sot-expenses-revenue'
   const now = new Date()
   const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-15`
-  commitExpenses(ownerKey, [], { syncToCloud: false })
+  commitExpenses(ownerKey, [])
 
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -39,7 +39,7 @@ test('일지에서 비용을 커밋하면 매출 화면이 리마운트 없이 �
         name: '주유',
         cost: 12345,
         subsidy: 0,
-      }], { syncToCloud: false })
+      }])
     })
     assert.ok(
       container.textContent.includes('12,345'),

@@ -21,7 +21,7 @@ test('같은 차량 id가 두 번 커밋돼도 목록 key 경고가 나지 않�
   const ownerKey = 'sot-cars-dup-key'
   const id = 'car_1788141346245_c60pq4'
   const dup = { id, type: 'main', number: '11가1111' }
-  commitCars(ownerKey, [dup, { ...dup }], { syncToCloud: false })
+  commitCars(ownerKey, [dup, { ...dup }])
 
   const errors = []
   const original = console.error

@@ -43,7 +43,7 @@ test('재감사 8차 FAIL 지적 4번 — 불완전 patch(P0) 스키마 위반�
   const ownerKey = 'pw-syncspy-incomplete-patch'
   const dateKey = '2026-09-11'
   const durKey = `reactPracticeDurablePendingWrites:${ownerKey}`
-  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } })
   localStorage.setItem(durKey, JSON.stringify({ [dateKey]: { isOff: false } }))
   resetStubSupabaseCallCounts()
   retryPendingDayWrites()
@@ -56,7 +56,7 @@ test('재감사 8차 FAIL 지적 4번 — 손상된 owner + 최신 fallback 공�
   const ownerKey = 'pw-syncspy-corrupt-owner'
   const dateKey = '2026-09-12'
   const durKey = `reactPracticeDurablePendingWrites:${ownerKey}`
-  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } }, { syncToCloud: false })
+  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 5, palletCount: 0, callDetails: [], fixedRouteCounts: {} } })
   localStorage.setItem(durKey, JSON.stringify({ [dateKey]: [] }))
   registerPendingDayWrite(ownerKey, dateKey, { isOff: false, fixedCount: 9, palletCount: 2, callDetails: [], fixedRouteCounts: {} })
   resetStubSupabaseCallCounts()
@@ -113,7 +113,7 @@ NUMERIC_VIOLATION_CASES.forEach(({ label, seed, patch }, index) => {
     const ownerKey = `pw-syncspy-numeric-${index}`
     const dateKey = '2026-09-13'
     const durKey = `reactPracticeDurablePendingWrites:${ownerKey}`
-    commitWorkData(ownerKey, { [dateKey]: seed }, { syncToCloud: false })
+    commitWorkData(ownerKey, { [dateKey]: seed })
     localStorage.setItem(durKey, JSON.stringify({ [dateKey]: patch }))
 
     const storeBefore = JSON.stringify(getState().workLogs[ownerKey])
@@ -145,7 +145,7 @@ test('재감사 9차 FAIL 지적 2번 — callDetails:[{}](id 없음) 주입은 
   const dateKey = '2026-09-14'
   const durKey = `reactPracticeDurablePendingWrites:${ownerKey}`
   const seed = { isOff: false, fixedCount: 3, palletCount: 2, callDetails: [], fixedRouteCounts: { r1: 7 } }
-  commitWorkData(ownerKey, { [dateKey]: seed }, { syncToCloud: false })
+  commitWorkData(ownerKey, { [dateKey]: seed })
   localStorage.setItem(durKey, JSON.stringify({
     [dateKey]: { isOff: false, fixedCount: 9, palletCount: 9, callDetails: [{}], fixedRouteCounts: { r1: 9 } },
   }))

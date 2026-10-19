@@ -74,8 +74,8 @@ describe('서버 쓰기(commitMainDayLogToCloud)', () => {
     handlers.maintenance_records = { select: () => ({ data: [{ id: 'm-1' }], error: null }) }
     beginSessionEpoch('u1', ownerKey)
     setHydration({ status: 'ready', userId: 'u1', ownerKey })
-    commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: PLATE, supabaseId: 700 }], { syncToCloud: false })
-    commitWorkData(ownerKey, { [DK]: record }, { syncToCloud: false })
+    commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: PLATE, supabaseId: 700 }])
+    commitWorkData(ownerKey, { [DK]: record })
     return upserts
   }
 

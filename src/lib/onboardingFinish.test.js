@@ -84,7 +84,7 @@ describe('applyOnboardingWizard', () => {
         distanceOn: false,
       },
       workLogs: { main: {} },
-    }, { sync: false })
+    })
   })
 
   test('차량번호가 있으면 설정이 저장되고 main 차량이 생긴다', async () => {

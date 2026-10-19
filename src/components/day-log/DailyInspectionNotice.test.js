@@ -43,8 +43,8 @@ beforeEach(() => {
   commitCars(OWNER, [
     { id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' },
     { id: 'c-sub', type: 'sub', number: '77사7777', supabaseId: 'veh-sub', driverName: '박기사' },
-  ], { syncToCloud: false })
-  commitProfile(OWNER, { ...EMPTY_PROFILE, name: '차주이름' }, { syncToCloud: false })
+  ])
+  commitProfile(OWNER, { ...EMPTY_PROFILE, name: '차주이름' })
 })
 
 /** @param {Partial<{ ownerKey: string, logId: string, enabled: boolean, isOff: boolean }>} [props] */

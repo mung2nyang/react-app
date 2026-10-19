@@ -28,7 +28,7 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
     commitBatch([
       { domain: 'profile', ownerKey, value: { name: '홍길동' } },
       { domain: 'drivers', ownerKey, value: [{ id: 'd1', name: '기사1', status: 'linked' }] },
-    ], { syncToCloud: false })
+    ])
 
     const container = document.createElement('div')
     document.body.appendChild(container)
@@ -115,7 +115,7 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
     const carFixture = { id: 'car-1', number: '12가3456', type: 'main' }
     commitBatch([
       { domain: 'cars', ownerKey, value: [carFixture] },
-    ], { syncToCloud: false })
+    ])
 
     const container = document.createElement('div')
     document.body.appendChild(container)

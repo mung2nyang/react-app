@@ -75,7 +75,7 @@ export async function requestDriverUnlinkAction({ ownerKey, drivers, driverId, a
       : drivers.map((item) => (item.id === driverId
         ? { ...item, unlinkRequestedBy: row?.unlink_requested_by || '', unlinkRequestedAt: row?.unlink_requested_at || '' }
         : item))
-    commitDrivers(ownerKey, next, { syncToCloud: false })
+    commitDrivers(ownerKey, next)
     return { drivers: next, toast: successToast(action, status), failed: false }
   } catch (error) {
     if (error instanceof StaleSessionError) return { drivers, toast: SESSION_CHANGED_TOAST, failed: true }

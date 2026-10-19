@@ -99,7 +99,7 @@ test('오늘 기록이 생기면(store 구독) "오늘 3회" + [운행 기록 �
   try {
     assert.ok(view.container.textContent.includes('아직 기록이 없습니다'))
     await act(async () => {
-      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] } }, { syncToCloud: false })
+      commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] } })
     })
     assert.ok(view.container.textContent.includes('오늘 3회'), `실제: ${view.container.textContent}`)
     assert.equal(todayButton(view.container).textContent, '운행 기록 추가')
@@ -111,7 +111,7 @@ test('오늘 기록이 생기면(store 구독) "오늘 3회" + [운행 기록 �
 test('오늘을 휴무로 저장했으면 "오늘은 휴무입니다" + [일지 열기]', async () => {
   const ownerKey = 'test-home-off'
   const { dateKey } = todayWorkLogSelection()
-  commitWorkData(ownerKey, { [dateKey]: { isOff: true, fixedCount: 0, callDetails: [] } }, { syncToCloud: false })
+  commitWorkData(ownerKey, { [dateKey]: { isOff: true, fixedCount: 0, callDetails: [] } })
   const view = await renderHome(ownerKey, () => {})
   try {
     assert.ok(view.container.textContent.includes('오늘은 휴무입니다'))
@@ -144,7 +144,7 @@ test('2단계 — 운행 줄: 고정 노선 + 콜 최대 3줄 + "외 N건", 제�
         { id: 'c4', loadLoc: '평택', unloadLoc: '안성', fare: 90000 },
       ],
     },
-  }, { syncToCloud: false })
+  })
   const view = await renderHome(ownerKey, () => {})
   try {
     assert.deepEqual(texts(view.container, '.home-trip-row'), [
@@ -170,7 +170,7 @@ test('2단계 — 할 일: 미수 건수·남은 금액(입금 완료 제외), �
     await view0.cleanup()
   }
 
-  commitSettings(ownerKey, normalizeSettings({ paymentOn: true }), { syncToCloud: false })
+  commitSettings(ownerKey, normalizeSettings({ paymentOn: true }))
   commitWorkData(ownerKey, {
     '2026-09-03': {
       isOff: false,
@@ -180,7 +180,7 @@ test('2단계 — 할 일: 미수 건수·남은 금액(입금 완료 제외), �
         { id: 'u3', client: 'B', fare: 70000, payments: [{ id: 'p2', amount: 70000 }] },
       ],
     },
-  }, { syncToCloud: false })
+  })
   let opened = 0
   const view = await renderHome(ownerKey, () => {}, { onOpenReceivables: () => { opened += 1 } })
   try {
@@ -197,8 +197,8 @@ test('2단계 — 할 일: 미수 건수·남은 금액(입금 완료 제외), �
 test('2단계 — 할 일: 일상점검 켜짐·서버에 오늘 점검표 없음이면 "오늘 일상점검 안 함" → 오늘 일지, 있으면 안 보임', async () => {
   const ownerKey = 'test-home-inspection'
   const { dateKey } = todayWorkLogSelection()
-  commitCars(ownerKey, [{ id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' }], { syncToCloud: false })
-  commitSettings(ownerKey, normalizeSettings({ dailyInspectionOn: true }), { syncToCloud: false })
+  commitCars(ownerKey, [{ id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' }])
+  commitSettings(ownerKey, normalizeSettings({ dailyInspectionOn: true }))
   /** @type {string[]} */
   const opened = []
   const view = await renderHome(ownerKey, (key) => opened.push(key))
@@ -229,8 +229,8 @@ test('2단계 — 이번 달 정산 합계 = 달력 탭 "합계", 거래처 단�
   const ownerKey = 'test-home-month'
   const now = new Date()
   const { dateKey } = todayWorkLogSelection(now)
-  commitClients(ownerKey, [{ id: 'cl-1', companyName: '고정거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 }], { syncToCloud: false })
-  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 3, callDetails: [{ id: 'm1', client: '고정거래처', fare: 50000 }] } }, { syncToCloud: false })
+  commitClients(ownerKey, [{ id: 'cl-1', companyName: '고정거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 }])
+  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 3, callDetails: [{ id: 'm1', client: '고정거래처', fare: 50000 }] } })
   let openedCalendar = 0
   const home = await renderHome(ownerKey, () => {}, { onOpenCalendar: () => { openedCalendar += 1 } })
   const calContainer = document.createElement('div')
@@ -252,7 +252,7 @@ test('2단계 — 이번 달 정산 합계 = 달력 탭 "합계", 거래처 단�
 
     const before = homeTotal()
     await act(async () => {
-      commitClients(ownerKey, [{ id: 'cl-1', companyName: '고정거래처', fixedRouteLinked: true, fixedUnitPrice: 20000 }], { syncToCloud: false })
+      commitClients(ownerKey, [{ id: 'cl-1', companyName: '고정거래처', fixedRouteLinked: true, fixedUnitPrice: 20000 }])
     })
     assert.notEqual(homeTotal(), before, '단가가 바뀌면 홈 합계도 바뀌어야 한다')
     assert.equal(homeTotal(), calendarTotal(), '단가가 바뀐 뒤에도 같아야 한다')
@@ -282,7 +282,7 @@ test('바로 수정 — 이번 달 지출이 있으면 정산 합계 아래 "이
     { id: 'e1', kind: 'maint', date: dateKey, cost: 30000 },
     { id: 'e2', kind: 'fuel', date: dateKey, cost: 50000 },
     { id: 'e3', kind: 'misc', date: dateKey, cost: 7000 },
-  ], { syncToCloud: false })
+  ])
   const view = await renderHome(ownerKey, () => {})
   try {
     assert.equal(view.container.querySelector('.home-month-expense')?.textContent, '이번 달 지출 합계 87,000원')
