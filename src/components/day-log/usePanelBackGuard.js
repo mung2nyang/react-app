@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { panelGuardOnTop, popPanelGuardThen, takeGuardSkip } from '../../app/historyMoves.js'
+import { cancelConfirmDialog, confirmDialogOpen } from '../shared/confirmDialog.jsx'
 
 /**
  * @param {boolean} open 입력 칸(콜 상세·정비/주유/기타)이 열려 있나
@@ -33,9 +34,11 @@ export default function usePanelBackGuard(open, confirmLeave, leave) {
     if (!pushedRef.current || panelGuardOnTop()) return
     pushedRef.current = false
     if (takeGuardSkip()) return
+    // 묻는 동안에도 붙잡기 기록을 먼저 다시 쌓아, 창이 뜬 채 뒤로가기는 창만 닫는다(로드맵 63-C).
+    pushGuard()
+    if (confirmDialogOpen()) { cancelConfirmDialog(); return }
     void latest.current.confirmLeave().then((ok) => {
-      if (ok) latest.current.leave()
-      else pushGuard()
+      if (ok) popPanelGuardThen(() => latest.current.leave())
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 기록(location.key)이 바뀔 때만
   }, [location.key])

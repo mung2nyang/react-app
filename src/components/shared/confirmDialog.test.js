@@ -13,7 +13,7 @@ Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 const React = await import('react')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
-const { ConfirmDialogHost, confirmDialog } = await import('./confirmDialog.jsx')
+const { ConfirmDialogHost, confirmDialog, confirmDialogOpen, cancelConfirmDialog } = await import('./confirmDialog.jsx')
 
 async function mountHost() {
   const container = document.createElement('div')
@@ -75,6 +75,25 @@ test('앞 질문이 열려 있는데 새 질문이 오면 앞 질문은 false로
     assert.equal(container.querySelector('.modal-title')?.textContent, '둘째 질문')
     await act(async () => { button(container, '예').click() })
     assert.equal(await second, true)
+  } finally {
+    await cleanup()
+  }
+})
+
+test('떠 있는 확인 창을 밖에서 "취소"로 닫을 수 있다 (로드맵 63-C)', async () => {
+  const { container, cleanup } = await mountHost()
+  try {
+    assert.equal(confirmDialogOpen(), false)
+    /** @type {Promise<boolean>|null} */
+    let answer = null
+    await act(async () => { answer = confirmDialog({ title: '질문' }) })
+    assert.equal(confirmDialogOpen(), true)
+    await act(async () => { cancelConfirmDialog() })
+    assert.equal(await answer, false)
+    assert.equal(container.querySelector('[role="alertdialog"]'), null)
+    assert.equal(confirmDialogOpen(), false)
+    await act(async () => { cancelConfirmDialog() })
+    assert.equal(confirmDialogOpen(), false, '창이 없으면 아무 일 없음')
   } finally {
     await cleanup()
   }

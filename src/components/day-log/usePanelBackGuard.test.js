@@ -16,6 +16,7 @@ const { act, useState } = React
 const { BrowserRouter, useNavigate } = await import('react-router-dom')
 const { default: usePanelBackGuard } = await import('./usePanelBackGuard.js')
 const { panelGuardOnTop, popPanelGuardThen } = await import('../../app/historyMoves.js')
+const { ConfirmDialogHost, confirmDialog } = await import('../shared/confirmDialog.jsx')
 
 /** @param {number} ms */
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })
@@ -27,7 +28,7 @@ async function waitUntil(ok, limitMs = 2000) {
   while (!ok() && Date.now() < end) await wait(5)
 }
 
-/** @param {Array<boolean>} answers 확인 창 답(차례대로) */
+/** @param {Array<boolean>|'dialog'} answers 확인 창 답(차례대로), 'dialog'면 앱 확인 창을 실제로 띄움 */
 async function mount(answers) {
   window.history.replaceState(null, '', '/app/calendar')
   const calls = { confirm: 0, leave: 0 }
@@ -37,13 +38,18 @@ async function mount(answers) {
     const [open, setOpen] = useState(false)
     ctl.setOpen = setOpen
     ctl.go = useNavigate()
-    usePanelBackGuard(open, async () => { calls.confirm += 1; return answers.shift() ?? true }, () => { calls.leave += 1; setOpen(false) })
+    const ask = async () => {
+      calls.confirm += 1
+      if (answers === 'dialog') return confirmDialog({ title: '저장하지 않은 입력이 있습니다', confirmLabel: '나가기', cancelLabel: '계속 입력' })
+      return answers.shift() ?? true
+    }
+    usePanelBackGuard(open, ask, () => { calls.leave += 1; setOpen(false) })
     return null
   }
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(Probe))) })
+  await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(Probe), React.createElement(ConfirmDialogHost))) })
   await act(async () => { ctl.go?.('/app/day/2026-10-15', { state: { from: 'calendar' } }) })
   const idx = () => Reflect.get(window.history.state || {}, 'idx')
   const usr = () => Reflect.get(window.history.state || {}, 'usr')
@@ -56,7 +62,8 @@ async function mount(answers) {
     })
   }
   const setOpen = async (/** @type {boolean} */ open) => { await act(async () => { ctl.setOpen(open); await wait(20) }) }
-  return { calls, idx, usr, back, setOpen, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
+  const dialog = () => container.querySelector('[role="alertdialog"]')
+  return { calls, idx, usr, back, setOpen, dialog, container, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
 }
 
 test('열리면 붙잡기 기록 1장(달력에서 온 표시 유지), 저장·취소로 닫으면 조용히 빠짐', async () => {
@@ -89,6 +96,7 @@ test('열린 채 뒤로 → 확인 창, [계속 입력]이면 다시 붙잡고, 
     assert.equal(view.calls.leave, 0)
     await view.back()
     assert.equal(view.calls.confirm, 2)
+    await act(async () => { await waitUntil(() => view.calls.leave === 1 && view.idx() === start) })
     assert.equal(view.calls.leave, 1, '나가기')
     assert.equal(view.idx(), start, '붙잡기 기록이 다시 쌓이지 않음')
   } finally {
@@ -109,6 +117,33 @@ test('붙잡기 기록이 위에 있을 때 이동하면 먼저 빼고 이어서
     assert.equal(moved, true)
     assert.equal(view.idx(), start)
     assert.equal(view.calls.confirm, 0)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('확인 창이 뜬 채 뒤로 → 창만 닫히고 일지·붙잡기 그대로, [나가기]면 붙잡기 빼고 나감 (로드맵 63-C)', async () => {
+  const view = await mount('dialog')
+  try {
+    const start = view.idx()
+    await view.setOpen(true)
+    await view.back()
+    assert.ok(view.dialog(), '확인 창')
+    assert.equal(view.idx(), start + 1, '묻는 동안에도 붙잡기 기록이 다시 있음')
+    assert.equal(panelGuardOnTop(), true)
+    await view.back()
+    await act(async () => { await waitUntil(() => view.dialog() === null && view.idx() === start + 1) })
+    assert.equal(view.dialog(), null, '창만 닫힘')
+    assert.equal(window.location.pathname, '/app/day/2026-10-15', '일지 그대로')
+    assert.equal(view.idx(), start + 1)
+    assert.equal(view.calls.leave, 0)
+    await view.back()
+    assert.ok(view.dialog(), '다시 뒤로 → 확인 창')
+    const leaveBtn = Array.from(view.container.querySelectorAll('button')).find((b) => b.textContent === '나가기')
+    await act(async () => { leaveBtn?.click() })
+    await act(async () => { await waitUntil(() => view.calls.leave === 1 && view.idx() === start) })
+    assert.equal(view.calls.leave, 1)
+    assert.equal(view.idx(), start, '붙잡기 기록을 빼고 나감')
   } finally {
     await view.cleanup()
   }
