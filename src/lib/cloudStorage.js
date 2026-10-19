@@ -1,40 +1,6 @@
 // @ts-check
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// practice 스냅샷 localStorage I/O 원시 함수(hydrate·직접 mutation·outbox가 공유).
-export const KEYS = {
-  work: 'reactPracticeWorkData',
-  cars: 'reactPracticeCars',
-  clients: 'reactPracticeClients',
-  drivers: 'reactPracticeDrivers',
-  profile: 'reactPracticeProfile',
-  settings: 'reactPracticeSettings',
-  expenses: 'reactPracticeExpenses',
-  invoices: 'reactPracticeInvoices',
-}
-
-/**
- * @param {string} storageKey
- * @param {JsonValue|undefined} fallback
- * @returns {JsonValue|undefined}
- */
-export function readJson(storageKey, fallback) {
-  try {
-    const raw = localStorage.getItem(storageKey)
-    return raw ? JSON.parse(raw) : fallback
-  } catch {
-    return fallback
-  }
-}
-
-/**
- * @param {string} prefix
- * @param {string} ownerKey
- * @returns {string}
- */
-export function keyFor(prefix, ownerKey) {
-  return `${prefix}:${ownerKey}`
-}
-
+// 서버 저장 행 만들기와 번호 읽기 도우미(차량·거래처·일지 서버 저장이 공유).
 /**
  * @param {JsonValue|undefined} value
  * @returns {number}
@@ -44,19 +10,6 @@ export function parseEntityNumber(value) {
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0
   const n = Number(String(value).replace(/[^\d.-]/g, ''))
   return Number.isFinite(n) ? n : 0
-}
-
-/**
- * @param {string} startA
- * @param {string} endA
- * @param {string} startB
- * @param {string} endB
- * @returns {boolean}
- */
-export function rangesOverlap(startA, endA, startB, endB) {
-  const aEnd = endA || '9999-12-31'
-  const bEnd = endB || '9999-12-31'
-  return startA <= bEnd && startB <= aEnd
 }
 
 /**

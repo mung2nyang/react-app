@@ -13,8 +13,6 @@ import { parseCurrencyValue } from './money.js'
 /** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('./day-record.js').DayRecordLike} DayRecordLike */
 
-export const DRIVER_SHARE_BASES = /** @type {const} */ (['gross', 'afterClientCommission'])
-
 /** 차량에 정한 기준. 없거나 모르는 값이면 운송료 전체. @param {CarLike|null|undefined} car @returns {'gross'|'afterClientCommission'} */
 export function resolveDriverShareBase(car) {
   return car?.driverShareBase === 'afterClientCommission' ? 'afterClientCommission' : 'gross'
