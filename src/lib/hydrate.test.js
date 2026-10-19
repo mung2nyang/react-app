@@ -9,7 +9,6 @@ mock.module('../supabaseClient.js', { namedExports: { supabase: fakeSupabase } }
 const { hydrateFromSupabase, retryHydrate } = await import('./hydrate.js')
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
 const { getState } = await import('../store/app-store.js')
-const { markDirty, getDirtyDomains } = await import('./dirtyJournal.js')
 const { readJsonKey, writeJsonKey } = await import('../store/persist.js')
 const { commitDrivers } = await import('../store/commitHelpers.js')
 
@@ -98,7 +97,7 @@ describe('hydrateFromSupabase — 조회 실패는 전부 failed로, 부분 반�
   })
 })
 
-describe('dirtyJournal 통합 — failed → 로컬 편집 → retry → ready → 정확히 한 번 flush', () => {
+describe('hydrate 재시도 — failed → 로컬 편집 → retry → ready', () => {
   test('재시도 중에도 아직 서버에 못 보낸 로컬 편집은 서버 값으로 덮이지 않는다', async () => {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
@@ -110,15 +109,13 @@ describe('dirtyJournal 통합 — failed → 로컬 편집 → retry → ready �
     assert.equal(getState().hydration.status, 'failed')
 
     writeJsonKey('profile', ownerKey, { name: '로컬에서 편집한 이름' })
-    markDirty(ownerKey, 'profile')
-    assert.deepEqual(getDirtyDomains(ownerKey), ['profile'])
 
     handlers.vehicles = { select: () => ({ data: [], error: null }) }
     handlers.profiles = { select: () => ({ data: { id: userId, name: '서버 이름(오래됨)', settings: {} }, error: null }) }
 
     await retryHydrate()
     assert.equal(getState().hydration.status, 'ready')
-    assert.equal(getState().profile[ownerKey]?.name, '서버 이름(오래됨)', '슬라이스 E: dirty 로컬 프로필로 서버 hydrate를 덮지 않는다')
+    assert.equal(getState().profile[ownerKey]?.name, '서버 이름(오래됨)', '슬라이스 E: 로컬 프로필로 서버 hydrate를 덮지 않는다')
     assert.equal(readJsonKey('profile', ownerKey, {}).name, '로컬에서 편집한 이름', '기존 LS 키는 지우지 않는다')
     endCloudSession()
   })
@@ -267,6 +264,8 @@ describe('hydrate — 옛 보낼 편지함 기록은 보내지 않고 지운다 
     const ownerKey = 'roadmap88-legacy-outbox'
     const userId = 'user-roadmap88-legacy-outbox'
     const outboxKey = `reactPracticeMutationOutbox:${ownerKey}`
+    const journalKey = `reactPracticeDirtyJournal:${ownerKey}`
+    localStorage.setItem(journalKey, JSON.stringify({ cars: 1 }))
     commitDrivers(ownerKey, [{ id: 'local-driver-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '기사' }], { syncToCloud: false })
     handlers.vehicles = { select: () => ({ data: [{ id: 900, type: 'main', number: '77가7777', raw: {} }], error: null }) }
     handlers.driver_links = { select: () => ({ data: [{ id: 700, invite_code: '123456', status: 'pending', vehicle_id: null, assignment_start: '2026-08-01', assignment_end: null }], error: null }) }
@@ -278,6 +277,7 @@ describe('hydrate — 옛 보낼 편지함 기록은 보내지 않고 지운다 
     await hydrateFromSupabase(userId, ownerKey)
     assert.equal(getState().hydration.status, 'ready')
     assert.equal(localStorage.getItem(outboxKey), null, '옛 편지함 키는 지워진다')
+    assert.equal(localStorage.getItem(journalKey), null, '옛 변경 기록장 키도 지워진다(로드맵 89)')
     assert.equal((getState().cars[ownerKey] || []).some((car) => car.supabaseId === 900), true, '서버 차량 그대로')
     const drivers = getState().drivers[ownerKey] || []
     assert.equal(drivers.length, 1, '기사 목록이 비지 않는다')

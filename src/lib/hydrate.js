@@ -1,9 +1,8 @@
 // @ts-check
-// hydrate 전체 — 조회 전부 성공 판정, dirty journal 재적용, single-flight/세대 보호.
+// hydrate 전체 — 조회 전부 성공 판정, single-flight/세대 보호.
 import { supabase } from '../supabaseClient.js'
 import { getState, setHydration } from '../store/app-store.js'
 import { replaceOwnerState } from '../store/owner-state.js'
-import { clearDirty } from './dirtyJournal.js'
 import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
 import { singleFlight } from './singleFlight.js'
 import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, isSessionStillCurrent } from './cloudSession.js'
@@ -69,12 +68,11 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
         throwIfAnyHydrateError,
         localDrivers: getState().drivers[ownerKey] || [],
       })
-      clearDirty(ownerKey)
       if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
         // driverExpenses는 차주 hydrate 전용 — 소속기사 세션에서는 빈 배열로 replace(스테일 제거).
         replaceOwnerState(ownerKey, { ...nextSnapshot, driverExpenses: [] }, { sync: false, persist: false })
         finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
-        dropLegacyOutbox(ownerKey)
+        dropLegacyKeys(ownerKey)
       } else {
         finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
       }
@@ -162,11 +160,10 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
       invoices: nextInvoices,
     }
 
-    clearDirty(ownerKey)
     if (isSessionStillCurrent({ userId, ownerKey, epoch: myEpoch })) {
       replaceOwnerState(ownerKey, nextSnapshot, { sync: false, persist: false })
       finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
-      dropLegacyOutbox(ownerKey)
+      dropLegacyKeys(ownerKey)
     } else {
       // 스냅샷은 반영하지 않는다. 이 세대가 아직 hydrating이면 스위치를 닫아 영원히 잠기지 않게 한다.
       finishHydration(myEpoch, { status: 'ready', userId, ownerKey })
@@ -182,10 +179,13 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
   }
 }
 
-// 옛 보낼 편지함 기록은 보내지 않고 지운다 — 저장은 서버 직접 1회라 더 쓰지 않음(로드맵 88).
+// 옛 보낼 편지함·변경 기록장 키는 보내지 않고 지운다 — 더 쓰지 않음(로드맵 88·89).
 /** @param {string} ownerKey */
-function dropLegacyOutbox(ownerKey) {
-  try { localStorage.removeItem(`reactPracticeMutationOutbox:${ownerKey}`) } catch { /* 저장소를 못 쓰면 그대로 둠 */ }
+function dropLegacyKeys(ownerKey) {
+  try {
+    localStorage.removeItem(`reactPracticeMutationOutbox:${ownerKey}`)
+    localStorage.removeItem(`reactPracticeDirtyJournal:${ownerKey}`)
+  } catch { /* 저장소를 못 쓰면 그대로 둠 */ }
 }
 
 export async function retryHydrate() {

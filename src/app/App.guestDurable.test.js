@@ -49,7 +49,6 @@ const {
   getPendingDayWrite,
 } = await import('../lib/pendingWorkDataWrites.js')
 const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../lib/durableWriteGuard.js')
-const { hasDirty, clearDirty } = await import('../lib/dirtyJournal.js')
 const { endCloudSession } = await import('../lib/cloudSession.js')
 const { durableKey } = await import('../lib/durableStorage.js')
 const { clearGuestModePersisted } = await import('./guestSessionPersist.js')
@@ -118,11 +117,6 @@ async function waitForDurableBroken() {
   await waitUntil(() => isDurableWriteBroken(), { timeoutMs: 3000 })
 }
 
-/** 게스트는 dirty가 자동으로 안 지워진다 — 테스트 격리용. */
-function settleGuestDirty(ownerKey) {
-  clearDirty(ownerKey)
-}
-
 function setNativeInputValue(input, value) {
   if (!(input instanceof window.HTMLInputElement)) throw new Error('HTMLInputElement가 필요합니다')
   const desc = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')
@@ -184,7 +178,6 @@ test.afterEach(async () => {
   localStorage.removeItem(storageKeyFor('workData', 'guest'))
   localStorage.removeItem(storageKeyFor('expenses', 'guest'))
   localStorage.removeItem(`reactPracticeDurablePendingWrites:guest`)
-  clearDirty('guest')
 })
 
 // 재감사 4차(FAIL 지적 3번) — durable 기록 자체가 실패한 상태(durableWriteGuard.js가
@@ -298,11 +291,6 @@ test('재감사 3차 FAIL 지적 2번 — 재진입 시 durable pending patch가
     assert.equal(getState().workLogs[ownerKey]?.main?.[dateKey]?.palletCount, 3, '나중에 편집한 palletCount(3)도 반영돼야 한다')
     assert.equal(pendingDayWriteCount(), 0, '성공했으니 durable 큐에서 지워져야 한다')
 
-    // 예약된 클라우드 동기화가 완전히 끝나 dirty journal이 비워질 때까지 기다린다 —
-    // 고정 시간만큼만 자면(재감사 2차의 "테스트 격리" 교훈) 이 테스트처럼 신규 거래처
-    // insert까지 낀 긴 syncAll 사슬에서는 다음 테스트의 부트-hydrate가 "아직 dirty"를
-    // 보고 또 한 번 동기화를 트리거해 그 호출이 다음 테스트의 측정 구간으로 샐 수 있다.
-    settleGuestDirty(ownerKey)
   } finally {
     spy.mock.restore()
     await unmountTracked(root)
@@ -354,7 +342,6 @@ test('재감사 4차 FAIL 지적 3번 — durable 기록이 깨진 상태에서 
     // 재감사 5차(FAIL 지적 3번) — retryPendingDayWrites()가 store를 커밋해 이미 홈으로
     // 이동해 구독 중인 CalendarPage/AppShell을 갱신시키니 act()로 감싼다.
     await act(async () => { retryPendingDayWrites() })
-    settleGuestDirty(ownerKey)
     await unmountTracked(root)
     container.remove()
   }
@@ -402,7 +389,6 @@ test('재감사 4차 FAIL 지적 3번 — confirm에서 "그래도 이동"을 �
     // 재감사 5차(FAIL 지적 3번) — retryPendingDayWrites()가 store를 커밋해 이미 홈으로
     // 이동해 구독 중인 CalendarPage/AppShell을 갱신시키니 act()로 감싼다.
     await act(async () => { retryPendingDayWrites() }) // 다음 테스트로 broken 상태가 안 새게 정리한다.
-    settleGuestDirty(ownerKey)
     await unmountTracked(root)
     container.remove()
   }
@@ -452,7 +438,6 @@ test('재감사 4차 FAIL 지적 3번 — 브라우저 back(popstate)은 막을 
     // 재감사 5차(FAIL 지적 3번) — retryPendingDayWrites()가 store를 커밋해 이미 홈으로
     // 이동해 구독 중인 CalendarPage/AppShell을 갱신시키니 act()로 감싼다.
     await act(async () => { retryPendingDayWrites() }) // 다음 테스트로 broken 상태가 안 새게 정리한다.
-    settleGuestDirty(ownerKey)
     await unmountTracked(root)
     container.remove()
   }
@@ -757,7 +742,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     let notifyCount = 0
     unsubscribe = subscribe(() => { notifyCount += 1 })
     const supabaseCallsBefore = totalSupabaseCalls()
-    const dirtyBeforeFail = hasDirty(ownerKey)
     shouldFail = true
 
     await act(async () => { setNativeInputValue(container.querySelector('#modalFixedCountInput'), '9') })
@@ -781,7 +765,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     assert.equal(localStorage.getItem(workDataKey), workDataRawBefore, 'workData localStorage 원문이 바뀌면 안 된다')
     assert.notEqual(localStorage.getItem(durableStorageKey), durableRawBefore, 'durable 원문은 접수 후 바뀌어야 한다')
     assert.equal(notifyCount, 0, '실패한 시도는 notify에 도달하면 안 된다')
-    assert.equal(hasDirty(ownerKey), dirtyBeforeFail, '실패한 시도는 클라우드 동기화를 예약하면 안 된다')
     assert.equal(totalSupabaseCalls(), supabaseCallsBefore, '실패한 시도는 Supabase 호출로 이어지면 안 된다')
     assert.equal(errSpy.count(), 1, '디바운스 커밋 실패로 정확히 1번 로깅돼야 한다')
     assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), '실패 UI가 화면에 표시돼야 한다')
@@ -840,7 +823,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     assert.equal(notifyCount2, 1, '성공한 재시도 커밋은 notify를 정확히 한 번만 불러야 한다')
     assert.equal(errSpy.count(), 2, '복구 후 성공한 재시도는 추가로 로깅되면 안 된다')
     assert.equal(totalSupabaseCalls(), supabaseCallsBeforeRecover, '게스트는 Supabase 호출이 없어야 한다')
-    settleGuestDirty(ownerKey)
     const notifyAfterRetry = notifyCount2
     const errAfterRetry = errSpy.count()
     const supabaseAfterRetry = totalSupabaseCalls()
@@ -854,7 +836,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     assert.equal(totalSupabaseCalls(), supabaseAfterRetry, '언마운트 후 Supabase 호출이 늘면 안 된다')
     assert.deepEqual(committedRecord(ownerKey, dateKey), storeAfterRetry, '언마운트 후 Store가 또 바뀌면 안 된다')
     assert.equal(localStorage.getItem(workDataKey), workDataAfterRetry, '언마운트 후 workData localStorage가 또 바뀌면 안 된다')
-    assert.equal(hasDirty(ownerKey), false, '언마운트 후 추가 저장이 있으면 dirty가 다시 선다')
   } finally {
     unsubscribe?.()
     unsubscribe2?.()
@@ -907,7 +888,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
     let notifyCount = 0
     unsubscribe = subscribe(() => { notifyCount += 1 })
     const supabaseCallsBefore = totalSupabaseCalls()
-    const dirtyBeforeFail = hasDirty(ownerKey)
 
     await act(async () => { setNativeInputValue(container.querySelector('#modalFixedCountInput'), '11') })
     await act(async () => { setNativeInputValue(container.querySelector('#modalPalletCount'), '4') })
@@ -925,7 +905,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
     assert.equal(localStorage.getItem(storageKeyFor('workData', ownerKey)), workDataRawBefore, 'workData localStorage 원문이 바뀌면 안 된다')
     assert.deepEqual(committedRecord(ownerKey, dateKey), storeBefore, 'Store는 작업 전 값이어야 한다')
     assert.equal(notifyCount, 0, '실패한 시도는 notify에 도달하면 안 된다')
-    assert.equal(hasDirty(ownerKey), dirtyBeforeFail, '실패한 시도는 클라우드 동기화를 예약하면 안 된다')
     assert.equal(totalSupabaseCalls(), supabaseCallsBefore, '실패한 시도는 Supabase 호출로 이어지면 안 된다')
     assert.equal(errSpy.count(), 1, '디바운스 커밋 실패로 정확히 1번 로깅돼야 한다')
     assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), '실패 UI가 표시돼야 한다')
@@ -981,7 +960,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
     assert.equal(isDurableWriteBroken(), false, '복구 후에는 broken이 아니어야 한다')
     assert.equal(notifyCount2, 1, '성공한 재시도는 notify를 정확히 한 번만 불러야 한다')
     assert.equal(totalSupabaseCalls(), supabaseCallsBeforeRecover, '게스트는 Supabase 호출이 없어야 한다')
-    settleGuestDirty(ownerKey)
     const notifyAfterRetry = notifyCount2
     const errAfterRetry = errSpy.count()
     const supabaseAfterRetry = totalSupabaseCalls()
@@ -995,7 +973,6 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
     assert.equal(totalSupabaseCalls(), supabaseAfterRetry, '언마운트 후 Supabase 호출이 늘면 안 된다')
     assert.deepEqual(committedRecord(ownerKey, dateKey), storeAfterRetry, '언마운트 후 Store가 또 바뀌면 안 된다')
     assert.equal(localStorage.getItem(storageKeyFor('workData', ownerKey)), workDataAfterRetry, '언마운트 후 workData localStorage가 또 바뀌면 안 된다')
-    assert.equal(hasDirty(ownerKey), false, '언마운트 후 추가 저장이 있으면 dirty가 다시 선다')
   } finally {
     unsubscribe?.()
     unsubscribe2?.()
@@ -1142,7 +1119,6 @@ test('재감사 12차 — persistent quota 실패 후 마운트 중 retry 성공
     assert.equal(pendingDayWriteCount(), 0)
     assert.equal(notifyCount, 1, 'retry 성공 커밋은 notify를 1회만 불러야 한다')
     assert.equal(totalSupabaseCalls(), supabaseBeforeRetry, '게스트는 Supabase 호출이 없어야 한다')
-    settleGuestDirty(ownerKey)
     const notifyAfterRetry = notifyCount
     const errAfterRetry = errSpy.count()
     const supabaseAfterRetry = totalSupabaseCalls()
@@ -1168,7 +1144,6 @@ test('재감사 12차 — persistent quota 실패 후 마운트 중 retry 성공
     assert.equal(totalSupabaseCalls(), supabaseAfterRetry, '언마운트 후 Supabase 호출이 늘면 안 된다')
     assert.deepEqual(committedRecord(ownerKey, dateKey), storeAfterRetry)
     assert.equal(localStorage.getItem(failKey), workDataAfterRetry)
-    assert.equal(hasDirty(ownerKey), false)
   } finally {
     unsubscribe?.()
     errSpy?.restore()

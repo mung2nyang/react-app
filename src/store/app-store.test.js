@@ -5,7 +5,7 @@
 import { resetStubSupabaseCallCounts, stubSupabaseCallCounts } from '../testSupport/stubSupabaseClient.js'
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { describe, mock, test } from 'node:test'
+import { describe, test } from 'node:test'
 
 const {
   commitBatch,
@@ -18,21 +18,6 @@ const { storageKeyFor } = await import('./persist.js')
 
 function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)
-}
-
-// Storage 전역 이름에 기대지 않고 프로토타입에서 원본 setItem을 직접 캡처한다.
-function withFailingSetItem(shouldFail, fn) {
-  const proto = Object.getPrototypeOf(localStorage)
-  const original = proto.setItem
-  const spy = mock.method(proto, 'setItem', function patchedSetItem(key, value) {
-    if (shouldFail(key)) throw new Error('quota exceeded (simulated)')
-    return original.call(this, key, value)
-  })
-  try {
-    fn()
-  } finally {
-    spy.mock.restore()
-  }
 }
 
 describe('app-store — 초기 state 모양', () => {
@@ -108,33 +93,13 @@ describe('app-store — commitBatch는 원자적이다(notify 정확히 한 번)
   })
 })
 
-describe('commitBatch — dirty journal 쓰기 실패는 도메인/journal/state/notify/Supabase 전부 그대로 둔다', () => {
-  test('journal localStorage.setItem이 quota 초과로 던지면 아무것도 반영되지 않는다', () => {
-    const owner = 'commit-journal-quota'
-    const journalKey = `reactPracticeDirtyJournal:${owner}`
-
-    // 1) 정상 커밋으로 "실패 전 상태"를 만든다 — journal도 { cars: 1 }로 이미 한 번 쓰였다.
-    commitCars(owner, [{ id: 'original-car' }])
-    const carsRawBefore = localStorage.getItem(storageKeyFor('cars', owner))
-    const journalRawBefore = localStorage.getItem(journalKey)
-    const stateBefore = getState().cars[owner]
-
-    resetStubSupabaseCallCounts()
-    let notifyCount = 0
-    const unsubscribe = subscribe(() => { notifyCount += 1 })
-
-    withFailingSetItem((key) => key === journalKey, () => {
-      assert.throws(
-        () => commitCars(owner, [{ id: 'should-not-land' }]),
-        /quota exceeded/,
-      )
-    })
-    unsubscribe()
-
-    assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), carsRawBefore, '도메인(cars) localStorage가 원래 값으로 롤백돼야 한다')
-    assert.equal(localStorage.getItem(journalKey), journalRawBefore, 'journal localStorage도 원래 값 그대로여야 한다(실패한 키라 애초에 안 바뀐다)')
-    assert.deepEqual(getState().cars[owner], stateBefore, 'store state는 그대로여야 한다 — writeAllOrNothing이 던지면 applyDomainToState는 아예 안 불린다')
-    assert.equal(notifyCount, 0, 'notify가 호출되면 안 된다')
-    assert.equal(totalStubCalls(), 0, 'Supabase 호출이 있으면 안 된다')
+describe('commitBatch — 변경 기록장은 쓰지 않는다 (로드맵 89)', () => {
+  test('비회원 저장 뒤 기록장 키가 생기지 않는다', () => {
+    setHydration({ status: 'idle', userId: null, ownerKey: null })
+    localStorage.removeItem('reactPracticeDirtyJournal:guest')
+    commitCars('guest', [{ id: 'guest-car', number: '12가3456' }])
+    assert.deepEqual(getState().cars.guest, [{ id: 'guest-car', number: '12가3456' }])
+    assert.notEqual(localStorage.getItem(storageKeyFor('cars', 'guest')), null, '도메인 값은 저장된다')
+    assert.equal(localStorage.getItem('reactPracticeDirtyJournal:guest'), null)
   })
 })

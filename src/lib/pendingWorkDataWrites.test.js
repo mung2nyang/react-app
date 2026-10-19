@@ -17,7 +17,6 @@ const { isDurableWriteBroken } = await import('./durableWriteGuard.js')
 const { getState, subscribe } = await import('../store/app-store.js')
 const { readJsonKey } = await import('../store/persist.js')
 const { commitWorkData } = await import('../store/commitHelpers.js')
-const { hasDirty } = await import('./dirtyJournal.js')
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
@@ -587,7 +586,6 @@ MALFORMED_PATCH_CASES.forEach(([label, malformedValue], index) => {
     const localBefore = JSON.stringify(readWorkData(ownerKey))
     const durableBefore = localStorage.getItem(durKey)
     const tombstoneBefore = JSON.stringify(readJsonKey('workDataDeletedDates', ownerKey, []))
-    const dirtyBefore = hasDirty(ownerKey)
     resetStubSupabaseCallCounts()
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
@@ -600,7 +598,6 @@ MALFORMED_PATCH_CASES.forEach(([label, malformedValue], index) => {
     assert.equal(JSON.stringify(readWorkData(ownerKey)), localBefore, `[${label}] localStorage도 그대로 유지돼야 한다`)
     assert.equal(localStorage.getItem(durKey), durableBefore, `[${label}] durable 원문이 파괴적으로 덮어써지면 안 된다`)
     assert.equal(JSON.stringify(readJsonKey('workDataDeletedDates', ownerKey, [])), tombstoneBefore, `[${label}] tombstone이 변하면 안 된다`)
-    assert.equal(hasDirty(ownerKey), dirtyBefore, `[${label}] sync 예약(dirty journal)이 새로 생기면 안 된다`)
     assert.equal(notifyCount, 0, `[${label}] Store notify가 0회여야 한다`)
     assert.equal(totalStubSupabaseCalls(), 0, `[${label}] 원격 호출이 0회여야 한다`)
     assert.equal(isDurableWriteBroken(), true, `[${label}] 스키마 위반은 읽기 실패로 취급돼 broken이어야 한다`)
@@ -629,7 +626,6 @@ const VALID_PATCH_FOR_DATEKEY_TEST = { isOff: false, fixedCount: 9, palletCount:
     const storeBefore = JSON.stringify(getState().workLogs[ownerKey])
     const durableBefore = localStorage.getItem(durKey)
     const tombstoneBefore = JSON.stringify(readJsonKey('workDataDeletedDates', ownerKey, []))
-    const dirtyBefore = hasDirty(ownerKey)
     resetStubSupabaseCallCounts()
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
@@ -641,7 +637,6 @@ const VALID_PATCH_FOR_DATEKEY_TEST = { isOff: false, fixedCount: 9, palletCount:
     assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 5, `[${badDateKey}] 진짜 날짜의 기존 일지도 지워지면 안 된다`)
     assert.equal(localStorage.getItem(durKey), durableBefore, `[${badDateKey}] durable 원문이 그대로 보존돼야 한다`)
     assert.equal(JSON.stringify(readJsonKey('workDataDeletedDates', ownerKey, [])), tombstoneBefore, `[${badDateKey}] tombstone이 변하면 안 된다`)
-    assert.equal(hasDirty(ownerKey), dirtyBefore, `[${badDateKey}] sync 예약이 새로 생기면 안 된다`)
     assert.equal(notifyCount, 0, `[${badDateKey}] notify가 0회여야 한다`)
     assert.equal(totalStubSupabaseCalls(), 0, `[${badDateKey}] 원격 호출이 0회여야 한다`)
     assert.equal(isDurableWriteBroken(), true, `[${badDateKey}] 잘못된 dateKey는 읽기 실패로 취급돼 broken이어야 한다`)
@@ -728,7 +723,6 @@ test('재감사 8차 FAIL 지적 2번 — 손상된 durable owner와 최신 fall
   const localBefore = JSON.stringify(readWorkData(ownerKey))
   const durableBefore = localStorage.getItem(durKey)
   const tombstoneBefore = JSON.stringify(readJsonKey('workDataDeletedDates', ownerKey, []))
-  const dirtyBefore = hasDirty(ownerKey)
   const countBefore = pendingDayWriteCount()
   resetStubSupabaseCallCounts()
   let notifyCount = 0
@@ -744,7 +738,6 @@ test('재감사 8차 FAIL 지적 2번 — 손상된 durable owner와 최신 fall
   assert.equal(localStorage.getItem(durKey), durableBefore, 'durable 원문이 바이트 단위로 그대로 유지돼야 한다')
   assert.equal(getPendingDayWrite(ownerKey, dateKey)?.fixedCount, 9, 'fallback B는 조회에서 여전히 그대로 남아 있어야 한다')
   assert.equal(JSON.stringify(readJsonKey('workDataDeletedDates', ownerKey, [])), tombstoneBefore, 'tombstone이 변하면 안 된다')
-  assert.equal(hasDirty(ownerKey), dirtyBefore, 'sync 예약(dirty journal)이 새로 생기면 안 된다')
   assert.equal(notifyCount, 0, 'Store notify가 0회여야 한다')
   assert.equal(totalStubSupabaseCalls(), 0, '원격 호출이 0회여야 한다')
   assert.equal(isDurableWriteBroken(), true, '손상된 owner가 있으니 broken이어야 한다')

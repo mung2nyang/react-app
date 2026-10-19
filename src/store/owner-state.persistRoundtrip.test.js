@@ -26,7 +26,6 @@ function layers(owner) {
     profileRaw: localStorage.getItem(storageKeyFor('profile', owner)),
     invoicesRaw: localStorage.getItem(storageKeyFor('invoices', owner)),
     workRaw: localStorage.getItem(storageKeyFor('workData', owner)),
-    journal: localStorage.getItem(`reactPracticeDirtyJournal:${owner}`),
     pendingCount: pendingDayWriteCount(),
     unsafe: hasUnsafePendingWrites(),
     supabase: methodCounts(),
@@ -62,7 +61,6 @@ test('saveProfile 결과는 persist 왕복 후 initialize에서 복원된다', a
   assert.equal(getState().profile[owner]?.accountHolder, '예금주')
   const after = layers(owner)
   assert.equal(after.profileRaw, before.profileRaw)
-  assert.equal(after.journal, before.journal)
   assert.equal(after.pendingCount, before.pendingCount)
   assert.equal(after.unsafe, before.unsafe)
   assert.deepEqual(after.supabase, before.supabase)
@@ -112,7 +110,6 @@ test('계산서 draft/issued는 persist 왕복 후 supabaseId가 남는다', () 
   const after = layers(owner)
   assert.equal(after.carsRaw, before.carsRaw)
   assert.equal(after.invoicesRaw, before.invoicesRaw)
-  assert.equal(after.journal, before.journal)
   assert.equal(after.unsafe, before.unsafe)
   assert.deepEqual(after.supabase, before.supabase)
 })
@@ -150,7 +147,6 @@ test('레거시 off·dailyDistance·insuranceFee·바닐라 비용은 initialize
   assert.equal(day?.miscItems?.[0]?.name, '통행료')
   const after = layers(owner)
   assert.equal(after.workRaw, before.workRaw)
-  assert.equal(after.journal, before.journal)
   assert.equal(after.pendingCount, before.pendingCount)
   assert.equal(after.unsafe, before.unsafe)
   assert.deepEqual(after.supabase, before.supabase)

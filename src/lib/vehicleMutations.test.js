@@ -10,7 +10,6 @@ const { requestClientSave, requestClientReorder, requestClientFixedUnitPrice, re
 const { requestVehicleDeletion } = await import('./directMutationActions.js')
 const { readJsonKey, readLogWorkData, storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
-const { hasDirty } = await import('./dirtyJournal.js')
 const { pendingOwnerForLog } = await import('./pendingLogOwner.js')
 const { registerPendingDayWrite, retryPendingDayWrites, getPendingDayWrite, pendingDayWriteCount } = await import('./pendingWorkDataWrites.js')
 const { durableKey } = await import('./durableStorage.js')
@@ -127,7 +126,6 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
     commitLogWorkData(owner, oldNum, { '2026-08-12': { isOff: false, fixedCount: 5 } })
     const carsRaw = localStorage.getItem(storageKeyFor('cars', owner))
     const logRaw = localStorage.getItem(storageKeyForLog(owner, oldNum))
-    const journalRaw = localStorage.getItem(`reactPracticeDirtyJournal:${owner}`)
     const proto = Object.getPrototypeOf(localStorage)
     const originalRemove = proto.removeItem
     const spy = mock.method(proto, 'removeItem', function patched(/** @type {string} */ key) {
@@ -152,7 +150,6 @@ describe('requestVehicleSave — 서브 로그 키 이동', () => {
       assert.equal(getState().cars[owner][0].number, oldNum)
       assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), carsRaw)
       assert.equal(localStorage.getItem(storageKeyForLog(owner, oldNum)), logRaw)
-      assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${owner}`), journalRaw)
     } finally {
       unsubscribe()
       errSpy.restore()
@@ -175,7 +172,6 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
     const logsSnap = JSON.stringify(getState().workLogs[owner])
     const carsRaw = localStorage.getItem(storageKeyFor('cars', owner))
     const logRaw = localStorage.getItem(storageKeyForLog(owner, oldNum))
-    const journalRaw = localStorage.getItem(`reactPracticeDirtyJournal:${owner}`)
     const proto = Object.getPrototypeOf(localStorage)
     const originalGet = proto.getItem
     /** @type {ReturnType<typeof mock.method>|null} */
@@ -193,7 +189,6 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
     const apiBefore = totalStubCalls()
-    const dirtyBefore = hasDirty(owner)
     try {
       const result = await requestVehicleSave({
         ownerKey: owner,
@@ -204,7 +199,6 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
       assert.equal(result.failed, true)
       assert.equal(notifyCount, 0)
       assert.equal(totalStubCalls(), apiBefore)
-      assert.equal(hasDirty(owner), dirtyBefore)
       assert.equal(JSON.stringify(getState().cars[owner]), carsSnap)
       assert.equal(JSON.stringify(getState().workLogs[owner]), logsSnap)
       assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), carsRaw)
@@ -212,7 +206,6 @@ describe('readLogWorkData 실패 시 번호 변경은 불변', () => {
         getSpy?.mock.restore()
         assert.equal(localStorage.getItem(storageKeyForLog(owner, oldNum)), logRaw)
       }
-      assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${owner}`), journalRaw)
     } finally {
       unsubscribe()
       getSpy?.mock.restore()
@@ -341,11 +334,9 @@ describe('pending 큐와 번호 변경·삭제', () => {
       callDetails: [{ id: 'trp-cb', fare: '1,000', client: '한진', payments: [{ amount: 'oops' }] }],
       fixedRouteCounts: {},
     })
-    const journalBeforeOther = localStorage.getItem(`reactPracticeDirtyJournal:${other}`)
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
     const apiBefore = totalStubCalls()
-    const dirtyOtherBefore = hasDirty(other)
     const result = await requestVehicleSave({
       ownerKey: owner,
       cars: getState().cars[owner],
@@ -356,9 +347,6 @@ describe('pending 큐와 번호 변경·삭제', () => {
     assert.equal(result.failed, false)
     assert.equal(notifyCount, 1)
     assert.equal(totalStubCalls(), apiBefore)
-    assert.equal(hasDirty(owner), true)
-    assert.equal(hasDirty(other), dirtyOtherBefore)
-    assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${other}`), journalBeforeOther)
     const newPending = pendingOwnerForLog(owner, newNum)
     assert.equal(getPendingDayWrite(oldPending, dateKey), undefined)
     assert.equal(getPendingDayWrite(newPending, dateKey)?.fixedCount, 9)
@@ -391,7 +379,6 @@ describe('pending 큐와 번호 변경·삭제', () => {
     })
     const carsRaw = localStorage.getItem(storageKeyFor('cars', owner))
     const logRaw = localStorage.getItem(storageKeyForLog(owner, oldNum))
-    const journalRaw = localStorage.getItem(`reactPracticeDirtyJournal:${owner}`)
     const proto = Object.getPrototypeOf(localStorage)
     const original = proto.setItem
     const spy = mock.method(proto, 'setItem', function patched(/** @type {string} */ key, /** @type {string} */ value) {
@@ -419,7 +406,6 @@ describe('pending 큐와 번호 변경·삭제', () => {
       assert.equal(getState().cars[owner][0].number, oldNum)
       assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), carsRaw)
       assert.equal(localStorage.getItem(storageKeyForLog(owner, oldNum)), logRaw)
-      assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${owner}`), journalRaw)
     } finally {
       unsubscribe()
       errSpy.restore()
@@ -500,7 +486,6 @@ describe('pending 큐와 번호 변경·삭제', () => {
     registerPendingDayWrite(pendingOwnerForLog(owner, dropNum), dateKey, patch(2))
     registerPendingDayWrite(pendingOwnerForLog(owner, keepNum), dateKey, patch(5))
     registerPendingDayWrite(pendingOwnerForLog(other, otherNum), dateKey, patch(7))
-    const otherJournal = localStorage.getItem(`reactPracticeDirtyJournal:${other}`)
     let notifyCount = 0
     const unsubscribe = subscribe(() => { notifyCount += 1 })
     const apiBefore = totalStubCalls()
@@ -519,7 +504,6 @@ describe('pending 큐와 번호 변경·삭제', () => {
     assert.equal(getState().cars[other][0].number, otherNum)
     assert.equal(getState().workLogs[other][otherNum][dateKey].fixedCount, 7)
     assert.equal(getPendingDayWrite(pendingOwnerForLog(other, otherNum), dateKey)?.fixedCount, 7)
-    assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${other}`), otherJournal)
   })
 
   test('삭제 시 해당 로그 unsafe overlay도 제거된다', async () => {
@@ -837,7 +821,7 @@ describe('requestClientSave / requestClientReorder', () => {
 })
 
 describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 1회 + Store 메모리만', () => {
-  test('로그인+ready 차량 저장: reactPracticeCars setItem 0회, hasDirty 없음, 서버 insert 1회, Store 반영', async () => {
+  test('로그인+ready 차량 저장: reactPracticeCars setItem 0회, 서버 insert 1회, Store 반영', async () => {
     const owner = 'slice-e-veh-ok'
     resetStubSupabaseCallCounts()
     beginSessionEpoch('user-e1', owner)
@@ -859,7 +843,6 @@ describe('슬라이스 E — 로그인 차량/거래처 저장은 서버 직접 
       assert.equal(result.failed, false)
       assert.equal(result.toast, '차량을 등록했습니다.')
       assert.equal(carsSetItemCount, 0, 'reactPracticeCars 키에 setItem이 없어야 한다')
-      assert.equal(hasDirty(owner), false, 'dirty journal에 이 owner가 없어야 한다')
       assert.equal(stubSupabaseCallCounts.insert, 1, '서버 insert 1회')
       assert.equal(getState().cars[owner].some((c) => c.number === '77서7777'), true, 'Store에 반영')
       assert.equal(localStorage.getItem(carsKey), null, 'LS에는 미러 없음')

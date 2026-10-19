@@ -72,7 +72,6 @@ const {
   registerPendingDayWrite, getPendingDayWrite,
 } = await import('../lib/pendingWorkDataWrites.js')
 const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../lib/durableWriteGuard.js')
-const { hasDirty } = await import('../lib/dirtyJournal.js')
 test.afterEach(async () => {
   const leftover = [...liveRoots]
   liveRoots.clear()
@@ -686,7 +685,6 @@ test('재감사 5차 FAIL 지적 1번 — useDayDraft 직접 커밋 성공 후 c
     assert.equal(pendingDayWriteCount(), 0, '완전히 정리됐으니 최종 pending count는 0이어야 한다')
     assert.equal(getPendingDayWrite(ownerKey, dateKey), undefined)
 
-    await waitUntil(() => !hasDirty(ownerKey), { timeoutMs: 5000 })
   } finally {
     spy.mock.restore()
     await unmountTracked(root)
@@ -912,7 +910,6 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false, '재저장 성공 뒤엔 확인 목록에서 내려가야 한다')
     assert.equal(pendingDayWriteCount(), 0)
     assert.equal(errSpy.count(), 1, '복구 성공 뒤 console.error가 늘면 안 된다')
-    await waitUntil(() => !hasDirty(ownerKey), { timeoutMs: 5000 })
   } finally {
     errSpy.restore()
     dailyLogs.restore()

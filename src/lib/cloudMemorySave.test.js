@@ -13,7 +13,6 @@ const { saveProfile, EMPTY_PROFILE } = await import('./profile.js')
 const { savePracticeSettings } = await import('./practiceSettings.js')
 const { saveExpenses } = await import('./expenses.js')
 const { saveInvoices } = await import('./invoices.js')
-const { hasDirty } = await import('./dirtyJournal.js')
 const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../store/persist.js')
 
 /** @param {string} userId @param {string} ownerKey */
@@ -101,7 +100,6 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     assert.equal(profileName(getState().profile[ownerKey]), '서버후이름')
     assert.equal(profileName(readJsonKey('profile', ownerKey, {})), '옛LS')
     assert.equal(hits, 0)
-    assert.equal(hasDirty(ownerKey), false)
     endCloudSession()
   })
 
@@ -129,7 +127,6 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     assert.equal(settingsUnitPrice(getState().settings[ownerKey]), 9000)
     assert.equal(settingsCallDetail(getState().settings[ownerKey]), true)
     assert.deepEqual(readJsonKey('settings', ownerKey, {}), { theme: 'light' })
-    assert.equal(hasDirty(ownerKey), false)
     endCloudSession()
   })
 
@@ -166,7 +163,6 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     assert.equal(firstItemId(getState().expenses[ownerKey]), 'fuel-new')
     assert.equal(firstItemId(readJsonKey('expenses', ownerKey, [])), 'old')
     assert.equal(hits, 0)
-    assert.equal(hasDirty(ownerKey), false)
     endCloudSession()
   })
 
@@ -379,7 +375,6 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     assert.equal(firstInvoiceRemoteId(getState().invoices[ownerKey]), 99)
     assert.equal(firstItemId(readJsonKey('invoices', ownerKey, [])), 'old-inv')
     assert.equal(hits, 0)
-    assert.equal(hasDirty(ownerKey), false)
     endCloudSession()
   })
 

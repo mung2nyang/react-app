@@ -556,7 +556,6 @@ test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store
   await waitUntil(() => getState().hydration.status === 'ready')
   const beforeStore = JSON.stringify(getState().clients[ownerKey])
   const beforeLs = localStorage.getItem(storageKeyFor('clients', ownerKey))
-  const beforeJournal = localStorage.getItem(`reactPracticeDirtyJournal:${ownerKey}`)
   await act(async () => { setHydration({ status: 'failed', userId: 'user-boot-nav', ownerKey }) })
   await waitUntil(() => !!container.querySelector('.action-icon-btn.del'))
   let notifyCount = 0
@@ -572,7 +571,6 @@ test('hydration failed에서 거래처 삭제 ConfirmModal이 유지되고 Store
   assert.ok(container.querySelector('.modal-btn.confirm'), 'ConfirmModal이 닫히면 안 된다')
   assert.equal(JSON.stringify(getState().clients[ownerKey]), beforeStore)
   assert.equal(localStorage.getItem(storageKeyFor('clients', ownerKey)), beforeLs)
-  assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${ownerKey}`), beforeJournal)
   assert.equal(notifyCount, 0)
   assert.equal(callCounts['clients.delete'] || 0, apiBefore)
   assert.equal((container.querySelector('.toast-message')?.textContent || '').includes('삭제했습니다'), false)
@@ -631,8 +629,6 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
     lsCB: localStorage.getItem(storageKeyFor('clients', ownerB)),
     lsVA: localStorage.getItem(storageKeyFor('cars', ownerA)),
     lsVB: localStorage.getItem(storageKeyFor('cars', ownerB)),
-    jA: localStorage.getItem(`reactPracticeDirtyJournal:${ownerA}`),
-    jB: localStorage.getItem(`reactPracticeDirtyJournal:${ownerB}`),
   }
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -691,8 +687,6 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
   assert.equal(localStorage.getItem(storageKeyFor('clients', ownerB)), snap.lsCB)
   assert.equal(localStorage.getItem(storageKeyFor('cars', ownerA)), snap.lsVA)
   assert.equal(localStorage.getItem(storageKeyFor('cars', ownerB)), snap.lsVB)
-  assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${ownerA}`), snap.jA)
-  assert.equal(localStorage.getItem(`reactPracticeDirtyJournal:${ownerB}`), snap.jB)
   endCloudSession()
 })
 

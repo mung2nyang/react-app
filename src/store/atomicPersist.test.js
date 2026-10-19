@@ -3,8 +3,7 @@
 // (용량 초과, 순환 참조로 인한 JSON.stringify 실패 등) 이미 쓴 키가 새 값으로 남고
 // 나머지는 그대로인 "부분 반영" 상태가 될 수 있었다 — writeAllOrNothing이 이걸 막는다.
 // 3차 보완에서 (domain, ownerKey, value) 대신 (key, value) 쌍을 직접 받도록
-// 바뀌었다(도메인 값과 dirty journal 값을 같은 배열에 섞어 넣을 수 있어야 해서 —
-// journal 키는 persist.js의 9개 도메인 계약 밖이라 storageKeyFor로 못 만든다).
+// 바뀌었다(도메인 계약 밖의 임의 키도 같은 배열에 섞어 넣을 수 있어야 해서).
 import '../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
@@ -94,19 +93,19 @@ describe('writeAllOrNothing — 쓰기 도중 실패는 이미 쓴 항목을 원
     assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), null, '실패 전 처음 쓴 키는 원래 없었으니 롤백 후 다시 없어야 한다')
   })
 
-  test('임의의 key(예: dirty journal 키)도 도메인 키와 함께 섞어 쓸 수 있다', () => {
+  test('임의의 key도 도메인 키와 함께 섞어 쓸 수 있다', () => {
     const owner = 'atomic-mixed-key'
-    const journalKey = `reactPracticeDirtyJournal:${owner}`
+    const extraKey = `reactPracticeAtomicTest:${owner}`
 
-    withFailingSetItem((key) => key === journalKey, () => {
+    withFailingSetItem((key) => key === extraKey, () => {
       assert.throws(() => writeAllOrNothing([
         { key: storageKeyFor('cars', owner), value: [{ id: 'should-rollback' }] },
-        { key: journalKey, value: { cars: 1 } },
+        { key: extraKey, value: { cars: 1 } },
       ]))
     })
 
-    assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), null, 'journal 실패 시 도메인 키도 함께 롤백돼야 한다')
-    assert.equal(localStorage.getItem(journalKey), null, 'journal 자체도 안 쓰여야 한다')
+    assert.equal(localStorage.getItem(storageKeyFor('cars', owner)), null, '임의 키 실패 시 도메인 키도 함께 롤백돼야 한다')
+    assert.equal(localStorage.getItem(extraKey), null, '임의 키 자체도 안 쓰여야 한다')
   })
 
   test('remove 항목이 실패한 setItem 뒤에 있으면 삭제와 선행 쓰기가 함께 롤백된다', () => {

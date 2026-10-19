@@ -13,7 +13,6 @@ const {
 } = await import('../lib/pendingWorkDataWrites.js')
 const { fallback, keyOf } = await import('../lib/pendingWorkDataWritesState.js')
 const { markUnsafeRegistrationFailure, listUnsafeRegistrations } = await import('../lib/durableWriteGuard.js')
-const { markDirty } = await import('../lib/dirtyJournal.js')
 const { pendingOwnerForLog } = await import('../lib/pendingLogOwner.js')
 
 /** @typedef {import('../lib/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
@@ -41,8 +40,6 @@ function snapshotMemory(owner, other = 'init-schema-other', subNumber = '99하99
     workLogs: JSON.stringify(getState().workLogs[owner]),
     cars: JSON.stringify(getState().cars[owner]),
     clients: JSON.stringify(getState().clients[owner]),
-    journal: localStorage.getItem(`reactPracticeDirtyJournal:${owner}`),
-    otherJournal: localStorage.getItem(`reactPracticeDirtyJournal:${other}`),
     carsRaw: localStorage.getItem(storageKeyFor('cars', owner)),
     clientsRaw: localStorage.getItem(storageKeyFor('clients', owner)),
     workRaw: localStorage.getItem(storageKeyFor('workData', owner)),
@@ -71,9 +68,7 @@ function assertSharedUnchanged(before, after) {
   assert.equal(after.workRaw, before.workRaw)
   assert.equal(after.subLogRaw, before.subLogRaw)
   assert.equal(after.otherCarsRaw, before.otherCarsRaw)
-  assert.equal(after.otherJournal, before.otherJournal)
   assert.equal(after.deletedDatesRaw, before.deletedDatesRaw)
-  assert.equal(after.journal, before.journal)
   assert.equal(after.pendingInspect, before.pendingInspect)
   assert.equal(after.subInspect, before.subInspect)
   assert.equal(after.otherInspect, before.otherInspect)
@@ -94,8 +89,6 @@ function seedLayers(owner, other, onSettled) {
   commitLogWorkData(owner, '99하9999', { '2026-08-01': { isOff: false, fixedCount: 1 } })
   writeJsonKey('clients', owner, [{ id: 'keep-cli', companyName: '유지' }])
   commitCars(other, [{ id: 'other-car', number: '20나2000', type: 'main' }], { syncToCloud: false })
-  markDirty(owner, 'cars')
-  markDirty(other, 'clients')
   const registered = registerPendingDayWrite(owner, '2026-08-03', PATCH, onSettled)
   assert.equal(registered, true)
   fallback.set(keyOf(owner, '2026-08-02'), PATCH)
@@ -112,7 +105,6 @@ test('스키마 실패 initializeOwnerFromPersist는 시드된 계층을 불변�
   const callbackHits = []
   seedLayers(owner, other, (ok) => { callbackHits.push(ok) })
   const before = snapshotMemory(owner, other)
-  assert.equal(before.journal != null && before.journal !== '{}', true)
   assert.equal(JSON.parse(before.pendingInspect).hasCallback, true)
   assert.equal(JSON.parse(before.pendingInspect).fallbackItems.length > 0, true)
   assert.equal(JSON.parse(before.unsafeItems).length > 0, true)

@@ -3,7 +3,7 @@
 // 와 storageKeyForLog. initializeOwnerFromPersist는 owner-state.js.
 
 import { writeAllOrNothing } from './atomicPersist.js'
-import { allEntriesCloudMemoryOnly, buildBatchWrites } from './batchWrites.js'
+import { buildBatchWrites } from './batchWrites.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
@@ -139,11 +139,10 @@ function applyDomainToState(domain, ownerKey, value) {
  * @returns {Array<DomainValue>}
  */
 export function commitBatch(entries, options = {}) {
-  const { persist = true, syncToCloud = true, extraWrites = [], mergeWorkLogs, replaceWorkLogs, replaceDriverExpenses } = options
-  // 로그인 세션이면 업무 도메인은 localStorage·dirty에 안 쓴다(Store 메모리만).
+  const { persist = true, extraWrites = [], mergeWorkLogs, replaceWorkLogs, replaceDriverExpenses } = options
+  // 로그인 세션이면 업무 도메인은 localStorage에 안 쓴다(Store 메모리만).
   const cloudOwnerKey = state.hydration.userId ? state.hydration.ownerKey : null
-  const memoryOnly = allEntriesCloudMemoryOnly(entries, cloudOwnerKey)
-  const writes = [...buildBatchWrites(entries, { persist, syncToCloud, cloudOwnerKey })]
+  const writes = [...buildBatchWrites(entries, { persist, cloudOwnerKey })]
   // 로그인 세션의 extraWrites(서브 일지 키 등)도 LS에 안 쓴다. 게스트만 남긴다.
   if (persist && extraWrites.length && cloudOwnerKey == null) writes.push(...extraWrites)
   if (writes.length) writeAllOrNothing(writes)

@@ -1,6 +1,6 @@
 // @ts-check
 // 여러 localStorage 키를 전부 쓰거나 하나도 안 쓴다 — 먼저 전부 직렬화하고, 쓰다 실패하면 이미 쓴 키만 되돌린다.
-// 도메인 값과 dirty journal을 한 단위로 묶으려고 최종 키를 담은 { key, value } 쌍을 받는다.
+// 여러 키를 한 단위로 묶으려고 최종 키를 담은 { key, value } 쌍을 받는다.
 
 /**
  * JSON.stringify로 직렬화 가능한 값 — any/unknown 대신 재귀적으로 정확히 표현한다.
