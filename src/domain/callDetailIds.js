@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 콜상세 id 정규화. hydrate(서버 numeric id)와 일지 저장이 같은 규칙을 쓴다.
 
 /**

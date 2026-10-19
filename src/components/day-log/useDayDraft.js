@@ -9,13 +9,13 @@
 // 아님+횟수 0+파렛트 0+콜상세 0이면 그 날짜 키를 지운다)을 재사용한다.
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { backfillCallDetailIds, saveDayRecord } from '../../domain/day-record.js'
-import { pendingOwnerForLog } from '../../lib/pendingLogOwner.js'
-import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../../lib/durableWriteGuard.js'
-import { clearPendingDayWrite, getPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
-import { commitMainDayLogToCloud } from '../../lib/dayLogCloudCommit.js'
-import { shouldCommitDayLogToCloud } from '../../lib/mainDayLogRouting.js'
+import { pendingOwnerForLog } from '../../data/sync/pendingLogOwner.js'
+import { clearUnsafeRegistrationFailure, getUnsafeRegistrationPatch } from '../../data/sync/durableWriteGuard.js'
+import { clearPendingDayWrite, getPendingDayWrite } from '../../data/sync/pendingWorkDataWrites.js'
+import { commitMainDayLogToCloud } from '../../data/sync/dayLogCloudCommit.js'
+import { shouldCommitDayLogToCloud } from '../../data/sync/mainDayLogRouting.js'
 import { readOwnerLogWorkData } from '../../data/store/ownerDataHooks.js'
-import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../lib/dayDraftActivity.js'
+import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../data/sync/dayDraftActivity.js'
 import { commitLocalDayWrite, settleCloudDayWrite, useMountedRef } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
 
@@ -80,7 +80,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   const mountedRef = useMountedRef()
   const activityRef = useRef(/** @type {symbol|null} */ (null))
 
-  const markSaved = useCallback((/** @type {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
+  const markSaved = useCallback((/** @type {import('../../data/sync/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
     hasPendingRef.current = false
     clearUnsafeRegistrationFailure(pendingOwner, dateKey)
     clearPendingDayWrite(pendingOwner, dateKey, patch)
@@ -89,7 +89,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
   }, [pendingOwner, dateKey, mountedRef])
 
   // 게스트·서브·미동기화 메인: 로컬 persist + tombstone, quota 실패면 durable 큐(dayDraftLifecycle.js).
-  const commitLocal = useCallback((/** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ latest, /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ next, /** @type {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
+  const commitLocal = useCallback((/** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ latest, /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ next, /** @type {import('../../data/sync/pendingWorkDataWritesTypes.js').EffectivePatch} */ patch) => {
     commitLocalDayWrite({ ownerKey, logId, dateKey, pendingOwner, latest, next, patch, mountedRef, setAutoSaveStatus, showToastRef, draftRevRef, hasPendingRef, onCommittedRef, markSaved })
   }, [ownerKey, dateKey, logId, pendingOwner, mountedRef, markSaved])
 
@@ -184,7 +184,7 @@ export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = '
     if (hasPendingRef.current) commitNow()
   }, [commitNow, ownerKey, logId, pendingOwner, dateKey])
 
-  // 새로고침·앱 닫기 확인과 숨김 때 바로 저장(lib/dayDraftActivity.js). 위 flush 뒤에 내려야 저장 중이 남는다.
+  // 새로고침·앱 닫기 확인과 숨김 때 바로 저장(data/sync/dayDraftActivity.js). 위 flush 뒤에 내려야 저장 중이 남는다.
   useEffect(() => {
     const token = registerDayDraft(() => timerRef.current !== null || savingRef.current, () => { if (timerRef.current) commitNow() })
     activityRef.current = token

@@ -1,14 +1,14 @@
 // @ts-check
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 새로고침 시 Supabase 세션을 복원한다. 소속기사는 linked driver_links가 있으면 accountType=employed_driver,
 // linkedOwnerId로 hydrate ownerKey를 잡는다.
 import { supabase } from '../data/cloud/supabaseClient.js'
-import { hydrateFromSupabase } from '../lib/hydrate.js'
-import { singleFlight } from '../lib/singleFlight.js'
-import { checkLinkedDriverLink, fetchLinkedDriverLink } from '../lib/driverLinkRpc.js'
+import { hydrateFromSupabase } from '../data/hydrate/hydrate.js'
+import { singleFlight } from '../data/cloud/singleFlight.js'
+import { checkLinkedDriverLink, fetchLinkedDriverLink } from '../data/sync/driverLinkRpc.js'
 import { settleExpiredDriverUnlinks } from '../lib/driverUnlink.js'
 
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 
 /**
  * @param {string} userId
@@ -104,7 +104,7 @@ function sessionFromLink(userId, overrides, profile, link) {
 }
 
 /**
- * @param {import('../lib/outboxTypes.js').AppSession|null|undefined} session
+ * @param {import('../data/sync/syncTypes.js').AppSession|null|undefined} session
  * @returns {string}
  */
 export function ownerKeyFromSession(session) {

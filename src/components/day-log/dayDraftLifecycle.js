@@ -2,12 +2,12 @@
 // 백그라운드 재시도가 성공하면 pending 표시를 내려야 언마운트 때 중복 저장이 안 된다.
 // 단 더 최신 draft(B)가 있으면 옛 patch(A) 성공으로 내리지 않는다 — 내리면 B가 유실된다.
 import { useEffect, useRef } from 'react'
-import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../lib/durableWriteGuard.js'
-import { registerPendingDayWrite } from '../../lib/pendingWorkDataWrites.js'
+import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../data/sync/durableWriteGuard.js'
+import { registerPendingDayWrite } from '../../data/sync/pendingWorkDataWrites.js'
 import { saveLogWorkDataWithTombstoneCheck } from '../../lib/workData.js'
 import { DEVICE_SAVE_FAIL } from '../../lib/failureMessages.js'
 
-/** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
+/** @typedef {import('../../data/sync/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 
 export function useMountedRef() {
   const mountedRef = useRef(true)

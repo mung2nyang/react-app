@@ -8,10 +8,10 @@ const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSup
 mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { buildClientRow } = await import('../data/cloud/cloudStorage.js')
-const { upsertClientFromList } = await import('./syncVehiclesClients.js')
+const { upsertClientFromList } = await import('../data/sync/syncVehiclesClients.js')
 const { requestClientSave } = await import('./clientMutations.js')
-const { buildEmployedDriverSnapshot } = await import('./hydrateEmployedDriver.js')
-const { mergeClientsFromRows } = await import('./hydrateMergeClients.js')
+const { buildEmployedDriverSnapshot } = await import('../data/hydrate/hydrateEmployedDriver.js')
+const { mergeClientsFromRows } = await import('../data/hydrate/hydrateMergeClients.js')
 const { beginSessionEpoch, captureSession, endCloudSession } = await import('../data/cloud/cloudSession.js')
 const { setHydration } = await import('../data/store/app-store.js')
 
@@ -128,7 +128,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
   })
 
   test('기사 쓰기 직후 hydrate 경합: 미동기화 로컬 거래처가 서버 hydrate 뒤에도 사라지지 않는다', () => {
-    /** @type {Array<import('./hydrateMergeTypes.js').LocalClient>} */
+    /** @type {Array<import('../data/hydrate/hydrateMergeTypes.js').LocalClient>} */
     const localClients = [
       {
         id: 'client-pending-1',
@@ -142,7 +142,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
       },
     ]
 
-    /** @type {Array<import('./hydrateMergeTypes.js').ClientRow>} */
+    /** @type {Array<import('../data/hydrate/hydrateMergeTypes.js').ClientRow>} */
     const serverRows = [
       {
         id: 101,

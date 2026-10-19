@@ -1,9 +1,9 @@
 // @ts-check
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 import { useState } from 'react'
-import { redeemDriverInviteCode } from '../lib/driverLinkRpc.js'
+import { redeemDriverInviteCode } from '../data/sync/driverLinkRpc.js'
 import { buildCloudAppSession, ownerKeyFromSession } from '../app/boot.js'
-import { hydrateFromSupabase } from '../lib/hydrate.js'
+import { hydrateFromSupabase } from '../data/hydrate/hydrate.js'
 import ClearableInput from '../shared/ui/ClearableInput.jsx'
 import './InviteRedeemModal.css'
 import ModalShell from '../shared/ui/ModalShell.jsx'

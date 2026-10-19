@@ -1,10 +1,10 @@
 // @ts-check
 // 로그인 세션·세대(epoch) 상태와 그 판정 함수. hydrate·directMutationActions가 getSessionEpoch()로 "시작 때와 같은 세션인지" 재확인한다.
-/** @typedef {import('../../lib/outboxTypes.js').SessionCapture} SessionCapture */
-/** @typedef {import('../../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../sync/syncTypes.js').SessionCapture} SessionCapture */
+/** @typedef {import('../sync/syncTypes.js').AppSession} AppSession */
 import { getState, setHydration } from '../store/app-store.js'
-import { evict } from '../../lib/singleFlight.js'
-import { StaleSessionError } from '../../lib/outboxErrors.js'
+import { evict } from './singleFlight.js'
+import { StaleSessionError } from '../sync/saveErrors.js'
 import { SESSION_CHANGED_FAIL } from '../../lib/failureMessages.js'
 
 // hydrate.js가 실제로 쓰는 singleFlight 키 형식과 반드시 같아야 한다(문자열 하나를

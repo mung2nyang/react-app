@@ -46,7 +46,7 @@ const INPUT_IDS = { number: 'newCarNumber', driverName: 'newDriverName', driverP
  * @param {() => void} props.onCancel
  * @param {() => void} props.onSave
  * @param {boolean} [props.cloud]
- * @param {Array<import('../../lib/outboxTypes.js').DriverRecord>} [props.drivers]
+ * @param {Array<import('../../data/sync/syncTypes.js').DriverRecord>} [props.drivers]
  */
 export default function CarFormModal({
   draft, setDraft, editingId, onCancel, onSave,

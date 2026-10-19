@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 차량 순수 계산부. localStorage I/O(loadCars/saveCars)는 lib/cars.js가 이 파일을 재수출하며 맡는다. 전부 순수 계산 함수(차량 CRUD + 정산/발행 신원 판정).
 import { driverFieldsFromDraft } from './carDriverFields.js'
 

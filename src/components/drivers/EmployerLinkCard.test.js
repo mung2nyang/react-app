@@ -21,7 +21,7 @@ mock.module('../../app/boot.js', {
     ownerKeyFromSession: (/** @type {{ userId: string }} */ session) => session.userId,
   },
 })
-mock.module('../../lib/hydrate.js', {
+mock.module('../../data/hydrate/hydrate.js', {
   namedExports: {
     hydrateFromSupabase: async (/** @type {string} */ userId, /** @type {string} */ ownerKey, /** @type {{ employedDriver: boolean }} */ options) => {
       flow.push(`hydrate:${userId}:${ownerKey}:${options.employedDriver}`)
@@ -44,7 +44,7 @@ const DRIVER = 'driver-1'
 const SESSION = { userId: DRIVER, name: '기사', phone: '', accountType: 'employed_driver', linkedOwnerId: OWNER, guestMode: false }
 const REQUESTED_AT = '2026-10-01T03:00:00.000Z'
 
-/** @param {Partial<import('../../lib/outboxTypes.js').DriverRecord>} extra */
+/** @param {Partial<import('../../data/sync/syncTypes.js').DriverRecord>} extra */
 function seedLink(extra = {}) {
   commitDrivers(OWNER, [{ id: 'd1', name: '기사', status: 'linked', vehicleNumber: '11가1111', supabaseId: 'link-1', ...extra }])
 }

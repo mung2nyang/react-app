@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 import { formatInviteCode, generateInviteCode } from '../../lib/drivers.js'
 import '../drivers/driver-connection.css'
 

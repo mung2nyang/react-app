@@ -3,7 +3,7 @@ import '../testSupport/stubSupabaseClient.js'
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { ownerKeyFromSession } from './boot.js'
-import { carFromAssignedSummary } from '../lib/hydrateEmployedDriver.js'
+import { carFromAssignedSummary } from '../data/hydrate/hydrateEmployedDriver.js'
 
 describe('ownerKeyFromSession', () => {
   test('linkedOwnerId prefers owner id', () => {

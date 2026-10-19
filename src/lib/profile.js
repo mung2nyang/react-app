@@ -36,7 +36,7 @@ export function loadProfile(ownerKey = 'guest') {
 
 /**
  * @param {string} ownerKey
- * @param {import('./hydrateMergeTypes.js').LocalProfile} [profile]
+ * @param {import('../data/hydrate/hydrateMergeTypes.js').LocalProfile} [profile]
  */
 export async function saveProfile(ownerKey, profile) {
   const next = { ...EMPTY_PROFILE, ...(profile || {}) }

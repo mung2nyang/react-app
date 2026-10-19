@@ -1,6 +1,6 @@
 // @ts-check
-/** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
-/** @typedef {import('./outboxTypes.js').CarRecord} CarRecord */
+/** @typedef {import('../data/sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../data/sync/syncTypes.js').CarRecord} CarRecord */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 import { normalizeInviteCode, upsertDriver } from './drivers.js'
 import { requestDriverInviteSave } from './requestDriverInviteSave.js'

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
 import { upsertDriver } from './drivers.js'
 import { buildClientRow, buildVehicleRow } from '../data/cloud/cloudStorage.js'
-import { deleteClientFromSupabase, deleteVehicleFromSupabase } from '../lib/directMutations.js'
+import { deleteClientFromSupabase, deleteVehicleFromSupabase } from '../data/sync/directMutations.js'
 
 // 2026-09-01 보리 지시: 기사 할당 "기간 겹침" 계산 차단(findOverlappingDriverLink 등)은
 // 요구한 적 없는 코드라 제거했다. 남긴 규칙은 "같은 차량번호는 한 기사에게만"(기간 무관).

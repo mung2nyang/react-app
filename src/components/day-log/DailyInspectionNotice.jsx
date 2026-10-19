@@ -3,7 +3,7 @@
 // 열 때 서버에서 그날 1장을 읽어 "작성 필요 [+ 입력]" / "작성 완료 [보기]"를 보이고, 누르면 점검표 모달.
 import { useEffect, useState } from 'react'
 import { fetchDailyInspection, saveDailyInspection } from '../../lib/dailyInspections.js'
-import { vehicleSupabaseIdForLog } from '../../lib/mainDayLogRouting.js'
+import { vehicleSupabaseIdForLog } from '../../data/sync/mainDayLogRouting.js'
 import { useOwnerCars } from '../../data/store/ownerDataHooks.js'
 import { useOwnerProfile } from '../../data/store/ownerProfileDriversHooks.js'
 import DailyInspectionModal from './DailyInspectionModal.jsx'

@@ -2,7 +2,7 @@
 import { getShortCarNum } from './cars.js'
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 
 /**
  * 기사 관리 화면 모드 판별 + car/driver 조회(순수).

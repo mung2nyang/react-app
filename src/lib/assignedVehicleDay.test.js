@@ -8,9 +8,9 @@ const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = crea
 mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { isPersistedDayRecord, parsePersistedWorkDataMap } = await import('../data/store/persistDayRecord.js')
-const { mergeWorkDataFromRows } = await import('./hydrateMergeWork.js')
+const { mergeWorkDataFromRows } = await import('../data/hydrate/hydrateMergeWork.js')
 const { saveDayRecord } = await import('../domain/day-record.js')
-const { commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
+const { commitMainDayLogToCloud } = await import('../data/sync/dayLogCloudCommit.js')
 const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 const { setHydration, getState } = await import('../data/store/app-store.js')
 const { commitCars, commitWorkData } = await import('../data/store/commitHelpers.js')

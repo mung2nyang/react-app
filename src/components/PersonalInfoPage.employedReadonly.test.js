@@ -19,7 +19,7 @@ const { default: PersonalInfoPage } = await import('./PersonalInfoPage.jsx')
 const OWNER_FIELDS = ['bizName', 'bizRepresentative', 'bizNumber', 'bizAddress', 'bizType', 'bizItem', 'bizEmail', 'bankName', 'accountNumber', 'accountHolder']
 const SELF_FIELDS = ['userName', 'userPhone']
 
-/** @param {import('../lib/outboxTypes.js').AppSession} session */
+/** @param {import('../data/sync/syncTypes.js').AppSession} session */
 async function render(session) {
   const container = document.createElement('div')
   document.body.appendChild(container)

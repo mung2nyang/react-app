@@ -15,7 +15,7 @@ mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeS
 
 /** @type {Array<{ userId: string, ownerKey: string, employedDriver: boolean }>} */
 const hydrated = []
-mock.module('../lib/hydrate.js', {
+mock.module('../data/hydrate/hydrate.js', {
   namedExports: {
     hydrateFromSupabase: async (/** @type {string} */ userId, /** @type {string} */ ownerKey, /** @type {{ employedDriver?: boolean }} */ options = {}) => {
       hydrated.push({ userId, ownerKey, employedDriver: !!options.employedDriver })

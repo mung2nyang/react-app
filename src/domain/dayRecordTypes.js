@@ -16,9 +16,9 @@
  * @property {number|string} [totalFare]
  * @property {number} [count]
  * @property {number} [dailyDistance]
- * @property {Array<import('../lib/pendingWorkDataWritesTypes.js').JsonRecord>} [fuelItems]
- * @property {Array<import('../lib/pendingWorkDataWritesTypes.js').JsonRecord>} [maintItems]
- * @property {Array<import('../lib/pendingWorkDataWritesTypes.js').JsonRecord>} [miscItems]
+ * @property {Array<import('../data/sync/pendingWorkDataWritesTypes.js').JsonRecord>} [fuelItems]
+ * @property {Array<import('../data/sync/pendingWorkDataWritesTypes.js').JsonRecord>} [maintItems]
+ * @property {Array<import('../data/sync/pendingWorkDataWritesTypes.js').JsonRecord>} [miscItems]
  * @property {string} [assignedVehicleNumber] 연동 해제 때 복사된 날의 배정 차량 번호
  */
 

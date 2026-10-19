@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { isPersistedCallDetail, isValidCallDetail, isValidCurrencyAmount } from './callDetailSchema.js'
 
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-/** @typedef {import('./pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
 
 /** @param {string|number} amount @returns {EffectiveCallDetail} */
 function detailWithAmount(amount) {

@@ -12,7 +12,7 @@ export const AUTH_WITH_SESSION_REDIRECT_MS = 1500
 /**
  * @param {Object} props
  * @param {boolean} props.booting
- * @param {import('../lib/outboxTypes.js').AppSession|null} [props.session]
+ * @param {import('../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {(message: string) => void} props.showToast
  * @param {() => void} [props.onGuest]
  */

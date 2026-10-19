@@ -11,10 +11,10 @@ import {
 } from '../data/cloud/cloudSession.js'
 import { commitBatch } from '../data/store/app-store.js'
 import { planRenamedPlateEntries, planSubLogRename, renameSubVehicleOnServer } from './vehicleRename.js'
-import { StaleSessionError } from './outboxErrors.js'
-import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
-import { upsertVehicleFromList } from './syncVehiclesClients.js'
-import { STORAGE_FAIL_TOAST } from './outboxCommit.js'
+import { StaleSessionError } from '../data/sync/saveErrors.js'
+import { runOwnerSaveSerialized } from '../data/sync/ownerSaveQueue.js'
+import { upsertVehicleFromList } from '../data/sync/syncVehiclesClients.js'
+import { STORAGE_FAIL_TOAST } from '../data/sync/localCommit.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL

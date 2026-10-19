@@ -164,7 +164,7 @@ describe('replaceOwnerState — sync:false는 클라우드 동기화를 예약�
 
 describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   test('최소 차량 row는 replace 후 initialize에서도 supabaseId가 남는다', async () => {
-    const { mergeCarsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
     const owner = 'hydrate-car-roundtrip'
@@ -187,7 +187,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   // 테스트는 hydrateMergeCars.js/hydrateMergeClients.js의 `...raw`를 되돌리면 실패한다 —
   // 되돌려서 확인 후 복원함).
   test('바닐라 personalInfo(phone/bank/account/accountHolder) raw는 initialize 왕복 후 보존된다', async () => {
-    const { mergeCarsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
     const owner = 'hydrate-personalinfo-roundtrip'
@@ -221,7 +221,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('raw.settlementMode가 bogus여도 안 읽혀 initialize가 성공하지만, 검증기에 bogus를 직접 넣으면 여전히 schema 실패다', async () => {
-    const { mergeCarsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
     const owner = 'hydrate-bogus-enum'
@@ -252,7 +252,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('거래처 raw에 정본 밖 extra 키가 섞여도 persist 가능한 거래처 1건으로 정규화되고 extra 키는 없다', async () => {
-    const { mergeClientsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeClientsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
     const owner = 'hydrate-client-extra-key'
@@ -261,7 +261,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     // JsonRecord로 별도 선언한다 — ClientRow.raw의 선언 타입(RawClientBackup =
     // Partial<ClientLike>)에 정본 밖 키를 인라인 리터럴로 바로 넣으면 TS의 신선한
     // 객체 리터럴 초과 프로퍼티 검사에 걸린다(런타임 안전성과는 무관한 검사다).
-    /** @type {import('../../lib/pendingWorkDataWritesTypes.js').JsonRecord} */
+    /** @type {import('../sync/pendingWorkDataWritesTypes.js').JsonRecord} */
     const rawWithExtraKey = { managerName: '박담당', phone: '010-9999-8888', extraFromVanilla: '레거시전용필드' }
     const merged = mergeClientsFromRows([], [{
       id: 801,
@@ -291,7 +291,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   // 한 번으로 전부 false(비공유)가 돼 버린다(감지력: 아래 3개는 hydrateMergeCars.js의
   // boolOrOmit을 boolOrFalse로 되돌리면 실패한다 — 되돌려서 확인 후 복원함).
   test('raw:{}인 최소 row는 shareRevenueWithOwner 키가 없고, 소비 쪽 기본값(공유)으로 읽힌다', async () => {
-    const { mergeCarsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
     const { isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.js')
@@ -313,7 +313,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('raw.shareRevenueWithOwner:false는 정규화·왕복 후에도 false로 남는다', async () => {
-    const { mergeCarsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { commitBatch } = await import('./app-store.js')
     const { isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.js')
     const owner = 'hydrate-share-false'
@@ -330,7 +330,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('React upsertCar가 실제로 저장하는 모양(불리언 필드 없음)도 hydrate 왕복 후 공유가 true로 유지된다', async () => {
-    const { mergeCarsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { commitBatch } = await import('./app-store.js')
     const { upsertCar, isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.js')
     const owner = 'hydrate-share-upsertcar-shape'
@@ -351,7 +351,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   // 로드맵 4-2 — 새 차량 필드(기사 유형·원천징수·필요경비율·산재요율)가 저장 화이트리스트(CAR_KEYS)에서 빠지면
   // 다음 새로고침 때 cars 도메인 전체가 사라진다(과거 subCarSettings 누락 사고와 같은 종류).
   test('기사 유형·원천징수·필요경비율·산재요율은 서버 raw→hydrate→저장→새로고침 왕복 후에도 유지된다', async () => {
-    const { mergeCarsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
     const owner = 'hydrate-income-fields'
@@ -378,7 +378,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('서버 raw의 새 필드 값이 이상하면(잘못된 타입) 그 필드만 빠지고 차량·다른 필드는 남는다', async () => {
-    const { mergeCarsFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
     const owner = 'hydrate-income-fields-bad'
@@ -408,7 +408,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('hydrate 비용 임베드와 expenses는 initialize 뒤 유실·중복 0건이다', async () => {
-    const { mergeWorkDataFromRows } = await import('../../lib/hydrateMerge.js')
+    const { mergeWorkDataFromRows } = await import('../hydrate/hydrateMerge.js')
     const { expenseFromFuelRecord, replaceFuelExpenses } = await import('../../domain/fuelRecords.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { readLogWorkData } = await import('./persist.js')

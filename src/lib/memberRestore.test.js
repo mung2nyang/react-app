@@ -54,7 +54,7 @@ mock.module('./invoices.js', {
 mock.module('./memberBackup.js', {
   namedExports: { memberBackupBlockedReason: () => (ready ? null : '기록을 아직 불러오는 중입니다.') },
 })
-mock.module('./dayLogCloudCommit.js', {
+mock.module('../data/sync/dayLogCloudCommit.js', {
   namedExports: {
     commitMainDayLogMapToCloud: async (/** @type {{ logId: string, dateKeys: string[], previousData: Record<string, object>, nextData: Record<string, object> }} */ args) => {
       commits.push(args)

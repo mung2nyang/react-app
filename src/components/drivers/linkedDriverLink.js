@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../../domain/financeTypes.js').DriverLinkLike} DriverLinkLike */
 
 /**

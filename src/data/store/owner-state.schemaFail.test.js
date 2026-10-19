@@ -7,15 +7,15 @@ const { writeJsonKey, storageKeyFor, storageKeyForLog } = await import('./persis
 const { getState, subscribe } = await import('./app-store.js')
 const { initializeOwnerFromPersist } = await import('./owner-state.js')
 const { commitCars, commitWorkData, commitLogWorkData } = await import('./commitHelpers.js')
-const { inspectLogPending } = await import('../../lib/logPendingLifecycle.js')
+const { inspectLogPending } = await import('../sync/logPendingLifecycle.js')
 const {
   pendingDayWriteCount, hasUnsafePendingWrites, registerPendingDayWrite, retryPendingDayWrites,
-} = await import('../../lib/pendingWorkDataWrites.js')
-const { fallback, keyOf } = await import('../../lib/pendingWorkDataWritesState.js')
-const { markUnsafeRegistrationFailure, listUnsafeRegistrations } = await import('../../lib/durableWriteGuard.js')
-const { pendingOwnerForLog } = await import('../../lib/pendingLogOwner.js')
+} = await import('../sync/pendingWorkDataWrites.js')
+const { fallback, keyOf } = await import('../sync/pendingWorkDataWritesState.js')
+const { markUnsafeRegistrationFailure, listUnsafeRegistrations } = await import('../sync/durableWriteGuard.js')
+const { pendingOwnerForLog } = await import('../sync/pendingLogOwner.js')
 
-/** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
+/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 
 const PATCH = /** @type {EffectivePatch} */ ({
   isOff: false, fixedCount: 3, palletCount: 0,

@@ -7,7 +7,7 @@
 // 성공했을 때만 Store를 갱신한다(Fail-Fast). 실패하면 Store/LS/outbox를 더 쌓지 않고
 // 지정 토스트만 띄운다. 차량 삭제는 vehicleDeletion.js.
 //
-// 공용 커밋 프리미티브는 outboxCommit.js, 기사 초대는 requestDriverInviteSave.js에 있다.
+// 공용 커밋 프리미티브는 data/sync/localCommit.js, 기사 초대는 requestDriverInviteSave.js에 있다.
 import { removeClient } from '../domain/clients.js'
 import { removeDriver, setDriverStatus } from '../domain/drivers.js'
 import {
@@ -16,13 +16,13 @@ import {
   blockedReasonForOwnerDataWrite,
   captureSession,
 } from '../data/cloud/cloudSession.js'
-import { commitLocalOnly } from './outboxCommit.js'
+import { commitLocalOnly } from '../data/sync/localCommit.js'
 import {
   deleteClientFromSupabase,
   deleteDriverLinkOnSupabase,
   updateDriverLinkStatusOnSupabase,
-} from './directMutations.js'
-import { StaleSessionError } from './outboxErrors.js'
+} from '../data/sync/directMutations.js'
+import { StaleSessionError } from '../data/sync/saveErrors.js'
 import { commitClients, commitDrivers } from '../data/store/commitHelpers.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
@@ -69,8 +69,8 @@ export async function requestClientDeletion({ ownerKey, userId, clients, clientI
 /**
  * 로그인 사용자의 기사 연동 상태변경. outbox 없이 driver_links.update 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록만 바꾼다.
- * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('./outboxTypes.js').DriverRecord>, driverId: string, status: 'pending'|'linked', cloud: boolean }} params
- * @returns {Promise<{ drivers: Array<import('./outboxTypes.js').DriverRecord>, blocked: string|null, toast: string }>}
+ * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('../data/sync/syncTypes.js').DriverRecord>, driverId: string, status: 'pending'|'linked', cloud: boolean }} params
+ * @returns {Promise<{ drivers: Array<import('../data/sync/syncTypes.js').DriverRecord>, blocked: string|null, toast: string }>}
  */
 export async function requestDriverStatusChange({ ownerKey, drivers, driverId, status, cloud }) {
   const driver = drivers.find((item) => item.id === driverId)
@@ -99,8 +99,8 @@ export async function requestDriverStatusChange({ ownerKey, drivers, driverId, s
 /**
  * 로그인 사용자의 기사 초대 삭제. outbox 없이 driver_links.delete 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록에서만 제거한다.
- * @param {{ ownerKey: string, userId?: string|null, drivers: Array<import('./outboxTypes.js').DriverRecord>, driverId: string, cloud: boolean }} params
- * @returns {Promise<{ drivers: Array<import('./outboxTypes.js').DriverRecord>, blocked: string|null, toast: string|null|undefined }>}
+ * @param {{ ownerKey: string, userId?: string|null, drivers: Array<import('../data/sync/syncTypes.js').DriverRecord>, driverId: string, cloud: boolean }} params
+ * @returns {Promise<{ drivers: Array<import('../data/sync/syncTypes.js').DriverRecord>, blocked: string|null, toast: string|null|undefined }>}
  */
 export async function requestDriverDeletion({ ownerKey, drivers, driverId, cloud }) {
   const driver = drivers.find((item) => item.id === driverId)

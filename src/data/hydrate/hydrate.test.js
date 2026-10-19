@@ -1,0 +1,510 @@
+import '../../testSupport/setupDom.js'
+import assert from 'node:assert/strict'
+import { describe, mock, test } from 'node:test'
+import { createFakeSupabase, wait } from '../../testSupport/fakeSupabaseClient.js'
+
+const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
+mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+
+const { hydrateFromSupabase, retryHydrate } = await import('./hydrate.js')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
+const { getState } = await import('../store/app-store.js')
+const { readJsonKey, writeJsonKey } = await import('../store/persist.js')
+const { commitDrivers } = await import('../store/commitHelpers.js')
+
+describe('hydrateFromSupabase — 조회 실패는 전부 failed로, 부분 반영 없음', () => {
+  test('profiles 조회가 실패하면 status가 failed로 남고, 로컬/store는 그대로다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    handlers.profiles = { select: () => ({ data: null, error: { message: 'profiles down' } }) }
+    const ownerKey = 'audit4-profiles-fail'
+    writeJsonKey('cars', ownerKey, [{ id: 'seed-car', number: '11가1111' }])
+
+    await assert.rejects(() => hydrateFromSupabase('user-profiles-fail', ownerKey), /hydrate 조회 실패/)
+    assert.equal(getState().hydration.status, 'failed')
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), [{ id: 'seed-car', number: '11가1111' }])
+    assert.equal(countOf('profiles', 'upsert'), 0)
+    endCloudSession()
+  })
+
+  test('vehicles 조회가 실패하면 failed로 남고 cars 로컬 값은 바뀌지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    handlers.vehicles = { select: () => ({ data: null, error: { message: 'vehicles down' } }) }
+    const ownerKey = 'audit4-vehicles-fail'
+    writeJsonKey('cars', ownerKey, [{ id: 'seed-car-2', number: '22나2222' }])
+
+    await assert.rejects(() => hydrateFromSupabase('user-vehicles-fail', ownerKey), /hydrate 조회 실패/)
+    assert.equal(getState().hydration.status, 'failed')
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), [{ id: 'seed-car-2', number: '22나2222' }])
+    endCloudSession()
+  })
+
+  test('clients 조회가 실패하면 failed로 남고 clients 로컬 값은 바뀌지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    handlers.clients = { select: () => ({ data: null, error: { message: 'clients down' } }) }
+    const ownerKey = 'audit4-clients-fail'
+    writeJsonKey('clients', ownerKey, [{ id: 'seed-client', companyName: '테스트거래처' }])
+
+    await assert.rejects(() => hydrateFromSupabase('user-clients-fail', ownerKey), /hydrate 조회 실패/)
+    assert.equal(getState().hydration.status, 'failed')
+    assert.deepEqual(readJsonKey('clients', ownerKey, []), [{ id: 'seed-client', companyName: '테스트거래처' }])
+    endCloudSession()
+  })
+
+  test('driver_links 조회가 실패하면 failed로 남고 drivers 로컬 값은 바뀌지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    handlers.driver_links = { select: () => ({ data: null, error: { message: 'driver_links down' } }) }
+    const ownerKey = 'audit4-driverlinks-fail'
+    writeJsonKey('drivers', ownerKey, [{ id: 'seed-driver', inviteCode: '123456' }])
+
+    await assert.rejects(() => hydrateFromSupabase('user-driverlinks-fail', ownerKey), /hydrate 조회 실패/)
+    assert.equal(getState().hydration.status, 'failed')
+    assert.deepEqual(readJsonKey('drivers', ownerKey, []), [{ id: 'seed-driver', inviteCode: '123456' }])
+    endCloudSession()
+  })
+
+  test('tax_invoices 조회가 실패하면 failed로 남고 invoices 로컬 값은 바뀌지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    handlers.tax_invoices = { select: () => ({ data: null, error: { message: 'tax_invoices down' } }) }
+    const ownerKey = 'audit4-taxinvoices-fail'
+    writeJsonKey('invoices', ownerKey, [{ id: 'seed-invoice' }])
+
+    await assert.rejects(() => hydrateFromSupabase('user-taxinvoices-fail', ownerKey), /hydrate 조회 실패/)
+    assert.equal(getState().hydration.status, 'failed')
+    assert.deepEqual(readJsonKey('invoices', ownerKey, []), [{ id: 'seed-invoice' }])
+    endCloudSession()
+  })
+
+  test('transport_details 조회가 실패하면 callDetails가 []로 지워지지 않고 failed로 남는다 (핵심 회귀 테스트)', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit4-transport-fail'
+    handlers.vehicles = { select: () => ({ data: [{ id: 501, type: 'main', number: '33다3333', raw: {} }], error: null }) }
+    handlers.daily_logs = { select: () => ({ data: [{ work_date: '2026-08-01', is_off: false, fixed_count: 1, raw: {} }], error: null }) }
+    handlers.transport_details = { select: () => ({ data: null, error: { message: 'transport_details down' } }) }
+
+    const seededWorkData = { '2026-08-01': { isOff: false, fixedCount: 1, callDetails: [{ client: '실제콜상세', fare: 100000 }], fuelItems: [], maintItems: [], miscItems: [] } }
+    writeJsonKey('workData', ownerKey, seededWorkData)
+
+    await assert.rejects(() => hydrateFromSupabase('user-transport-fail', ownerKey), /hydrate 조회 실패/)
+    assert.equal(getState().hydration.status, 'failed')
+    assert.deepEqual(readJsonKey('workData', ownerKey, {}), seededWorkData)
+    endCloudSession()
+  })
+})
+
+describe('hydrate 재시도 — failed → 로컬 편집 → retry → ready', () => {
+  test('재시도 중에도 아직 서버에 못 보낸 로컬 편집은 서버 값으로 덮이지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit4-retry-flow'
+    const userId = 'user-retry-flow'
+
+    handlers.vehicles = { select: () => ({ data: null, error: { message: 'first attempt fails' } }) }
+    await assert.rejects(() => hydrateFromSupabase(userId, ownerKey))
+    assert.equal(getState().hydration.status, 'failed')
+
+    writeJsonKey('profile', ownerKey, { name: '로컬에서 편집한 이름' })
+
+    handlers.vehicles = { select: () => ({ data: [], error: null }) }
+    handlers.profiles = { select: () => ({ data: { id: userId, name: '서버 이름(오래됨)', settings: {} }, error: null }) }
+
+    await retryHydrate()
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(getState().profile[ownerKey]?.name, '서버 이름(오래됨)', '슬라이스 E: 로컬 프로필로 서버 hydrate를 덮지 않는다')
+    assert.equal(readJsonKey('profile', ownerKey, {}).name, '로컬에서 편집한 이름', '기존 LS 키는 지우지 않는다')
+    endCloudSession()
+  })
+})
+
+describe('hydrateFromSupabase — single-flight + stale 세대 보호', () => {
+  test('StrictMode식 동시 2회 호출에서도 profiles 조회는 한 번만 나가고 조기 ready가 없다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit4-strictmode'
+    const userId = 'user-strictmode'
+
+    const [snapshotA, snapshotB] = await Promise.all([
+      hydrateFromSupabase(userId, ownerKey),
+      hydrateFromSupabase(userId, ownerKey),
+    ])
+
+    assert.equal(countOf('profiles', 'select'), 1)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(snapshotA, snapshotB)
+    endCloudSession()
+  })
+})
+
+describe('실패 주입 — hydrate 도중 로그아웃', () => {
+  test('로그아웃 도중 이전 hydrate가 나중에 성공해도 idle 상태와 이전 계정 데이터를 store/localStorage에 반영하지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit4-logout-stale'
+    const userId = 'user-logout-stale'
+
+    let releaseProfiles
+    const gate = new Promise((resolve) => { releaseProfiles = resolve })
+    handlers.profiles = { select: () => gate.then(() => ({ data: { id: userId, name: '로그아웃 이후 도착한 서버 이름', settings: {} }, error: null })) }
+
+    const hydratePromise = hydrateFromSupabase(userId, ownerKey)
+    await wait(10)
+    assert.equal(getState().hydration.status, 'hydrating')
+
+    endCloudSession()
+    assert.equal(getState().hydration.status, 'idle')
+
+    releaseProfiles()
+    await hydratePromise
+
+    assert.equal(getState().hydration.status, 'idle')
+    assert.equal(readJsonKey('profile', ownerKey, {}).name, undefined)
+  })
+})
+
+describe('사용자 지시 6번 — 로그아웃 후 같은 owner로 즉시 재로그인', () => {
+  test('로그아웃 시점에 아직 진행 중이던 이전 hydrate에 재로그인이 합류하지 않고 새로 실행된다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit4-relogin-same-owner'
+    const userId = 'user-relogin-same-owner'
+
+    let releaseFirst
+    const firstGate = new Promise((resolve) => { releaseFirst = resolve })
+    handlers.profiles = { select: () => firstGate.then(() => ({ data: { id: userId, name: '로그아웃 이전 이름(오래됨)', settings: {} }, error: null })) }
+
+    const firstHydratePromise = hydrateFromSupabase(userId, ownerKey)
+    await wait(10)
+    assert.equal(getState().hydration.status, 'hydrating')
+    assert.equal(countOf('profiles', 'select'), 1)
+
+    endCloudSession() // 이전 hydrate가 아직 firstGate에 걸려 있는 채로 로그아웃한다.
+    assert.equal(getState().hydration.status, 'idle')
+
+    // 곧바로 같은 owner로 재로그인 — 이번엔 서버가 즉시 응답한다.
+    handlers.profiles = { select: () => ({ data: { id: userId, name: '재로그인 이후 최신 이름', settings: {} }, error: null }) }
+    await hydrateFromSupabase(userId, ownerKey)
+
+    assert.equal(countOf('profiles', 'select'), 2, '재로그인이 이전 in-flight에 합류했다면 새 조회가 나가지 않아 1회에 머물렀을 것이다')
+    assert.equal(getState().hydration.status, 'ready', '재로그인이 옛 Promise에 합류해 계속 idle/hydrating으로 멈춰 있으면 안 된다')
+    assert.equal(getState().profile[ownerKey]?.name, '재로그인 이후 최신 이름')
+
+    releaseFirst() // 로그아웃 이전 요청도 뒤늦게 응답하지만 세대 검사로 무시돼야 한다.
+    await firstHydratePromise
+    assert.equal(getState().hydration.status, 'ready', '로그아웃 이전 요청의 뒤늦은 완료가 재로그인의 ready 상태를 덮으면 안 된다')
+    assert.equal(getState().profile[ownerKey]?.name, '재로그인 이후 최신 이름', '옛 요청의 오래된 이름으로 되돌아가면 안 된다')
+    endCloudSession()
+  })
+})
+
+describe('실패 주입 — hydrate 도중 owner(계정) 변경', () => {
+  test('hydrate A가 진행 중인데 다른 owner의 hydrate B가 시작되면, A가 늦게 성공해도 B의 ready 상태/데이터를 덮지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerA = 'audit4-switch-owner-a'
+    const ownerB = 'audit4-switch-owner-b'
+
+    let releaseA
+    const gateA = new Promise((resolve) => { releaseA = resolve })
+    handlers.profiles = { select: () => gateA.then(() => ({ data: { id: 'user-a', name: 'A 계정 이름', settings: {} }, error: null })) }
+
+    const hydrateAPromise = hydrateFromSupabase('user-a', ownerA)
+    await wait(10)
+    assert.equal(getState().hydration.status, 'hydrating')
+
+    // A가 아직 게이트에 걸려 있는 동안 B(다른 owner)가 hydrate를 시작해 성공한다.
+    handlers.profiles = { select: () => ({ data: { id: 'user-b', name: 'B 계정 이름', settings: {} }, error: null }) }
+    await hydrateFromSupabase('user-b', ownerB)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(getState().hydration.ownerKey, ownerB)
+
+    releaseA()
+    await hydrateAPromise // A는 이제야 응답을 받지만 이미 세대가 지났다.
+
+    assert.equal(getState().hydration.status, 'ready', 'A의 뒤늦은 완료가 B의 ready 상태를 건드리면 안 된다')
+    assert.equal(getState().hydration.ownerKey, ownerB, 'A의 뒤늦은 완료가 hydration.ownerKey를 A로 되돌리면 안 된다')
+    assert.equal(readJsonKey('profile', ownerA, {}).name, undefined, 'A 계정 데이터가 A의 localStorage에도 안 쓰였어야 한다(전부 버려짐)')
+    endCloudSession()
+  })
+})
+
+describe('hydrate 종료 시 hydrating에 남지 않는다', () => {
+  test('조회 중 세대만 올라가면 스냅샷은 버리고 이 세대 슬롯은 ready로 닫는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'audit-hydrate-stale-close'
+    const userId = 'user-hydrate-stale-close'
+
+    let releaseProfiles
+    const gate = new Promise((resolve) => { releaseProfiles = resolve })
+    handlers.profiles = { select: () => gate.then(() => ({ data: { id: userId, name: '늦게 도착한 이름', settings: {} }, error: null })) }
+
+    const hydratePromise = hydrateFromSupabase(userId, ownerKey)
+    await wait(10)
+    assert.equal(getState().hydration.status, 'hydrating')
+
+    beginSessionEpoch(userId, ownerKey)
+    releaseProfiles()
+    await hydratePromise
+
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(readJsonKey('profile', ownerKey, {}).name, undefined, '세대가 바뀐 뒤의 스냅샷은 localStorage에 쓰지 않는다')
+    endCloudSession()
+  })
+})
+
+describe('hydrate — 옛 보낼 편지함 기록은 보내지 않고 지운다 (로드맵 88)', () => {
+  test('옛 편지함 키가 있어도 기사·차량은 서버 병합 결과 그대로, 키는 지워진다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'roadmap88-legacy-outbox'
+    const userId = 'user-roadmap88-legacy-outbox'
+    const outboxKey = `reactPracticeMutationOutbox:${ownerKey}`
+    const journalKey = `reactPracticeDirtyJournal:${ownerKey}`
+    localStorage.setItem(journalKey, JSON.stringify({ cars: 1 }))
+    commitDrivers(ownerKey, [{ id: 'local-driver-1', supabaseId: 700, inviteCode: '123456', status: 'pending', name: '기사' }])
+    handlers.vehicles = { select: () => ({ data: [{ id: 900, type: 'main', number: '77가7777', raw: {} }], error: null }) }
+    handlers.driver_links = { select: () => ({ data: [{ id: 700, invite_code: '123456', status: 'pending', vehicle_id: null, assignment_start: '2026-08-01', assignment_end: null }], error: null }) }
+    localStorage.setItem(outboxKey, JSON.stringify([
+      { id: 'op-1', ownerKey, userId, resourceType: 'vehicle', resourceId: '900', kind: 'tombstone', operation: 'delete', payload: {}, sessionEpoch: 0, createdAt: '2026-10-01T00:00:00.000Z' },
+      { id: 'op-2', ownerKey, userId, resourceType: 'driverLink', resourceId: 'local-driver-1', kind: 'mutation', operation: 'updateStatus', payload: { supabaseId: 700, status: 'linked' }, sessionEpoch: 0, createdAt: '2026-10-01T00:00:00.000Z' },
+    ]))
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(localStorage.getItem(outboxKey), null, '옛 편지함 키는 지워진다')
+    assert.equal(localStorage.getItem(journalKey), null, '옛 변경 기록장 키도 지워진다(로드맵 89)')
+    assert.equal((getState().cars[ownerKey] || []).some((car) => car.supabaseId === 900), true, '서버 차량 그대로')
+    const drivers = getState().drivers[ownerKey] || []
+    assert.equal(drivers.length, 1, '기사 목록이 비지 않는다')
+    assert.equal(drivers[0]?.status, 'pending', '옛 편지함 값이 아니라 서버 값')
+    assert.equal(countOf('driver_links', 'update'), 0, '옛 편지함을 서버로 보내지 않는다')
+    endCloudSession()
+  })
+})
+
+describe('hydrate — 레거시 fuel raw는 스키마 throw 없이 ready로 닫힌다', () => {
+  test('fuel_records.raw에 비용 객체 extra 키가 있어도 status는 ready다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-fuel-coerce-ready'
+    const userId = 'user-hydrate-fuel-coerce-ready'
+    handlers.vehicles = { select: () => ({ data: [{ id: 501, type: 'main', number: '11가1111', raw: {} }], error: null }) }
+    handlers.daily_logs = { select: () => ({ data: [{ work_date: '2026-08-01', is_off: false, fixed_count: 1, raw: {} }], error: null }) }
+    handlers.fuel_records = {
+      select: () => ({
+        data: [{
+          work_date: '2026-08-01',
+          sequence: 0,
+          raw: {
+            id: 'fuel-1', kind: 'fuel', date: '2026-08-01', name: '주유', fuelType: '주유',
+            payment: '카드', type: '주유', cost: 80000, subsidy: 0, liter: 40, mileage: 0,
+          },
+        }],
+        error: null,
+      }),
+    }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    const day = getState().workLogs[ownerKey]?.main?.['2026-08-01']
+    assert.equal(day?.fuelItems, undefined)
+    const expenses = getState().expenses[ownerKey] || []
+    assert.equal(expenses.filter((item) => item.kind === 'fuel').length, 1)
+    assert.equal(expenses[0].id, 'fuel-1')
+    endCloudSession()
+  })
+})
+
+describe('슬라이스 E — hydrate는 LS 업무 밑바탕을 쓰지 않고 프로필·설정을 Store에 넣는다', () => {
+  test('서버 vehicles가 비면 LS cars를 Store에 올리지 않고 LS 키도 지우지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-e-ls-cars'
+    const userId = 'user-hydrate-e-ls-cars'
+    const seeded = [{ id: 'ls-car', number: '11가1111', type: 'main', supabaseId: 1 }]
+    writeJsonKey('cars', ownerKey, seeded)
+    handlers.vehicles = { select: () => ({ data: [], error: null }) }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.deepEqual(getState().cars[ownerKey] || [], [])
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), seeded)
+    endCloudSession()
+  })
+
+  test('프로필·설정은 서버 행이 Store이고 hydrate가 LS profile/settings 키를 덮지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-e-profile-settings'
+    const userId = 'user-hydrate-e-profile-settings'
+    writeJsonKey('profile', ownerKey, { name: 'LS이름' })
+    writeJsonKey('settings', ownerKey, { theme: 'dark', unitPrice: 1111 })
+    handlers.profiles = {
+      select: () => ({
+        data: { id: userId, name: '서버이름', settings: { theme: 'light', unitPrice: 7777, callDetail: true } },
+        error: null,
+      }),
+    }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(getState().profile[ownerKey]?.name, '서버이름')
+    assert.equal(getState().settings[ownerKey]?.unitPrice, 7777)
+    assert.equal(getState().settings[ownerKey]?.callDetail, true)
+    assert.equal(getState().settings[ownerKey]?.theme, 'light')
+    assert.equal(readJsonKey('profile', ownerKey, {}).name, 'LS이름')
+    assert.equal(readJsonKey('settings', ownerKey, {}).unitPrice, 1111)
+    endCloudSession()
+  })
+
+  test('settings LS 파싱 실패를 빈 설정으로 오인해 다른 업무 키를 지우지 않는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-e-settings-parse'
+    const userId = 'user-hydrate-e-settings-parse'
+    const seededCars = [{ id: 'keep-car', number: '22나2222' }]
+    writeJsonKey('cars', ownerKey, seededCars)
+    localStorage.setItem(`reactPracticeSettings:${ownerKey}`, '{not json')
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(localStorage.getItem(`reactPracticeSettings:${ownerKey}`), '{not json')
+    assert.deepEqual(readJsonKey('cars', ownerKey, []), seededCars)
+    endCloudSession()
+  })
+})
+
+describe('Step 9 슬라이스 A — hydrate가 기사 차량 daily_logs도 logId별로 병합한다', () => {
+  test('main·sub 각각 vehicle_id로 조회해 workLogs.main / workLogs[번호]에 넣는다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-sub-daylogs'
+    const userId = 'user-hydrate-sub-daylogs'
+    handlers.vehicles = {
+      select: () => ({
+        data: [
+          { id: 501, type: 'main', number: '11가1111', raw: { id: 'c-main' } },
+          { id: 802, type: 'sub', number: '22나2222', raw: { id: 'c-sub', driverName: '박기사' } },
+        ],
+        error: null,
+      }),
+    }
+    handlers.daily_logs = {
+      select: (filters) => {
+        if (String(filters?.vehicle_id) === '501') {
+          return { data: [{ work_date: '2026-08-01', is_off: false, fixed_count: 3, raw: {} }], error: null }
+        }
+        if (String(filters?.vehicle_id) === '802') {
+          return { data: [{ work_date: '2026-08-02', is_off: false, fixed_count: 7, raw: {} }], error: null }
+        }
+        return { data: [], error: null }
+      },
+    }
+    handlers.transport_details = { select: () => ({ data: [], error: null }) }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    assert.equal(getState().workLogs[ownerKey]?.main?.['2026-08-01']?.fixedCount, 3)
+    assert.equal(getState().workLogs[ownerKey]?.['22나2222']?.['2026-08-02']?.fixedCount, 7)
+    assert.equal(getState().workLogs[ownerKey]?.main?.['2026-08-02'], undefined, '서브 날짜가 메인에 섞이면 안 된다')
+    assert.equal(countOf('daily_logs', 'select'), 2)
+    endCloudSession()
+  })
+})
+
+describe('로드맵 5-A — 서브차량 정비/주유/기타 불러오기', () => {
+  test('5-B-2: 미연동·연동 서브 칸 모두 차주 목록(차량 표시·id 중복 제거)으로, 읽기 전용 기사 내역은 비운다', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-5a-sub-expenses'
+    const userId = 'user-hydrate-5a'
+    handlers.vehicles = {
+      select: () => ({
+        data: [
+          { id: 501, type: 'main', number: '11가1111', raw: { id: 'c-main' } },
+          { id: 802, type: 'sub', number: '22나2222', raw: { id: 'c-sub' } },
+          { id: 803, type: 'sub', number: '33다3333', raw: { id: 'c-sub-linked' } },
+        ],
+        error: null,
+      }),
+    }
+    handlers.driver_links = {
+      select: () => ({ data: [{ id: 9, vehicle_id: 803, status: 'linked', invite_code: '111111' }], error: null }),
+    }
+    /** @param {string} id @param {string} date @param {string} [plate] */
+    const fuelRow = (id, date, plate) => ({
+      work_date: date, sequence: 0, cost_amount: 1000, raw: { id, date, cost: 1000, ...(plate ? { vehicleNumber: plate } : {}) },
+    })
+    handlers.fuel_records = {
+      select: (filters) => {
+        const vehicleId = filters && typeof filters === 'object' && !Array.isArray(filters) ? String(filters.vehicle_id) : ''
+        if (vehicleId === '501') return { data: [fuelRow('main-1', '2026-08-01'), fuelRow('dup-1', '2026-08-03', '22나2222')], error: null }
+        if (vehicleId === '802') return { data: [fuelRow('dup-1', '2026-08-03'), fuelRow('sub-1', '2026-08-04')], error: null }
+        if (vehicleId === '803') return { data: [fuelRow('drv-1', '2026-08-05')], error: null }
+        return { data: [], error: null }
+      },
+    }
+
+    await hydrateFromSupabase(userId, ownerKey)
+    assert.equal(getState().hydration.status, 'ready')
+    const owner = /** @type {Array<{ id: string, vehicleNumber?: string }>} */ (getState().expenses[ownerKey] || [])
+    assert.deepEqual(owner.map((item) => item.id).sort(), ['drv-1', 'dup-1', 'main-1', 'sub-1'])
+    assert.equal(owner.find((item) => item.id === 'sub-1')?.vehicleNumber, '22나2222')
+    assert.equal(owner.find((item) => item.id === 'drv-1')?.vehicleNumber, '33다3333', '연동 서브 칸 기사 항목도 차주 목록에서 고치고 지울 수 있어야 한다')
+    assert.deepEqual(getState().driverExpenses[ownerKey] || [], [])
+    endCloudSession()
+  })
+})
+
+// 로드맵 67-A — 서버(Max rows 1000)처럼 한 번에 1,000줄까지만 주는 가짜 서버로 끝까지 받는지.
+/**
+ * @param {Array<import('../store/atomicPersist.js').JsonValue>} rows
+ * @param {Record<string, string|number>|undefined} filters
+ */
+function pageLikeServer(rows, filters) {
+  const [from, to] = String(filters?.range ?? '0-999').split('-').map(Number)
+  return { data: rows.slice(from, Math.min(to, from + 999) + 1), error: null }
+}
+
+describe('67-A hydrate — 1,000줄 넘는 기록도 끝까지 불러온다', () => {
+  test('H-1 메인 차량 콜 상세 1,200건 → Store에 1,200건 전부', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-67a-transport'
+    handlers.vehicles = { select: () => ({ data: [{ id: 601, type: 'main', number: '11가1111', raw: { id: 'c-main' } }], error: null }) }
+    const days = Array.from({ length: 30 }, (_, i) => `2026-07-${String(i + 1).padStart(2, '0')}`)
+    handlers.daily_logs = { select: () => ({ data: days.map((d) => ({ work_date: d, is_off: false, fixed_count: 0, raw: {} })), error: null }) }
+    const transport = Array.from({ length: 1200 }, (_, i) => ({
+      work_date: days[i % 30], sequence: Math.floor(i / 30), raw: { id: `t-${i}`, fare: '1000', client: '한진' },
+    }))
+    handlers.transport_details = { select: (filters) => pageLikeServer(transport, /** @type {Record<string, string|number>} */ (filters)) }
+
+    await hydrateFromSupabase('user-67a-transport', ownerKey)
+    const main = getState().workLogs[ownerKey]?.main || {}
+    const count = Object.values(main).reduce((sum, day) => sum + (day.callDetails?.length || 0), 0)
+    assert.equal(count, 1200)
+    assert.equal(countOf('transport_details', 'select'), 2)
+    endCloudSession()
+  })
+
+  test('H-2 메인 차량 주유 1,500건 → Store 지출 1,500건 전부', async () => {
+    resetHandlers()
+    Object.assign(handlers, emptyOkHandlers())
+    const ownerKey = 'hydrate-67a-fuel'
+    handlers.vehicles = { select: () => ({ data: [{ id: 602, type: 'main', number: '11가1111', raw: { id: 'c-main' } }], error: null }) }
+    const fuel = Array.from({ length: 1500 }, (_, i) => ({
+      work_date: '2026-07-01', sequence: i, cost_amount: 1000, raw: { id: `f-${i}`, date: '2026-07-01', cost: 1000 },
+    }))
+    handlers.fuel_records = { select: (filters) => pageLikeServer(fuel, /** @type {Record<string, string|number>} */ (filters)) }
+
+    await hydrateFromSupabase('user-67a-fuel', ownerKey)
+    const expenses = getState().expenses[ownerKey] || []
+    assert.equal(expenses.filter((item) => item.kind === 'fuel').length, 1500)
+    endCloudSession()
+  })
+})

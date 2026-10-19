@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 import { readLogWorkData, storageKeyForLog } from '../data/store/persist.js'
 import { readPersistDomain } from '../data/store/persistDomainRead.js'
 import { matchesDomainSchema } from '../data/store/persistDomainSchema.js'
@@ -131,8 +131,8 @@ export function applyGuestBackupData(parsed) {
   else if (workData) snapshot.workData = workData
   if (Array.isArray(record.cars)) snapshot.cars = /** @type {Array<import('../domain/financeTypes.js').CarLike>} */ (record.cars)
   if (Array.isArray(record.clients)) snapshot.clients = /** @type {Array<import('../domain/clientTypes.js').ClientLike>} */ (record.clients)
-  if (Array.isArray(record.drivers)) snapshot.drivers = /** @type {Array<import('../lib/outboxTypes.js').DriverRecord>} */ (record.drivers)
-  if (isPlainObject(record.profile)) snapshot.profile = /** @type {import('../lib/hydrateMergeTypes.js').LocalProfile} */ (record.profile)
+  if (Array.isArray(record.drivers)) snapshot.drivers = /** @type {Array<import('../data/sync/syncTypes.js').DriverRecord>} */ (record.drivers)
+  if (isPlainObject(record.profile)) snapshot.profile = /** @type {import('../data/hydrate/hydrateMergeTypes.js').LocalProfile} */ (record.profile)
   if (isPlainObject(record.settings)) snapshot.settings = /** @type {import('../domain/financeTypes.js').FinanceSettings} */ (record.settings)
   if (Array.isArray(record.expenses)) snapshot.expenses = /** @type {Array<import('../domain/expenseTypes.js').ExpenseItem>} */ (record.expenses)
   if (Array.isArray(record.invoices)) snapshot.invoices = /** @type {Array<import('../domain/financeTaxInvoiceEntries.js').InvoiceLike>} */ (record.invoices)

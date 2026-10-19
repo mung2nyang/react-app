@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import { buildCloudAppSession, ownerKeyFromSession } from '../../app/boot.js'
 import { requestDriverUnlinkAction } from '../../lib/driverUnlink.js'
-import { hydrateFromSupabase } from '../../lib/hydrate.js'
+import { hydrateFromSupabase } from '../../data/hydrate/hydrate.js'
 import { useOwnerDrivers, useOwnerProfile } from '../../data/store/ownerDataHooks.js'
 import DriverUnlinkControls from './DriverUnlinkControls.jsx'
 import { SkeletonLines } from '../../shared/ui/Skeleton.jsx'
 import './driver-connection.css'
 
-/** @typedef {import('../../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
 
 const HYDRATE_FAIL_TOAST = '연동은 해제됐지만 내 기록 일부를 불러오지 못했습니다.'
 

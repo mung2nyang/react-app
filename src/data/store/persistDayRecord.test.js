@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { DAY_RECORD_KEYS, isPersistedDayRecord, isPersistedWorkDataMap, parsePersistedWorkDataMap } from './persistDayRecord.js'
 
-/** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
 const DAY = {
   isOff: false, fixedCount: 2, palletCount: 1, callDetails: [{ id: 'c-1', fare: '300,000' }],

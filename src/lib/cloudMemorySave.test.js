@@ -197,7 +197,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   /**
    * 로드맵 5-A: 메인 501·서브 802. 70번부터 항목 단위 — fuelRows는 차량 칸별 서버 주유 줄.
    * @param {string} ownerKey
-   * @param {Array<import('./outboxTypes.js').DriverRecord>} drivers
+   * @param {Array<import('../data/sync/syncTypes.js').DriverRecord>} drivers
    * @param {Record<string, Array<import('../data/store/atomicPersist.js').JsonValue>>} [fuelRows]
    */
   function seedSubVehicleSave(ownerKey, drivers, fuelRows = {}) {

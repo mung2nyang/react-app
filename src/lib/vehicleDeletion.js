@@ -10,12 +10,12 @@ import {
   blockedReasonForOwnerDataWrite,
   captureSession,
 } from '../data/cloud/cloudSession.js'
-import { commitLocalOnly } from './outboxCommit.js'
+import { commitLocalOnly } from '../data/sync/localCommit.js'
 import { commitBatch, getState } from '../data/store/app-store.js'
 import { readLogWorkData, storageKeyForLog } from '../data/store/persist.js'
-import { planPendingLogDiscard } from './logPendingLifecycle.js'
-import { deleteVehicleFromSupabase } from './directMutations.js'
-import { StaleSessionError } from './outboxErrors.js'
+import { planPendingLogDiscard } from '../data/sync/logPendingLifecycle.js'
+import { deleteVehicleFromSupabase } from '../data/sync/directMutations.js'
+import { StaleSessionError } from '../data/sync/saveErrors.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */

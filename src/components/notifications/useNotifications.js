@@ -13,7 +13,7 @@ import {
 
 /**
  * @param {string} ownerKey
- * @param {import('../../lib/outboxTypes.js').AppSession|null} [session]
+ * @param {import('../../data/sync/syncTypes.js').AppSession|null} [session]
  * @param {string} [refreshKey]
  */
 export default function useNotifications(ownerKey, session = null, refreshKey = '') {

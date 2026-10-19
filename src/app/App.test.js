@@ -70,8 +70,8 @@ const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkDat
 const {
   hasPendingDayWrites, pendingDayWriteCount, retryPendingDayWrites,
   registerPendingDayWrite, getPendingDayWrite,
-} = await import('../lib/pendingWorkDataWrites.js')
-const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../lib/durableWriteGuard.js')
+} = await import('../data/sync/pendingWorkDataWrites.js')
+const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../data/sync/durableWriteGuard.js')
 test.afterEach(async () => {
   const leftover = [...liveRoots]
   liveRoots.clear()

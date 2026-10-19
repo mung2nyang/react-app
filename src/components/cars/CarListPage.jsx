@@ -30,7 +30,7 @@ const DISCONNECT_CONFIRM = '연동 중인 기사에게는 해제 요청이 가�
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
- * @param {import('../../lib/outboxTypes.js').AppSession|null} [props.session]
+ * @param {import('../../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {() => void} [props.onBack]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]

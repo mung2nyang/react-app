@@ -20,7 +20,7 @@ const {
 const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 const { setHydration, getState, subscribe } = await import('../data/store/app-store.js')
 const { readJsonKey, storageKeyFor, writeJsonKey } = await import('../data/store/persist.js')
-const { STORAGE_FAIL_TOAST } = await import('./outboxCommit.js')
+const { STORAGE_FAIL_TOAST } = await import('../data/sync/localCommit.js')
 const { commitCars } = await import('../data/store/commitHelpers.js')
 
 /**
@@ -32,7 +32,7 @@ const { commitCars } = await import('../data/store/commitHelpers.js')
  */
 async function expectLocalSaveFailLog(domain, fn) {
   const original = console.error
-  const expected = `[outboxCommit] ${domain} 로컬 저장 실패:`
+  const expected = `[localCommit] ${domain} 로컬 저장 실패:`
   /** @type {Array<string>} */
   const logged = []
   const spy = mock.method(console, 'error', (/** @type {Array<string | Error>} */ ...args) => {
@@ -77,7 +77,7 @@ async function withFailingSetItem(shouldFail, fn) {
   }
 }
 
-/** 리터럴을 DriverRecord[]로 좁혀 strict-inventory 진단(status 리터럴 widening 등)을 안 늘린다. @param {Array<import('./outboxTypes.js').DriverRecord>} items */
+/** 리터럴을 DriverRecord[]로 좁혀 strict-inventory 진단(status 리터럴 widening 등)을 안 늘린다. @param {Array<import('../data/sync/syncTypes.js').DriverRecord>} items */
 const asDrivers = (items) => items
 
 describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오', () => {
@@ -701,7 +701,7 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
     endCloudSession()
   })
 
-  /** @param {string} ownerKey @param {Array<import('./outboxTypes.js').DriverRecord>} items @param {Array<import('./outboxTypes.js').CarRecord>} cars @param {string} message */
+  /** @param {string} ownerKey @param {Array<import('../data/sync/syncTypes.js').DriverRecord>} items @param {Array<import('../data/sync/syncTypes.js').CarRecord>} cars @param {string} message */
   async function expectInviteRejected(ownerKey, items, cars, message) {
     const before = getState().drivers[ownerKey]
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars })

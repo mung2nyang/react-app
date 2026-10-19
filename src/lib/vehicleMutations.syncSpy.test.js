@@ -10,9 +10,9 @@ const { requestVehicleSave } = await import('./vehicleMutations.js')
 const { requestVehicleDeletion } = await import('./directMutationActions.js')
 const { storageKeyFor, storageKeyForLog } = await import('../data/store/persist.js')
 const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
-const { pendingOwnerForLog } = await import('./pendingLogOwner.js')
-const { registerPendingDayWrite, getPendingDayWrite } = await import('./pendingWorkDataWrites.js')
-const { durableKey } = await import('./durableStorage.js')
+const { pendingOwnerForLog } = await import('../data/sync/pendingLogOwner.js')
+const { registerPendingDayWrite, getPendingDayWrite } = await import('../data/sync/pendingWorkDataWrites.js')
+const { durableKey } = await import('../data/sync/durableStorage.js')
 
 function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)

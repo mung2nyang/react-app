@@ -17,7 +17,7 @@ import './home.css'
 /**
  * @param {Object} props
  * @param {string} props.ownerKey
- * @param {import('../../lib/outboxTypes.js').AppSession|null} [props.session]
+ * @param {import('../../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {number} [props.notifCount]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(() => void)} [props.onOpenNotifs]

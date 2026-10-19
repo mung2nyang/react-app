@@ -22,7 +22,7 @@ const CONFIRM_MSG = '정말 탈퇴하시겠습니까?'
 
 /**
  * @param {string} ownerKey
- * @param {import('../lib/outboxTypes.js').AppSession} session
+ * @param {import('../data/sync/syncTypes.js').AppSession} session
  */
 async function clickWithdraw(ownerKey, session) {
   /** @type {Array<string>} */

@@ -10,7 +10,7 @@ const { mock } = await import('node:test')
 mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { persistReceivableWorkDataChange, markMonthlyReceivablesPaid } = await import('./ownerFinance.js')
-const { commitMainDayLogMapToCloud, commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
+const { commitMainDayLogMapToCloud, commitMainDayLogToCloud } = await import('../data/sync/dayLogCloudCommit.js')
 const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
 const { setHydration, getState } = await import('../data/store/app-store.js')
 const { commitCars, commitLogWorkData, commitWorkData } = await import('../data/store/commitHelpers.js')

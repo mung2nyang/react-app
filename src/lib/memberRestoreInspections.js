@@ -10,7 +10,7 @@ import { fetchVehiclesDailyInspections, saveDailyInspection } from './dailyInspe
 import { isOwnUnlinkedCar } from './memberRestoreRecords.js'
 import { SERVER_SAVE_FAIL } from './failureMessages.js'
 
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./dailyInspections.js').DailyInspection} DailyInspection */
 /** @typedef {DailyInspection & { vehicleId: string|number, workDate: string }} InspectionPick */
 

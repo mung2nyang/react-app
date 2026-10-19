@@ -16,7 +16,7 @@ const SAVE_FAIL = SERVER_SAVE_FAIL
 /**
  * @param {Object} props
  * @param {string} props.ownerKey
- * @param {import('../../lib/outboxTypes.js').AppSession|null} [props.session]
+ * @param {import('../../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {(message: string) => void} [props.showToast]
  * @param {() => void} props.onBack
  * @param {() => void} [props.onOpenMenu]

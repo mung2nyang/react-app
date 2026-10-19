@@ -4,8 +4,8 @@ import * as v from 'valibot'
 import { parseCurrencyValue } from '../domain/money.js'
 import { bool, by, isPlainObject, nonEmptyString, opt, plain, str } from '../domain/schemaParts.js'
 
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-/** @typedef {import('./pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
 
 /**
  * payments.js/financeCore.js가 실제로 받는 금액: 숫자이거나, parseCurrencyValue가

@@ -4,7 +4,7 @@ import { unlinkAutoDateLabel } from '../../lib/driverUnlink.js'
 
 /**
  * @param {{
- *   driver: import('../../lib/outboxTypes.js').DriverRecord,
+ *   driver: import('../../data/sync/syncTypes.js').DriverRecord,
  *   meId: string,
  *   counterpartLabel: string,
  *   onAction: (action: import('../../lib/driverUnlink.js').UnlinkAction) => void,

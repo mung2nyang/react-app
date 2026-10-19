@@ -17,8 +17,8 @@ import {
   changedDayLogDateKeys,
   commitMainDayLogMapToCloud,
   commitMainDayLogToCloud,
-} from './dayLogCloudCommit.js'
-import { shouldCommitDayLogToCloud } from './mainDayLogRouting.js'
+} from '../data/sync/dayLogCloudCommit.js'
+import { shouldCommitDayLogToCloud } from '../data/sync/mainDayLogRouting.js'
 import { SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 /** @typedef {import('../domain/day-record.js').DayRecordLike} DayRecordLike */

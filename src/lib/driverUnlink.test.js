@@ -12,7 +12,7 @@ const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloud
 const { getState, setHydration } = await import('../data/store/app-store.js')
 const { commitDrivers } = await import('../data/store/commitHelpers.js')
 
-/** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 
 const OWNER = 'owner-7c'
 /** @type {Array<DriverRecord>} */

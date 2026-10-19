@@ -11,7 +11,7 @@ import { saveExpenses } from './expenses.js'
 import { saveInvoices } from './invoices.js'
 import { SERVER_SAVE_FAIL } from './failureMessages.js'
 
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 /** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */

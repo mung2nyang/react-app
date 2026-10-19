@@ -21,12 +21,12 @@ const WITHDRAW_LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습�
 /**
  * @param {Object} props
  * @param {string} [props.ownerKey]
- * @param {import('../lib/outboxTypes.js').AppSession|null|undefined} [props.session]
+ * @param {import('../data/sync/syncTypes.js').AppSession|null|undefined} [props.session]
  * @param {() => void} [props.onBack]
  * @param {() => void} [props.onGoAuth]
  * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
- * @param {(next: import('../lib/outboxTypes.js').AppSession) => void} [props.onUnlinked] 기사가 연동 해제를 확정했을 때(7-C-2)
+ * @param {(next: import('../data/sync/syncTypes.js').AppSession) => void} [props.onUnlinked] 기사가 연동 해제를 확정했을 때(7-C-2)
  */
 export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, showToast, onOpenMenu, onUnlinked }) {
   const locked = useHydrationLock()
@@ -40,7 +40,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
 
   // 글자는 즉시 화면에 반영하고 저장은 입력을 멈춘 뒤·칸을 벗어날 때·화면을 나갈 때 묶어서 한다.
   const { get, set, flush } = usePersonalInfoDraft({ ownerKey, profile, showToast })
-  /** @param {keyof import('../lib/hydrateMergeTypes.js').LocalProfile} field @param {string} value */
+  /** @param {keyof import('../data/hydrate/hydrateMergeTypes.js').LocalProfile} field @param {string} value */
   function update(field, value) { set(field, value) }
 
   // 연동 중(차주: linked 기사 있음, 기사: employed_driver)이면 탈퇴를 막는다 — 서버 delete_own_account도 거절.

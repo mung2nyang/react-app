@@ -8,7 +8,7 @@ import LoadFailScreen from '../components/LoadFailScreen.jsx'
 import PageLoadErrorBoundary from '../components/PageLoadErrorBoundary.jsx'
 import { ensureProfileRow } from '../data/cloud/supabaseClient.js'
 import { endCloudSession } from '../data/cloud/cloudSession.js'
-import { hydrateFromSupabase } from '../lib/hydrate.js'
+import { hydrateFromSupabase } from '../data/hydrate/hydrate.js'
 import { ownerKeyFromSession } from './boot.js'
 import { AccountFlowBodyClass, PendingWriteRetryBridge } from './providers.jsx'
 import AuthRoute from './AuthRoute.jsx'
@@ -34,7 +34,7 @@ import '../shared/styles/header-controls.css'
 import '../shared/styles/shared-controls.css'
 import '../shared/styles/modal-form.css'
 
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 
 export default function App() {
   const navigate = useNavigate()

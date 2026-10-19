@@ -47,10 +47,10 @@ const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkDat
 const {
   hasPendingDayWrites, pendingDayWriteCount, retryPendingDayWrites,
   getPendingDayWrite,
-} = await import('../lib/pendingWorkDataWrites.js')
-const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../lib/durableWriteGuard.js')
+} = await import('../data/sync/pendingWorkDataWrites.js')
+const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../data/sync/durableWriteGuard.js')
 const { endCloudSession } = await import('../data/cloud/cloudSession.js')
-const { durableKey } = await import('../lib/durableStorage.js')
+const { durableKey } = await import('../data/sync/durableStorage.js')
 const { clearGuestModePersisted } = await import('./guestSessionPersist.js')
 const { getState, subscribe } = await import('../data/store/app-store.js')
 const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')

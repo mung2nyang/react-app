@@ -6,7 +6,7 @@ import { resolveSessionGate } from './sessionGate.js'
 import { isGuestModePersisted } from './guestSessionPersist.js'
 import LoadingScreen from '../components/LoadingScreen.jsx'
 
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 
 /**
  * @param {Object} props

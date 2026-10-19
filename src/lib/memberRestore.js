@@ -6,13 +6,13 @@
 import { readOwnerWorkDataByLogId } from '../data/store/ownerDataHooks.js'
 import { parsePersistedWorkDataMap } from '../data/store/persistDayRecord.js'
 import { isPlainObject } from '../data/store/persistDomainRecords.js'
-import { commitMainDayLogMapToCloud } from './dayLogCloudCommit.js'
+import { commitMainDayLogMapToCloud } from '../data/sync/dayLogCloudCommit.js'
 import { memberBackupBlockedReason } from './memberBackup.js'
 import { isOwnUnlinkedCar, pickMemberRecords, restoreClients, restoreExpenses, restoreInvoices } from './memberRestoreRecords.js'
 import { pickInspections, restoreInspections } from './memberRestoreInspections.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {{ logId: string, records: Record<string, DayRecordLike> }} RestoreTarget */
 /** @typedef {{ days: number, clients: number, expenses: number, invoices: number, inspections: number }} RestoreCounts */
 /** @typedef {{ ok: true, targets: RestoreTarget[], records: import('./memberRestoreRecords.js').RecordPicks,

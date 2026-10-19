@@ -5,7 +5,7 @@ import { isPersistedCallDetail, isValidCurrencyAmount } from '../../lib/callDeta
 import { bool, by, finiteNumber, isPlainObject, opt, plain, str } from '../../domain/schemaParts.js'
 import { isPersistedFuelList, isPersistedMaintList, isPersistedMiscList } from './persistDayRecordLegacy.js'
 
-/** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
 // 하루 기록의 칸 → 모양(Valibot, 공용 조각은 domain/schemaParts.js). 목록 밖 칸·값이 비어 있는 칸은 거부.

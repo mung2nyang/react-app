@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { isPersistedInvoice } from './persistDomainInvoice.js'
 
-/** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
 const SUPPLIER = { sameAsOwner: false, name: '차주로지스', bizNumber: '123', representative: '대표', address: '서울', bizType: '운수', bizItem: '화물', email: 'a@b.c' }
 const INVOICE = {

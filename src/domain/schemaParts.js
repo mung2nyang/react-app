@@ -3,7 +3,7 @@
 // ② Valibot number는 NaN을 거부한다 — 지금까지 typeof만 보던 칸은 그 파일에서 따로 맞춘다.
 import * as v from 'valibot'
 
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
 /** @param {JsonValue} value @returns {value is Record<string, JsonValue>} */
 export function isPlainObject(value) {

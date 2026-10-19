@@ -5,7 +5,7 @@ import { supabase } from '../data/cloud/supabaseClient.js'
 import { getState } from '../data/store/app-store.js'
 import { readLogWorkData, storageKeyForLog } from '../data/store/persist.js'
 import { assertSessionStillCurrent } from '../data/cloud/cloudSession.js'
-import { planPendingLogMove } from './logPendingLifecycle.js'
+import { planPendingLogMove } from '../data/sync/logPendingLifecycle.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../data/store/app-store.js').BatchEntry} BatchEntry */
@@ -93,7 +93,7 @@ export function planRenamedPlateEntries(ownerKey, oldNumber, newNumber) {
 /**
  * 서버 차량 번호·전용 거래처·설정 키를 한 번에 바꾼다(셋 다 되거나 하나도 안 됨).
  * @param {string|number} vehicleSupabaseId @param {string} newNumber
- * @param {import('./outboxTypes.js').SessionCapture} captured
+ * @param {import('../data/sync/syncTypes.js').SessionCapture} captured
  */
 export async function renameSubVehicleOnServer(vehicleSupabaseId, newNumber, captured) {
   const { error } = await supabase.rpc('rename_sub_vehicle', { p_vehicle_id: vehicleSupabaseId, p_new_number: newNumber })

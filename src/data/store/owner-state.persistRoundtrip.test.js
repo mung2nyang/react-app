@@ -11,7 +11,7 @@ const { commitCars, commitClients, commitInvoices } = await import('./commitHelp
 const { saveExpenses, upsertExpense, emptyExpenseDraft } = await import('../../lib/expenses.js')
 const { persistInvoiceRecord } = await import('../../domain/invoices.js')
 const { buildTaxInvoiceEntry } = await import('../../domain/financeTaxInvoiceEntries.js')
-const { pendingDayWriteCount, hasUnsafePendingWrites } = await import('../../lib/pendingWorkDataWrites.js')
+const { pendingDayWriteCount, hasUnsafePendingWrites } = await import('../sync/pendingWorkDataWrites.js')
 const { readPersistDomain } = await import('./persistDomainRead.js')
 const { readLogWorkData } = await import('./persist.js')
 

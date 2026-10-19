@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 고객센터 문의 — 로컬 캐시 없이 support_inquiries insert·조회(Fail-Fast).
 import { supabase } from '../data/cloud/supabaseClient.js'
 import {
@@ -7,7 +7,7 @@ import {
   assertSessionStillCurrent,
   captureSession,
 } from '../data/cloud/cloudSession.js'
-import { StaleSessionError } from './outboxErrors.js'
+import { StaleSessionError } from '../data/sync/saveErrors.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 const SUCCESS_TOAST = '문의가 접수되었습니다.'

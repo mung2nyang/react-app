@@ -11,7 +11,7 @@ import { removeCallDetail, upsertCallDetail } from '../../domain/call-details.js
 import { getDetailPaymentSummary } from '../../domain/finance.js'
 import { locationShortcutList, togglePinnedLocation } from '../../domain/locationShortcuts.js'
 import { toggleCallPaymentStatus } from '../../domain/payments.js'
-import { confirmLeaveIfUnsafe } from '../../lib/durableWriteGuard.js'
+import { confirmLeaveIfUnsafe } from '../../data/sync/durableWriteGuard.js'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
 import { useOwnerDrivers, useOwnerWorkData, useOwnerWorkDataByLogId } from '../../data/store/ownerDataHooks.js'
 import { useDayDraft } from './useDayDraft.js'

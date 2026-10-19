@@ -12,8 +12,8 @@ import { buildBatchWrites } from './batchWrites.js'
 /** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
 /** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../../lib/outboxTypes.js').DriverRecord} DriverRecord */
-/** @typedef {import('../../lib/hydrateMergeTypes.js').LocalProfile} ProfileLike */
+/** @typedef {import('../sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../hydrate/hydrateMergeTypes.js').LocalProfile} ProfileLike */
 
 /**
  * @typedef {'idle'|'hydrating'|'ready'|'failed'} HydrationStatus

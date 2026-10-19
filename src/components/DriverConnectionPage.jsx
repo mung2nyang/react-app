@@ -1,7 +1,7 @@
 // @ts-check
 // 기사 연동 화면. 저장·상태 변경·삭제는 lib/directMutationActions.js, 초대 폼은 DriverFormModal.jsx.
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
-/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 import { useState } from 'react'
 import { getCloudUserId, isCloudSession } from '../data/cloud/cloudSession.js'
 import {
@@ -71,7 +71,7 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
       userId: cloudUserId,
       items: result.items,
       editingId,
-      cars: /** @type {import('../lib/outboxTypes.js').CarRecord[]} */ (cars),
+      cars: /** @type {import('../data/sync/syncTypes.js').CarRecord[]} */ (cars),
       previousItems: drivers,
     })
     if (saveResult.blocked) {

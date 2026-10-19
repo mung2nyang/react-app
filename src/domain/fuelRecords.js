@@ -1,7 +1,7 @@
 // @ts-check
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonRecord} JsonRecord */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonRecord} JsonRecord */
 /**
  * 주유 변환 중간형 — ExpenseItem에 type/liter 등 레거시 필드를 덧붙인 형태.
  * @typedef {ExpenseItem & { type?: string, liter?: number|string, fare?: number|string }} FuelExpenseShape

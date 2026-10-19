@@ -8,10 +8,10 @@ import DayLogPage from '../components/day-log/DayLogPage.jsx'
 import { resolveLogSettings } from '../domain/carSettingsScope.js'
 import { parseDateKeySelection } from '../lib/calendar.js'
 import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../data/store/ownerDataHooks.js'
-import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
+import { confirmLeaveIfUnsafe } from '../data/sync/durableWriteGuard.js'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
 
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 
 /**
  * @param {Object} props

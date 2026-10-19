@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 기사차량별 사업자정보·정산 계좌 — 입력폼 값 ↔ car.businessInfo / car.personalInfo 변환(순수).
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */

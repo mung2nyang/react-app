@@ -1,9 +1,9 @@
 // @ts-check
 import { generateLocalId } from './localId.js'
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 기사 순수 계산부. localStorage I/O는 lib/drivers.js가 재수출하며 맡는다.
 // 겹침 규칙은 "같은 차량번호는 한 기사에게만" 하나뿐(기간 무관, 연결 해제된 기사는 제외).
-/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 /** @typedef {{ number?: string, type?: string }} CarRef */
 /** @typedef {Pick<DriverRecord, 'name'|'phone'|'inviteCode'|'vehicleNumber'|'startDate'|'endDate'> & { assignmentStart?: string, assignmentEnd?: string }} DriverDraft */
 

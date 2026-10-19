@@ -12,7 +12,7 @@ const { act } = React
 const { useDayDraft } = await import('./useDayDraft.js')
 const { commitWorkData } = await import('../../data/store/commitHelpers.js')
 const { readOwnerLogWorkData } = await import('../../data/store/ownerDataHooks.js')
-const { confirmLeaveIfUnsafe, guardBeforeUnload } = await import('../../lib/durableWriteGuard.js')
+const { confirmLeaveIfUnsafe, guardBeforeUnload } = await import('../../data/sync/durableWriteGuard.js')
 
 const DK = '2026-10-22'
 

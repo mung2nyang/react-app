@@ -10,7 +10,7 @@ import { SkeletonLines } from '../shared/ui/Skeleton.jsx'
 import './customer-center.css'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 /** @typedef {import('../lib/supportInquiryMutations.js').SupportInquiryRow} SupportInquiryRow */
 
 const FAQ_ITEMS = [

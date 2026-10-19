@@ -17,7 +17,7 @@ const { beginSessionEpoch, endCloudSession } = await import('../../data/cloud/cl
 const { setHydration } = await import('../../data/store/app-store.js')
 const { commitCars, commitWorkData } = await import('../../data/store/commitHelpers.js')
 const { readOwnerWorkData } = await import('../../data/store/ownerDataHooks.js')
-const { hasBusyDayDraft } = await import('../../lib/dayDraftActivity.js')
+const { hasBusyDayDraft } = await import('../../data/sync/dayDraftActivity.js')
 
 const DK = '2026-10-21'
 const FAIL_FAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'

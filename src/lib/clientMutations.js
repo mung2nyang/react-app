@@ -11,7 +11,7 @@ import {
 import { blockedReasonForOwnerDataWrite } from '../data/cloud/cloudSession.js'
 import { isCloudClientOwner, reorderedClientIds, saveClientsToCloud } from './clientCloudSave.js'
 import { commitClients } from '../data/store/commitHelpers.js'
-import { STORAGE_FAIL_TOAST } from './outboxCommit.js'
+import { STORAGE_FAIL_TOAST } from '../data/sync/localCommit.js'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 /** @typedef {import('../domain/clientTypes.js').ClientDraft} ClientDraft */

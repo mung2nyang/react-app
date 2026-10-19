@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 서버 저장 행 만들기와 번호 읽기 도우미(차량·거래처·일지 서버 저장이 공유).
 /**
  * @param {JsonValue|undefined} value

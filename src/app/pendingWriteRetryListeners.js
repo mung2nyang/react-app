@@ -1,11 +1,11 @@
 // @ts-check
 // pending 큐 재시도 리스너. 타이머는 durable/fallback pending이 있을 때만 켜고 비면 끈다(상시 타이머는 테스트를 안 끝나게 한다).
 // unsafe는 자동 재시도로 안 고쳐지므로 타이머 대상이 아니지만, beforeunload 경고는 unsafe만 있어도 유지.
-import { hasPendingDayWrites, retryPendingDayWrites } from '../lib/pendingWorkDataWrites.js'
-import { guardBeforeUnload } from '../lib/durableWriteGuard.js'
-import { setPendingRetryPulse } from '../lib/pendingRetryPulse.js'
+import { hasPendingDayWrites, retryPendingDayWrites } from '../data/sync/pendingWorkDataWrites.js'
+import { guardBeforeUnload } from '../data/sync/durableWriteGuard.js'
+import { setPendingRetryPulse } from '../data/sync/pendingRetryPulse.js'
 import { getCloudOwnerKey } from '../data/cloud/cloudSession.js'
-import { shouldCommitDayLogToCloud } from '../lib/mainDayLogRouting.js'
+import { shouldCommitDayLogToCloud } from '../data/sync/mainDayLogRouting.js'
 
 const RETRY_INTERVAL_MS = 5000
 

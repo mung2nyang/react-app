@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 상차지/하차지 즐겨찾기 칩 — 원본 script.js getFrequentAndRecentLocations /
 // renderLocationShortcuts / togglePinnedLocation 순수 로직.
 import { getCallDetails } from './day-record.js'

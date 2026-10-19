@@ -17,7 +17,7 @@ test('서버에 저장하다 실패하면 네트워크, 기기에 저장하다 �
 })
 
 test('기기 저장 실패 상수·로그인 바뀜 안내가 같은 문구를 쓴다', async () => {
-  const { STORAGE_FAIL_TOAST } = await import('./outboxCommit.js')
+  const { STORAGE_FAIL_TOAST } = await import('../data/sync/localCommit.js')
   assert.equal(STORAGE_FAIL_TOAST, DEVICE_SAVE_FAIL)
   const source = (await import('node:fs')).readFileSync(new URL('../data/cloud/cloudSession.js', import.meta.url), 'utf8')
   assert.equal(source.includes('화면을 새로고침한 뒤 다시 시도해 주세요.'), false, '문구를 직접 적지 않고 공용 상수를 쓴다')

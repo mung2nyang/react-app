@@ -22,7 +22,7 @@ const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloud
 const { setHydration } = await import('../data/store/app-store.js')
 
 /**
- * @param {import('../lib/outboxTypes.js').AppSession|null} session
+ * @param {import('../data/sync/syncTypes.js').AppSession|null} session
  * @param {string} tabLabel
  */
 async function openSupportTab(session, tabLabel) {

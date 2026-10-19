@@ -2,9 +2,9 @@
 // 로그인 거래처 저장: 서버 성공 후에만 Store. persist·dirty·syncAll 없음.
 import { assertSessionStillCurrent, captureSession, getCloudOwnerKey } from '../data/cloud/cloudSession.js'
 import { commitBatch } from '../data/store/app-store.js'
-import { StaleSessionError } from './outboxErrors.js'
-import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
-import { upsertClientFromList } from './syncVehiclesClients.js'
+import { StaleSessionError } from '../data/sync/saveErrors.js'
+import { runOwnerSaveSerialized } from '../data/sync/ownerSaveQueue.js'
+import { upsertClientFromList } from '../data/sync/syncVehiclesClients.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */

@@ -11,7 +11,7 @@ import { saveInviteAfterVehicle } from '../../lib/carInviteFromDraft.js'
 
 /** @typedef {import('./CarFormModal.jsx').CarFormDraft} CarFormDraft */
 /** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 
 /**
  * @param {{ ownerKey: string, cars: Array<CarLike>, drivers: Array<DriverRecord>, cloud: boolean, draft: CarFormDraft, editingId: string|null, showToast?: (message: string) => void, closeModal: () => void }} params

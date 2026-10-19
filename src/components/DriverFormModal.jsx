@@ -12,7 +12,7 @@ import './drivers/driver-connection.css'
 import ModalShell from '../shared/ui/ModalShell.jsx'
 
 /** @typedef {import('../domain/drivers.js').DriverDraft} DriverDraft */
-/** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {NonNullable<ReturnType<typeof checkDriverDraft>>} DriverProblem */
 

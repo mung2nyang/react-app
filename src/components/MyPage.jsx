@@ -9,7 +9,7 @@ import LinkStatusChip from './LinkStatusChip.jsx'
 import './mypage.css'
 import './mypage-shortcuts.css'
 
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 
 function PersonIcon() {
   return (

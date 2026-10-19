@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { applyTheme } from '../lib/practiceSettings.js'
 import { endCloudSession } from '../data/cloud/cloudSession.js'
-import { confirmReloadIfUnsaved } from '../lib/durableWriteGuard.js'
+import { confirmReloadIfUnsaved } from '../data/sync/durableWriteGuard.js'
 import { buzz } from '../lib/haptic.js'
 import { isFailureMessage } from '../lib/failureMessages.js'
 import { supabase } from '../data/cloud/supabaseClient.js'
@@ -18,7 +18,7 @@ import {
   isGuestModePersisted,
 } from './guestSessionPersist.js'
 
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 
 export function useAppSession() {
   const [session, setSession] = useState(/** @type {AppSession|null} */ (null))

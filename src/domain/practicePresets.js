@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 운행 횟수 버튼·노선 이름표(프리셋) 정규화와 scope별 추가·삭제·교체 — practiceSettings.js가 다시 내보낸다.
 // 서로 얽혀 있는 프리셋 함수끼리 한 파일에 둔다.
 

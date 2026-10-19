@@ -2,11 +2,11 @@
 // 연동 해제는 양쪽 동의 또는 요청 후 3일 — 서버 함수만 호출하고, 성공했을 때만 기사 목록(store)을 갱신한다.
 import { supabase } from '../data/cloud/supabaseClient.js'
 import { assertSessionStillCurrent, blockedReasonForCloudWrite, captureSession } from '../data/cloud/cloudSession.js'
-import { StaleSessionError } from './outboxErrors.js'
+import { StaleSessionError } from '../data/sync/saveErrors.js'
 import { commitDrivers } from '../data/store/commitHelpers.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from './failureMessages.js'
 
-/** @typedef {import('./outboxTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 /** @typedef {'request'|'consent'|'cancel'} UnlinkAction */
 
 export const UNLINK_WAIT_DAYS = 3

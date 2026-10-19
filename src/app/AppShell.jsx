@@ -7,7 +7,7 @@ import { PageSkeleton } from '../shared/ui/Skeleton.jsx'
 import SideMenu, { preloadSideMenuBanner } from '../components/SideMenu.jsx'
 import PullRefreshIndicator from '../components/PullRefreshIndicator.jsx'
 import useNotifications from '../components/notifications/useNotifications.js'
-import { confirmLeaveIfUnsafe } from '../lib/durableWriteGuard.js'
+import { confirmLeaveIfUnsafe } from '../data/sync/durableWriteGuard.js'
 import { useOwnerCars, useOwnerDrivers } from '../data/store/ownerDataHooks.js'
 import PageLoadErrorBoundary from '../components/PageLoadErrorBoundary.jsx'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
@@ -20,7 +20,7 @@ import { withFromLogState } from './fromLogNavigation.js'
 import { chooseMove, historyIdx, markRewind, popPanelGuardThen } from './historyMoves.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
 
-/** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 
 // 옛 appPage 식별자 → 실제 라우트 경로. SideMenu/MyPage/알림패널이 공유한다.
 /** @type {Record<string, string>} */

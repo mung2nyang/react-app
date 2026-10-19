@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { saveProfile } from '../lib/profile.js'
 import { SERVER_SAVE_FAIL } from '../lib/failureMessages.js'
 
-/** @typedef {import('../lib/hydrateMergeTypes.js').LocalProfile} LocalProfile */
+/** @typedef {import('../data/hydrate/hydrateMergeTypes.js').LocalProfile} LocalProfile */
 /** @typedef {Partial<Record<keyof LocalProfile, string>>} ProfileDraft */
 
 export const SAVE_DELAY_MS = 700

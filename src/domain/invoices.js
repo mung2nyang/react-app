@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../lib/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 계산서 순수 계산부. localStorage I/O는 lib/invoices.js가 재수출하며 맡는다.
 import {
   getTaxInvoiceFlowMeta,

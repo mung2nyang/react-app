@@ -56,13 +56,13 @@ const { commitCars, commitClients, commitLogWorkData } = await import('../data/s
 const { getState, setHydration, subscribe } = await import('../data/store/app-store.js')
 const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
 const { parseAppLogPath, withFromLogState } = await import('./fromLogNavigation.js')
-const { pendingOwnerForLog } = await import('../lib/pendingLogOwner.js')
-const { registerPendingDayWrite, getPendingDayWrite } = await import('../lib/pendingWorkDataWrites.js')
+const { pendingOwnerForLog } = await import('../data/sync/pendingLogOwner.js')
+const { registerPendingDayWrite, getPendingDayWrite } = await import('../data/sync/pendingWorkDataWrites.js')
 const { initializeOwnerFromPersist } = await import('../data/store/owner-state.js')
 const { default: ClientListPage } = await import('../components/clients/ClientListPage.jsx')
 const { default: CarListPage } = await import('../components/cars/CarListPage.jsx')
 const { beginSessionEpoch, getCloudUserId, endCloudSession } = await import('../data/cloud/cloudSession.js')
-const { resetOwnerSaveQueueForTests } = await import('../lib/ownerSaveQueue.js')
+const { resetOwnerSaveQueueForTests } = await import('../data/sync/ownerSaveQueue.js')
 
 function restoreDefaultHandlers() {
   resetHandlers()

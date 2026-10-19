@@ -38,7 +38,7 @@ function findButtonByText(root, text) {
 }
 
 /**
- * @param {import('../lib/outboxTypes.js').AppSession|null} session
+ * @param {import('../data/sync/syncTypes.js').AppSession|null} session
  * @param {{ onGoAuth?: () => void, showToast?: (m: string) => void }} [handlers]
  */
 async function renderPage(session, handlers = {}) {
