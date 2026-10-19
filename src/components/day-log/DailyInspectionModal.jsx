@@ -3,7 +3,7 @@
 // 연필로 들어온 수정 중 [취소]는 보기로 돌아가고, 처음 입력 중 [취소]는 창을 닫는다.
 import { useState } from 'react'
 import { DAILY_INSPECTION_SECTIONS, INSPECTION_RESULT_LABEL, allGoodItems, isInspectionComplete } from '../../domain/dailyInspectionItems.js'
-import ModalShell from '../shared/ModalShell.jsx'
+import ModalShell from '../../shared/ui/ModalShell.jsx'
 
 /** @typedef {import('../../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
 /** @typedef {import('../../lib/dailyInspections.js').DailyInspection} DailyInspection */

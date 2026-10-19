@@ -11,7 +11,7 @@ import { useOwnerCars, useOwnerWorkDataByLogId } from '../../store/ownerDataHook
 import { useOwnerProfile } from '../../store/ownerProfileDriversHooks.js'
 import DailyInspectionExportBar from './DailyInspectionExportBar.jsx'
 import MonthNavigator from './MonthNavigator.jsx'
-import { SkeletonLines } from '../shared/Skeleton.jsx'
+import { SkeletonLines } from '../../shared/ui/Skeleton.jsx'
 
 /** @typedef {import('../../domain/dailyInspectionMonth.js').MonthInspection} MonthInspection */
 

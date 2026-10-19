@@ -2,7 +2,7 @@
 import { parseCurrencyValue } from '../../domain/money.js'
 import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../lib/messageTemplates.js'
 import './message-template.css'
-import ModalShell from '../shared/ModalShell.jsx'
+import ModalShell from '../../shared/ui/ModalShell.jsx'
 import { buildSmsHref } from '../../domain/smsHref.js'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */

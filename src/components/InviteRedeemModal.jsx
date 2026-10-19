@@ -4,9 +4,9 @@ import { useState } from 'react'
 import { redeemDriverInviteCode } from '../lib/driverLinkRpc.js'
 import { buildCloudAppSession, ownerKeyFromSession } from '../app/boot.js'
 import { hydrateFromSupabase } from '../lib/hydrate.js'
-import ClearableInput from './shared/ClearableInput.jsx'
+import ClearableInput from '../shared/ui/ClearableInput.jsx'
 import './InviteRedeemModal.css'
-import ModalShell from './shared/ModalShell.jsx'
+import ModalShell from '../shared/ui/ModalShell.jsx'
 
 /**
  * @param {{ session: AppSession|null, showToast?: (message: string) => void, onClose: () => void, onLinked: (session: AppSession) => void }} props

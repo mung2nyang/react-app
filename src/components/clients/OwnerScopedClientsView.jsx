@@ -1,5 +1,5 @@
 // @ts-check
-import PageHeader from '../PageHeader.jsx'
+import PageHeader from '../../shared/ui/PageHeader.jsx'
 import ScopedClientsList from './ScopedClientsList.jsx'
 import { useOwnerCars } from '../../store/ownerDataHooks.js'
 

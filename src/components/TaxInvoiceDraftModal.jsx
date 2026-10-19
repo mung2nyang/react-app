@@ -3,12 +3,12 @@ import { useState } from 'react'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../domain/formatPhone.js'
 import { formatWon } from '../lib/money.js'
 import { checkTaxInvoiceDraft } from '../lib/taxInvoiceActions.js'
-import BizNumberHint from './shared/BizNumberHint.jsx'
-import ClearableInput from './shared/ClearableInput.jsx'
-import TemporalInput from './shared/TemporalInput.jsx'
+import BizNumberHint from '../shared/ui/BizNumberHint.jsx'
+import ClearableInput from '../shared/ui/ClearableInput.jsx'
+import TemporalInput from '../shared/ui/TemporalInput.jsx'
 import './tax-invoice/tax-invoice.css'
-import ModalShell from './shared/ModalShell.jsx'
-import FieldError, { focusField, invalidProps } from './shared/FieldError.jsx'
+import ModalShell from '../shared/ui/ModalShell.jsx'
+import FieldError, { focusField, invalidProps } from '../shared/ui/FieldError.jsx'
 
 /** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 

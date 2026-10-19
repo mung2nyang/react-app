@@ -5,11 +5,11 @@ import { checkDriverDraft } from '../domain/drivers.js'
 import { buildDriverInviteSmsHref } from '../lib/driverInviteSms.js'
 import { formatInviteCode, generateInviteCode } from '../lib/drivers.js'
 import { formatPhoneNumber } from '../lib/formatPhone.js'
-import ClearableInput from './shared/ClearableInput.jsx'
-import TemporalInput from './shared/TemporalInput.jsx'
-import FieldError, { focusField, invalidProps } from './shared/FieldError.jsx'
+import ClearableInput from '../shared/ui/ClearableInput.jsx'
+import TemporalInput from '../shared/ui/TemporalInput.jsx'
+import FieldError, { focusField, invalidProps } from '../shared/ui/FieldError.jsx'
 import './drivers/driver-connection.css'
-import ModalShell from './shared/ModalShell.jsx'
+import ModalShell from '../shared/ui/ModalShell.jsx'
 
 /** @typedef {import('../domain/drivers.js').DriverDraft} DriverDraft */
 /** @typedef {import('../lib/outboxTypes.js').DriverRecord} DriverRecord */

@@ -1,6 +1,6 @@
 // @ts-check
 // 연동 기사가 계약기간 밖 날짜 일지를 열면 입력칸 대신 안내 — 서버가 기간 밖 기록을 거절함(DB 0010).
-import PageHeader from '../PageHeader.jsx'
+import PageHeader from '../../shared/ui/PageHeader.jsx'
 
 /** 'YYYY-MM-DD' → '10월 1일'(해가 다르면 '2025년 10월 1일') @param {string} dateKey @param {string} baseKey */
 function dayLabel(dateKey, baseKey) {

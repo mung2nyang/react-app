@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'variables.css'), 'utf8')
+const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'styles', 'variables.css'), 'utf8')
 const light = css.slice(css.indexOf(':root {'), css.indexOf('}', css.indexOf(':root {')))
 
 /** @param {string} name */

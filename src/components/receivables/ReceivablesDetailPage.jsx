@@ -8,7 +8,7 @@ import { useReceivablesData } from './useReceivablesData.js'
 import { useReceivablesActions } from './useReceivablesActions.js'
 import { useConfirm } from './useConfirm.jsx'
 import ReceivableItemCard from './ReceivableItemCard.jsx'
-import PageHeader from '../PageHeader.jsx'
+import PageHeader from '../../shared/ui/PageHeader.jsx'
 import './receivables.css'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */

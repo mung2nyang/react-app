@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { assetPath } from '../../lib/assetPath.js'
 import { formatPhoneNumber } from '../../lib/formatPhone.js'
-import ClearableInput from '../shared/ClearableInput.jsx'
+import ClearableInput from '../../shared/ui/ClearableInput.jsx'
 import './welcome-profile.css'
 
 const BANNER = assetPath('/images/banner_image.png')

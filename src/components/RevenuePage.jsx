@@ -3,7 +3,7 @@
 // PageShell은 PageHeader로 흡수해 이 파일이 직접 렌더링한다.
 import OwnerRevenueView from './revenue/OwnerRevenueView.jsx'
 import DriverRevenueView from './revenue/DriverRevenueView.jsx'
-import PageHeader from './PageHeader.jsx'
+import PageHeader from '../shared/ui/PageHeader.jsx'
 import './revenue/revenue.css'
 import './revenue/revenue-controls.css'
 

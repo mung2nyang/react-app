@@ -17,8 +17,8 @@ import MonthNavigator from './documents/MonthNavigator.jsx'
 import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'
 import ReportShareModal from './ReportShareModal.jsx'
-import ConfirmModal from './ConfirmModal.jsx'
-import PageHeader from './PageHeader.jsx'
+import ConfirmModal from '../shared/ui/ConfirmModal.jsx'
+import PageHeader from '../shared/ui/PageHeader.jsx'
 import './report/report.css'
 
 /**

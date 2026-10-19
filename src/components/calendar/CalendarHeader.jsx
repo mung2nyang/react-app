@@ -1,5 +1,5 @@
 // @ts-check
-import AppTopBar from '../shared/AppTopBar.jsx'
+import AppTopBar from '../../shared/ui/AppTopBar.jsx'
 import CalendarDateSelect from './CalendarDateSelect.jsx'
 
 /**

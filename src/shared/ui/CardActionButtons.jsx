@@ -1,5 +1,5 @@
 // @ts-check
-import { EditIcon, DeleteIcon } from '../day-log/icons.jsx'
+import { EditIcon, DeleteIcon } from '../../components/day-log/icons.jsx'
 
 /**
  * 카드 수정/삭제 아이콘 버튼 공용화.

@@ -6,7 +6,7 @@ import { inspectionFileBaseName } from '../../domain/dailyInspectionMonth.js'
 import { createReportImageFile, createReportPdfFile } from '../../lib/reportExport.js'
 import DailyInspectionLegalForm from './DailyInspectionLegalForm.jsx'
 import DailyInspectionShareModal from './DailyInspectionShareModal.jsx'
-import ConfirmModal from '../ConfirmModal.jsx'
+import ConfirmModal from '../../shared/ui/ConfirmModal.jsx'
 
 /** @param {File} file */
 function downloadFile(file) {

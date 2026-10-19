@@ -1,6 +1,6 @@
 // @ts-check
 import { useId, useRef } from 'react'
-import ModalShell from './shared/ModalShell.jsx'
+import ModalShell from './ModalShell.jsx'
 
 /**
  * @param {Object} props

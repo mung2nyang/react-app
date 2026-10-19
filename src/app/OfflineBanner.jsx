@@ -2,7 +2,7 @@
 // 로그인 계정이 쓰는 중 인터넷이 끊기면 화면 맨 위 빨간 띠(로드맵 84) — 화면 안내만, 저장은 그대로.
 import { useSyncExternalStore } from 'react'
 import { isCloudSession } from '../lib/cloudSession.js'
-import '../offline-banner.css'
+import '../shared/styles/offline-banner.css'
 
 /** @typedef {import('../lib/outboxTypes.js').AppSession} AppSession */
 

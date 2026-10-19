@@ -2,15 +2,15 @@
 // 고정 노선 거래처 연결 팝업 — 거래처 고르기·1회 단가·파렛트 단가·저장/연결 해제. 저장은 거래처 창과 같은 requestClientSave.
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import AppDropdown from './shared/AppDropdown.jsx'
-import ConfirmModal from './ConfirmModal.jsx'
+import AppDropdown from '../shared/ui/AppDropdown.jsx'
+import ConfirmModal from '../shared/ui/ConfirmModal.jsx'
 import { clientToDraft } from '../domain/clientDraft.js'
 import { formatCurrencyInput } from '../lib/money.js'
-import CurrencyInput from './shared/CurrencyInput.jsx'
+import CurrencyInput from '../shared/ui/CurrencyInput.jsx'
 import { requestClientSave } from '../lib/clientMutations.js'
 import { getCloudUserId } from '../lib/cloudSession.js'
-import ModalShell from './shared/ModalShell.jsx'
-import FieldError, { focusField } from './shared/FieldError.jsx'
+import ModalShell from '../shared/ui/ModalShell.jsx'
+import FieldError, { focusField } from '../shared/ui/FieldError.jsx'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 

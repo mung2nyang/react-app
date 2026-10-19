@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react'
 import { isCloudSession } from '../lib/cloudSession.js'
 import { fetchMyInquiries, requestSupportInquirySave } from '../lib/supportInquiryMutations.js'
-import PageHeader from './PageHeader.jsx'
-import AppDropdown from './shared/AppDropdown.jsx'
-import ClearableInput from './shared/ClearableInput.jsx'
-import { SkeletonLines } from './shared/Skeleton.jsx'
+import PageHeader from '../shared/ui/PageHeader.jsx'
+import AppDropdown from '../shared/ui/AppDropdown.jsx'
+import ClearableInput from '../shared/ui/ClearableInput.jsx'
+import { SkeletonLines } from '../shared/ui/Skeleton.jsx'
 import './customer-center.css'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */

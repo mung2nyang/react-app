@@ -23,7 +23,7 @@ function rule(text, selector) {
 }
 
 test('거래처·차량 카드·유지비 기록 버튼 44px, 버튼 사이 8px', () => {
-  const text = css('management-common.css')
+  const text = css('shared/styles/management-common.css')
   const size = rule(text, '.management-record-actions .action-icon-btn')
   assert.match(size, /width:\s*44px/)
   assert.match(size, /height:\s*44px/)

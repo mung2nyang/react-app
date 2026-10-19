@@ -3,7 +3,7 @@
 import { dueDateForClient } from '../../lib/clients.js'
 import { getCallDetailDurationMinutes } from '../../lib/finance.js'
 import { formatCurrencyInput, formatWon, isLargeFare, parseCurrencyValue } from '../../lib/money.js'
-import { confirmDialog } from '../shared/confirmDialog.jsx'
+import { confirmDialog } from '../../shared/ui/confirmDialog.jsx'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */

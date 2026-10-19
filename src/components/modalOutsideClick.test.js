@@ -19,7 +19,7 @@ const { default: ClientFormModal } = await import('./clients/ClientFormModal.jsx
 const { default: ExpenseFormModal } = await import('./ExpenseFormModal.jsx')
 const { default: DriverFormModal } = await import('./DriverFormModal.jsx')
 const { default: TaxInvoiceDraftModal } = await import('./TaxInvoiceDraftModal.jsx')
-const { default: ConfirmModal } = await import('./ConfirmModal.jsx')
+const { default: ConfirmModal } = await import('../shared/ui/ConfirmModal.jsx')
 const { default: InviteRedeemModal } = await import('./InviteRedeemModal.jsx')
 const { default: FixedRouteClientModal } = await import('./FixedRouteClientModal.jsx')
 

@@ -14,7 +14,7 @@ import { requestDriverUnlinkAction } from '../lib/driverUnlink.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../store/ownerDataHooks.js'
 import DriverUnlinkControls from './drivers/DriverUnlinkControls.jsx'
 import DriverFormModal from './DriverFormModal.jsx'
-import PageHeader from './PageHeader.jsx'
+import PageHeader from '../shared/ui/PageHeader.jsx'
 import './drivers/driver-connection.css'
 
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }

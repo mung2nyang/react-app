@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { panelGuardOnTop, popPanelGuardThen, takeGuardSkip } from '../../app/historyMoves.js'
-import { cancelConfirmDialog, confirmDialogOpen } from '../shared/confirmDialog.jsx'
+import { cancelConfirmDialog, confirmDialogOpen } from '../../shared/ui/confirmDialog.jsx'
 
 /**
  * @param {boolean} open 입력 칸(콜 상세·정비/주유/기타)이 열려 있나

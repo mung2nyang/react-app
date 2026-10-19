@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
-import ConfirmModal from '../ConfirmModal.jsx'
-import PageHeader from '../PageHeader.jsx'
+import ConfirmModal from '../../shared/ui/ConfirmModal.jsx'
+import PageHeader from '../../shared/ui/PageHeader.jsx'
 import ClientFormModal from './ClientFormModal.jsx'
 import ClientListItem from './ClientListItem.jsx'
 import { useClientReorder } from './useClientReorder.js'

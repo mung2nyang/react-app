@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { assetPath } from '../lib/assetPath.js'
 import { tonnageDigits, tonnageValue } from '../domain/formatPhone.js'
-import ClearableInput from './shared/ClearableInput.jsx'
+import ClearableInput from '../shared/ui/ClearableInput.jsx'
 
 /** @typedef {import('../lib/onboardingFinish.js').OnboardingWizard} OnboardingWizard */
 

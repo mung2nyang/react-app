@@ -5,7 +5,7 @@ import { dismissNotification } from '../../lib/notifications.js'
 import useNotifications from './useNotifications.js'
 import { savePracticeSettings } from '../../lib/practiceSettings.js'
 import { useOwnerSettings } from '../../store/ownerDataHooks.js'
-import PageHeader from '../PageHeader.jsx'
+import PageHeader from '../../shared/ui/PageHeader.jsx'
 import './notifications-page.css'
 import { SERVER_SAVE_FAIL } from '../../lib/failureMessages.js'
 

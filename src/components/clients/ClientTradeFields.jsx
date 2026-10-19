@@ -1,13 +1,13 @@
 // @ts-check
 import { formatPercentInput } from '../../lib/money.js'
-import CurrencyInput from '../shared/CurrencyInput.jsx'
-import FieldError, { invalidProps } from '../shared/FieldError.jsx'
+import CurrencyInput from '../../shared/ui/CurrencyInput.jsx'
+import FieldError, { invalidProps } from '../../shared/ui/FieldError.jsx'
 
 /**
  * @param {Object} props
  * @param {import('../../domain/clientTypes.js').ClientDraft} props.draft
  * @param {import('react').Dispatch<import('react').SetStateAction<import('../../domain/clientTypes.js').ClientDraft>>} props.setDraft
- * @param {import('../shared/FieldError.jsx').FieldProblem|null} [props.problem] 저장 전 검사에서 걸린 칸
+ * @param {import('../../shared/ui/FieldError.jsx').FieldProblem|null} [props.problem] 저장 전 검사에서 걸린 칸
  */
 // 고정노선 연동·파렛트 단가는 앱 설정 "거래처 연결"(FixedRouteClientLink)로 옮겼다 — 저장된 값은 draft로 보존된다.
 export default function ClientTradeFields({ draft, setDraft, problem = null }) {

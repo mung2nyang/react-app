@@ -1,7 +1,7 @@
 // @ts-check
 // 8-C — ConfirmModal.jsx 패턴을 로컬 훅으로 추출(Context/Provider 없음).
 import { useCallback, useRef, useState } from 'react'
-import ConfirmModal from '../ConfirmModal.jsx'
+import ConfirmModal from '../../shared/ui/ConfirmModal.jsx'
 
 /** @typedef {{ confirmLabel?: string, danger?: boolean, message?: string }} ConfirmOptions */
 /** @typedef {{ message: string, options: ConfirmOptions, resolve: (value: boolean) => void }} PendingConfirm */

@@ -14,7 +14,7 @@ import { getReceivableItems } from '../../lib/finance.js'
 import { groupItems } from '../../lib/receivables.js'
 import { formatWon } from '../../lib/money.js'
 import { checkPartialAmount } from '../../domain/payments.js'
-import { focusField } from '../shared/FieldError.jsx'
+import { focusField } from '../../shared/ui/FieldError.jsx'
 
 /** @typedef {import('../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 /** @typedef {import('../../domain/financeTypes.js').WorkDataByLogId} WorkDataByLogId */

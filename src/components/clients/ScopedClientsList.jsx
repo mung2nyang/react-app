@@ -1,6 +1,6 @@
 // @ts-check
 // 한 차량 거래처 목록·추가 단추·입력 창·삭제 확인 창 — useScopedClients와 짝.
-import ConfirmModal from '../ConfirmModal.jsx'
+import ConfirmModal from '../../shared/ui/ConfirmModal.jsx'
 import ClientFormModal from './ClientFormModal.jsx'
 import ClientListItem from './ClientListItem.jsx'
 import { useScopedClients } from './useScopedClients.js'

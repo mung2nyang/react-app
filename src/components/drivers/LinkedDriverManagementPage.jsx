@@ -25,7 +25,7 @@ import CarBusinessInfoSection from './CarBusinessInfoSection.jsx'
 import ClientInvoiceGroups from './ClientInvoiceGroups.jsx'
 import SettlementSummaryCard from './SettlementSummaryCard.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
-import PageHeader from '../PageHeader.jsx'
+import PageHeader from '../../shared/ui/PageHeader.jsx'
 import './linked-driver.css'
 
 function GearIcon() {

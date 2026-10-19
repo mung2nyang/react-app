@@ -1,5 +1,5 @@
 // @ts-check
-import AppDropdown from '../shared/AppDropdown.jsx'
+import AppDropdown from '../../shared/ui/AppDropdown.jsx'
 import './calendar-date-select.css'
 
 /**

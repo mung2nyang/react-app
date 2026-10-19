@@ -1,6 +1,6 @@
 // @ts-check
 import { getPaymentTermLabel } from '../../lib/clients.js'
-import CardActionButtons from '../shared/CardActionButtons.jsx'
+import CardActionButtons from '../../shared/ui/CardActionButtons.jsx'
 import { StarIcon } from '../day-log/icons.jsx'
 
 /**

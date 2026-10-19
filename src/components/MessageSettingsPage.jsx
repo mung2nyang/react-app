@@ -8,8 +8,8 @@ import {
   resetMessageTemplateSettings,
   saveMessageTemplateSettings,
 } from '../lib/messageTemplates.js'
-import PageHeader from './PageHeader.jsx'
-import FieldError, { focusField, invalidProps } from './shared/FieldError.jsx'
+import PageHeader from '../shared/ui/PageHeader.jsx'
+import FieldError, { focusField, invalidProps } from '../shared/ui/FieldError.jsx'
 import './message-settings.css'
 
 /**

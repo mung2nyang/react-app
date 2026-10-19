@@ -1,6 +1,6 @@
 // @ts-check
 // 기사 차량 창의 "기사 몫 기준" 드롭다운 — 매출제 % 기사 몫을 운송료 전체 / 거래처 수수료 뗀 뒤 중 어디서 계산할지(로드맵 61).
-import AppDropdown from '../shared/AppDropdown.jsx'
+import AppDropdown from '../../shared/ui/AppDropdown.jsx'
 
 const OPTIONS = [
   { value: 'gross', label: '운송료 전체' },

@@ -16,7 +16,7 @@ const { act, useState } = React
 const { BrowserRouter, useNavigate } = await import('react-router-dom')
 const { default: usePanelBackGuard } = await import('./usePanelBackGuard.js')
 const { panelGuardOnTop, popPanelGuardThen } = await import('../../app/historyMoves.js')
-const { ConfirmDialogHost, confirmDialog } = await import('../shared/confirmDialog.jsx')
+const { ConfirmDialogHost, confirmDialog } = await import('../../shared/ui/confirmDialog.jsx')
 
 /** @param {number} ms */
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })

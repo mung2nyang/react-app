@@ -7,7 +7,7 @@ import {
 } from '../lib/report.js'
 import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../lib/messageTemplates.js'
 import { createReportImageFile, createReportPdfFile } from '../lib/reportExport.js'
-import ShareFileModal from './shared/ShareFileModal.jsx'
+import ShareFileModal from '../shared/ui/ShareFileModal.jsx'
 
 /** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
 

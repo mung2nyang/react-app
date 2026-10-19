@@ -4,8 +4,8 @@ import { pathToFileURL } from 'node:url'
 
 register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)
 
-import '../testSupport/stubSupabaseClient.js'
-import '../testSupport/setupDom.js'
+import '../../testSupport/stubSupabaseClient.js'
+import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
@@ -15,8 +15,8 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: PageHeader } = await import('./PageHeader.jsx')
-const { default: MyPage } = await import('./MyPage.jsx')
-const { default: RevenuePage } = await import('./RevenuePage.jsx')
+const { default: MyPage } = await import('../../components/MyPage.jsx')
+const { default: RevenuePage } = await import('../../components/RevenuePage.jsx')
 
 /** @param {import('react').ReactElement} element */
 async function render(element) {

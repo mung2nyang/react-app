@@ -6,7 +6,7 @@ import { useRef, useState } from 'react'
 import { buildMemberBackupData, memberBackupBlockedReason } from '../lib/memberBackup.js'
 import { addInspectionPicks, applyMemberRestore, planMemberRestore } from '../lib/memberRestore.js'
 import { describeRestoreCounts } from '../lib/memberRestoreRecords.js'
-import ModalShell from './shared/ModalShell.jsx'
+import ModalShell from '../shared/ui/ModalShell.jsx'
 
 /** @typedef {import('../lib/memberRestore.js').RestorePlan} RestorePlan */
 

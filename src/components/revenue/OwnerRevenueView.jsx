@@ -10,7 +10,7 @@ import { buildYearlyRows, useRevenueFinanceSettings, useRevenuePeriod } from './
 import { monthKeyOf } from './revenueFormat.js'
 import { scopeSettingsToVehicle, scopeWorkDataToVehicle } from './driverRevenueScope.js'
 import { filterDriverExpensesByVehicle } from '../../domain/financeOwnerExpenseSweep.js'
-import AppDropdown from '../shared/AppDropdown.jsx'
+import AppDropdown from '../../shared/ui/AppDropdown.jsx'
 const SCOPES = [
   { value: 'all', label: '전체 손익' },
   { value: 'owner', label: '차주' },

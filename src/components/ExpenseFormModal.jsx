@@ -2,12 +2,12 @@
 import { useState } from 'react'
 import { checkExpenseDraft, FUEL_TYPES, MAINT_CATEGORIES, MISC_CATEGORIES } from '../lib/expenses.js'
 import { formatCurrencyInput, parseCurrencyValue } from '../lib/money.js'
-import TemporalInput from './shared/TemporalInput.jsx'
-import ClearableInput from './shared/ClearableInput.jsx'
-import CurrencyInput from './shared/CurrencyInput.jsx'
-import FieldError, { focusField, invalidProps } from './shared/FieldError.jsx'
+import TemporalInput from '../shared/ui/TemporalInput.jsx'
+import ClearableInput from '../shared/ui/ClearableInput.jsx'
+import CurrencyInput from '../shared/ui/CurrencyInput.jsx'
+import FieldError, { focusField, invalidProps } from '../shared/ui/FieldError.jsx'
 import './expense-form.css'
-import ModalShell from './shared/ModalShell.jsx'
+import ModalShell from '../shared/ui/ModalShell.jsx'
 
 /** @typedef {import('../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
 /** @typedef {NonNullable<ReturnType<typeof checkExpenseDraft>>} ExpenseProblem */

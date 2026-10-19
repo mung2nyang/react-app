@@ -1,6 +1,6 @@
 // @ts-check
 // 파일 보내기 공용 창 — 카카오톡(파일+문구 공유)·문자(파일 저장 뒤 문자 앱) × PDF·이미지. 운송비 내역서·일상점검표가 같이 쓴다.
-import '../report/report.css'
+import '../../components/report/report.css'
 import ModalShell from './ModalShell.jsx'
 import { buildSmsHref } from '../../domain/smsHref.js'
 

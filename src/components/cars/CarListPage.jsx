@@ -1,8 +1,8 @@
 // @ts-check
 // 차량 목록·등록/수정 창 — 그리기와 창 열기만, 저장·연동 해제·삭제 흐름은 useCarListActions.
 import { useState } from 'react'
-import ConfirmModal from '../ConfirmModal.jsx'
-import PageHeader from '../PageHeader.jsx'
+import ConfirmModal from '../../shared/ui/ConfirmModal.jsx'
+import PageHeader from '../../shared/ui/PageHeader.jsx'
 import CarFormModal from './CarFormModal.jsx'
 import CarListItem from './CarListItem.jsx'
 import useCarListActions from './useCarListActions.js'
