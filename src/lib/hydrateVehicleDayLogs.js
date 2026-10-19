@@ -6,6 +6,7 @@ import { findMainCar, mergeWorkDataFromRows } from './hydrateMerge.js'
 /** @typedef {import('../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./hydrateMergeTypes.js').DailyLogRow} DailyLogRow */
 /** @typedef {import('./hydrateMergeTypes.js').DetailRow} DetailRow */
+/** @typedef {import('./hydrateMergeTypes.js').SupabaseQueryError} SupabaseQueryError */
 
 /**
  * Car -> Store logId. main -> 'main', sub -> plate number, else null.
@@ -23,9 +24,9 @@ export function logIdForCar(car) {
  * @param {object} params
  * @param {Array<CarLike>} params.cars
  * @param {string[]} params.mainTombstoneKeys
- * @param {(vehicleId: number|string) => PromiseLike<{ data: Array<DailyLogRow>|null, error: { message?: string }|null }>} params.fetchDaily
- * @param {(vehicleId: number|string) => PromiseLike<{ data: Array<DetailRow>|null, error: { message?: string }|null }>} params.fetchTransport
- * @param {(errors: Record<string, any>) => void} params.throwIfAnyHydrateError
+ * @param {(vehicleId: number|string) => PromiseLike<{ data: Array<DailyLogRow>|null, error: SupabaseQueryError }>} params.fetchDaily
+ * @param {(vehicleId: number|string) => PromiseLike<{ data: Array<DetailRow>|null, error: SupabaseQueryError }>} params.fetchTransport
+ * @param {(errors: Record<string, SupabaseQueryError>) => void} params.throwIfAnyHydrateError
  * @returns {Promise<{ workLogs: Record<string, Record<string, DayRecordLike>>, mainCar: CarLike|null }>}
  */
 export async function mergeVehicleDayLogsFromServer({ cars, mainTombstoneKeys, fetchDaily, fetchTransport, throwIfAnyHydrateError }) {

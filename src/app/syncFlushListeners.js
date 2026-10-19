@@ -1,11 +1,14 @@
+// @ts-check
 // SyncFlushBridge(providers.jsx)의 리스너 등록·정리 순수 함수 — 등록·정리 짝이 맞는지 React 없이 테스트한다.
 import { flushCloudSync } from '../lib/syncQueue.js'
+
+/** @typedef {import('./pendingWriteRetryListeners.js').EventTargetLike} EventTargetLike */
 
 /**
  * online / visibilitychange(hidden) / pagehide 리스너를 등록하고, 그 3개를 정확히
  * 제거하는 cleanup 함수를 돌려준다.
- * @param {{ addEventListener: Function, removeEventListener: Function }} windowTarget
- * @param {{ addEventListener: Function, removeEventListener: Function, hidden?: boolean }} documentTarget
+ * @param {EventTargetLike} windowTarget
+ * @param {EventTargetLike & { hidden?: boolean }} documentTarget
  * @returns {() => void} cleanup
  */
 export function attachSyncFlushListeners(windowTarget, documentTarget) {
