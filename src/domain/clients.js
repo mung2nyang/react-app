@@ -147,20 +147,6 @@ export function upsertClient(clients, draft, editingId = null) {
   return { clients: sortClientsPinnedFirst(unique), id: savedId }
 }
 
-// 달력의 "1회 단가" 편집이 고정노선 연결 거래처가
-// 있을 때 그 거래처의 fixedUnitPrice를 원자적으로 고치게 하는 유일한 창구.
-// upsertClient의 `next`는 회사 정보와 고정노선·파렛트·수수료를 함께 정규화한다.
-// 고정노선이 true면 unique 단계에서 같은 결과 배열의 다른 거래처를 모두 해제한다.
-/**
- * @param {Array<ClientLike>} clients
- * @param {string} clientId
- * @param {number|string} nextPrice
- */
-export function updateClientFixedUnitPrice(clients, clientId, nextPrice) {
-  const price = Math.max(0, parseCurrencyValue(nextPrice))
-  return (clients || []).map((client) => (client.id === clientId ? { ...client, fixedUnitPrice: price } : client))
-}
-
 /** @param {Array<ClientLike>} clients */
 export function sortClientsPinnedFirst(clients) {
   /** @type {Array<ClientLike>} */
