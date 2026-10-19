@@ -4,7 +4,6 @@ import { FIXTURE_WORK } from './finance.fixtures.js'
 import {
   buildMiscExpenseRecordRow,
   expenseFromMiscRecord,
-  groupMiscExpensesByDate,
   miscItemFromExpense,
   parseEntityNumber,
   replaceMiscExpenses,
@@ -96,16 +95,13 @@ describe('misc_expense_records — 원본 supabase-sync 컬럼 매핑', () => {
     assert.equal(back.vehicleNumber, '12가3456')
   })
 
-  test('날짜별 묶음과 기타만 교체가 주유/정비를 건드리지 않는다', () => {
+  test('기타만 교체가 주유/정비를 건드리지 않는다', () => {
     const expenses = [
       { id: 'm1', kind: 'maint', date: '2026-05-10', cost: 1 },
       { id: 'f1', kind: 'fuel', date: '2026-05-10', cost: 2 },
       { id: 'x1', kind: 'misc', date: '2026-05-10', cost: 3 },
       { id: 'x2', kind: 'misc', date: '2026-05-11', cost: 4 },
     ]
-    const grouped = groupMiscExpensesByDate(expenses)
-    assert.equal(grouped['2026-05-10'].length, 1)
-    assert.equal(grouped['2026-05-11'][0].id, 'x2')
     const next = replaceMiscExpenses(expenses, [{ id: 'cloud', kind: 'misc', date: '2026-05-12', cost: 9 }])
     assert.deepEqual(next.map((item) => item.id), ['m1', 'f1', 'cloud'])
   })

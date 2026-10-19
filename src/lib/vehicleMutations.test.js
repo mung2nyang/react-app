@@ -6,7 +6,7 @@ import { describe, mock, test } from 'node:test'
 const { commitCars, commitClients, commitDrivers, commitLogWorkData } = await import('../store/commitHelpers.js')
 const { getState, setHydration, subscribe } = await import('../store/app-store.js')
 const { requestVehicleSave } = await import('./vehicleMutations.js')
-const { requestClientSave, requestClientReorder, requestClientFixedUnitPrice, requestClientTaxInfo } = await import('./clientMutations.js')
+const { requestClientSave, requestClientReorder, requestClientTaxInfo } = await import('./clientMutations.js')
 const { requestVehicleDeletion } = await import('./directMutationActions.js')
 const { readJsonKey, readLogWorkData, storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
 const { beginSessionEpoch, endCloudSession } = await import('./cloudSession.js')
@@ -671,63 +671,6 @@ describe('requestClientSave / requestClientReorder', () => {
     assert.equal(result.failed, true)
     assert.equal(JSON.stringify(getState().clients[owner]), beforeStore)
     assert.equal(localStorage.getItem(storageKeyFor('clients', owner)), beforeLs)
-  })
-
-  test('requestClientFixedUnitPrice는 로그인에서 서버 1회 후 Store만 바꾸고, 서버 실패는 Fail-Fast로 롤백한다', async () => {
-    const owner = 'cli-unit-price'
-    resetStubSupabaseCallCounts()
-    beginSessionEpoch('user-unit', owner)
-    setHydration({ status: 'ready', userId: 'user-unit', ownerKey: owner })
-    commitClients(owner, [
-      { id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: 10000, supabaseId: 901 },
-      { id: 'c2', companyName: '대한', fixedUnitPrice: 20000 },
-    ])
-    const updateBefore = stubSupabaseCallCounts.update
-    const ok = await requestClientFixedUnitPrice({
-      ownerKey: owner,
-      userId: 'user-unit',
-      clients: getState().clients[owner] || [],
-      clientId: 'c1',
-      nextPrice: 15000,
-    })
-    assert.equal(ok.failed, false)
-    assert.equal(getState().clients[owner].find((c) => c.id === 'c1')?.fixedUnitPrice, 15000)
-    assert.equal(getState().clients[owner].find((c) => c.id === 'c2')?.fixedUnitPrice, 20000)
-    assert.equal(stubSupabaseCallCounts.update, updateBefore + 1)
-    assert.equal(localStorage.getItem(storageKeyFor('clients', owner)), null)
-
-    // 서버 실패 → Fail-Fast 토스트, Store는 저장 전으로 롤백
-    const before = JSON.stringify(getState().clients[owner])
-    stubSupabaseMethodImpls.update = async () => ({ data: null, error: { message: 'network down' } })
-    const errSpy = mock.method(console, 'error', () => {})
-    try {
-      const failed = await requestClientFixedUnitPrice({
-        ownerKey: owner,
-        userId: 'user-unit',
-        clients: getState().clients[owner] || [],
-        clientId: 'c1',
-        nextPrice: 88888,
-      })
-      assert.equal(failed.failed, true)
-      assert.equal(failed.toast, '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.')
-      assert.equal(JSON.stringify(getState().clients[owner]), before)
-    } finally {
-      errSpy.mock.restore()
-      resetStubSupabaseCallCounts()
-    }
-
-    // hydration failed면 서버 0회, Store 그대로
-    setHydration({ status: 'failed', userId: 'user-unit', ownerKey: owner })
-    const before2 = JSON.stringify(getState().clients[owner])
-    const blocked = await requestClientFixedUnitPrice({
-      ownerKey: owner,
-      userId: 'user-unit',
-      clients: getState().clients[owner] || [],
-      clientId: 'c1',
-      nextPrice: 99999,
-    })
-    assert.equal(blocked.failed, true)
-    assert.equal(JSON.stringify(getState().clients[owner]), before2)
   })
 
   test('requestClientTaxInfo는 로그인에서 세무 필드만 서버 반영하고, 서버 실패는 Store를 저장 전으로 되돌린다', async () => {

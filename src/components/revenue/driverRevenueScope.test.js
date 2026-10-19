@@ -4,7 +4,6 @@ import { describe, test } from 'node:test'
 import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from '../../domain/finance.fixtures.js'
 import { getMonthlyFareRevenue } from '../../domain/financeCore.js'
 import {
-  resolveDriverVehicleNumber,
   scopeSettingsToVehicle,
   scopeWorkDataToVehicle,
 } from './driverRevenueScope.js'
@@ -12,26 +11,8 @@ import {
 describe('Step 9 slice C-2 driverRevenueScope', () => {
   const mine = '서울12가3456'
   const other = '부산33나1111'
-  /** @type {Array<import('../../lib/outboxTypes.js').DriverRecord>} */
-  const drivers = [
-    { id: 'd1', phone: '010-1111-2222', status: 'linked', vehicleNumber: mine },
-    { id: 'd2', phone: '010-3333-4444', status: 'linked', vehicleNumber: other },
-  ]
-
-  test('resolveDriverVehicleNumber matches digits and requires linked+vehicle', () => {
-    assert.equal(resolveDriverVehicleNumber(drivers, '01011112222'), mine)
-    assert.equal(resolveDriverVehicleNumber(drivers, '010-1111-2222'), mine)
-    assert.equal(resolveDriverVehicleNumber(/** @type {Array<import('../../lib/outboxTypes.js').DriverRecord>} */ ([
-      { id: 'p', phone: '010-1111-2222', status: 'pending', vehicleNumber: mine },
-    ]), '010-1111-2222'), null)
-    assert.equal(resolveDriverVehicleNumber(/** @type {Array<import('../../lib/outboxTypes.js').DriverRecord>} */ ([
-      { id: 'e', phone: '010-1111-2222', status: 'linked', vehicleNumber: '' },
-    ]), '010-1111-2222'), null)
-    assert.equal(resolveDriverVehicleNumber(drivers, ''), null)
-  })
-
   test('scoped getMonthlyFareRevenue excludes other driver fare and plates', () => {
-    const vehicleNumber = resolveDriverVehicleNumber(drivers, '010-1111-2222')
+    const vehicleNumber = mine
     const scopedSettings = scopeSettingsToVehicle(FIXTURE_SETTINGS, vehicleNumber)
     const scopedWork = scopeWorkDataToVehicle(FIXTURE_WORK, vehicleNumber)
     const mineOnly = getMonthlyFareRevenue(MONTH_KEY, scopedSettings, scopedWork)

@@ -96,11 +96,3 @@ export function commitProfile(ownerKey, profile) {
 export function commitDismissedNotifications(ownerKey, ids) {
   return commit('dismissedNotifications', ownerKey, ids)
 }
-
-/**
- * 빈 날 삭제 목록(domain/workDataTombstones.js) 저장. lib/workData.js는 workData 삭제와 같은 commitBatch에 묶어 쓴다.
- * @param {string} ownerKey @param {import('../domain/workDataTombstones.js').WorkDataTombstones} tombstones
- */
-export function commitWorkDataDeletedDates(ownerKey, tombstones) {
-  return commit('workDataDeletedDates', ownerKey, tombstones)
-}

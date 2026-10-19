@@ -28,10 +28,8 @@ mock.module('../lib/reportExport.js', {
 const React = await import('react')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
-const {
-  buildReportSmsUrl,
-  default: ReportShareModal,
-} = await import('./ReportShareModal.jsx')
+const { default: ReportShareModal } = await import('./ReportShareModal.jsx')
+const { buildShareSmsUrl } = await import('./shared/ShareFileModal.jsx')
 
 /**
  * @param {Object} [props]
@@ -234,9 +232,9 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
     }
   })
 
-  test('buildReportSmsUrl: 기본 UA는 ?, iPhone UA는 &', () => {
+  test('buildShareSmsUrl: 기본 UA는 ?, iPhone UA는 &', () => {
     const body = '안녕 테스트'
-    const defaultUrl = buildReportSmsUrl('01012345678', body)
+    const defaultUrl = buildShareSmsUrl('01012345678', body)
     assert.equal(defaultUrl, `sms:01012345678?body=${encodeURIComponent(body)}`)
 
     const originalUa = navigator.userAgent
@@ -245,7 +243,7 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
       get() { return 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)' },
     })
     try {
-      const iphoneUrl = buildReportSmsUrl('01012345678', body)
+      const iphoneUrl = buildShareSmsUrl('01012345678', body)
       assert.equal(iphoneUrl, `sms:01012345678&body=${encodeURIComponent(body)}`)
     } finally {
       Object.defineProperty(navigator, 'userAgent', {

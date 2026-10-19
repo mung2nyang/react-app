@@ -1,18 +1,11 @@
 // @ts-check
 // 운행 기록(workData) 저장소 I/O + domain/의 day-record·call-details·payments 재수출 배럴.
-import { readJsonKey } from '../store/persist.js'
 import { commitBatch } from '../store/app-store.js'
 import { commitLogWorkData, commitWorkData } from '../store/commitHelpers.js'
 import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
 import { addWorkDataTombstone, removeWorkDataTombstone } from '../domain/workDataTombstones.js'
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-
-/** @param {string} [ownerKey] */
-export function loadWorkData(ownerKey = 'guest') {
-  const parsed = readJsonKey('workData', ownerKey, {})
-  return parsed && typeof parsed === 'object' ? parsed : {}
-}
 
 /**
  * @param {string} ownerKey

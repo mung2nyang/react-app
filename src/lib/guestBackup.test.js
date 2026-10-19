@@ -9,8 +9,8 @@ import {
   markBackupDone,
 } from './guestBackup.js'
 import { initializeOwnerFromPersist, replaceOwnerState } from '../store/owner-state.js'
-import { getState } from '../store/app-store.js'
-import { commitDismissedNotifications, commitWorkDataDeletedDates } from '../store/commitHelpers.js'
+import { commitBatch, getState } from '../store/app-store.js'
+import { commitDismissedNotifications } from '../store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 
 describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => {
@@ -245,7 +245,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
   /** 기기에 닫은 알림·빈 날 삭제 목록을 심는다. @param {Array<string>} ids @param {Record<string, string>} tombstones */
   function seedMarks(ids, tombstones) {
     commitDismissedNotifications('guest', ids)
-    commitWorkDataDeletedDates('guest', tombstones)
+    commitBatch([{ domain: 'workDataDeletedDates', ownerKey: 'guest', value: tombstones }])
   }
 
   test('78: 닫은 알림·빈 날 삭제 목록도 백업 시점으로 복원(교체), 앱 다시 켜도 남음', () => {

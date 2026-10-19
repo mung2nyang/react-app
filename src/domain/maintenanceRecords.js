@@ -81,21 +81,6 @@ export function expenseFromMaintenanceRecord(row, index = 0) {
 
 /**
  * @param {Array<ExpenseItem|JsonRecord>} expenses
- * @returns {Record<string, Array<ExpenseItem|JsonRecord>>}
- */
-export function groupMaintExpensesByDate(expenses) {
-  /** @type {Record<string, Array<ExpenseItem|JsonRecord>>} */
-  const grouped = {}
-  ;(expenses || []).filter((item) => item?.kind === 'maint' && item.date).forEach((item) => {
-    const date = String(item.date)
-    if (!grouped[date]) grouped[date] = []
-    grouped[date].push(item)
-  })
-  return grouped
-}
-
-/**
- * @param {Array<ExpenseItem|JsonRecord>} expenses
  * @param {Array<ExpenseItem|JsonRecord>} maintExpenses
  * @returns {Array<ExpenseItem|JsonRecord>}
  */

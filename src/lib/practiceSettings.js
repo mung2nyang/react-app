@@ -1,6 +1,5 @@
 // @ts-check
 // 앱 설정 localStorage I/O와 화면 테마 적용(applyTheme) + domain/practiceSettings.js 재수출 배럴.
-import { readJsonKey } from '../store/persist.js'
 import { commitSettings } from '../store/commitHelpers.js'
 import { normalizeSettings } from '../domain/practiceSettings.js'
 import { readOwnerProfile, readOwnerSettings } from '../store/ownerDataHooks.js'
@@ -12,11 +11,6 @@ import {
   getCloudUserId,
 } from './cloudSession.js'
 import { upsertProfileOnSupabase } from './profileCloudCommit.js'
-
-/** @param {string} [ownerKey] */
-export function loadPracticeSettings(ownerKey = 'guest') {
-  return normalizeSettings(readJsonKey('settings', ownerKey, {}))
-}
 
 /** @typedef {import('../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {FinanceSettings | ((current: FinanceSettings) => FinanceSettings)} SettingsPatch 목록·묶음 설정은 최신 설정을 받아 바꿀 값을 돌려주는 함수로 */

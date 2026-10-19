@@ -5,7 +5,6 @@
 // 로그인이면 서버 직접 1회(바뀐 행만) 후 Store(메모리)만 바꾼다. 게스트는 commitOrToast로 로컬 저장.
 import {
   reorderClients,
-  updateClientFixedUnitPrice,
   updateClientTaxInfo,
   upsertClient,
 } from '../domain/clients.js'
@@ -110,22 +109,6 @@ export async function requestClientReorder({ ownerKey, clients, fromId, toId, us
     ...commitOrToast(ownerKey, clients, next, null, '[clientMutations] 거래처 순서 저장 실패:'),
     rejected: false,
   }
-}
-
-/**
- * @param {{ ownerKey: string, clients: Array<ClientLike>, clientId: string, nextPrice: number|string, userId?: string|null }} params
- */
-export async function requestClientFixedUnitPrice({ ownerKey, clients, clientId, nextPrice, userId }) {
-  const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
-  if (blocked) return { clients, toast: blocked, failed: true }
-  const next = updateClientFixedUnitPrice(clients, clientId, nextPrice)
-  if (isCloudClientOwner(ownerKey)) {
-    return saveClientsToCloud({
-      ownerKey, userId, previous: clients, next,
-      changedIds: changedClientIds(clients, next), okToast: null,
-    })
-  }
-  return commitOrToast(ownerKey, clients, next, null, '[clientMutations] 거래처 단가 저장 실패:')
 }
 
 /**
