@@ -19,17 +19,16 @@ import './receivablesGroupHead.css'
  * @param {string} [props.ownerKey]
  * @param {boolean} [props.isEmployedDriver]
  * @param {() => void} [props.onBack]
- * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ReceivablesListPage({ ownerKey = 'guest', isEmployedDriver = false, onBack, showToast, onOpenMenu }) {
+export default function ReceivablesListPage({ ownerKey = 'guest', isEmployedDriver = false, onBack, onOpenMenu }) {
   const navigate = useNavigate()
   const { search } = useLocation()
   const [tab, setTab] = useState('monthly')
   const { workDataByLogId, settings, groups, dueItems, hasSubCars } = useReceivablesData(ownerKey, isEmployedDriver)
   const { confirm, confirmDialog } = useConfirm()
   const actions = useReceivablesActions({
-    ownerKey, workDataByLogId, settings, showToast, confirm,
+    ownerKey, workDataByLogId, settings, confirm,
   })
 
   return (

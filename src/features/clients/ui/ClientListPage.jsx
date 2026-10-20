@@ -10,6 +10,7 @@ import { requestClientDeletion } from '../../../data/sync/directMutationActions.
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
 import './client-management.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/clientTypes.js').ClientDraft} ClientDraft */
 /** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
@@ -27,16 +28,16 @@ const emptyDraft = {
  * @param {Object} props
  * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
- * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ClientListPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
+export default function ClientListPage({ ownerKey = 'guest', onBack, onOpenMenu }) {
+  const showToast = useToast()
   const clients = useOwnerClients(ownerKey)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
   const [pendingDelete, setPendingDelete] = useState(/** @type {import('../../../domain/clientTypes.js').ClientLike|null} */ (null))
-  const reorder = useClientReorder(ownerKey, clients, showToast)
+  const reorder = useClientReorder(ownerKey, clients)
   const visibleClients = clients.filter((client) => !client.scopedToVehicleNumber)
 
   function openAdd() {

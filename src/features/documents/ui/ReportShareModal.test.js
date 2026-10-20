@@ -26,6 +26,7 @@ mock.module('../api/reportExport.js', {
 })
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: ReportShareModal } = await import('./ReportShareModal.jsx')
@@ -94,7 +95,7 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
     const { container, root, exportRef } = mountModal()
     try {
       await act(async () => {
-        root.render(React.createElement(ReportShareModal, {
+        root.render(withToast(React.createElement(ReportShareModal, {
           exportRef,
           viewMode: 'summary',
           clientFilter: 'ALL',
@@ -102,8 +103,7 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
           year: 2026,
           month: 8,
           onClose: () => { closeCount += 1 },
-          showToast: (/** @type {string} */ m) => { toasts.push(m) },
-        }))
+        }), (/** @type {string} */ m) => { toasts.push(m) }))
       })
       const smsPdf = findChannelButton(container, '문자로 보내기', 'PDF로 보내기')
       assert.ok(smsPdf)
@@ -132,7 +132,7 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
     const { container, root, exportRef } = mountModal()
     try {
       await act(async () => {
-        root.render(React.createElement(ReportShareModal, {
+        root.render(withToast(React.createElement(ReportShareModal, {
           exportRef,
           viewMode: 'summary',
           clientFilter: 'ALL',
@@ -140,8 +140,7 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
           year: 2026,
           month: 8,
           onClose: () => { closeCount += 1 },
-          showToast: (m) => { toasts.push(m) },
-        }))
+        }), (/** @type {string} */ m) => { toasts.push(m) }))
       })
       const kakaoPdf = findChannelButton(container, '카카오톡으로 보내기', 'PDF로 보내기')
       assert.ok(kakaoPdf)
@@ -198,7 +197,6 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
           year: 2026,
           month: 8,
           onClose: () => { closeCount += 1 },
-          showToast: () => {},
         }))
       })
       const kakaoPdf = findChannelButton(container, '카카오톡으로 보내기', 'PDF로 보내기')

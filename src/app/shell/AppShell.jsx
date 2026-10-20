@@ -49,12 +49,11 @@ function pagePath(page) {
  * @param {Object} props
  * @param {string} props.ownerKey
  * @param {AppSession|null} props.session
- * @param {(message: string) => void} [props.showToast]
  * @param {() => void} [props.onBackToAuth]
  * @param {() => void} [props.onGoAuth]
  * @param {(session: AppSession) => void} [props.onSessionUpdate]
  */
-export default function AppShell({ ownerKey, session, showToast, onBackToAuth, onGoAuth, onSessionUpdate }) {
+export default function AppShell({ ownerKey, session, onBackToAuth, onGoAuth, onSessionUpdate }) {
   const location = useLocation()
   const rawNavigate = useNavigate()
   // 화면 이동은 모두 이 navigate를 거치므로 저장 안 된 편집 확인(durableWriteGuard)을 여기서 한 번에 건다.
@@ -90,7 +89,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   }
   const [menuOpen, setMenuOpen] = useState(false)
   useEffect(() => { preloadSideMenuBanner() }, [])
-  useBackToExit(showToast)
+  useBackToExit()
   const pageBoxRef = usePageTransition()
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
@@ -149,7 +148,7 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
   return (
     <div className="container main-app-container">
       <OfflineBanner session={session} />
-      <HydrationRetryBanner showToast={showToast} />
+      <HydrationRetryBanner />
       <ConfirmDialogHost />
       <div ref={pageBoxRef} className="page-transition">
         <PageLoadErrorBoundary resetKey={location.pathname}>
@@ -157,7 +156,6 @@ export default function AppShell({ ownerKey, session, showToast, onBackToAuth, o
           <AppShellRoutes
             ownerKey={ownerKey}
             session={session}
-            showToast={showToast}
             notifCount={notifications.length}
             onOpenMenu={() => setMenuOpen(true)}
             onOpenNotifs={() => navigate('/app/notifications')}

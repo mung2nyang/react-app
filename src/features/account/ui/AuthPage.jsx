@@ -2,13 +2,14 @@
 import { useState } from 'react'
 import { getSupabaseAuthErrorMessage, signInWithGoogle } from '../../../data/cloud/supabaseClient.js'
 import AuthIntroView from './AuthIntroView.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /**
  * @param {Object} props
  * @param {() => void} [props.onGuest]
- * @param {(message: string) => void} props.showToast
  */
-export default function AuthPage({ onGuest, showToast }) {
+export default function AuthPage({ onGuest }) {
+  const showToast = useToast()
   const [busy, setBusy] = useState(false)
 
   // 성공하면 브라우저가 구글 화면으로 넘어가므로 바쁨 표시를 풀지 않는다.

@@ -5,6 +5,7 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { historyIdx, noteLocation, takeRewind } from '../../shared/utils/historyMoves.js'
+import { useToast } from '../../shared/hooks/useToast.js'
 
 export const EXIT_HINT = '뒤로가기를 한 번 더 누르면 종료됩니다.'
 export const EXIT_WINDOW_MS = 4000 // 안내 문구 표시 시간(useAppSession.js 4초)과 같게
@@ -26,10 +27,10 @@ function isStandalone() {
 }
 
 /**
- * @param {((message: string) => void) | undefined} showToast
  * @param {number} [windowMs] 테스트용으로만 바꿈
  */
-export default function useBackToExit(showToast, windowMs = EXIT_WINDOW_MS) {
+export default function useBackToExit(windowMs = EXIT_WINDOW_MS) {
+  const showToast = useToast()
   const location = useLocation()
   const navigationType = useNavigationType()
   const navigate = useNavigate()

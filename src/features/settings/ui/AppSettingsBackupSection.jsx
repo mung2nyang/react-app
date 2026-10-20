@@ -2,6 +2,7 @@
 // 게스트 전용 데이터 관리(백업/복구).
 import { useRef, useState } from 'react'
 import { applyGuestBackupData, buildGuestBackupData, getLastBackupAt, markBackupDone } from '../../../data/sync/guestBackup.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 const BACKUP_UPLOAD_ICON = (
   <svg className="inline-icon sm" viewBox="0 0 24 24" aria-hidden="true">
@@ -27,11 +28,8 @@ function formatBackupStatus(iso) {
   return `마지막 백업: ${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
 }
 
-/**
- * @param {Object} props
- * @param {(message: string) => void} [props.showToast]
- */
-export default function AppSettingsBackupSection({ showToast }) {
+export default function AppSettingsBackupSection() {
+  const showToast = useToast()
   const fileInputRef = useRef(/** @type {HTMLInputElement|null} */ (null))
   const [lastBackupAt, setLastBackupAt] = useState(() => getLastBackupAt())
 

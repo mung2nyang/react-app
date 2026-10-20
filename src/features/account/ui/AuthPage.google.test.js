@@ -22,6 +22,7 @@ mock.module('../../../data/cloud/supabaseClient.js', {
 })
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: AuthPage } = await import('./AuthPage.jsx')
@@ -33,9 +34,9 @@ async function render() {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(AuthPage, {
-      onGuest: () => {}, showToast: (/** @type {string} */ m) => { toasts.push(m) },
-    }))
+    root.render(withToast(React.createElement(AuthPage, {
+      onGuest: () => {},
+    }), (/** @type {string} */ m) => { toasts.push(m) }))
   })
   const button = [...container.querySelectorAll('button')].find((b) => b.textContent === 'Google 계정으로 로그인')
   return { toasts, button, labels: [...container.querySelectorAll('button')].map((b) => b.textContent), async cleanup() { await act(async () => { root.unmount() }); container.remove() } }

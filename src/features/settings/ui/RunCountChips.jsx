@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 import { addRunCountPreset, removeRunCountPreset, replaceRunCountPreset, RUN_COUNT_PRESET_MAX } from '../../../domain/practiceSettings.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 
@@ -15,9 +16,9 @@ const MOVE_TOLERANCE_PX = 10
  * @param {'main'|'sub'} props.scope
  * @param {FinanceSettings} props.settings
  * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
- * @param {(message: string) => void} [props.showToast]
  */
-export default function RunCountChips({ scope, settings, onPatch, showToast }) {
+export default function RunCountChips({ scope, settings, onPatch }) {
+  const showToast = useToast()
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
   const presets = settings[key] || []
   const [pendingIndex, setPendingIndex] = useState(/** @type {number|null} */ (null))

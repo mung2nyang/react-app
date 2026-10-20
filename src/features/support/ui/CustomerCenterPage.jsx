@@ -8,6 +8,7 @@ import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import { SkeletonLines } from '../../../shared/ui/Skeleton.jsx'
 import './customer-center.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
 /** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
@@ -51,9 +52,9 @@ function GuestLoginPrompt({ onGoAuth }) {
 /**
  * @param {Object} props
  * @param {string} props.userId
- * @param {(message: string) => void} [props.showToast]
  */
-function InquiryForm({ userId, showToast }) {
+function InquiryForm({ userId }) {
+  const showToast = useToast()
   const [type, setType] = useState(INQUIRY_TYPES[0])
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -106,9 +107,9 @@ function InquiryForm({ userId, showToast }) {
 /**
  * @param {Object} props
  * @param {string} props.userId
- * @param {(message: string) => void} [props.showToast]
  */
-function MyInquiriesList({ userId, showToast }) {
+function MyInquiriesList({ userId }) {
+  const showToast = useToast()
   const [items, setItems] = useState(/** @type {Array<SupportInquiryRow>} */ ([]))
   const [loading, setLoading] = useState(true)
 
@@ -164,11 +165,10 @@ function MyInquiriesList({ userId, showToast }) {
  * @param {Object} props
  * @param {() => void} [props.onBack]
  * @param {AppSession|null} [props.session]
- * @param {(message: string) => void} [props.showToast]
  * @param {() => void} [props.onGoAuth]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function CustomerCenterPage({ onBack, session = null, showToast, onGoAuth, onOpenMenu }) {
+export default function CustomerCenterPage({ onBack, session = null, onGoAuth, onOpenMenu }) {
   const [tab, setTab] = useState(/** @type {SupportTab} */ ('faq'))
   const [openFaq, setOpenFaq] = useState(/** @type {number|null} */ (null))
   const cloud = isCloudSession(session)
@@ -210,7 +210,7 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
             <h3>무엇을 도와드릴까요?</h3>
             <p>문의나 개선 의견을 남겨주시면 확인 후 답변드리겠습니다.</p>
           </div>
-          {userId ? <InquiryForm userId={userId} showToast={showToast} /> : <GuestLoginPrompt onGoAuth={onGoAuth} />}
+          {userId ? <InquiryForm userId={userId} /> : <GuestLoginPrompt onGoAuth={onGoAuth} />}
         </section>
       )}
 
@@ -220,7 +220,7 @@ export default function CustomerCenterPage({ onBack, session = null, showToast, 
             <h3>나의 문의/건의 확인</h3>
             <p>접수하신 문의와 답변 상태를 확인할 수 있습니다.</p>
           </div>
-          {userId ? <MyInquiriesList userId={userId} showToast={showToast} /> : <GuestLoginPrompt onGoAuth={onGoAuth} />}
+          {userId ? <MyInquiriesList userId={userId} /> : <GuestLoginPrompt onGoAuth={onGoAuth} />}
         </section>
       )}
     </div>

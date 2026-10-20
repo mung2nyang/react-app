@@ -18,6 +18,7 @@ import { applyOnboardingWizard } from '../data/sync/onboardingFinish.js'
 import { GUEST_APP_SESSION, setGuestModePersisted } from './guestSessionPersist.js'
 import { useAppSession } from './useAppSession.js'
 import ToastMessage from './shell/ToastMessage.jsx'
+import { ToastProvider } from '../shared/hooks/useToast.js'
 import '../shared/styles/variables.css'
 import '../shared/styles/app-base.css'
 import '../shared/styles/account-flow.css'
@@ -58,7 +59,7 @@ export default function App() {
   if (guestLoadFailed) return <LoadFailScreen />
 
   return (
-    <>
+    <ToastProvider value={showToast}>
       <PendingWriteRetryBridge />
       <AccountFlowBodyClass active={inAccountFlow} />
 
@@ -71,7 +72,6 @@ export default function App() {
             <AuthRoute
               booting={booting}
               session={session}
-              showToast={showToast}
               onGuest={() => {
                 endCloudSession()
                 setGuestModePersisted(true)
@@ -143,7 +143,6 @@ export default function App() {
               <AppShell
                 ownerKey={ownerKey}
                 session={session}
-                showToast={showToast}
                 onBackToAuth={() => handleLogout()}
                 onGoAuth={() => handleLogout({ signOut: true })}
                 onSessionUpdate={(/** @type {AppSession} */ next) => setSession(next)}
@@ -158,6 +157,6 @@ export default function App() {
 
 
       <ToastMessage message={toast} />
-    </>
+    </ToastProvider>
   )
 }

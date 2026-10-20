@@ -52,6 +52,7 @@ mock.module('../../../data/sync/directMutationActions.js', {
 })
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { MemoryRouter, useLocation } = await import('react-router-dom')
@@ -77,9 +78,9 @@ async function render(ownerKey, entry = '/app/cars') {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(MemoryRouter, { initialEntries: [entry] },
-      React.createElement(CarListPage, { ownerKey, session: { userId: ownerKey, name: '차주', phone: '' }, showToast: (/** @type {string} */ m) => toasts.push(m) }),
-      React.createElement(LocationProbe)))
+    root.render(withToast(React.createElement(MemoryRouter, { initialEntries: [entry] },
+      React.createElement(CarListPage, { ownerKey, session: { userId: ownerKey, name: '차주', phone: '' } }),
+      React.createElement(LocationProbe)), (/** @type {string} */ m) => toasts.push(m)))
   })
   /** @param {string} text @param {ParentNode} [scope] */
   const button = (text, scope = container) => [...scope.querySelectorAll('button')].find((el) => el.textContent?.trim() === text)

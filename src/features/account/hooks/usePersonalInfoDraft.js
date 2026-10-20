@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { saveProfile } from '../../../data/sync/profileSave.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../data/hydrate/hydrateMergeTypes.js').LocalProfile} LocalProfile */
 /** @typedef {Partial<Record<keyof LocalProfile, string>>} ProfileDraft */
@@ -12,9 +13,10 @@ export const SAVE_DELAY_MS = 700
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 
 /**
- * @param {{ ownerKey: string, profile: LocalProfile, showToast?: (message: string) => void }} params
+ * @param {{ ownerKey: string, profile: LocalProfile }} params
  */
-export function usePersonalInfoDraft({ ownerKey, profile, showToast }) {
+export function usePersonalInfoDraft({ ownerKey, profile }) {
+  const showToast = useToast()
   const [draft, setDraft] = useState(/** @type {ProfileDraft} */ ({}))
   const dirtyRef = useRef(/** @type {ProfileDraft} */ ({}))
   const timerRef = useRef(/** @type {ReturnType<typeof setTimeout>|null} */ (null))

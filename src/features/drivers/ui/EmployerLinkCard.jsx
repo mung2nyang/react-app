@@ -8,6 +8,7 @@ import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataH
 import DriverUnlinkControls from './DriverUnlinkControls.jsx'
 import { SkeletonLines } from '../../../shared/ui/Skeleton.jsx'
 import './driver-connection.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
 
@@ -17,11 +18,11 @@ const HYDRATE_FAIL_TOAST = '연동은 해제됐지만 내 기록 일부를 불�
  * @param {{
  *   ownerKey: string,
  *   session: AppSession|null|undefined,
- *   showToast?: (message: string) => void,
  *   onUnlinked?: (session: AppSession) => void,
  * }} props
  */
-export default function EmployerLinkCard({ ownerKey, session, showToast, onUnlinked }) {
+export default function EmployerLinkCard({ ownerKey, session, onUnlinked }) {
+  const showToast = useToast()
   const drivers = useOwnerDrivers(ownerKey)
   const profile = useOwnerProfile(ownerKey)
   const [busy, setBusy] = useState(false)

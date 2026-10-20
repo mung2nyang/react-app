@@ -3,6 +3,7 @@
 import './report.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { buildSmsHref } from '../../../domain/smsHref.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @param {'pdf'|'image'} type */
 const formatLabel = (type) => (type === 'image' ? '이미지' : 'PDF')
@@ -19,11 +20,11 @@ const formatLabel = (type) => (type === 'image' ? '이미지' : 'PDF')
  * @param {(type: 'pdf'|'image') => Promise<File>} props.buildFile
  * @param {() => { phone: string, message: string } | string} props.smsTarget 받는 사람·문구, 못 보내면 안내 문구
  * @param {() => void} props.onClose
- * @param {(message: string) => void} [props.showToast]
  */
 export default function ShareFileModal({
-  title, kakaoHint, smsHint, shareTitle, kakaoText, unsupportedToast, logLabel, buildFile, smsTarget, onClose, showToast,
+  title, kakaoHint, smsHint, shareTitle, kakaoText, unsupportedToast, logLabel, buildFile, smsTarget, onClose,
 }) {
+  const showToast = useToast()
   /** @param {'pdf'|'image'} type */
   async function shareToKakao(type) {
     onClose()

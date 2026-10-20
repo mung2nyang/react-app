@@ -90,10 +90,9 @@ const SHORTCUTS = [
  * @param {string} [props.ownerKey]
  * @param {(page: string, label?: string) => void} props.onOpen
  * @param {(() => void)} [props.onOpenMenu]
- * @param {(message: string) => void} [props.showToast]
  * @param {(session: AppSession) => void} [props.onLinked]
  */
-export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu, showToast, onLinked }) {
+export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu, onLinked }) {
   const [inviteOpen, setInviteOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const profile = useOwnerProfile(ownerKey)
@@ -189,12 +188,11 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
       {inviteOpen && (
         <InviteRedeemModal
           session={session ?? null}
-          showToast={showToast}
           onClose={() => setInviteOpen(false)}
           onLinked={(next) => onLinked?.(next)}
         />
       )}
-      {downloadOpen && <DataDownloadModal ownerKey={ownerKey} employed={employed} showToast={showToast} onClose={() => setDownloadOpen(false)} />}
+      {downloadOpen && <DataDownloadModal ownerKey={ownerKey} employed={employed} onClose={() => setDownloadOpen(false)} />}
     </div>
   )
 }

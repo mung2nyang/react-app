@@ -20,11 +20,10 @@ import './documents.css'
  * @param {Object} props
  * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
- * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {boolean} [props.isEmployedDriver] 연동 기사 본인 앱이면 세금계산서 탭 숨김
  */
-export default function DocumentIssuePage({ ownerKey = 'guest', onBack, showToast, onOpenMenu, isEmployedDriver = false }) {
+export default function DocumentIssuePage({ ownerKey = 'guest', onBack, onOpenMenu, isEmployedDriver = false }) {
   const { logId: rawLogId } = useParams()
   const logKey = (rawLogId ? decodeURIComponent(rawLogId) : '') || 'main'
   const settings = resolveLogSettings(useOwnerSettings(ownerKey), logKey === 'main' ? '' : logKey)
@@ -62,14 +61,14 @@ export default function DocumentIssuePage({ ownerKey = 'guest', onBack, showToas
   ) : null
 
   if (activeTab === 'report') {
-    return <ReportPage ownerKey={ownerKey} logId={logKey} onBack={onBack} showToast={showToast} onOpenMenu={onOpenMenu} tabs={tabs} viewDate={viewDate} onChangeMonth={setViewDate} />
+    return <ReportPage ownerKey={ownerKey} logId={logKey} onBack={onBack} onOpenMenu={onOpenMenu} tabs={tabs} viewDate={viewDate} onChangeMonth={setViewDate} />
   }
   return (
     <div className="page report-page-wrap">
       <PageHeader title="서류 발급" onBack={onBack} onOpenMenu={onOpenMenu} />
       {activeTab === 'tax'
-        ? <TaxInvoiceTab ownerKey={ownerKey} logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} showToast={showToast} />
-        : <DailyInspectionMonthSheet ownerKey={ownerKey} logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} showToast={showToast} />}
+        ? <TaxInvoiceTab ownerKey={ownerKey} logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} />
+        : <DailyInspectionMonthSheet ownerKey={ownerKey} logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} />}
     </div>
   )
 }

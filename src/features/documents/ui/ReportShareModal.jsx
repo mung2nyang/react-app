@@ -22,9 +22,8 @@ const NO_CONTACT = '문자로 보내려면 [세부 내역]에서 거래처를 �
  * @param {number} props.year
  * @param {number} props.month 0-based
  * @param {() => void} props.onClose
- * @param {(message: string) => void} [props.showToast]
  */
-export default function ReportShareModal({ exportRef, viewMode, clientFilter, clients, year, month, onClose, showToast }) {
+export default function ReportShareModal({ exportRef, viewMode, clientFilter, clients, year, month, onClose }) {
   const baseFileName = (viewMode === 'detail'
     ? buildDetailReportFileName(year, month, clientFilter)
     : buildReportFileName(year, month)).replace(/\.pdf$/, '')
@@ -57,7 +56,6 @@ export default function ReportShareModal({ exportRef, viewMode, clientFilter, cl
         ? { phone: contact.phone, message: fillReportShareMessagePattern(getReportShareMessagePattern(), contact.name) }
         : NO_CONTACT)}
       onClose={onClose}
-      showToast={showToast}
     />
   )
 }

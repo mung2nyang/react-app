@@ -24,11 +24,10 @@ const YEAR_OPTIONS = getYearOptions()
  * @param {string} [props.userName]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(() => void)} [props.onBackToAuth]
- * @param {(message: string) => void} [props.showToast]
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
 export default function CalendarPage({
-  ownerKey, logId = 'main', clientScopeKey, userName: _userName, onOpenMenu, onBackToAuth: _onBackToAuth, showToast: _showToast, onSelectDay,
+  ownerKey, logId = 'main', clientScopeKey, userName: _userName, onOpenMenu, onBackToAuth: _onBackToAuth, onSelectDay,
 }) {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { addFixedRoutePreset, checkRoutePreset, FIXED_ROUTE_PRESET_MAX, removeFixedRoutePreset } from '../../../domain/practiceSettings.js'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 
@@ -11,9 +12,9 @@ import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldEr
  * @param {'main'|'sub'} props.scope
  * @param {FinanceSettings} props.settings
  * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
- * @param {(message: string) => void} [props.showToast]
  */
-export default function RoutePresetEditor({ scope, settings, onPatch, showToast }) {
+export default function RoutePresetEditor({ scope, settings, onPatch }) {
+  const showToast = useToast()
   const [loadLoc, setLoadLoc] = useState('')
   const [unloadLoc, setUnloadLoc] = useState('')
   const key = scope === 'sub' ? 'subFixedRoutePresets' : 'fixedRoutePresets'

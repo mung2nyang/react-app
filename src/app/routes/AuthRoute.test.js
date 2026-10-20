@@ -33,7 +33,7 @@ async function render(session, booting) {
   await act(async () => {
     root.render(h(MemoryRouter, { initialEntries: ['/auth'] },
       h(Routes, null,
-        h(Route, { path: '/auth', element: h(AuthRoute, { booting, session, showToast: () => {} }) }),
+        h(Route, { path: '/auth', element: h(AuthRoute, { booting, session }) }),
         h(Route, { path: '/app', element: h('div', { id: 'home' }, '홈') }))))
   })
   return { container, async cleanup() { await act(async () => { root.unmount() }); container.remove() } }

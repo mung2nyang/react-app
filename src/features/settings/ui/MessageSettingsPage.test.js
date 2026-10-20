@@ -11,6 +11,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: MessageSettingsPage } = await import('./MessageSettingsPage.jsx')
@@ -34,7 +35,7 @@ test('입금 요청 문자를 비우고 저장 → 그 칸만 표시·문구·�
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(React.createElement(MessageSettingsPage, { showToast: (/** @type {string} */ m) => { toasts.push(m) } })) })
+  await act(async () => { root.render(withToast(React.createElement(MessageSettingsPage, {}), (/** @type {string} */ m) => { toasts.push(m) })) })
   try {
     const box = /** @type {HTMLTextAreaElement} */ (container.querySelector('#msgPaymentRequest'))
     await typeInto(box, '  ')

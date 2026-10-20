@@ -13,6 +13,7 @@ import { groupItems } from '../../../domain/receivables.js'
 import { formatWon } from '../../../domain/money.js'
 import { checkPartialAmount } from '../../../domain/payments.js'
 import { focusField } from '../../../shared/ui/FieldError.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 /** @typedef {import('../../../domain/financeTypes.js').WorkDataByLogId} WorkDataByLogId */
@@ -26,12 +27,12 @@ export const partialInputId = (key) => `receivablePartial-${key}`
  * @param {string} params.ownerKey
  * @param {import('../../../domain/financeTypes.js').WorkDataByLogId} params.workDataByLogId
  * @param {import('../../../domain/financeTypes.js').FinanceSettings} params.settings
- * @param {(message: string) => void} [params.showToast]
  * @param {(message: string, options?: { confirmLabel?: string, danger?: boolean, message?: string }) => Promise<boolean>} params.confirm
  */
 export function useReceivablesActions({
-  ownerKey, workDataByLogId, settings, showToast, confirm,
+  ownerKey, workDataByLogId, settings, confirm,
 }) {
+  const showToast = useToast()
   const [saving, setSaving] = useState(false)
   const [partialKey, setPartialKey] = useState('')
   const [partialAmount, setPartialAmount] = useState('')

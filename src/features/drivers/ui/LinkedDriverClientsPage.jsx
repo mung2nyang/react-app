@@ -15,10 +15,9 @@ import './linked-driver.css'
  * @param {Object} props
  * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
- * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
+export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, onOpenMenu }) {
   const navigate = useNavigate()
   const { linkId: rawLinkId, logId: rawLogId } = useParams()
   const linkId = decodeURIComponent(rawLinkId || '')
@@ -57,7 +56,7 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, sh
   return (
     <div className="page client-management-page">
       <PageHeader title={title} onBack={handleBack} onOpenMenu={onOpenMenu} />
-      <ScopedClientsList ownerKey={ownerKey} scopeKey={scopeKey} listId="linkedDriverClientsListContainer" showToast={showToast} />
+      <ScopedClientsList ownerKey={ownerKey} scopeKey={scopeKey} listId="linkedDriverClientsListContainer" />
     </div>
   )
 }

@@ -33,7 +33,6 @@ async function openSupportTab(session, tabLabel) {
     root.render(React.createElement(CustomerCenterPage, {
       onBack: () => {},
       session,
-      showToast: () => {},
       onGoAuth: () => {},
     }))
   })

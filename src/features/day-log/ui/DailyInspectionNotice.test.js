@@ -26,6 +26,7 @@ mock.module('../../../data/sync/dailyInspections.js', {
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DailyInspectionNotice } = await import('./DailyInspectionNotice.jsx')
@@ -56,9 +57,9 @@ async function render(props = {}) {
   const root = createRoot(container)
   const element = React.createElement(DailyInspectionNotice, {
     ownerKey: OWNER, logId: 'main', dateKey: '2026-10-01', month: 10, day: 1, enabled: true, isOff: false,
-    showToast: (/** @type {string} */ m) => { toasts.push(m) }, ...props,
+    ...props,
   })
-  await act(async () => { root.render(element) })
+  await act(async () => { root.render(withToast(element, (/** @type {string} */ m) => { toasts.push(m) })) })
   /** @param {string} label */
   const click = async (label) => {
     const button = [...document.body.querySelectorAll('button')].find((el) => el.textContent?.trim() === label || el.getAttribute('aria-label') === label)

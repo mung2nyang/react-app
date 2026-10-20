@@ -18,7 +18,6 @@ import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
  * @param {string} props.ownerKey
  * @param {AppSession|null} [props.session]
  * @param {string} [props.userName]
- * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(() => void)} [props.onBackToAuth]
  */
@@ -26,7 +25,7 @@ export default function MainPageRoute({
   ownerKey,
   session,
   userName,
-  showToast,
+  
   onOpenMenu,
   onBackToAuth,
 }) {
@@ -74,7 +73,6 @@ export default function MainPageRoute({
         clientScopeKey={clientScopeKey}
         clients={clients}
         settings={settings}
-        showToast={showToast}
         onClose={closeWorkLog}
         onOpenMenu={onOpenMenu}
         isEmployedDriver={session?.accountType === 'employed_driver'}
@@ -90,7 +88,6 @@ export default function MainPageRoute({
       userName={userName}
       onOpenMenu={onOpenMenu}
       onBackToAuth={onBackToAuth}
-      showToast={showToast}
       // closeWorkLog(DayLogPage 헤더 "뒤로가기")는 DayLogPage.jsx의 handleClose가
       // 이미 confirmLeaveIfUnsafe()로 감싸서 부른다 — 여기서 또 감싸면 같은 이동에
       // confirm이 두 번 뜬다. 달력→일지 진입은 그 경로가 아니라서(어디서도 아직

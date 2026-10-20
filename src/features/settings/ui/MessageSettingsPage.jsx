@@ -11,13 +11,14 @@ import {
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 import './message-settings.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /**
  * @param {Object} props
  * @param {() => void} [props.onBack]
- * @param {(message: string) => void} [props.showToast]
  */
-export default function MessageSettingsPage({ onBack, showToast }) {
+export default function MessageSettingsPage({ onBack }) {
+  const showToast = useToast()
   const initial = getMessageTemplatePatterns()
   const [unpaid, setUnpaid] = useState(initial[0])
   const [paymentRequest, setPaymentRequest] = useState(initial[1])

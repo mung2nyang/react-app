@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
@@ -41,12 +42,12 @@ async function render(owner, path, session = null) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const page = React.createElement(AppSettingsPage, { ownerKey: owner, session, onBack: () => {}, showToast: (/** @type {string} */ m) => { toasts.push(m) } })
+  const page = React.createElement(AppSettingsPage, { ownerKey: owner, session, onBack: () => {} })
   await act(async () => {
-    root.render(React.createElement(MemoryRouter, { initialEntries: [path] },
+    root.render(withToast(React.createElement(MemoryRouter, { initialEntries: [path] },
       React.createElement(Routes, null,
         React.createElement(Route, { path: '/settings', element: page }),
-        React.createElement(Route, { path: '/logs/:logId/settings', element: page }))))
+        React.createElement(Route, { path: '/logs/:logId/settings', element: page }))), (/** @type {string} */ m) => { toasts.push(m) }))
   })
   // 팝업은 document.body에 그려진다(createPortal).
   const modal = () => document.querySelector('.fixed-route-client-modal')

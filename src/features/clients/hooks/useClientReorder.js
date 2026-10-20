@@ -2,13 +2,14 @@
 import { useState } from 'react'
 import { requestClientReorder } from '../../../data/sync/clientMutations.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /**
  * @param {string} ownerKey
  * @param {Array<import('../../../domain/clientTypes.js').ClientLike>} clients
- * @param {(message: string) => void} [showToast]
  */
-export function useClientReorder(ownerKey, clients, showToast) {
+export function useClientReorder(ownerKey, clients) {
+  const showToast = useToast()
   const [dragId, setDragId] = useState(/** @type {string|null} */ (null))
 
   /** @param {string} id */

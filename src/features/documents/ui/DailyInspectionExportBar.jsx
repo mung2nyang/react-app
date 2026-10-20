@@ -7,6 +7,7 @@ import { createReportImageFile, createReportPdfFile } from '../api/reportExport.
 import DailyInspectionLegalForm from './DailyInspectionLegalForm.jsx'
 import DailyInspectionShareModal from './DailyInspectionShareModal.jsx'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @param {File} file */
 function downloadFile(file) {
@@ -24,9 +25,9 @@ function downloadFile(file) {
  * @param {Object} props
  * @param {import('react').ComponentProps<typeof DailyInspectionLegalForm>} props.form
  * @param {boolean} props.ready 그 달 점검표를 읽었을 때만 내보내기
- * @param {(message: string) => void} [props.showToast]
  */
-export default function DailyInspectionExportBar({ form, ready, showToast }) {
+export default function DailyInspectionExportBar({ form, ready }) {
+  const showToast = useToast()
   const formRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const [saving, setSaving] = useState(/** @type {'pdf'|'image'|null} */ (null))
   const [shareOpen, setShareOpen] = useState(false)
@@ -83,7 +84,7 @@ export default function DailyInspectionExportBar({ form, ready, showToast }) {
           onConfirm={() => { setConfirmType(null); void save(confirmType) }}
         />
       )}
-      {shareOpen && <DailyInspectionShareModal month={form.month} buildFile={buildFile} onClose={() => setShareOpen(false)} showToast={showToast} />}
+      {shareOpen && <DailyInspectionShareModal month={form.month} buildFile={buildFile} onClose={() => setShareOpen(false)} />}
     </>
   )
 }

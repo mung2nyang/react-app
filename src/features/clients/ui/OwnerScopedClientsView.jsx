@@ -9,10 +9,9 @@ import { useOwnerCars } from '../../../data/store/ownerDataHooks.js'
  * @param {Object} props
  * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
- * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function OwnerScopedClientsView({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
+export default function OwnerScopedClientsView({ ownerKey = 'guest', onBack, onOpenMenu }) {
   const cars = useOwnerCars(ownerKey)
   const scopeKey = cars[0]?.number || ''
 
@@ -23,7 +22,6 @@ export default function OwnerScopedClientsView({ ownerKey = 'guest', onBack, sho
         ownerKey={ownerKey}
         scopeKey={scopeKey}
         listId="ownerScopedClientsListContainer"
-        showToast={showToast}
         notice={(
           <p className="linked-driver-readonly-notice" style={{ marginBottom: 10 }}>
             <span>차주와 공유하는 거래처 목록입니다. 등록, 수정, 삭제가 차주 화면에도 함께 반영됩니다.</span>

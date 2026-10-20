@@ -40,7 +40,7 @@ function dayLog(dateKey, isEmployedDriver) {
   const [, m, d] = dateKey.split('-')
   return React.createElement(DayLogPage, {
     month: Number(m), day: Number(d), dateKey, ownerKey: OWNER, clients: [],
-    settings: normalizeSettings({ fixedOn: true }), showToast: () => {}, isEmployedDriver,
+    settings: normalizeSettings({ fixedOn: true }), isEmployedDriver,
   })
 }
 

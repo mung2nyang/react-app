@@ -18,6 +18,7 @@ import { readOwnerLogWorkData } from '../../../data/store/ownerDataHooks.js'
 import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../../data/sync/dayDraftActivity.js'
 import { commitLocalDayWrite, settleCloudDayWrite, useMountedRef } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 const DEBOUNCE_MS = 600
 
@@ -27,11 +28,10 @@ const DEBOUNCE_MS = 600
  * @param {(() => void)} [onCommitted] 실제로 store에 커밋될 때마다 한 번(AppShell의
  *   알림 뱃지 재계산 트리거 — 예전 saveDay의 onWorkChanged?.()와 같은 역할). draft가
  *   바뀔 때마다가 아니라 디바운스가 끝나 실제로 쓰였을 때만 부른다.
- * @param {(message: string) => void} [showToast] 자동 저장이
- *   실패(예: localStorage 용량 초과)하면 조용히 넘어가지 않고 이걸로 알린다.
  * @param {string} [logId] 차량번호. 생략/`main`이면 메인 일지.
  */
-export function useDayDraft(ownerKey, dateKey, onCommitted, showToast, logId = 'main') {
+export function useDayDraft(ownerKey, dateKey, onCommitted, logId = 'main') {
+  const showToast = useToast()
   const pendingOwner = pendingOwnerForLog(ownerKey, logId)
   const [idMigration] = useState(() => {
     const stored = readOwnerLogWorkData(ownerKey, logId)[dateKey]

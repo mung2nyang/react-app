@@ -8,15 +8,17 @@ import { requestDriverDeletion, requestVehicleDeletion } from '../../../data/syn
 import { requestDriverUnlinkAction } from '../../../data/sync/driverUnlink.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import { saveInviteAfterVehicle } from '../api/carInviteFromDraft.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../ui/CarFormModal.jsx').CarFormDraft} CarFormDraft */
 /** @typedef {import('../../../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {import('../../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 
 /**
- * @param {{ ownerKey: string, cars: Array<CarLike>, drivers: Array<DriverRecord>, cloud: boolean, draft: CarFormDraft, editingId: string|null, showToast?: (message: string) => void, closeModal: () => void }} params
+ * @param {{ ownerKey: string, cars: Array<CarLike>, drivers: Array<DriverRecord>, cloud: boolean, draft: CarFormDraft, editingId: string|null, closeModal: () => void }} params
  */
-export default function useCarListActions({ ownerKey, cars, drivers, cloud, draft, editingId, showToast, closeModal }) {
+export default function useCarListActions({ ownerKey, cars, drivers, cloud, draft, editingId, closeModal }) {
+  const showToast = useToast()
   const navigate = useNavigate()
   const location = useLocation()
   const [pendingDelete, setPendingDelete] = useState(/** @type {CarLike|null} */ (null))

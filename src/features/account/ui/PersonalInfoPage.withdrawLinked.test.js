@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: PersonalInfoPage } = await import('./PersonalInfoPage.jsx')
@@ -31,7 +32,7 @@ async function clickWithdraw(ownerKey, session) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(PersonalInfoPage, { ownerKey, session, showToast: (/** @type {string} */ m) => { toasts.push(m) } }))
+    root.render(withToast(React.createElement(PersonalInfoPage, { ownerKey, session }), (/** @type {string} */ m) => { toasts.push(m) }))
   })
   const button = [...container.querySelectorAll('button')].find((el) => el.textContent?.trim() === '회원 탈퇴')
   assert.ok(button instanceof window.HTMLButtonElement, '회원 탈퇴 버튼이 있어야 한다')

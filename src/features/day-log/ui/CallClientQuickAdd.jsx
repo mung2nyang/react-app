@@ -5,6 +5,7 @@ import ClientFormModal from '../../clients/ui/ClientFormModal.jsx'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import { requestClientSave } from '../../../data/sync/clientMutations.js'
 import './call-client-quick-add.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/clientTypes.js').ClientDraft} ClientDraft */
 /** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
@@ -24,9 +25,9 @@ const emptyDraft = {
  * @param {Array<ClientLike>} props.clients
  * @param {string} [props.logId]
  * @param {(companyName: string) => void} props.onClientAdded
- * @param {(message: string) => void} [props.showToast]
  */
-export default function CallClientQuickAdd({ ownerKey, clients, logId = 'main', onClientAdded, showToast }) {
+export default function CallClientQuickAdd({ ownerKey, clients, logId = 'main', onClientAdded }) {
+  const showToast = useToast()
   const [modalOpen, setModalOpen] = useState(false)
   const [draft, setDraft] = useState(emptyDraft)
   const scopeKey = !logId || logId === 'main' ? '' : logId

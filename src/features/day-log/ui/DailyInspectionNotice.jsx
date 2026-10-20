@@ -10,6 +10,7 @@ import DailyInspectionModal from './DailyInspectionModal.jsx'
 import './daily-inspection.css'
 import './daily-inspection-loading.css'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
 
@@ -18,10 +19,11 @@ const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 /**
  * @param {{
  *   ownerKey: string, logId: string, dateKey: string, month: number|string, day: number|string,
- *   enabled: boolean, isOff: boolean, showToast?: (message: string) => void,
+ *   enabled: boolean, isOff: boolean,
  * }} props
  */
-export default function DailyInspectionNotice({ ownerKey, logId, dateKey, month, day, enabled, isOff, showToast }) {
+export default function DailyInspectionNotice({ ownerKey, logId, dateKey, month, day, enabled, isOff }) {
+  const showToast = useToast()
   const cars = useOwnerCars(ownerKey)
   const profile = useOwnerProfile(ownerKey)
   const vehicleId = vehicleSupabaseIdForLog(ownerKey, logId)
@@ -95,7 +97,7 @@ export default function DailyInspectionNotice({ ownerKey, logId, dateKey, month,
         )}
       </div>
       {modalOpen && (
-        <DailyInspectionModal title={title} record={load.record} inspectorName={inspectorName} onClose={() => setModalOpen(false)} onSave={save} showToast={showToast} />
+        <DailyInspectionModal title={title} record={load.record} inspectorName={inspectorName} onClose={() => setModalOpen(false)} onSave={save} />
       )}
     </>
   )

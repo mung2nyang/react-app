@@ -17,6 +17,7 @@ const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globa
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const {
@@ -110,12 +111,11 @@ describe('MessageTemplateSheet — 문자 양식 3종 + ②-1 설정 반영', ()
     const { container, root } = mountSheet()
     try {
       await act(async () => {
-        root.render(React.createElement(MessageTemplateSheet, {
+        root.render(withToast(React.createElement(MessageTemplateSheet, {
           item: sampleItem,
           client: { id: 'c1', companyName: '한진' },
           onClose: () => { closeCount += 1 },
-          showToast: (/** @type {string} */ m) => { toasts.push(m) },
-        }))
+        }), (/** @type {string} */ m) => { toasts.push(m) }))
       })
       const first = /** @type {HTMLButtonElement|null} */ (container.querySelector('.message-template-list button'))
       assert.ok(first)

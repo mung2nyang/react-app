@@ -32,10 +32,9 @@ const DISCONNECT_CONFIRM = '연동 중인 기사에게는 해제 요청이 가�
  * @param {string} [props.ownerKey]
  * @param {import('../../../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {() => void} [props.onBack]
- * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function CarListPage({ ownerKey = 'guest', session = null, onBack, showToast, onOpenMenu }) {
+export default function CarListPage({ ownerKey = 'guest', session = null, onBack, onOpenMenu }) {
   const cars = useOwnerCars(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
   const viewerIsEmployedDriver = session?.accountType === 'employed_driver'
@@ -43,7 +42,7 @@ export default function CarListPage({ ownerKey = 'guest', session = null, onBack
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
-  const actions = useCarListActions({ ownerKey, cars, drivers, cloud, draft, editingId, showToast, closeModal: () => setModalOpen(false) })
+  const actions = useCarListActions({ ownerKey, cars, drivers, cloud, draft, editingId, closeModal: () => setModalOpen(false) })
 
   function openAdd() {
     setEditingId(null)

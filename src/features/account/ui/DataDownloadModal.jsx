@@ -7,6 +7,7 @@ import { buildMemberBackupData, memberBackupBlockedReason } from '../api/memberB
 import { addInspectionPicks, applyMemberRestore, planMemberRestore } from '../api/memberRestore.js'
 import { describeRestoreCounts } from '../api/memberRestoreRecords.js'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../api/memberRestore.js').RestorePlan} RestorePlan */
 
@@ -30,10 +31,10 @@ function saveJsonFile(data) {
  * @param {Object} props
  * @param {string} props.ownerKey
  * @param {() => void} props.onClose
- * @param {(message: string) => void} [props.showToast]
  * @param {boolean} [props.employed] 연동 기사(22-D): 다운로드 없이 일지 불러오기만
  */
-export default function DataDownloadModal({ ownerKey, onClose, showToast, employed = false }) {
+export default function DataDownloadModal({ ownerKey, onClose, employed = false }) {
+  const showToast = useToast()
   const [busy, setBusy] = useState(false)
   const [plan, setPlan] = useState(/** @type {RestorePlan|null} */ (null))
   const fileInputRef = useRef(/** @type {HTMLInputElement|null} */ (null))

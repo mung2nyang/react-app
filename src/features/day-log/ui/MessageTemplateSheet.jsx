@@ -4,6 +4,7 @@ import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../..
 import './message-template.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { buildSmsHref } from '../../../domain/smsHref.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
@@ -15,9 +16,9 @@ const TEMPLATE_TITLES = ['미수금 안내', '입금 요청', '운행 완료']
  * @param {CallDetailLike} props.item
  * @param {ClientLike|undefined} props.client
  * @param {() => void} props.onClose
- * @param {(message: string) => void} [props.showToast]
  */
-export default function MessageTemplateSheet({ item, client, onClose, showToast }) {
+export default function MessageTemplateSheet({ item, client, onClose }) {
+  const showToast = useToast()
   const fare = parseCurrencyValue(item.fare).toLocaleString('ko-KR')
   const route = `${item.loadLoc || '상차지'} → ${item.unloadLoc || '하차지'}`
   const company = item.client || '거래처'

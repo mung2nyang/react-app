@@ -17,13 +17,15 @@ import DriverUnlinkControls from './DriverUnlinkControls.jsx'
 import DriverFormModal from './DriverFormModal.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './driver-connection.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }
 
 /**
- * @param {{ ownerKey?: string, session: AppSession|null, onBack: () => void, showToast?: (message: string) => void, navigate?: (to: import('react-router-dom').To | number, options?: import('react-router-dom').NavigateOptions) => void }} props
+ * @param {{ ownerKey?: string, session: AppSession|null, onBack: () => void, navigate?: (to: import('react-router-dom').To | number, options?: import('react-router-dom').NavigateOptions) => void }} props
  */
-export default function DriverConnectionPage({ ownerKey = 'guest', session, onBack, showToast, navigate }) {
+export default function DriverConnectionPage({ ownerKey = 'guest', session, onBack, navigate }) {
+  const showToast = useToast()
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const profile = useOwnerProfile(ownerKey)
@@ -180,7 +182,6 @@ export default function DriverConnectionPage({ ownerKey = 'guest', session, onBa
           assignableCars={assignableCars}
           cars={cars}
           ownerDisplayName={profile.bizName || profile.name || '운송사'}
-          showToast={showToast}
           required={cloud}
           onCancel={() => setModalOpen(false)}
           onSave={save}

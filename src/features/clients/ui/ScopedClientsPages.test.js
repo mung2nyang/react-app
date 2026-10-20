@@ -12,6 +12,7 @@ import { beforeEach, test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Routes, Route } = await import('react-router-dom')
 const { act } = React
@@ -38,10 +39,9 @@ async function mount(element, path = '/', pattern = '/') {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const page = React.cloneElement(element, { showToast: (/** @type {string} */ message) => { toasts.push(message) } })
   await act(async () => {
-    root.render(React.createElement(MemoryRouter, { initialEntries: [path] },
-      React.createElement(Routes, null, React.createElement(Route, { path: pattern, element: page }))))
+    root.render(withToast(React.createElement(MemoryRouter, { initialEntries: [path] },
+      React.createElement(Routes, null, React.createElement(Route, { path: pattern, element }))), (/** @type {string} */ message) => { toasts.push(message) }))
   })
   return {
     container,

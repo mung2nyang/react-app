@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: FixedRouteClientModal } = await import('./FixedRouteClientModal.jsx')
@@ -24,9 +25,9 @@ test('거래처를 안 고르고 저장 → 단추 표시·문구·커서, 알�
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(FixedRouteClientModal, {
-      ownerKey: 'owner-82c', clients: candidates, candidates, linked: null, onClose() {}, showToast: (/** @type {string} */ m) => { toasts.push(m) },
-    }))
+    root.render(withToast(React.createElement(FixedRouteClientModal, {
+      ownerKey: 'owner-82c', clients: candidates, candidates, linked: null, onClose() {},
+    }), (/** @type {string} */ m) => { toasts.push(m) }))
   })
   try {
     const saveButton = [...document.querySelectorAll('button')].find((item) => item.textContent === '저장')

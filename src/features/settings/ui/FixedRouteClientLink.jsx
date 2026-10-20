@@ -11,9 +11,8 @@ import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
  * @param {Object} props
  * @param {string} props.ownerKey
  * @param {string} props.scopeKey 거래처 스코프(차주 메인 = '', 서브차량·연동기사 = 차량번호)
- * @param {(message: string) => void} [props.showToast]
  */
-export default function FixedRouteClientLink({ ownerKey, scopeKey, showToast }) {
+export default function FixedRouteClientLink({ ownerKey, scopeKey }) {
   const clients = useOwnerClients(ownerKey)
   const candidates = fixedRouteCandidates(clients, scopeKey)
   const linked = candidates.find((client) => client.fixedRouteLinked) || null
@@ -58,7 +57,6 @@ export default function FixedRouteClientLink({ ownerKey, scopeKey, showToast }) 
           candidates={candidates}
           linked={linked}
           onClose={() => setOpen(false)}
-          showToast={showToast}
         />
       )}
     </div>

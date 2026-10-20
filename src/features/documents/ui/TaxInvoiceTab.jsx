@@ -24,6 +24,7 @@ import TaxInvoiceDraftModal from './TaxInvoiceDraftModal.jsx'
 import TaxInvoiceEntryList from './TaxInvoiceEntryList.jsx'
 import MonthNavigator from './MonthNavigator.jsx'
 import './tax-invoice.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
@@ -43,9 +44,9 @@ const HOMETAX_GUIDE = [
  * @param {Date} props.viewDate
  * @param {(next: Date) => void} props.onChangeMonth
  * @param {import('react').ReactNode} [props.tabs]
- * @param {(message: string) => void} [props.showToast]
  */
-export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMonth, tabs, showToast }) {
+export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMonth, tabs }) {
+  const showToast = useToast()
   const clients = useOwnerClients(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const practiceSettings = useOwnerSettings(ownerKey)

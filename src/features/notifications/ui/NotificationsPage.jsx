@@ -8,6 +8,7 @@ import { useOwnerSettings } from '../../../data/store/ownerDataHooks.js'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './notifications-page.css'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {ReturnType<typeof useNotifications>[number]} NotificationItem */
 
@@ -17,12 +18,12 @@ const SAVE_FAIL = SERVER_SAVE_FAIL
  * @param {Object} props
  * @param {string} props.ownerKey
  * @param {import('../../../data/sync/syncTypes.js').AppSession|null} [props.session]
- * @param {(message: string) => void} [props.showToast]
  * @param {() => void} props.onBack
  * @param {() => void} [props.onOpenMenu]
  * @param {(page: string) => void} props.onOpenPage 알림을 누르면 그 화면으로
  */
-export default function NotificationsPage({ ownerKey, session, showToast, onBack, onOpenMenu, onOpenPage }) {
+export default function NotificationsPage({ ownerKey, session, onBack, onOpenMenu, onOpenPage }) {
+  const showToast = useToast()
   const settings = useOwnerSettings(ownerKey)
   const items = useNotifications(ownerKey, session)
   const off = settings.notifOff || []

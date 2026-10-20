@@ -5,6 +5,7 @@ import { requestClientSave } from '../../../data/sync/clientMutations.js'
 import { requestClientDeletion } from '../../../data/sync/directMutationActions.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/clientTypes.js').ClientDraft} ClientDraft */
 /** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
@@ -35,9 +36,10 @@ function clientToDraft(item, scopeKey) {
 }
 
 /**
- * @param {{ ownerKey: string, scopeKey: string, showToast?: (message: string) => void }} params
+ * @param {{ ownerKey: string, scopeKey: string }} params
  */
-export function useScopedClients({ ownerKey, scopeKey, showToast }) {
+export function useScopedClients({ ownerKey, scopeKey }) {
+  const showToast = useToast()
   const clients = useOwnerClients(ownerKey)
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))

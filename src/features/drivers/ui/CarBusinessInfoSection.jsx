@@ -8,6 +8,7 @@ import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import { requestCarBusinessInfoSave } from '../../../data/sync/vehicleMutations.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import './car-business-info.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/carBusinessInfo.js').CarBusinessForm} CarBusinessForm */
 
@@ -44,9 +45,9 @@ function Field({ id, label, value, onChange, inputMode, placeholder, hint }) {
  * @param {import('../../../domain/financeTypes.js').CarLike} props.car 서브(기사) 차량
  * @param {Array<import('../../../domain/financeTypes.js').CarLike>} props.cars
  * @param {{ bizName?: string, bizNumber?: string, bankName?: string, accountNumber?: string, accountHolder?: string }} props.profile 차주 사업자·계좌(동일 스위치 켜짐 때 표시용)
- * @param {(message: string) => void} [props.showToast]
  */
-export default function CarBusinessInfoSection({ ownerKey, car, cars, profile, showToast }) {
+export default function CarBusinessInfoSection({ ownerKey, car, cars, profile }) {
+  const showToast = useToast()
   const [form, setForm] = useState(() => carToBusinessForm(car))
   const [saving, setSaving] = useState(false)
   /** @param {keyof CarBusinessForm} key @param {string} value */

@@ -7,11 +7,13 @@ import { hydrateFromSupabase } from '../../../data/hydrate/hydrate.js'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import './InviteRedeemModal.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /**
- * @param {{ session: AppSession|null, showToast?: (message: string) => void, onClose: () => void, onLinked: (session: AppSession) => void }} props
+ * @param {{ session: AppSession|null, onClose: () => void, onLinked: (session: AppSession) => void }} props
  */
-export default function InviteRedeemModal({ session, showToast, onClose, onLinked }) {
+export default function InviteRedeemModal({ session, onClose, onLinked }) {
+  const showToast = useToast()
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const ready = code.trim().length >= 4 && !busy

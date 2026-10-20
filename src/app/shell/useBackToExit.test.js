@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withToast } = await import('../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { BrowserRouter } = await import('react-router-dom')
@@ -39,13 +40,13 @@ async function mount(standalone) {
   /** @type {Array<string>} */
   const toasts = []
   function Probe() {
-    useBackToExit((message) => { toasts.push(message) }, 60)
+    useBackToExit(60)
     return null
   }
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(Probe))) })
+  await act(async () => { root.render(withToast(React.createElement(BrowserRouter, null, React.createElement(Probe)), (/** @type {string} */ message) => { toasts.push(message) })) })
   const idx = () => Reflect.get(window.history.state || {}, 'idx')
   const back = async () => {
     await act(async () => {

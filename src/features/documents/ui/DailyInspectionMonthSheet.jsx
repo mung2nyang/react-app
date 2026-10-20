@@ -15,8 +15,8 @@ import { SkeletonLines } from '../../../shared/ui/Skeleton.jsx'
 
 /** @typedef {import('../../../domain/dailyInspectionMonth.js').MonthInspection} MonthInspection */
 
-/** @param {{ ownerKey: string, logKey: string, viewDate: Date, onChangeMonth: (next: Date) => void, tabs?: import('react').ReactNode, showToast?: (message: string) => void }} props */
-export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, onChangeMonth, tabs, showToast }) {
+/** @param {{ ownerKey: string, logKey: string, viewDate: Date, onChangeMonth: (next: Date) => void, tabs?: import('react').ReactNode }} props */
+export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, onChangeMonth, tabs }) {
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const [rangeIndex, setRangeIndex] = useState(() => initialRangeIndex(year, month, new Date()))
@@ -117,7 +117,6 @@ export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, 
       <DailyInspectionExportBar
         form={{ year, month, head, byDate: load.byDate, workData, todayKey: today }}
         ready={load.status === 'ready'}
-        showToast={showToast}
       />
     </div>
   )

@@ -11,6 +11,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: DailyInspectionShareModal } = await import('./DailyInspectionShareModal.jsx')
@@ -32,12 +33,11 @@ async function mount() {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(DailyInspectionShareModal, {
+    root.render(withToast(React.createElement(DailyInspectionShareModal, {
       month: 9,
       buildFile: async (/** @type {'pdf'|'image'} */ type) => { built.push(type); return fakeFile },
       onClose: () => { closed += 1 },
-      showToast: (/** @type {string} */ message) => { toasts.push(message) },
-    }))
+    }), (/** @type {string} */ message) => { toasts.push(message) }))
   })
   return {
     container,

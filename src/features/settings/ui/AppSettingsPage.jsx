@@ -12,6 +12,7 @@ import AppSettingsBackupSection from './AppSettingsBackupSection.jsx'
 import './app-settings.css'
 import './app-settings-groups.css'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../../../domain/financeTypes.js').SubCarPracticeSettings} SubCarPracticeSettings */
@@ -21,10 +22,10 @@ import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
  * @param {string} [props.ownerKey]
  * @param {import('../../../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {() => void} [props.onBack]
- * @param {(message: string) => void} [props.showToast]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function AppSettingsPage({ ownerKey = 'guest', session = null, onBack, showToast, onOpenMenu }) {
+export default function AppSettingsPage({ ownerKey = 'guest', session = null, onBack, onOpenMenu }) {
+  const showToast = useToast()
   const locked = useHydrationLock()
   const settings = useOwnerSettings(ownerKey)
   const { logId: rawLogId } = useParams()
@@ -162,10 +163,10 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
 
         <h3 className="settings-group-title">고정 노선</h3>
         <section className="setting-section">
-          <FixedRouteBlock scope={logId ? 'sub' : 'main'} ownerKey={ownerKey} clientScopeKey={clientScopeKey} settings={settings} onPatch={patch} showToast={showToast} />
+          <FixedRouteBlock scope={logId ? 'sub' : 'main'} ownerKey={ownerKey} clientScopeKey={clientScopeKey} settings={settings} onPatch={patch} />
         </section>
 
-        {!logId && ownerKey === 'guest' && <AppSettingsBackupSection showToast={showToast} />}
+        {!logId && ownerKey === 'guest' && <AppSettingsBackupSection />}
       </fieldset>
     </div>
   )

@@ -638,7 +638,7 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
   const apiBefore = (callCounts['clients.insert'] || 0) + (callCounts['vehicles.insert'] || 0) + (callCounts['vehicles.delete'] || 0)
   try {
     await act(async () => {
-      root.render(React.createElement(ClientListPage, { ownerKey: ownerA, showToast: () => {} }))
+      root.render(React.createElement(ClientListPage, { ownerKey: ownerA }))
     })
     await act(async () => { findButtonByText(container, '+ 추가')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
     await waitUntil(() => !!container.querySelector('#clientCompanyName'))
@@ -659,7 +659,7 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
   const carRoot = createTrackedRoot(carBox)
   try {
     await act(async () => {
-      carRoot.render(React.createElement(MemoryRouter, null, React.createElement(CarListPage, { ownerKey: ownerA, showToast: () => {} })))
+      carRoot.render(React.createElement(MemoryRouter, null, React.createElement(CarListPage, { ownerKey: ownerA })))
     })
     await act(async () => { findButtonByText(carBox, '+ 추가')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
     await waitUntil(() => !!carBox.querySelector('#newCarNumber'))

@@ -10,6 +10,7 @@ import TemporalInput from '../../../shared/ui/TemporalInput.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 import './driver-connection.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/drivers.js').DriverDraft} DriverDraft */
 /** @typedef {import('../../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
@@ -33,12 +34,12 @@ function valueOf(draft, field) {
  * @param {Array<CarLike>} props.assignableCars
  * @param {Array<CarLike>} [props.cars] 메인 차량 배정을 칸에서 막으려고 받는 전체 차량
  * @param {string} [props.ownerDisplayName]
- * @param {(message: string) => void} [props.showToast]
  * @param {boolean} [props.required] 로그인 회원이면 true — 배정 차량·시작일이 꼭 필요하다
  * @param {() => void} props.onCancel
  * @param {() => void} props.onSave
  */
-export default function DriverFormModal({ draft, setDraft, editingId, drivers, assignableCars, cars = [], ownerDisplayName, showToast, required = false, onCancel, onSave }) {
+export default function DriverFormModal({ draft, setDraft, editingId, drivers, assignableCars, cars = [], ownerDisplayName, required = false, onCancel, onSave }) {
+  const showToast = useToast()
   const [problem, setProblem] = useState(/** @type {(DriverProblem & { value: string })|null} */ (null))
   // 문제 칸 값을 고치기 시작하면 표시를 거둔다.
   const shown = problem && valueOf(draft, problem.field) === problem.value ? problem : null

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { getState, subscribe } from '../../data/store/app-store.js'
 import { retryHydrate } from '../../data/hydrate/hydrate.js'
+import { useToast } from '../../shared/hooks/useToast.js'
 
 const bannerStyle = {
   display: 'flex',
@@ -27,11 +28,8 @@ const buttonStyle = {
   cursor: 'pointer',
 }
 
-/**
- * @param {Object} props
- * @param {(message: string) => void} [props.showToast]
- */
-export default function HydrationRetryBanner({ showToast }) {
+export default function HydrationRetryBanner() {
+  const showToast = useToast()
   const [status, setStatus] = useState(() => getState().hydration.status)
   const [retrying, setRetrying] = useState(false)
 

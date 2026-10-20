@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { DAILY_INSPECTION_SECTIONS, INSPECTION_RESULT_LABEL, allGoodItems, isInspectionComplete } from '../../../domain/dailyInspectionItems.js'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
 /** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
@@ -17,10 +18,10 @@ const INCOMPLETE_TOAST = '모든 항목을 선택해 주세요.'
  *   inspectorName: string,
  *   onClose: () => void,
  *   onSave: (next: { items: InspectionItems, actionNote: string }) => Promise<boolean>,
- *   showToast?: (message: string) => void,
  * }} props
  */
-export default function DailyInspectionModal({ title, record, inspectorName, onClose, onSave, showToast }) {
+export default function DailyInspectionModal({ title, record, inspectorName, onClose, onSave }) {
+  const showToast = useToast()
   const [mode, setMode] = useState(/** @type {'input'|'view'} */ (record ? 'view' : 'input'))
   const [fromView, setFromView] = useState(false)
   const [items, setItems] = useState(/** @type {InspectionItems} */ ({}))

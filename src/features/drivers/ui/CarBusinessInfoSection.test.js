@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: CarBusinessInfoSection } = await import('./CarBusinessInfoSection.jsx')
@@ -56,9 +57,9 @@ async function mount(ownerKey, profile, toasts) {
   const root = createRoot(container)
   const car = subCar(ownerKey)
   await act(async () => {
-    root.render(React.createElement(CarBusinessInfoSection, {
-      ownerKey, car, cars: getState().cars[ownerKey], profile, showToast: (message) => toasts.push(message),
-    }))
+    root.render(withToast(React.createElement(CarBusinessInfoSection, {
+      ownerKey, car, cars: getState().cars[ownerKey], profile,
+    }), (/** @type {string} */ message) => toasts.push(message)))
   })
   return {
     container,

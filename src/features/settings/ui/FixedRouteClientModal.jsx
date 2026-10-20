@@ -11,6 +11,7 @@ import { requestClientSave } from '../../../data/sync/clientMutations.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import FieldError, { focusField } from '../../../shared/ui/FieldError.jsx'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
 
@@ -21,9 +22,9 @@ import FieldError, { focusField } from '../../../shared/ui/FieldError.jsx'
  * @param {Array<ClientLike>} props.candidates 이 스코프에서 고를 수 있는 거래처
  * @param {ClientLike|null} props.linked 지금 연결된 거래처
  * @param {() => void} props.onClose
- * @param {(message: string) => void} [props.showToast]
  */
-export default function FixedRouteClientModal({ ownerKey, clients, candidates, linked, onClose, showToast }) {
+export default function FixedRouteClientModal({ ownerKey, clients, candidates, linked, onClose }) {
+  const showToast = useToast()
   const [selectedId, setSelectedId] = useState(linked?.id || '')
   const [price, setPrice] = useState(formatCurrencyInput(linked?.fixedUnitPrice ?? ''))
   const [palletOn, setPalletOn] = useState(!!linked?.palletOn)

@@ -25,7 +25,7 @@ test('AppSettingsPage 백업 섹션: 게스트 세션에서만 노출되고 비�
   try {
     // 1. 게스트 세션 (ownerKey === 'guest')
     await act(async () => {
-      root.render(React.createElement(AppSettingsPage, { ownerKey: 'guest', onBack: () => {}, showToast: () => {} }))
+      root.render(React.createElement(AppSettingsPage, { ownerKey: 'guest', onBack: () => {} }))
     })
 
     const buttonsGuest = [...container.querySelectorAll('button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())
@@ -36,7 +36,7 @@ test('AppSettingsPage 백업 섹션: 게스트 세션에서만 노출되고 비�
 
     // 2. 비게스트(로그인/소속기사/차주) 세션 (ownerKey !== 'guest')
     await act(async () => {
-      root.render(React.createElement(AppSettingsPage, { ownerKey: 'owner-user-99', onBack: () => {}, showToast: () => {} }))
+      root.render(React.createElement(AppSettingsPage, { ownerKey: 'owner-user-99', onBack: () => {} }))
     })
 
     const buttonsOwner = [...container.querySelectorAll('button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())

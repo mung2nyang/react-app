@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withToast } = await import('../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { BrowserRouter, useNavigate } = await import('react-router-dom')
@@ -49,7 +50,7 @@ test('설치 앱: 홈 되감기로 돌아오면 종료 안내 없이 붙잡기�
   /** @type {{ go: ReturnType<typeof useNavigate> | null }} */
   const nav = { go: null }
   function Probe() {
-    useBackToExit((message) => { toasts.push(message) }, 60)
+    useBackToExit(60)
     nav.go = useNavigate()
     return null
   }
@@ -59,7 +60,7 @@ test('설치 앱: 홈 되감기로 돌아오면 종료 안내 없이 붙잡기�
   const idx = () => Reflect.get(window.history.state || {}, 'idx')
   const popped = () => new Promise((resolve) => { window.addEventListener('popstate', () => resolve(undefined), { once: true }) })
   try {
-    await act(async () => { root.render(React.createElement(BrowserRouter, null, React.createElement(Probe))) })
+    await act(async () => { root.render(withToast(React.createElement(BrowserRouter, null, React.createElement(Probe)), (/** @type {string} */ message) => { toasts.push(message) })) })
     assert.equal(idx(), 1, '홈 붙잡기')
     await act(async () => { nav.go?.('/app/calendar') })
     await act(async () => { nav.go?.('/app/revenue', { replace: true }) })

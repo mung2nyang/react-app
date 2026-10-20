@@ -7,9 +7,8 @@ import ShareFileModal from './ShareFileModal.jsx'
  * @param {number} props.month 0부터
  * @param {(type: 'pdf'|'image') => Promise<File>} props.buildFile
  * @param {() => void} props.onClose
- * @param {(message: string) => void} [props.showToast]
  */
-export default function DailyInspectionShareModal({ month, buildFile, onClose, showToast }) {
+export default function DailyInspectionShareModal({ month, buildFile, onClose }) {
   const message = `안녕하세요. ${month + 1}월 일상점검표입니다. 확인 부탁드립니다.`
   return (
     <ShareFileModal
@@ -23,7 +22,6 @@ export default function DailyInspectionShareModal({ month, buildFile, onClose, s
       buildFile={buildFile}
       smsTarget={() => ({ phone: '', message })}
       onClose={onClose}
-      showToast={showToast}
     />
   )
 }

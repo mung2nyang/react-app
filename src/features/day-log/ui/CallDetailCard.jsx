@@ -3,6 +3,7 @@ import { parseCurrencyValue } from '../../../domain/money.js'
 import { commissionInfo, durationSuffix, formatCallTime } from './callDetailFormHelpers.js'
 import { EditIcon, DeleteIcon, PhoneIcon, MessageIcon } from '../../../shared/ui/icons.jsx'
 import './call-detail-card.css'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
@@ -19,9 +20,9 @@ import './call-detail-card.css'
  * @param {() => void} props.onDelete
  * @param {() => void} props.onTogglePayment
  * @param {() => void} props.onMessage
- * @param {(message: string) => void} [props.showToast]
  */
-export default function CallDetailCard({ item, payment, settings, client, onEdit, onDelete, onTogglePayment, onMessage, showToast }) {
+export default function CallDetailCard({ item, payment, settings, client, onEdit, onDelete, onTogglePayment, onMessage }) {
+  const showToast = useToast()
   const fare = parseCurrencyValue(item.fare)
   const unpaid = payment.status !== 'paid'
   // 받을 돈이 없는 0원 운행은 미수가 아니라 결제 단추를 안 보인다(로드맵 62, 미수 목록과 같은 기준).

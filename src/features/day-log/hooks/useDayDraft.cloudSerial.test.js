@@ -10,6 +10,7 @@ mock.module('../../../data/cloud/supabaseClient.js', { namedExports: { supabase:
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { useDayDraft } = await import('./useDayDraft.js')
@@ -68,13 +69,13 @@ async function mount(ownerKey) {
   /** @type {Array<string>} */
   const toasts = []
   function Harness() {
-    latest.current = useDayDraft(ownerKey, DK, undefined, (message) => { toasts.push(message) })
+    latest.current = useDayDraft(ownerKey, DK)
     return null
   }
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(React.createElement(Harness)) })
+  await act(async () => { root.render(withToast(React.createElement(Harness), (/** @type {string} */ message) => { toasts.push(message) })) })
   return {
     latest,
     toasts,

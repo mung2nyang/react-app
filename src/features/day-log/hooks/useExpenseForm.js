@@ -7,16 +7,17 @@ import { emptyExpenseDraft, upsertExpense } from '../../../domain/expenses.js'
 import { readOwnerExpenses, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import { getCloudOwnerKey } from '../../../data/cloud/cloudSession.js'
 import { saveFailMessage } from '../../../shared/utils/failureMessages.js'
+import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../ui/dayLogTypes.js').ExpenseItem} ExpenseItem */
 
 /**
  * @param {string} ownerKey
  * @param {string} dateKey
- * @param {(message: string) => void} [showToast]
  * @param {string} [logId]
  */
-export function useExpenseForm(ownerKey, dateKey, showToast, logId = 'main') {
+export function useExpenseForm(ownerKey, dateKey, logId = 'main') {
+  const showToast = useToast()
   const expenses = useOwnerExpenses(ownerKey)
   const [kindPick, setKindPick] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
