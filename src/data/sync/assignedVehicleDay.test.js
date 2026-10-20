@@ -1,19 +1,19 @@
 // 로드맵 7-D-2 — 연동 해제 때 복사된 날의 배정 차량 번호(assignedVehicleNumber)를 앱이 읽고·지키고·서버에도 남긴다.
-import '../testSupport/setupDom.js'
+import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
+import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
-mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
-const { isPersistedDayRecord, parsePersistedWorkDataMap } = await import('../data/store/persistDayRecord.js')
-const { mergeWorkDataFromRows } = await import('../data/hydrate/hydrateMergeWork.js')
-const { saveDayRecord } = await import('../domain/day-record.js')
-const { commitMainDayLogToCloud } = await import('../data/sync/dayLogCloudCommit.js')
-const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
-const { setHydration, getState } = await import('../data/store/app-store.js')
-const { commitCars, commitWorkData } = await import('../data/store/commitHelpers.js')
+const { isPersistedDayRecord, parsePersistedWorkDataMap } = await import('../store/persistDayRecord.js')
+const { mergeWorkDataFromRows } = await import('../hydrate/hydrateMergeWork.js')
+const { saveDayRecord } = await import('../../domain/day-record.js')
+const { commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
+const { setHydration, getState } = await import('../store/app-store.js')
+const { commitCars, commitWorkData } = await import('../store/commitHelpers.js')
 
 const DK = '2026-09-20'
 const PLATE = '11가1111'
@@ -64,11 +64,11 @@ describe('하루 저장(saveDayRecord)', () => {
 })
 
 describe('서버 쓰기(commitMainDayLogToCloud)', () => {
-  /** @param {string} ownerKey @param {import('../domain/dayRecordTypes.js').DayRecordLike} record */
+  /** @param {string} ownerKey @param {import('../../domain/dayRecordTypes.js').DayRecordLike} record */
   function begin(ownerKey, record) {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
-    /** @type {Array<import('../data/store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
     const upserts = []
     handlers.daily_logs = { upsert: (row) => { upserts.push(row ?? null); return { data: { id: 5001 }, error: null } } }
     handlers.maintenance_records = { select: () => ({ data: [{ id: 'm-1' }], error: null }) }

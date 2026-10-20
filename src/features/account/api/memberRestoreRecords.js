@@ -7,9 +7,9 @@ import { isPersistedInvoice } from '../../../data/store/persistDomainInvoice.js'
 import { isValidCalendarDateKey } from '../../../domain/dateKey.js'
 import { saveClientsToCloud } from '../../../data/sync/clientCloudSave.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
-import { saveExpenses } from '../../../lib/expenses.js'
-import { saveInvoices } from '../../../lib/invoices.js'
-import { SERVER_SAVE_FAIL } from '../../../lib/failureMessages.js'
+import { saveExpenses } from '../../../data/sync/expensesSave.js'
+import { saveInvoices } from '../../../data/sync/invoicesSave.js'
+import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */

@@ -1,6 +1,6 @@
 // @ts-check
 import { dedupeCallDetailsById, withCoercedCallDetailId } from '../../domain/callDetailIds.js'
-import { ALLOWED_CALL_DETAIL_KEYS, isPersistedCallDetail } from '../../lib/callDetailSchema.js'
+import { ALLOWED_CALL_DETAIL_KEYS, isPersistedCallDetail } from '../store/callDetailSchema.js'
 import { DAY_RECORD_KEYS } from '../store/persistDayRecord.js'
 import { isPlainObject } from '../store/persistDomainRecords.js'
 

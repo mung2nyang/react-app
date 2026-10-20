@@ -16,7 +16,7 @@ import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
 import { planPendingLogDiscard } from './logPendingLifecycle.js'
 import { deleteVehicleFromSupabase } from './directMutations.js'
 import { StaleSessionError } from './saveErrors.js'
-import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
 

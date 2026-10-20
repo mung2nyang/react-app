@@ -1,16 +1,16 @@
 // @ts-check
 // 세금계산서 upsert. 로그인 저장은 invoices 배열을 인자로 받고 Store/LS를 먼저 쓰지 않는다.
-import { supabase } from '../data/cloud/supabaseClient.js'
+import { supabase } from '../cloud/supabaseClient.js'
 import {
   applyInsertedTaxInvoiceId,
   buildTaxInvoiceRow,
   matchTaxInvoiceClientId,
   resolveTaxInvoiceVehicleId,
   TAX_INVOICE_VEHICLE_RETRY_ERROR,
-} from '../domain/taxInvoices.js'
-import { getState } from '../data/store/app-store.js'
+} from '../../domain/taxInvoices.js'
+import { getState } from '../store/app-store.js'
 
-/** @typedef {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
 /** @param {number} ms */
 function wait(ms) {
@@ -29,8 +29,8 @@ async function resolveTaxInvoiceVehicleIdWithRetry(item, ownerKey) {
 
 /**
  * @param {string} userId @param {string} ownerKey
- * @param {Array<import('../domain/financeTypes.js').CarLike>} cars
- * @param {Array<import('../domain/clientTypes.js').ClientLike>} clients
+ * @param {Array<import('../../domain/financeTypes.js').CarLike>} cars
+ * @param {Array<import('../../domain/clientTypes.js').ClientLike>} clients
  * @param {Array<InvoiceLike>} [invoices]
  * @returns {Promise<Array<InvoiceLike>|undefined>}
  */

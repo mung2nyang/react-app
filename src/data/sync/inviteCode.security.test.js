@@ -2,19 +2,19 @@
 // 10-S-2: 초대코드 10자리 형식·예전 코드 유지·문자 내용·수락 실패 문구.
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
+import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
 Object.assign(fakeSupabase.auth, {
   getSession: async () => ({ data: { session: { user: { id: 'driver-1' } } }, error: null }),
 })
-mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const {
   formatInviteCode, generateInviteCode, INVITE_CODE_PATTERN, normalizeInviteCode, upsertDriver,
-} = await import('../domain/drivers.js')
-const { buildDriverInviteSmsHref } = await import('../features/drivers/api/driverInviteSms.js')
-const { redeemDriverInviteCode } = await import('../data/sync/driverLinkRpc.js')
+} = await import('../../domain/drivers.js')
+const { buildDriverInviteSmsHref } = await import('../../features/drivers/api/driverInviteSms.js')
+const { redeemDriverInviteCode } = await import('./driverLinkRpc.js')
 
 const draft = { name: '박기사', phone: '010-3333-4444', vehicleNumber: '', startDate: '', endDate: '' }
 
@@ -46,7 +46,7 @@ describe('초대 저장 검사', () => {
   })
 
   test('예전 6자리 코드는 바꾸지 않고 수정할 때만 통과, 다른 6자리로 바꾸면 거절', () => {
-    /** @type {Array<import('../data/sync/syncTypes.js').DriverRecord>} */
+    /** @type {Array<import('./syncTypes.js').DriverRecord>} */
     const items = [{ id: 'd1', ...draft, inviteCode: '123456', status: 'linked' }]
     assert.equal(upsertDriver(items, { ...draft, name: '새이름', inviteCode: '123456' }, 'd1').error, undefined)
     assert.equal(upsertDriver(items, { ...draft, inviteCode: '654321' }, 'd1').error, '[코드 생성]으로 초대 코드를 만들어 주세요.')
@@ -70,7 +70,7 @@ describe('초대 문자', () => {
 describe('기사 초대코드 수락', () => {
   test('서버에 정리된 코드를 보내고, 빈 결과는 틀림·만료 안내로 바꾼다', async () => {
     resetHandlers()
-    /** @type {Array<import('../data/store/atomicPersist.js').JsonValue|undefined>} */
+    /** @type {Array<import('../store/atomicPersist.js').JsonValue|undefined>} */
     const sent = []
     handlers.rpc = { redeem_driver_invite_code: (args) => { sent.push(args); return { data: [], error: null } } }
     await assert.rejects(

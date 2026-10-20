@@ -1,5 +1,5 @@
 // @ts-check
-import { savePracticeSettings } from '../../lib/practiceSettings.js'
+import { savePracticeSettings } from './settingsSave.js'
 import { requestVehicleSave } from './vehicleMutations.js'
 
 /**

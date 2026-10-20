@@ -4,7 +4,7 @@ import { supabase } from '../cloud/supabaseClient.js'
 import { assertSessionStillCurrent, blockedReasonForCloudWrite, captureSession } from '../cloud/cloudSession.js'
 import { StaleSessionError } from './saveErrors.js'
 import { commitDrivers } from '../store/commitHelpers.js'
-import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
 /** @typedef {import('./syncTypes.js').DriverRecord} DriverRecord */
 /** @typedef {'request'|'consent'|'cancel'} UnlinkAction */

@@ -40,7 +40,7 @@ mock.module('../../../data/sync/clientCloudSave.js', {
     },
   },
 })
-mock.module('../../../lib/expenses.js', {
+mock.module('../../../data/sync/expensesSave.js', {
   namedExports: {
     saveExpenses: async (/** @type {string} */ _owner, /** @type {Array<Record<string, unknown>>} */ items) => {
       expenseSaves.push(items)
@@ -48,7 +48,7 @@ mock.module('../../../lib/expenses.js', {
     },
   },
 })
-mock.module('../../../lib/invoices.js', { namedExports: { saveInvoices: async () => {} } })
+mock.module('../../../data/sync/invoicesSave.js', { namedExports: { saveInvoices: async () => {} } })
 
 const { describeRestoreCounts, pickMemberRecords, restoreClients, restoreExpenses } = await import('./memberRestoreRecords.js')
 

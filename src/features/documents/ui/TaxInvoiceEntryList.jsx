@@ -1,6 +1,6 @@
 // @ts-check
 import { useState } from 'react'
-import { formatWon } from '../../../lib/money.js'
+import { formatWon } from '../../../domain/money.js'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 import './tax-invoice.css'
 

@@ -2,7 +2,7 @@
 // 차주(오너) 손익 화면. 기사 탭에서 개별 기사(차량) 드롭다운 필터.
 import { useEffect, useMemo, useState } from 'react'
 import { isVehicleRevenueSharedWithOwner } from '../../../domain/cars.js'
-import { getOwnerMonthlyFinanceDetail } from '../../../lib/finance.js'
+import { getOwnerMonthlyFinanceDetail } from '../../../domain/finance.js'
 import { useOwnerCars, useOwnerDriverExpenses, useOwnerExpenses, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
 import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { RevenuePeriodBar, RevenueYearList } from './RevenuePeriodParts.jsx'

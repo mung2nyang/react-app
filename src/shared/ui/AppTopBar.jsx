@@ -1,6 +1,6 @@
 // @ts-check
 // 홈·달력 탭 위쪽 한 줄: 왼쪽 작은 로고(트럭 그림 + 앱 이름), 오른쪽 [알림 종](넘길 때만) + 메뉴.
-import { assetPath } from '../../lib/assetPath.js'
+import { assetPath } from '../utils/assetPath.js'
 import './app-top-bar.css'
 
 const BANNER = assetPath('/images/banner_image.png')

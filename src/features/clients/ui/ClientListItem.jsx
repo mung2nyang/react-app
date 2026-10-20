@@ -1,5 +1,5 @@
 // @ts-check
-import { getPaymentTermLabel } from '../../../lib/clients.js'
+import { getPaymentTermLabel } from '../../../domain/clients.js'
 import CardActionButtons from '../../../shared/ui/CardActionButtons.jsx'
 import { StarIcon } from '../../../shared/ui/icons.jsx'
 

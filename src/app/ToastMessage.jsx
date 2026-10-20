@@ -1,6 +1,6 @@
 // @ts-check
 // 화면 아래 알림 — 실패 문구면 빨간 바탕·느낌표·바로 읽어 줌(로드맵 83), 문장마다 새 줄.
-import { isFailureMessage } from '../lib/failureMessages.js'
+import { isFailureMessage } from '../shared/utils/failureMessages.js'
 
 /**
  * 마침표·물음표·느낌표 뒤 띄어쓰기에서 문장을 나눈다. 띄어쓰기는 다음 문장 앞에 남겨 글자 전체는 그대로.

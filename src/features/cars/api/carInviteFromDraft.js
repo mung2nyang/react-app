@@ -2,7 +2,7 @@
 /** @typedef {import('../../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../../../data/sync/syncTypes.js').CarRecord} CarRecord */
 /** @typedef {import('../../../domain/financeTypes.js').CarLike} CarLike */
-import { normalizeInviteCode, upsertDriver } from '../../../lib/drivers.js'
+import { normalizeInviteCode, upsertDriver } from '../../../domain/drivers.js'
 import { requestDriverInviteSave } from '../../../data/sync/requestDriverInviteSave.js'
 
 /**

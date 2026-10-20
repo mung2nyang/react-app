@@ -14,7 +14,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: ToastMessage } = await import('./ToastMessage.jsx')
-const { SERVER_SAVE_FAIL } = await import('../lib/failureMessages.js')
+const { SERVER_SAVE_FAIL } = await import('../shared/utils/failureMessages.js')
 
 /** @param {string} message @param {(container: HTMLElement) => void} check */
 async function withToast(message, check) {

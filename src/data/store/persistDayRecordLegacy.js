@@ -1,6 +1,6 @@
 // @ts-check
 import * as v from 'valibot'
-import { isValidCurrencyAmount } from '../../lib/callDetailSchema.js'
+import { isValidCurrencyAmount } from './callDetailSchema.js'
 import { by, finiteNumber, nonEmptyString, opt, plain, str, stringOrNumber } from '../../domain/schemaParts.js'
 
 /** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */

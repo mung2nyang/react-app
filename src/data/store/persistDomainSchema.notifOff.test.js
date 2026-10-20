@@ -7,7 +7,7 @@ import { test } from 'node:test'
 
 const { storageKeyFor } = await import('./persist.js')
 const { readPersistDomain } = await import('./persistDomainRead.js')
-const { savePracticeSettings } = await import('../../lib/practiceSettings.js')
+const { savePracticeSettings } = await import('../sync/settingsSave.js')
 
 test('끈 알림 종류를 저장한 설정을 다시 읽어도 통과하고 값이 그대로다', async () => {
   const owner = 'notif-off-roundtrip'

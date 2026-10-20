@@ -2,7 +2,7 @@
 // 프로필·기사 슬라이스 구독. getSnapshot에서 empty 병합·새 배열을 만들면
 // 관계없는 notify에도 참조가 바뀌어 렌더 루프가 난다 — 원본만 구독한다.
 import { useMemo, useSyncExternalStore } from 'react'
-import { EMPTY_PROFILE } from '../../lib/profile.js'
+import { EMPTY_PROFILE } from '../sync/profileSave.js'
 import { getState, subscribe } from './app-store.js'
 
 /** @typedef {import('../sync/syncTypes.js').DriverRecord} DriverRecord */

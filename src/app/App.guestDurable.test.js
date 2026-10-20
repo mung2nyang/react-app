@@ -55,7 +55,7 @@ const { clearGuestModePersisted } = await import('./guestSessionPersist.js')
 const { getState, subscribe } = await import('../data/store/app-store.js')
 const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
 const { normalizeSettings } = await import('../domain/practiceSettings.js')
-const { DEVICE_SAVE_FAIL } = await import('../lib/failureMessages.js')
+const { DEVICE_SAVE_FAIL } = await import('../shared/utils/failureMessages.js')
 
 /** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 

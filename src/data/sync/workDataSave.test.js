@@ -3,14 +3,14 @@
 // "삭제 대기 중이던 날짜에 재입력 -> tombstone 해제"를 정확히 workData 커밋과 같은
 // 원자적 트랜잭션(commitBatch)으로 묶는지, 그리고 평범한 편집(삭제도 재입력도
 // 아닌)에서는 tombstone 도메인을 건드리지 않는지를 실측한다.
-import '../testSupport/stubSupabaseClient.js'
-import '../testSupport/setupDom.js'
+import '../../testSupport/stubSupabaseClient.js'
+import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
-const { saveWorkDataWithTombstoneCheck, saveWorkData } = await import('./workData.js')
-const { commitBatch, getState, subscribe } = await import('../data/store/app-store.js')
-const { readJsonKey } = await import('../data/store/persist.js')
+const { saveWorkDataWithTombstoneCheck, saveWorkData } = await import('./workDataSave.js')
+const { commitBatch, getState, subscribe } = await import('../store/app-store.js')
+const { readJsonKey } = await import('../store/persist.js')
 
 test('날짜가 실제로 지워지면(있었는데 없어짐) workData 커밋과 같은 트랜잭션에 tombstone을 기록한다', () => {
   const ownerKey = 'wd-tombstone-delete'

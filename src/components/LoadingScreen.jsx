@@ -1,6 +1,6 @@
 // @ts-check
 // 10-L 로딩 표시 "운행일지 ● ● ●" — 모양 CSS는 index.html <style>(앱 파일이 오기 전과 같은 모양), 여기선 같은 클래스만 쓴다.
-import { assetPath } from '../lib/assetPath.js'
+import { assetPath } from '../shared/utils/assetPath.js'
 
 const BANNER = assetPath('/images/banner_image.png')
 

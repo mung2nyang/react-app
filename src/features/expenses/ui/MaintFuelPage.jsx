@@ -8,15 +8,16 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import CardActionButtons from '../../../shared/ui/CardActionButtons.jsx'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
 import { getExpensesForLog } from '../../../domain/expenseScope.js'
-import { getYearOptions, setYearMonth, shiftMonth } from '../../../lib/calendar.js'
+import { getYearOptions, setYearMonth, shiftMonth } from '../../../domain/calendar.js'
+import { saveExpenses } from '../../../data/sync/expensesSave.js'
 import {
-  emptyExpenseDraft, expenseTitle, filterMonth, groupExpensesByDate, KINDS,
-  monthTotal, removeExpense, saveExpenses, upsertExpense,
-} from '../../../lib/expenses.js'
-import { formatWon } from '../../../lib/money.js'
+  emptyExpenseDraft, expenseTitle, filterMonth, groupExpensesByDate, KINDS, monthTotal,
+  removeExpense, upsertExpense,
+} from '../../../domain/expenses.js'
+import { formatWon } from '../../../domain/money.js'
 import { readOwnerExpenses, useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import { getCloudOwnerKey } from '../../../data/cloud/cloudSession.js'
-import { saveFailMessage } from '../../../lib/failureMessages.js'
+import { saveFailMessage } from '../../../shared/utils/failureMessages.js'
 import './maint-fuel.css'
 
 /** @typedef {import('../../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */

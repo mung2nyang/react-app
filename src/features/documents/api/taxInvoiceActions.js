@@ -4,9 +4,9 @@
 
 import { requestClientTaxInfo } from '../../../data/sync/clientMutations.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
-import { getTaxInvoiceFlowMeta } from '../../../lib/finance.js'
-import { invoiceCanIssue, persistInvoiceRecord } from '../../../lib/invoices.js'
-import { SERVER_SAVE_FAIL } from '../../../lib/failureMessages.js'
+import { getTaxInvoiceFlowMeta } from '../../../domain/finance.js'
+import { invoiceCanIssue, persistInvoiceRecord } from '../../../domain/invoices.js'
+import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 

@@ -1,7 +1,7 @@
 // @ts-check
 import { callFareTotal, callVatTotal } from '../../../domain/day-record.js'
 import { callInsuranceTotal } from '../../../domain/call-details.js'
-import { getDetailPaymentSummary } from '../../../lib/finance.js'
+import { getDetailPaymentSummary } from '../../../domain/finance.js'
 import { commissionInfo } from './callDetailFormHelpers.js'
 import CallDetailCard from './CallDetailCard.jsx'
 import './call-detail-list.css'

@@ -9,7 +9,8 @@ import {
   requestDriverInviteSave,
   requestDriverStatusChange,
 } from '../../../data/sync/directMutationActions.js'
-import { countByStatus, formatInviteCode, generateInviteCode, saveDrivers, upsertDriver } from '../../../lib/drivers.js'
+import { saveDrivers } from '../../../data/sync/driversSave.js'
+import { countByStatus, formatInviteCode, generateInviteCode, upsertDriver } from '../../../domain/drivers.js'
 import { requestDriverUnlinkAction } from '../../../data/sync/driverUnlink.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.js'
 import DriverUnlinkControls from './DriverUnlinkControls.jsx'

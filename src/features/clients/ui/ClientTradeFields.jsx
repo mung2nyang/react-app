@@ -1,5 +1,5 @@
 // @ts-check
-import { formatPercentInput } from '../../../lib/money.js'
+import { formatPercentInput } from '../../../domain/money.js'
 import CurrencyInput from '../../../shared/ui/CurrencyInput.jsx'
 import FieldError, { invalidProps } from '../../../shared/ui/FieldError.jsx'
 

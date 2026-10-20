@@ -5,7 +5,7 @@ import { commitBatch } from '../store/app-store.js'
 import { StaleSessionError } from './saveErrors.js'
 import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
 import { upsertClientFromList } from './syncVehiclesClients.js'
-import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
 

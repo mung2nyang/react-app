@@ -1,13 +1,13 @@
 // @ts-check
-/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 // 지출 칸 저장 — 항목 id 기준으로 넣기·고치기·(내가 알던 것만) 지우기. 연동 차량 칸은 차주·기사 공용 장부.
-import { supabase } from '../data/cloud/supabaseClient.js'
-import { fetchAllRows } from '../data/cloud/fetchAllRows.js'
-import { buildFuelRecordRow, expenseFromFuelRecord } from '../domain/fuelRecords.js'
-import { buildMaintenanceRecordRow, expenseFromMaintenanceRecord, parseEntityNumber } from '../domain/maintenanceRecords.js'
-import { buildMiscExpenseRecordRow, expenseFromMiscRecord } from '../domain/miscExpenseRecords.js'
+import { supabase } from '../cloud/supabaseClient.js'
+import { fetchAllRows } from '../cloud/fetchAllRows.js'
+import { buildFuelRecordRow, expenseFromFuelRecord } from '../../domain/fuelRecords.js'
+import { buildMaintenanceRecordRow, expenseFromMaintenanceRecord, parseEntityNumber } from '../../domain/maintenanceRecords.js'
+import { buildMiscExpenseRecordRow, expenseFromMiscRecord } from '../../domain/miscExpenseRecords.js'
 
-/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {{ dailyLogId: string, userId: string, vehicleId: string|number, workDate: string }} RowContext */
 /** @typedef {{ id: string, raw?: JsonValue, work_date?: string, sequence?: number }} ServerRow */
 /**

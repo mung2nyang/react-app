@@ -30,7 +30,7 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DailyInspectionNotice } = await import('./DailyInspectionNotice.jsx')
 const { commitCars, commitProfile } = await import('../../../data/store/commitHelpers.js')
-const { EMPTY_PROFILE } = await import('../../../lib/profile.js')
+const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.js')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.js')
 
 const OWNER = 'di-notice-owner'

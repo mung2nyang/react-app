@@ -51,7 +51,7 @@ const SETTINGS = plain(v.strictObject({
   dailyInspectionOn: opt(bool), notifOff: opt(v.array(str)),
 }))
 
-/** lib/profile.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
+/** data/sync/profileSave.js EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */
 const PROFILE = plain(v.strictObject({
   name: opt(str), phone: opt(str), bizName: opt(str), bizRepresentative: opt(str), bizNumber: opt(str), bizAddress: opt(str),
   bizType: opt(str), bizItem: opt(str), bizEmail: opt(str), bankName: opt(str), accountNumber: opt(str), accountHolder: opt(str),

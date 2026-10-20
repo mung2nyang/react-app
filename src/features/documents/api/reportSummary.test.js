@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
 const { buildMonthReport } = await import('./reportSummary.js')
-const { EMPTY_PROFILE } = await import('../../../lib/profile.js')
+const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.js')
 
 const OWNER_PROFILE = { ...EMPTY_PROFILE, name: '차주', bankName: '차주은행', accountNumber: '000-000', accountHolder: '차주명의' }
 

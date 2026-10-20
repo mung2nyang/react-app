@@ -30,7 +30,7 @@ const { act } = React
 const { default: DocumentIssuePage } = await import('./DocumentIssuePage.jsx')
 const { commitCars, commitInvoices, commitLogWorkData, commitProfile, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.js')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.js')
-const { EMPTY_PROFILE } = await import('../../../lib/profile.js')
+const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.js')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.js')
 const { todayKey } = await import('../../../domain/expenses.js')
 

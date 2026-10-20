@@ -16,7 +16,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: LoadingScreen } = await import('./LoadingScreen.jsx')
-const { applyTheme } = await import('../lib/practiceSettings.js')
+const { applyTheme } = await import('../data/sync/settingsSave.js')
 
 /** @param {boolean} inline */
 async function render(inline) {

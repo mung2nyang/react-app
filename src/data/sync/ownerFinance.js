@@ -1,6 +1,7 @@
 // @ts-check
-import { getReceivableItems } from '../../lib/finance.js'
-import { markReceivableItemPaid, saveWorkData } from '../../lib/workData.js'
+import { getReceivableItems } from '../../domain/finance.js'
+import { saveWorkData } from './workDataSave.js'
+import { markReceivableItemPaid } from '../../domain/payments.js'
 import { resolveFixedUnitPrice } from '../../domain/clients.js'
 import { commitLogWorkData } from '../store/commitHelpers.js'
 import {
@@ -19,7 +20,7 @@ import {
   commitMainDayLogToCloud,
 } from './dayLogCloudCommit.js'
 import { shouldCommitDayLogToCloud } from './mainDayLogRouting.js'
-import { SESSION_CHANGED_FAIL } from '../../lib/failureMessages.js'
+import { SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../domain/day-record.js').DayRecordLike} DayRecordLike */
 // WorkDataByLogId의 정본은 domain/financeTypes.js다 — alias만 한다(중복 선언 금지).

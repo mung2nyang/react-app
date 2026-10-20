@@ -1,6 +1,6 @@
 // @ts-check
 import { useState } from 'react'
-import { assetPath } from '../../../lib/assetPath.js'
+import { assetPath } from '../../../shared/utils/assetPath.js'
 import { tonnageDigits, tonnageValue } from '../../../domain/formatPhone.js'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 

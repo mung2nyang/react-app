@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../../domain/formatPhone.js'
-import { formatWon } from '../../../lib/money.js'
+import { formatWon } from '../../../domain/money.js'
 import { checkTaxInvoiceDraft } from '../api/taxInvoiceActions.js'
 import BizNumberHint from '../../../shared/ui/BizNumberHint.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'

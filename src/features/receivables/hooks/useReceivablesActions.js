@@ -6,13 +6,11 @@ import {
   persistReceivableWorkDataChange,
 } from '../../../data/sync/ownerFinance.js'
 import {
-  addPartialPayment,
-  markReceivableItemPaid,
-  undoLastPayment,
-} from '../../../lib/workData.js'
-import { getReceivableItems } from '../../../lib/finance.js'
-import { groupItems } from '../../../lib/receivables.js'
-import { formatWon } from '../../../lib/money.js'
+  addPartialPayment, markReceivableItemPaid, undoLastPayment,
+} from '../../../domain/payments.js'
+import { getReceivableItems } from '../../../domain/finance.js'
+import { groupItems } from '../../../domain/receivables.js'
+import { formatWon } from '../../../domain/money.js'
 import { checkPartialAmount } from '../../../domain/payments.js'
 import { focusField } from '../../../shared/ui/FieldError.jsx'
 

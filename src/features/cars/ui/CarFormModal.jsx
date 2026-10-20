@@ -1,8 +1,8 @@
 // @ts-check
 import { useState } from 'react'
 import { checkCarDraft } from '../../../domain/cars.js'
-import { formatPhoneNumber, tonnageDigits, tonnageValue } from '../../../lib/formatPhone.js'
-import { formatCurrencyInput, formatPercentInput } from '../../../lib/money.js'
+import { formatPhoneNumber, tonnageDigits, tonnageValue } from '../../../domain/formatPhone.js'
+import { formatCurrencyInput, formatPercentInput } from '../../../domain/money.js'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
 import CarDriverIncomeFields from './CarDriverIncomeFields.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'

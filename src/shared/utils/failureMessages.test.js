@@ -17,9 +17,9 @@ test('서버에 저장하다 실패하면 네트워크, 기기에 저장하다 �
 })
 
 test('기기 저장 실패 상수·로그인 바뀜 안내가 같은 문구를 쓴다', async () => {
-  const { STORAGE_FAIL_TOAST } = await import('../data/sync/localCommit.js')
+  const { STORAGE_FAIL_TOAST } = await import('../../data/sync/localCommit.js')
   assert.equal(STORAGE_FAIL_TOAST, DEVICE_SAVE_FAIL)
-  const source = (await import('node:fs')).readFileSync(new URL('../data/cloud/cloudSession.js', import.meta.url), 'utf8')
+  const source = (await import('node:fs')).readFileSync(new URL('../../data/cloud/cloudSession.js', import.meta.url), 'utf8')
   assert.equal(source.includes('화면을 새로고침한 뒤 다시 시도해 주세요.'), false, '문구를 직접 적지 않고 공용 상수를 쓴다')
   assert.ok(source.includes('SESSION_CHANGED_FAIL'))
 })
@@ -27,7 +27,7 @@ test('기기 저장 실패 상수·로그인 바뀜 안내가 같은 문구를 �
 test('공용 파일 밖에서 ①·③ 문구를 글자로 적은 곳이 없다(로드맵 56-B-1)', async () => {
   const { readdirSync, readFileSync, statSync } = await import('node:fs')
   const { join } = await import('node:path')
-  const root = new URL('..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
+  const root = new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')
   const phrases = ['저장에 실패했습니다. 네트워크 상태를 확인해 주세요.', '로그인 정보가 바뀌어 저장하지 못했습니다.']
   /** @type {Array<string>} */
   const found = []

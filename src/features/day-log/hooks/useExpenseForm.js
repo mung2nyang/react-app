@@ -2,10 +2,11 @@
 // 일지의 정비/주유/기타 관리 상태. 비용은 day record와 별도로 expenses 스토어에 즉시 저장한다(디바운스 없음).
 // 화면은 useOwnerExpenses로 구독하고, 저장·삭제 직전엔 readOwnerExpenses로 최신값을 다시 읽는다 — 옛 값으로 덮어쓰지 않게.
 import { useState } from 'react'
-import { emptyExpenseDraft, saveExpenses, upsertExpense } from '../../../lib/expenses.js'
+import { saveExpenses } from '../../../data/sync/expensesSave.js'
+import { emptyExpenseDraft, upsertExpense } from '../../../domain/expenses.js'
 import { readOwnerExpenses, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import { getCloudOwnerKey } from '../../../data/cloud/cloudSession.js'
-import { saveFailMessage } from '../../../lib/failureMessages.js'
+import { saveFailMessage } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../ui/dayLogTypes.js').ExpenseItem} ExpenseItem */
 

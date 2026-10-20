@@ -1,19 +1,19 @@
 // @ts-check
-// 계산서 localStorage I/O + domain/invoices.js 재수출 배럴.
-import { commitInvoices } from '../data/store/commitHelpers.js'
-import { getState } from '../data/store/app-store.js'
+// 계산서 저장(saveInvoices) — 계산 규칙은 domain/invoices.js.
+import { commitInvoices } from '../store/commitHelpers.js'
+import { getState } from '../store/app-store.js'
 import {
   assertSessionStillCurrent,
   blockedReasonForOwnerDataWrite,
   captureSession,
   getCloudOwnerKey,
   getCloudUserId,
-} from '../data/cloud/cloudSession.js'
+} from '../cloud/cloudSession.js'
 import { syncTaxInvoices } from './syncTaxInvoicesTable.js'
 
 /**
  * @param {string} ownerKey
- * @param {import('../domain/financeTaxInvoiceEntries.js').InvoiceLike[]} items
+ * @param {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike[]} items
  */
 export async function saveInvoices(ownerKey, items) {
   if (getCloudOwnerKey() !== ownerKey) {
@@ -30,5 +30,3 @@ export async function saveInvoices(ownerKey, items) {
   assertSessionStillCurrent(captured)
   commitInvoices(ownerKey, next || items)
 }
-
-export * from '../domain/invoices.js'

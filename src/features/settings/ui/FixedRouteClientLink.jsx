@@ -4,7 +4,7 @@ import { useState } from 'react'
 import FixedRouteClientModal from './FixedRouteClientModal.jsx'
 import { fixedRouteCandidates } from '../../../domain/clientDraft.js'
 import { getFixedRouteClient } from '../../../domain/clients.js'
-import { formatCurrencyInput } from '../../../lib/money.js'
+import { formatCurrencyInput } from '../../../domain/money.js'
 import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
 
 /**

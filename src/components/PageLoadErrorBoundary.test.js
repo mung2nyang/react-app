@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url'
 /** @type {Array<{ kind: string, message?: string }>} */
 const reported = []
 // 로드맵 55-B — 화면 오류를 오류 기록으로 보내는지 본다(서버 대신 받아 적기).
-mock.module('../lib/errorReport.js', {
+mock.module('../app/errorReport.js', {
   namedExports: { reportClientError: (/** @type {{ kind: string, message?: string }} */ report) => { reported.push(report); return true } },
 })
 register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)

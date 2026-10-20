@@ -2,7 +2,7 @@
 // 차량 저장·연동 해제·삭제 흐름 — 서버 요청 순서와 알림 문구는 화면에서 옮긴 그대로.
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { validateDriverLinkFields } from '../../../lib/cars.js'
+import { validateDriverLinkFields } from '../../../domain/cars.js'
 import { requestVehicleSave } from '../../../data/sync/vehicleMutations.js'
 import { requestDriverDeletion, requestVehicleDeletion } from '../../../data/sync/directMutationActions.js'
 import { requestDriverUnlinkAction } from '../../../data/sync/driverUnlink.js'

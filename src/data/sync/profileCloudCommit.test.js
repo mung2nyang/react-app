@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 /** @type {Array<{ table: string, row: Record<string, unknown> }>} */
 const captured = []
 
-mock.module('../data/cloud/supabaseClient.js', {
+mock.module('../cloud/supabaseClient.js', {
   namedExports: {
     supabase: {
       from: (/** @type {string} */ table) => ({
@@ -19,7 +19,7 @@ mock.module('../data/cloud/supabaseClient.js', {
 })
 
 const { upsertProfileOnSupabase } = await import('./profileCloudCommit.js')
-const { mergeProfileRow } = await import('../data/hydrate/hydrateMerge.js')
+const { mergeProfileRow } = await import('../hydrate/hydrateMerge.js')
 
 const FULL = {
   name: '김성명', phone: '010-1111-2222', bizName: '한빛운수', bizRepresentative: '김대표', bizNumber: '123-45-67890',
@@ -61,7 +61,7 @@ test('서버 행에 두 값이 없거나 null이면 빈 문자열, 없는 행이
   const noCols = mergeProfileRow({}, { name: '김성명' })
   assert.equal(noCols.bizRepresentative, '')
   assert.equal(noCols.accountHolder, '')
-  const nulls = mergeProfileRow({}, /** @type {import('../data/hydrate/hydrateMergeTypes.js').ProfileRow} */ ({ business_representative: undefined, account_holder: undefined }))
+  const nulls = mergeProfileRow({}, /** @type {import('../hydrate/hydrateMergeTypes.js').ProfileRow} */ ({ business_representative: undefined, account_holder: undefined }))
   assert.equal(nulls.bizRepresentative, '')
   assert.equal(mergeProfileRow({}, null).accountHolder, '')
 })

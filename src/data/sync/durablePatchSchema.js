@@ -1,7 +1,7 @@
 // @ts-check
 // durable 큐 내부 값(dateKey·patch·callDetails)을 EffectivePatch 계약대로 런타임 검증한다 — { "2026-08-31": [] } 같은 값이 통과하면 기존 일지가 지워진다.
 // JsonValue로 받아 실제로 좁힌 뒤에만 필드를 읽는다. 콜상세 검증은 callDetailSchema.js.
-import { isValidCallDetail } from '../../lib/callDetailSchema.js'
+import { isValidCallDetail } from '../store/callDetailSchema.js'
 
 /** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */

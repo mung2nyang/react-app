@@ -1,6 +1,6 @@
 // @ts-check
 // AI 비서 1단계: 홈 비서 입력 줄 — 화면 자리만(동작 연결 전이라 버튼이 아니라 모양만). 이름 "운비서"는 임시.
-import { assetPath } from '../../../lib/assetPath.js'
+import { assetPath } from '../../../shared/utils/assetPath.js'
 import './home-assistant.css'
 
 const AVATAR = assetPath('/images/assistant_unbiseo.png')

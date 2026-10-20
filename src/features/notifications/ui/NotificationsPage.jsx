@@ -3,11 +3,11 @@
 import { isCloudSession } from '../../../data/cloud/cloudSession.js'
 import { dismissNotification } from '../api/notifications.js'
 import useNotifications from '../hooks/useNotifications.js'
-import { savePracticeSettings } from '../../../lib/practiceSettings.js'
+import { savePracticeSettings } from '../../../data/sync/settingsSave.js'
 import { useOwnerSettings } from '../../../data/store/ownerDataHooks.js'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './notifications-page.css'
-import { SERVER_SAVE_FAIL } from '../../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {ReturnType<typeof useNotifications>[number]} NotificationItem */
 

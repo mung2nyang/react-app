@@ -11,7 +11,7 @@ import { readDurable, writeDurable } from './durableStorage.js'
 import { isValidPatch } from './durablePatchSchema.js'
 import { pulsePendingRetry } from './pendingRetryPulse.js'
 import { parsePendingOwner } from './pendingLogOwner.js'
-import { saveWorkDataWithTombstoneCheck } from '../../lib/workData.js'
+import { saveWorkDataWithTombstoneCheck } from './workDataSave.js'
 import {
   computeEffectivePendingEntries, fallback, keyOf, settledCallbacks,
 } from './pendingWorkDataWritesState.js'

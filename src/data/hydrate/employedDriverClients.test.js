@@ -1,19 +1,19 @@
 // @ts-check
-import '../testSupport/setupDom.js'
+import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
+import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
-mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
-const { buildClientRow } = await import('../data/cloud/cloudStorage.js')
-const { upsertClientFromList } = await import('../data/sync/syncVehiclesClients.js')
-const { requestClientSave } = await import('../data/sync/clientMutations.js')
-const { buildEmployedDriverSnapshot } = await import('../data/hydrate/hydrateEmployedDriver.js')
-const { mergeClientsFromRows } = await import('../data/hydrate/hydrateMergeClients.js')
-const { beginSessionEpoch, captureSession, endCloudSession } = await import('../data/cloud/cloudSession.js')
-const { setHydration } = await import('../data/store/app-store.js')
+const { buildClientRow } = await import('../cloud/cloudStorage.js')
+const { upsertClientFromList } = await import('../sync/syncVehiclesClients.js')
+const { requestClientSave } = await import('../sync/clientMutations.js')
+const { buildEmployedDriverSnapshot } = await import('./hydrateEmployedDriver.js')
+const { mergeClientsFromRows } = await import('./hydrateMergeClients.js')
+const { beginSessionEpoch, captureSession, endCloudSession } = await import('../cloud/cloudSession.js')
+const { setHydration } = await import('../store/app-store.js')
 
 describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 편집 검증', () => {
   test('buildClientRow는 전달된 ownerId를 user_id로 기록한다 (userId와 무관)', () => {
@@ -53,7 +53,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
     beginSessionEpoch('driver-user-1', 'owner-user-99')
     const captured = captureSession()
 
-    /** @type {Array<import('../domain/clientTypes.js').ClientLike>} */
+    /** @type {Array<import('../../domain/clientTypes.js').ClientLike>} */
     const clients = [
       {
         id: 'client-local-1',
@@ -128,7 +128,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
   })
 
   test('기사 쓰기 직후 hydrate 경합: 미동기화 로컬 거래처가 서버 hydrate 뒤에도 사라지지 않는다', () => {
-    /** @type {Array<import('../data/hydrate/hydrateMergeTypes.js').LocalClient>} */
+    /** @type {Array<import('./hydrateMergeTypes.js').LocalClient>} */
     const localClients = [
       {
         id: 'client-pending-1',
@@ -142,7 +142,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
       },
     ]
 
-    /** @type {Array<import('../data/hydrate/hydrateMergeTypes.js').ClientRow>} */
+    /** @type {Array<import('./hydrateMergeTypes.js').ClientRow>} */
     const serverRows = [
       {
         id: 101,
@@ -156,8 +156,8 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
     const merged = mergeClientsFromRows(localClients, serverRows)
 
     assert.equal(merged.length, 2)
-    assert.ok(merged.some((/** @type {import('../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '기존거래처'))
-    assert.ok(merged.some((/** @type {import('../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '방금추가한거래처'))
+    assert.ok(merged.some((/** @type {import('../../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '기존거래처'))
+    assert.ok(merged.some((/** @type {import('../../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '방금추가한거래처'))
   })
 
   test('buildEmployedDriverSnapshot: 배정 차량 스코프로 clients를 좁혀 조회하고 에러 시 throw한다', async () => {

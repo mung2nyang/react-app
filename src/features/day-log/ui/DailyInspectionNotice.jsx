@@ -9,7 +9,7 @@ import { useOwnerProfile } from '../../../data/store/ownerProfileDriversHooks.js
 import DailyInspectionModal from './DailyInspectionModal.jsx'
 import './daily-inspection.css'
 import './daily-inspection-loading.css'
-import { SERVER_SAVE_FAIL } from '../../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
 

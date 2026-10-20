@@ -1,5 +1,5 @@
 // @ts-check
-import { assetPath } from '../../../lib/assetPath.js'
+import { assetPath } from '../../../shared/utils/assetPath.js'
 
 const BANNER = assetPath('/images/banner_image.png')
 

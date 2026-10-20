@@ -1,6 +1,6 @@
 // @ts-check
 // day-log/ 컴포넌트들이 공유하는 JSDoc 타입만 모은 파일(런타임 코드 없음). call-details.js가 실제로 만드는
-// 콜상세 모양(buildCallDetail), lib/clients.js가 다루는 거래처 모양, lib/expenses.js가
+// 콜상세 모양(buildCallDetail), domain/clients.js가 다루는 거래처 모양, domain/expenses.js가
 // 다루는 비용 항목 모양을 정확히 문서화한다 — 여러 컴포넌트가 각자 느슨한 object로
 // 적으면 서로 어긋나기 쉽다.
 /** @typedef {ReturnType<typeof import('../../../domain/practiceSettings.js').normalizeSettings>} Settings */

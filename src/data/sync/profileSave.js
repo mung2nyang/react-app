@@ -1,16 +1,14 @@
 // @ts-check
-// persist 배럴(loadProfile)과 saveProfile→commitProfile. 화면 읽기는
-// useOwnerProfile / readOwnerProfile.
-import { readJsonKey } from '../data/store/persist.js'
-import { commitProfile } from '../data/store/commitHelpers.js'
-import { readOwnerSettings } from '../data/store/ownerDataHooks.js'
+// 개인정보 저장(saveProfile→commitProfile). 화면 읽기는 useOwnerProfile / readOwnerProfile.
+import { commitProfile } from '../store/commitHelpers.js'
+import { readOwnerSettings } from '../store/ownerDataHooks.js'
 import {
   assertSessionStillCurrent,
   blockedReasonForOwnerDataWrite,
   captureSession,
   getCloudOwnerKey,
   getCloudUserId,
-} from '../data/cloud/cloudSession.js'
+} from '../cloud/cloudSession.js'
 import { upsertProfileOnSupabase } from './profileCloudCommit.js'
 
 export const EMPTY_PROFILE = {
@@ -28,15 +26,9 @@ export const EMPTY_PROFILE = {
   accountHolder: '',
 }
 
-/** @param {string} [ownerKey] */
-export function loadProfile(ownerKey = 'guest') {
-  const parsed = readJsonKey('profile', ownerKey, {})
-  return { ...EMPTY_PROFILE, ...(parsed && typeof parsed === 'object' ? parsed : {}) }
-}
-
 /**
  * @param {string} ownerKey
- * @param {import('../data/hydrate/hydrateMergeTypes.js').LocalProfile} [profile]
+ * @param {import('../hydrate/hydrateMergeTypes.js').LocalProfile} [profile]
  */
 export async function saveProfile(ownerKey, profile) {
   const next = { ...EMPTY_PROFILE, ...(profile || {}) }

@@ -1,6 +1,6 @@
 // @ts-check
-import { formatWon, formatCurrencyInput, parseCurrencyValue } from '../../../lib/money.js'
-import { formatWorkMonth, getDdayLabel, receivableItemKey } from '../../../lib/receivables.js'
+import { formatWon, formatCurrencyInput, parseCurrencyValue } from '../../../domain/money.js'
+import { formatWorkMonth, getDdayLabel, receivableItemKey } from '../../../domain/receivables.js'
 import CurrencyInput from '../../../shared/ui/CurrencyInput.jsx'
 import FieldError, { invalidProps } from '../../../shared/ui/FieldError.jsx'
 import { partialInputId } from '../hooks/useReceivablesActions.js'

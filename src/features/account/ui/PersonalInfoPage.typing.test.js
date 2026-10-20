@@ -18,7 +18,7 @@ const { default: PersonalInfoPage } = await import('./PersonalInfoPage.jsx')
 const { commitProfile } = await import('../../../data/store/commitHelpers.js')
 const { getState, setHydration } = await import('../../../data/store/app-store.js')
 const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.js')
-const { EMPTY_PROFILE } = await import('../../../lib/profile.js')
+const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.js')
 const { SAVE_DELAY_MS } = await import('../hooks/usePersonalInfoDraft.js')
 
 const SERVER_DELAY_MS = 150

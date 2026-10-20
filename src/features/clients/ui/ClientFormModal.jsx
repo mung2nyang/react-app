@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { checkClientDraft } from '../../../domain/clients.js'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../../domain/formatPhone.js'
-import { needsPaymentTermValue, PAYMENT_TERMS } from '../../../lib/clients.js'
+import { needsPaymentTermValue, PAYMENT_TERMS } from '../../../domain/clients.js'
 import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
 import BizNumberHint from '../../../shared/ui/BizNumberHint.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'

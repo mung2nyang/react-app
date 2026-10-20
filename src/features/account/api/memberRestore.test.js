@@ -39,7 +39,7 @@ mock.module('../../../data/sync/clientCloudSave.js', {
     },
   },
 })
-mock.module('../../../lib/expenses.js', {
+mock.module('../../../data/sync/expensesSave.js', {
   namedExports: { saveExpenses: async () => { order.push('expenses'); if (failStep.expenses) throw new Error('x') } },
 })
 mock.module('../../../data/sync/dailyInspections.js', {
@@ -48,7 +48,7 @@ mock.module('../../../data/sync/dailyInspections.js', {
     saveDailyInspection: async () => { order.push('inspections') },
   },
 })
-mock.module('../../../lib/invoices.js', {
+mock.module('../../../data/sync/invoicesSave.js', {
   namedExports: { saveInvoices: async () => { order.push('invoices') } },
 })
 mock.module('./memberBackup.js', {

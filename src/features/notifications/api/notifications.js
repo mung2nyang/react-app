@@ -1,11 +1,11 @@
 // @ts-check
 /** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-import { todayKey } from '../../../lib/expenses.js'
+import { todayKey } from '../../../domain/expenses.js'
 import { todayWorkLogSelection } from '../../../domain/calendar.js'
-import { formatWon } from '../../../lib/money.js'
-import { getDdayLabel, overdueItems } from '../../../lib/receivables.js'
+import { formatWon } from '../../../domain/money.js'
+import { getDdayLabel, overdueItems } from '../../../domain/receivables.js'
 import { buildFinanceSettings, loadWorkDataByLogId } from '../../../data/sync/ownerFinance.js'
-import { getReceivableItems } from '../../../lib/finance.js'
+import { getReceivableItems } from '../../../domain/finance.js'
 import { readJsonKey } from '../../../data/store/persist.js'
 import { commitDismissedNotifications } from '../../../data/store/commitHelpers.js'
 import { readOwnerDrivers, readOwnerSettings } from '../../../data/store/ownerDataHooks.js'

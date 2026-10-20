@@ -15,7 +15,7 @@ import { StaleSessionError } from './saveErrors.js'
 import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
 import { upsertVehicleFromList } from './syncVehiclesClients.js'
 import { STORAGE_FAIL_TOAST } from './localCommit.js'
-import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 const SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL

@@ -1,19 +1,19 @@
 // @ts-check
 // 로드맵 73 — 설정 저장은 한 번에 하나, 앞 저장이 끝난 최신 설정 위에 얹는다.
-import '../testSupport/setupDom.js'
+import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
-import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
+import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
-mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
-const { savePracticeSettings } = await import('./practiceSettings.js')
-const { beginSessionEpoch, endCloudSession } = await import('../data/cloud/cloudSession.js')
-const { setHydration } = await import('../data/store/app-store.js')
-const { readOwnerSettings } = await import('../data/store/ownerDataHooks.js')
+const { savePracticeSettings } = await import('./settingsSave.js')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
+const { setHydration } = await import('../store/app-store.js')
+const { readOwnerSettings } = await import('../store/ownerDataHooks.js')
 
-/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 
 /** @param {string} ownerKey */
 function beginReady(ownerKey) {

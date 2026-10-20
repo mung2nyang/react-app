@@ -8,7 +8,7 @@ const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = crea
 mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { requestVehicleSave } = await import('./vehicleMutations.js')
-const { saveExpenses } = await import('../../lib/expenses.js')
+const { saveExpenses } = await import('./expensesSave.js')
 const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
 const { getState, setHydration } = await import('../store/app-store.js')
 const { commitCars, commitClients, commitDrivers, commitExpenses, commitSettings } = await import('../store/commitHelpers.js')

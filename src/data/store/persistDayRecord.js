@@ -1,7 +1,7 @@
 // @ts-check
 import * as v from 'valibot'
 import { isValidCalendarDateKey } from '../../domain/dateKey.js'
-import { isPersistedCallDetail, isValidCurrencyAmount } from '../../lib/callDetailSchema.js'
+import { isPersistedCallDetail, isValidCurrencyAmount } from './callDetailSchema.js'
 import { bool, by, finiteNumber, isPlainObject, opt, plain, str } from '../../domain/schemaParts.js'
 import { isPersistedFuelList, isPersistedMaintList, isPersistedMiscList } from './persistDayRecordLegacy.js'
 

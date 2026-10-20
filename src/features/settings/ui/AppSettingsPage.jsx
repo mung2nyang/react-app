@@ -1,7 +1,7 @@
 // @ts-check
 import { useParams } from 'react-router-dom'
 import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../../../data/store/ownerDataHooks.js'
-import { applyTheme, savePracticeSettings } from '../../../lib/practiceSettings.js'
+import { applyTheme, savePracticeSettings } from '../../../data/sync/settingsSave.js'
 import { defaultCarSettings } from '../../../domain/practiceSettings.js'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
 import { useHydrationLock } from '../../../app/useHydrationLock.js'
@@ -11,7 +11,7 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import AppSettingsBackupSection from './AppSettingsBackupSection.jsx'
 import './app-settings.css'
 import './app-settings-groups.css'
-import { SERVER_SAVE_FAIL } from '../../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../../../domain/financeTypes.js').SubCarPracticeSettings} SubCarPracticeSettings */
@@ -38,7 +38,7 @@ export default function AppSettingsPage({ ownerKey = 'guest', session = null, on
   const clientScopeKey = logId || (session?.linkedOwnerId ? (cars[0]?.number || 'main') : '')
 
   /**
-   * @param {import('../../../lib/practiceSettings.js').SettingsPatch} nextPatch
+   * @param {import('../../../data/sync/settingsSave.js').SettingsPatch} nextPatch
    */
   async function patch(nextPatch) {
     try {

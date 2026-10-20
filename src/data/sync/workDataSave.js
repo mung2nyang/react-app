@@ -1,11 +1,11 @@
 // @ts-check
-// 운행 기록(workData) 저장소 I/O + domain/의 day-record·call-details·payments 재수출 배럴.
-import { commitBatch } from '../data/store/app-store.js'
-import { commitLogWorkData, commitWorkData } from '../data/store/commitHelpers.js'
-import { readOwnerWorkDataTombstones } from '../data/store/ownerDataHooks.js'
-import { addWorkDataTombstone, removeWorkDataTombstone } from '../domain/workDataTombstones.js'
+// 운행 기록(workData) 저장 — 계산 규칙은 domain/의 day-record·call-details·payments.
+import { commitBatch } from '../store/app-store.js'
+import { commitLogWorkData, commitWorkData } from '../store/commitHelpers.js'
+import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
+import { addWorkDataTombstone, removeWorkDataTombstone } from '../../domain/workDataTombstones.js'
 
-/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 
 /**
  * @param {string} ownerKey
@@ -28,7 +28,7 @@ export function saveWorkDataWithTombstoneCheck(ownerKey, dateKey, previousData, 
   const existingTombstones = readOwnerWorkDataTombstones(ownerKey)
   const hadTombstone = dateKey in existingTombstones
 
-  /** @type {import('../domain/workDataTombstones.js').WorkDataTombstones|null} */
+  /** @type {import('../../domain/workDataTombstones.js').WorkDataTombstones|null} */
   let nextTombstones = null
   if (!hasRecordNow && hadRecordBefore) nextTombstones = addWorkDataTombstone(existingTombstones, dateKey)
   else if (hasRecordNow && hadTombstone) nextTombstones = removeWorkDataTombstone(existingTombstones, dateKey)
@@ -58,14 +58,3 @@ export function saveLogWorkDataWithTombstoneCheck(ownerKey, logId, dateKey, prev
   }
   commitLogWorkData(ownerKey, logId, nextData)
 }
-
-// day-record.js·call-details.js가 같은 타입 이름을 내보내 export *가 충돌하므로 함수 이름을 나열해 재수출한다.
-export {
-  getFixedCount, getPalletCount, getFixedRouteCounts, applyFixedRouteRun, isOffDay,
-  getCallDetails, backfillCallDetailIds, countCallTrips, dayTripCount, callFareTotal,
-  callVatTotal, monthWorkFareSummary, saveDayRecord, monthCallUnpaidTotal, monthWorkTotal,
-} from '../domain/day-record.js'
-export {
-  buildCallDetail, computeDistanceKm, upsertCallDetail, removeCallDetail,
-} from '../domain/call-details.js'
-export * from '../domain/payments.js'

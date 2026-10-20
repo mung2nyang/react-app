@@ -1,6 +1,6 @@
 // @ts-check
 // 리포트 "세부" 화면 + 거래처 선택 모달.
-import { formatWon } from '../../../lib/money.js'
+import { formatWon } from '../../../domain/money.js'
 import { dash } from '../api/report.js'
 import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
 import './report.css'

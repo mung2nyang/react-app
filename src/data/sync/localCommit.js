@@ -3,7 +3,7 @@
 /** @typedef {import('../store/persist.js').PersistDomain} PersistDomain */
 /** @typedef {import('../store/app-store.js').DomainValue} DomainValue */
 import { commitBatch } from '../store/app-store.js'
-import { DEVICE_SAVE_FAIL } from '../../lib/failureMessages.js'
+import { DEVICE_SAVE_FAIL } from '../../shared/utils/failureMessages.js'
 
 export const STORAGE_FAIL_TOAST = DEVICE_SAVE_FAIL
 

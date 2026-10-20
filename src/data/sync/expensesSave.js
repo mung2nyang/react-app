@@ -1,19 +1,19 @@
 // @ts-check
-// 지출 저장(saveExpenses) + domain/expenses.js 재수출 배럴. 화면 읽기는 useOwnerExpenses.
-import { commitExpenses } from '../data/store/commitHelpers.js'
-import { dedupeExpensesById } from '../domain/expenses.js'
-import { planExpenseVehicleTargets } from '../domain/expenseVehicleRouting.js'
-import { getState } from '../data/store/app-store.js'
+// 지출 저장(saveExpenses). 화면 읽기는 useOwnerExpenses, 계산 규칙은 domain/expenses.js.
+import { commitExpenses } from '../store/commitHelpers.js'
+import { dedupeExpensesById } from '../../domain/expenses.js'
+import { planExpenseVehicleTargets } from '../../domain/expenseVehicleRouting.js'
+import { getState } from '../store/app-store.js'
 import {
   assertSessionStillCurrent,
   blockedReasonForOwnerDataWrite,
   captureSession,
   getCloudOwnerKey,
   getCloudUserId,
-} from '../data/cloud/cloudSession.js'
+} from '../cloud/cloudSession.js'
 import { syncExpenseItemsForVehicle } from './syncExpenseItems.js'
 
-/** @typedef {import('../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 
 /** @param {string} ownerKey @param {Array<ExpenseItem>} items */
 export async function saveExpenses(ownerKey, items) {
@@ -56,5 +56,3 @@ export async function saveExpenses(ownerKey, items) {
   assertSessionStillCurrent(captured)
   commitExpenses(ownerKey, next)
 }
-
-export * from '../domain/expenses.js'

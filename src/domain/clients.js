@@ -1,5 +1,5 @@
 // @ts-check
-// 거래처 순수 계산부. localStorage I/O는 lib/clients.js, 타입은 clientTypes.js, 결제 주기 계산은 clientPaymentTerms.js(여기서 재수출).
+// 거래처 순수 계산부. 저장은 data/sync/clientsSave.js, 타입은 clientTypes.js, 결제 주기 계산은 clientPaymentTerms.js(여기서 재수출).
 // §6 예외(~250 한도 내) — computeFixedRouteFare는 resolveFixedUnitPrice와 같은 고정노선 계산이라 옆에 둔다.
 import { parseCurrencyValue } from './money.js'
 

@@ -22,7 +22,7 @@ import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
  */
 
 /**
- * @typedef {Object} TaxInvoiceRecord 저장된 계산서 발급 상태(lib/taxInvoices.js가 다루는 값)
+ * @typedef {Object} TaxInvoiceRecord 저장된 계산서 발급 상태(data/sync/syncTaxInvoicesTable.js가 다루는 값)
  * @property {string} [id]
  * @property {string} [flow]
  * @property {string} [monthKey]

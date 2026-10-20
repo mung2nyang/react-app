@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
-import { checkExpenseDraft, FUEL_TYPES, MAINT_CATEGORIES, MISC_CATEGORIES } from '../../../lib/expenses.js'
-import { formatCurrencyInput, parseCurrencyValue } from '../../../lib/money.js'
+import { checkExpenseDraft, FUEL_TYPES, MAINT_CATEGORIES, MISC_CATEGORIES } from '../../../domain/expenses.js'
+import { formatCurrencyInput, parseCurrencyValue } from '../../../domain/money.js'
 import TemporalInput from '../../../shared/ui/TemporalInput.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import CurrencyInput from '../../../shared/ui/CurrencyInput.jsx'

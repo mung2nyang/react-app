@@ -8,7 +8,7 @@ import {
   captureSession,
 } from '../../../data/cloud/cloudSession.js'
 import { StaleSessionError } from '../../../data/sync/saveErrors.js'
-import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../../shared/utils/failureMessages.js'
 
 const SUCCESS_TOAST = '문의가 접수되었습니다.'
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL

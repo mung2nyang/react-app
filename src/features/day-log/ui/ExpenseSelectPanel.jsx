@@ -1,5 +1,5 @@
 // @ts-check
-import { KINDS } from '../../../lib/expenses.js'
+import { KINDS } from '../../../domain/expenses.js'
 
 /** @param {{ onPick: (kind: string) => void }} props */
 export default function ExpenseSelectPanel({ onPick }) {

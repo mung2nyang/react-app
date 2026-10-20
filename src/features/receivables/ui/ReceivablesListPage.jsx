@@ -1,8 +1,8 @@
 // @ts-check
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { formatWon } from '../../../lib/money.js'
-import { formatWorkMonth, receivableItemKey } from '../../../lib/receivables.js'
+import { formatWon } from '../../../domain/money.js'
+import { formatWorkMonth, receivableItemKey } from '../../../domain/receivables.js'
 import { receivablesDetailPath } from './receivablesPaths.js'
 import { useReceivablesData } from '../hooks/useReceivablesData.js'
 import { useReceivablesActions } from '../hooks/useReceivablesActions.js'

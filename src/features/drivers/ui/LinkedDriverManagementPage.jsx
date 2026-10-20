@@ -8,10 +8,9 @@ import { resolveDriverManagementContext } from '../../../domain/driverManagement
 import { getShortCarNum } from '../../../domain/cars.js'
 import { getAssignmentState } from '../../../domain/drivers.js'
 import {
-  getLinkedDriverClientInvoiceGroups,
-  getLinkedDriverSettlementDetail,
+  getLinkedDriverClientInvoiceGroups, getLinkedDriverSettlementDetail,
 } from '../../../domain/finance.js'
-import { setYearMonth, shiftMonth } from '../../../lib/calendar.js'
+import { setYearMonth, shiftMonth } from '../../../domain/calendar.js'
 import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
 import {
   useOwnerCars,

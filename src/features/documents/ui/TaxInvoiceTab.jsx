@@ -2,9 +2,10 @@
 // 서류 발급 [세금계산서] 탭(세금계산서 정리 ②, 옛 TaxInvoicePage 몸통): 거래처 매출 계산서를 그 차량(logKey) 것만 + 엑셀 저장.
 // 달은 서류 발급이 주고, 위 카드 = 달 이동 → 서류 탭 줄 → [작성 전][발급 완료].
 import { useMemo, useState } from 'react'
-import { getTaxInvoiceFlowMeta } from '../../../lib/finance.js'
-import { lastDayOfMonth, listMonthInvoices, saveInvoices, invoiceCanIssue } from '../../../lib/invoices.js'
-import { formatWon } from '../../../lib/money.js'
+import { getTaxInvoiceFlowMeta } from '../../../domain/finance.js'
+import { saveInvoices } from '../../../data/sync/invoicesSave.js'
+import { lastDayOfMonth, listMonthInvoices, invoiceCanIssue } from '../../../domain/invoices.js'
+import { formatWon } from '../../../domain/money.js'
 import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
 import { changeTaxInvoiceStatus, saveTaxInvoiceDraft } from '../api/taxInvoiceActions.js'
 import { exportTaxInvoiceExcel } from '../api/taxInvoiceExcel.js'

@@ -20,7 +20,7 @@ import { shouldCommitDayLogToCloud, vehicleSupabaseIdForLog } from './mainDayLog
 import { parseEntityNumber } from '../cloud/cloudStorage.js'
 import { removeDayLogOnServer } from './dailyLogRemoval.js'
 import { upsertDailyLog } from './syncWorkData.js'
-import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 const SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL

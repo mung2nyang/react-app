@@ -1,6 +1,6 @@
 // @ts-check
 /** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-// 앱 설정 순수 계산부. localStorage I/O와 화면 테마 적용(applyTheme)은 lib/practiceSettings.js가 맡는다.
+// 앱 설정 순수 계산부. 저장과 화면 테마 적용(applyTheme)은 data/sync/settingsSave.js.
 // 프리셋(운행 횟수 버튼·노선 이름표) 함수는 practicePresets.js — 여기서 다시 내보낸다.
 import { normalizePinnedLocations } from './locationShortcuts.js'
 import { normalizeFixedRoutePresets, normalizeRunCountPresets } from './practicePresets.js'

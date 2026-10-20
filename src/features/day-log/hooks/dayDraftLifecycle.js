@@ -4,8 +4,8 @@
 import { useEffect, useRef } from 'react'
 import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../../data/sync/durableWriteGuard.js'
 import { registerPendingDayWrite } from '../../../data/sync/pendingWorkDataWrites.js'
-import { saveLogWorkDataWithTombstoneCheck } from '../../../lib/workData.js'
-import { DEVICE_SAVE_FAIL } from '../../../lib/failureMessages.js'
+import { saveLogWorkDataWithTombstoneCheck } from '../../../data/sync/workDataSave.js'
+import { DEVICE_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 

@@ -5,9 +5,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './shared/styles/index.css'
 import App from './app/App.jsx'
 import { routerBasename } from './app/routerBasename.js'
-import { registerServiceWorker } from './lib/registerServiceWorker.js'
-import { installChunkReload } from './lib/chunkReload.js'
-import { installErrorReporting } from './lib/errorReport.js'
+import { registerServiceWorker } from './app/registerServiceWorker.js'
+import { installChunkReload } from './app/chunkReload.js'
+import { installErrorReporting } from './app/errorReport.js'
 
 const rootEl = document.getElementById('root')
 if (!rootEl) throw new Error('#root not found')

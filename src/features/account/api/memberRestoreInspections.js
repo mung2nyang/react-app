@@ -8,7 +8,7 @@ import { isValidCalendarDateKey } from '../../../domain/dateKey.js'
 import { sanitizeInspectionItems } from '../../../domain/dailyInspectionItems.js'
 import { fetchVehiclesDailyInspections, saveDailyInspection } from '../../../data/sync/dailyInspections.js'
 import { isOwnUnlinkedCar } from './memberRestoreRecords.js'
-import { SERVER_SAVE_FAIL } from '../../../lib/failureMessages.js'
+import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
 /** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */

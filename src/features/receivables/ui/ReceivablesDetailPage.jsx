@@ -1,8 +1,8 @@
 // @ts-check
 import { useMemo } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { formatWon } from '../../../lib/money.js'
-import { formatWorkMonth, groupItems, receivableItemKey } from '../../../lib/receivables.js'
+import { formatWon } from '../../../domain/money.js'
+import { formatWorkMonth, groupItems, receivableItemKey } from '../../../domain/receivables.js'
 import { parseClientParam, parseMonthParam, receivablesListPath } from './receivablesPaths.js'
 import { useReceivablesData } from '../hooks/useReceivablesData.js'
 import { useReceivablesActions } from '../hooks/useReceivablesActions.js'
