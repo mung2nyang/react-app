@@ -3,7 +3,7 @@
 // 달력에서 들어온 표시(location.state.from)로 일지 닫기를 뒤로가기/교체 이동 중 고른다(workLogNavigation.js).
 import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import CalendarPage from '../components/calendar/CalendarPage.jsx'
+import CalendarPage from '../features/calendar/ui/CalendarPage.jsx'
 import DayLogPage from '../components/day-log/DayLogPage.jsx'
 import { resolveLogSettings } from '../domain/carSettingsScope.js'
 import { parseDateKeySelection } from '../lib/calendar.js'

@@ -1,0 +1,142 @@
+// @ts-check
+import '../../../testSupport/setupDom.js'
+import assert from 'node:assert/strict'
+import { afterEach, beforeEach, describe, mock, test } from 'node:test'
+import { collectNotifications, dismissNotification } from './notifications.js'
+import { markBackupDone } from '../../../lib/guestBackup.js'
+import { commitWorkData } from '../../../data/store/commitHelpers.js'
+import { commitBatch } from '../../../data/store/app-store.js'
+import { todayKey } from '../../../lib/expenses.js'
+
+describe('notifications — 데이터 백업 권장 알림 및 게스트/로그인 분기', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  test('게스트 미백업: lastBackupAt 없으면 백업 권장 알림(backup:never)이 뜬다', () => {
+    const notifs = collectNotifications('guest')
+    const backupNotif = notifs.find((item) => item.id.startsWith('backup:'))
+    assert.ok(backupNotif, '백업 권장 알림이 있어야 한다')
+    assert.equal(backupNotif.id, 'backup:never')
+    assert.equal(backupNotif.page, 'settings')
+    assert.equal(backupNotif.title, '백업 권장')
+    assert.equal(backupNotif.body, '아직 백업한 적이 없습니다. 앱을 지우거나 휴대폰을 바꾸면 기록이 사라질 수 있습니다.')
+  })
+
+  test('14일 경계값: 13일 전 백업은 알림 없고, 14일 전 백업부터 알림이 뜬다', () => {
+    const now = Date.now()
+
+    // 13일 전: 알림 없음
+    const thirteenDaysAgo = new Date(now - 13 * 86400000).toISOString()
+    markBackupDone(thirteenDaysAgo)
+    const notifs13 = collectNotifications('guest')
+    assert.equal(notifs13.some((item) => item.id.startsWith('backup:')), false)
+
+    // 14일 전: 알림 발생
+    const fourteenDaysAgo = new Date(now - 14 * 86400000).toISOString()
+    markBackupDone(fourteenDaysAgo)
+    const notifs14 = collectNotifications('guest')
+    const backup14 = notifs14.find((item) => item.id.startsWith('backup:'))
+    assert.ok(backup14, '14일 경과 시 백업 알림이 떠야 한다')
+    assert.equal(backup14.title, '백업 권장')
+    assert.equal(backup14.body, '마지막 백업 후 14일이 지났습니다. 지금 백업해 주세요.')
+
+    // 15일 전: 알림 발생
+    const fifteenDaysAgo = new Date(now - 15 * 86400000).toISOString()
+    markBackupDone(fifteenDaysAgo)
+    const notifs15 = collectNotifications('guest')
+    const backup15 = notifs15.find((item) => item.id.startsWith('backup:'))
+    assert.ok(backup15, '15일 경과 시 백업 알림이 떠야 한다')
+    assert.equal(backup15.body, '마지막 백업 후 15일이 지났습니다. 지금 백업해 주세요.')
+  })
+
+  test('세션 분기: 로그인(클라우드) 세션에서는 백업 알림이 전혀 뜨지 않는다', () => {
+    // 1. ownerKey가 'guest'가 아닌 경우 (로그인 계정 ID)
+    const notifsOwner = collectNotifications('owner-user-123')
+    assert.equal(notifsOwner.some((item) => item.id.startsWith('backup:')), false)
+
+    // 2. ownerKey는 'guest'여도 cloud session인 경우
+    /** @type {import('../../../data/cloud/cloudSession.js').AppSession} */
+    const cloudSession = { userId: 'u1', guestMode: false }
+    const notifsCloud = collectNotifications('guest', cloudSession)
+    assert.equal(notifsCloud.some((item) => item.id.startsWith('backup:')), false)
+  })
+
+  test('알림 닫기: dismissNotification 후 다시 뜨지 않는다', () => {
+    const notifsBefore = collectNotifications('guest')
+    const backupNotif = notifsBefore.find((item) => item.id.startsWith('backup:'))
+    assert.ok(backupNotif)
+
+    dismissNotification('guest', backupNotif.id)
+
+    const notifsAfter = collectNotifications('guest')
+    assert.equal(notifsAfter.some((item) => item.id === backupNotif.id), false)
+  })
+})
+
+describe('notifications — 오늘 운행일지 알림 (시간 게이트·미입력 판정)', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    mock.timers.reset()
+  })
+
+  test('18시 이전: 레코드가 없어도 오늘 일지 알림이 없다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 17, 59, 0).getTime() })
+    const notifs = collectNotifications('today-owner-before')
+    assert.equal(notifs.some((item) => item.id.startsWith('today:')), false)
+  })
+
+  test('18시 이후: 레코드 자체가 없으면 오늘 일지 알림이 있다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 18, 0, 0).getTime() })
+    const notifs = collectNotifications('today-owner-missing')
+    const todayNotif = notifs.find((item) => item.id.startsWith('today:'))
+    assert.ok(todayNotif, '18시 이후 미기록이면 알림이 있어야 한다')
+    assert.equal(todayNotif.id, `today:${todayKey()}`)
+    assert.equal(todayNotif.page, 'home')
+    assert.equal(todayNotif.title, '오늘 운행일지가 비어 있습니다')
+  })
+
+  test('18시 이후: 레코드가 빈 객체({})면 여전히 알림이 있다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 19, 30, 0).getTime() })
+    const ownerKey = 'today-owner-empty'
+    const dateKey = todayKey()
+    commitWorkData(ownerKey, { [dateKey]: {} })
+    const notifs = collectNotifications(ownerKey)
+    assert.ok(notifs.some((item) => item.id === `today:${dateKey}`), '빈 객체는 미입력으로 본다')
+  })
+
+  test('18시 이후: isOff/callDetails/fixedCount 중 하나라도 있으면 알림이 없다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 20, 0, 0).getTime() })
+    const ownerKey = 'today-owner-filled'
+    const dateKey = todayKey()
+
+    commitWorkData(ownerKey, { [dateKey]: { isOff: true } })
+    assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
+
+    commitWorkData(ownerKey, { [dateKey]: { callDetails: [{ fare: 50000 }] } })
+    assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
+
+    commitWorkData(ownerKey, { [dateKey]: { fixedCount: 2 } })
+    assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
+  })
+
+  // 로드맵 50 — 로그인 계정은 일지를 기기 저장소에 안 쓰고 메모리에만 둔다(persist: false로 흉내).
+  test('18시 이후: 메모리에만 오늘 기록이 있어도(로그인 계정) 알림이 없다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 20, 0, 0).getTime() })
+    const ownerKey = 'today-owner-memory'
+    const dateKey = todayKey()
+    commitBatch([{ domain: 'workData', ownerKey, value: { [dateKey]: { fixedCount: 3 } } }], { persist: false })
+    assert.equal(localStorage.length, 0, '기기 저장소에는 아무것도 없어야 한다')
+    assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
+  })
+
+  test('18시 이후: 메모리에 다른 날 기록만 있으면 알림이 있다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 20, 0, 0).getTime() })
+    const ownerKey = 'today-owner-memory-other-day'
+    commitBatch([{ domain: 'workData', ownerKey, value: { '2026-09-04': { fixedCount: 3 } } }], { persist: false })
+    assert.ok(collectNotifications(ownerKey).some((item) => item.id === `today:${todayKey()}`))
+  })
+})

@@ -18,7 +18,7 @@ import {
   useOwnerSettings,
   useOwnerWorkDataByLogId,
 } from '../../../data/store/ownerDataHooks.js'
-import SummaryInfoToggle from '../../../components/calendar/SummaryInfoToggle.jsx'
+import SummaryInfoToggle from '../../calendar/ui/SummaryInfoToggle.jsx'
 import TaxInvoiceDraftModal from './TaxInvoiceDraftModal.jsx'
 import TaxInvoiceEntryList from './TaxInvoiceEntryList.jsx'
 import MonthNavigator from './MonthNavigator.jsx'

@@ -1,7 +1,7 @@
 // @ts-check
 // AppShell 라우트 트리만 분리(200줄). 셸 크롬(탭/메뉴/알림)은 AppShell.jsx에 남긴다.
 import { Navigate, Route, Routes, useSearchParams } from 'react-router-dom'
-import HomePage from '../components/home/HomePage.jsx'
+import HomePage from '../features/home/ui/HomePage.jsx'
 import ComingSoonRoute from './ComingSoonRoute.jsx'
 import MainPageRoute from './MainPageRoute.jsx'
 import {

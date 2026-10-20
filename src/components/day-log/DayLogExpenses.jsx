@@ -1,6 +1,6 @@
 // @ts-check
 import { KINDS } from '../../lib/expenses.js'
-import ExpenseFormModal from '../ExpenseFormModal.jsx'
+import ExpenseFormModal from '../../features/expenses/ui/ExpenseFormModal.jsx'
 import ExpenseGroups from './ExpenseGroups.jsx'
 import ExpenseSelectPanel from './ExpenseSelectPanel.jsx'
 import InlineSheet from './InlineSheet.jsx'

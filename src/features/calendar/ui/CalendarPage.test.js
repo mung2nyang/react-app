@@ -1,0 +1,523 @@
+// 재감사 3차(FAIL 지적 3번) — "연결 거래처가 있는 상태에서 달력 단가 편집 →
+// Store/localStorage → 달력 합계 → 매출 합계가 모두 새 값으로 바뀌는 컴포넌트
+// 테스트"를 추가한다. App.test.js와 같은 jsxLoaderHook 인프라를 재사용하지만, 이
+// 화면 하나만 가볍게 MemoryRouter로 렌더한다(전체 App 부트가 필요 없다).
+import { register } from 'node:module'
+import { pathToFileURL } from 'node:url'
+
+register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)
+
+// app-store.js가 (다른 모듈을 거쳐) 실제 supabaseClient.js를 불러 Node
+// 테스트 프로세스가 매달리는 문제를 막는다 — app-store.test.js와 같은 이유.
+import '../../../testSupport/stubSupabaseClient.js'
+import '../../../testSupport/setupDom.js'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
+
+const React = await import('react')
+const { createRoot } = await import('react-dom/client')
+const { MemoryRouter } = await import('react-router-dom')
+const { act } = React
+const { default: CalendarPage } = await import('./CalendarPage.jsx')
+const { commitCars, commitClients, commitLogWorkData, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.js')
+const { getState } = await import('../../../data/store/app-store.js')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.js')
+const { getMonthlyFareRevenue, getOwnerMonthlyFinanceDetail } = await import('../../../domain/finance.js')
+const { buildFinanceSettings } = await import('../../../data/sync/ownerFinance.js')
+const { monthSettlementSummary } = await import('../../../domain/monthSettlement.js')
+const { getFixedRouteClient, resolveFixedUnitPrice } = await import('../../../domain/clients.js')
+
+test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 단가 입력은 없다', async () => {
+  const ownerKey = 'test-calendar-unitprice-owner'
+  const dateKey = '2026-08-06'
+  const monthKey = '2026-08'
+
+  commitClients(ownerKey, [
+    { id: 'client-1', companyName: '테스트거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
+  ])
+  commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] } })
+  commitSettings(ownerKey, normalizeSettings({ unitPrice: 5000 }))
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+
+    assert.equal(container.querySelector('.summary-price-input'), null, '정산 카드에 1회 단가 입력이 없어야 한다')
+    assert.equal(container.textContent.includes('1회 단가'), false)
+    assert.ok(
+      container.textContent.includes('30,000원'),
+      `3회×거래처 10,000원=30,000원이어야 한다 — 실제: ${container.textContent.slice(0, 400)}`,
+    )
+
+    await act(async () => {
+      commitClients(ownerKey, [
+        { id: 'client-1', companyName: '테스트거래처', fixedRouteLinked: true, fixedUnitPrice: 15000 },
+      ])
+    })
+    assert.ok(
+      container.textContent.includes('45,000원'),
+      `거래처 단가 변경 후 3회×15,000원=45,000원이어야 한다 — 실제: ${container.textContent.slice(0, 400)}`,
+    )
+
+    const revenue = getMonthlyFareRevenue(
+      monthKey,
+      { cars: [], clients: getState().clients[ownerKey] },
+      { main: getState().workLogs[ownerKey]?.main || {} },
+    )
+    assert.equal(revenue.totalFare, 45000)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('고정노선 거래처가 없으면 정산 카드에 1회 단가가 없고 설정 단가를 쓰지 않는다', async () => {
+  const ownerKey = 'test-calendar-unitprice-no-client'
+  commitClients(ownerKey, [])
+  commitWorkData(ownerKey, { '2026-08-06': { isOff: false, fixedCount: 3, callDetails: [] } })
+  commitSettings(ownerKey, normalizeSettings({ unitPrice: 5000 }))
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+    assert.equal(container.querySelector('.summary-price-input'), null)
+    assert.equal(container.textContent.includes('1회 단가'), false)
+    assert.equal(container.textContent.includes('15,000원'), false, '설정 unitPrice 5,000×3회를 쓰면 안 된다')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('홈 월간 정산 카드는 그 화면 자신의 거래처 수수료를 보여주고 합계에 반영한다', async () => {
+  const ownerKey = 'test-calendar-commission-owner'
+  const dateKey = '2026-08-10'
+  const clients = [
+    {
+      id: 'client-comm', companyName: '수수료거래처', fixedRouteLinked: true, fixedUnitPrice: 10000,
+      commEnabled: true, commType: 'percent', commValue: 10,
+    },
+  ]
+
+  commitClients(ownerKey, clients)
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-comm', client: '수수료거래처', fare: 100000 }] },
+  })
+
+  const workData = getState().workLogs[ownerKey]?.main || {}
+  const expected = monthSettlementSummary(workData, 2026, 7, {
+    unitPrice: resolveFixedUnitPrice({ clients }),
+    fixedRouteClient: getFixedRouteClient({ clients }),
+    clients,
+  })
+  assert.equal(expected.commissionTotal, 10000, '거래처 10% × 운임 100,000 = 10,000')
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+
+    assert.ok(container.textContent.includes('수수료거래처 수수료 (10%)'), '거래처별 수수료 행이 있어야 한다')
+    assert.ok(
+      container.textContent.includes('- 10,000원'),
+      `수수료 금액이 - 10,000원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
+    )
+
+    const totalRow = container.querySelector('.summary-row.total .summary-value')
+    assert.equal(
+      totalRow?.textContent,
+      `${expected.total.toLocaleString('ko-KR')}원`,
+      `합계는 monthSettlementSummary.total(${expected.total.toLocaleString('ko-KR')})과 같아야 한다`,
+    )
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('driverExpenses가 있어도 owner scope income.commission.total은 불변(홈 정산 SoT)', () => {
+  const ownerKey = 'test-calendar-commission-driver-exp'
+  const dateKey = '2026-08-10'
+  const monthKey = '2026-08'
+  commitClients(ownerKey, [
+    {
+      id: 'client-comm2', companyName: '수수료거래처2', fixedRouteLinked: true, fixedUnitPrice: 10000,
+      commEnabled: true, commType: 'percent', commValue: 10,
+    },
+  ])
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-comm2', client: '수수료거래처2', fare: 100000 }] },
+  })
+  const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
+  const settings = buildFinanceSettings(ownerKey)
+  const driverExpenses = [
+    { id: 'drv-m', kind: 'maint', date: '2026-08-10', name: '기사정비', cost: 99999, vehicleNumber: '서울12가3456' },
+  ]
+  const without = getOwnerMonthlyFinanceDetail(monthKey, 'owner', settings, workDataByLogId, [], [])
+  const withDriver = getOwnerMonthlyFinanceDetail(monthKey, 'owner', settings, workDataByLogId, [], driverExpenses)
+  assert.equal(without.income.commission.total, 10000)
+  assert.equal(withDriver.income.commission.total, without.income.commission.total)
+  assert.equal(withDriver.expense.maint.total, 0, 'owner scope는 driverExpenses를 비용에 넣지 않는다')
+})
+
+test('수수료가 없으면 거래처 수수료 행이 없고 합계는 monthSettlementSummary.total과 같다', async () => {
+  const ownerKey = 'test-calendar-commission-zero'
+  const dateKey = '2026-08-12'
+  const clients = [
+    { id: 'client-nocomm', companyName: '무수수료거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
+  ]
+
+  commitClients(ownerKey, clients)
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 2, callDetails: [] },
+  })
+
+  const workData = getState().workLogs[ownerKey]?.main || {}
+  const expected = monthSettlementSummary(workData, 2026, 7, {
+    unitPrice: resolveFixedUnitPrice({ clients }),
+    fixedRouteClient: getFixedRouteClient({ clients }),
+    clients,
+  })
+  assert.equal(expected.commissionTotal, 0)
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+
+    assert.equal(container.querySelector('.summary-client-commission-row'), null, '수수료 0이면 행을 숨긴다')
+    assert.equal(container.textContent.includes('수수료 ('), false)
+    const totalRow = container.querySelector('.summary-row.total .summary-value')
+    assert.equal(
+      totalRow?.textContent,
+      `${expected.total.toLocaleString('ko-KR')}원`,
+      '합계는 monthSettlementSummary.total과 같아야 한다',
+    )
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('년/월 커스텀 드롭다운은 listbox로 열리고 선택하면 쿼리가 유지된다', async () => {
+  const ownerKey = 'cal-date-select-owner'
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+    const yearBtn = container.querySelector('[aria-label="년도 선택"]')
+    assert.ok(yearBtn instanceof window.HTMLButtonElement)
+    await act(async () => { yearBtn.click() })
+    const list = container.querySelector('[role="listbox"]')
+    assert.ok(list)
+    assert.equal(list.hasAttribute('hidden'), false)
+    const options = container.querySelectorAll('[role="option"]')
+    assert.ok(options.length > 4)
+    await act(async () => {
+      options[0].dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+    })
+    assert.equal(container.querySelector('[role="listbox"]')?.hasAttribute('hidden'), true)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생략과 동일', async () => {
+  const ownerKey = 'test-calendar-main-default-logid'
+  const dateKey = '2026-08-10'
+  commitClients(ownerKey, [
+    {
+      id: 'client-main-def', companyName: '메인수수료', fixedRouteLinked: true, fixedUnitPrice: 10000,
+      commEnabled: true, commType: 'percent', commValue: 10,
+    },
+  ])
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 0, callDetails: [{ id: 'call-main-def', client: '메인수수료', fare: 100000 }] },
+  })
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+      ))
+    })
+    const withoutProp = container.textContent
+    assert.ok(withoutProp.includes('메인수수료 수수료 (10%)'))
+    assert.ok(withoutProp.includes('- 10,000원'))
+
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, logId: 'main', onSelectDay: () => {} }),
+      ))
+    })
+    assert.equal(container.textContent.includes('메인수수료 수수료 (10%)'), true)
+    assert.equal(container.textContent.includes('- 10,000원'), true)
+    assert.equal(container.querySelector('.sub-car-log-banner'), null)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수수료 숨김', async () => {
+  const ownerKey = 'test-calendar-sub-log'
+  const plate = '서울99가9999'
+  const dateKey = '2026-08-15'
+  commitCars(ownerKey, [
+    { id: 'main-1', type: 'main', number: '서울00가0000' },
+    { id: 'sub-1', type: 'sub', number: plate, logEnabled: true, shareRevenueWithOwner: true },
+  ])
+  commitClients(ownerKey, [
+    { id: 'client-sub', companyName: '서브거래처', fixedRouteLinked: true, fixedUnitPrice: 20000 },
+  ])
+  commitSettings(ownerKey, normalizeSettings({
+    paymentOn: true,
+    subPaymentOn: false,
+    fixedOn: true,
+    subFixedOn: true,
+  }))
+  commitWorkData(ownerKey, {
+    '2026-08-15': { isOff: false, fixedCount: 9, callDetails: [] },
+  })
+  commitLogWorkData(ownerKey, plate, {
+    [dateKey]: {
+      isOff: false,
+      fixedCount: 2,
+      callDetails: [{ id: 'sub-call-1', client: '서브거래처', fare: 50000, paymentDueDate: '2026-07-01', payments: [] }],
+    },
+  })
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: [`/app/logs/${encodeURIComponent(plate)}?y=2026&m=7`] },
+        React.createElement(CalendarPage, { ownerKey, logId: plate, onSelectDay: () => {} }),
+      ))
+    })
+    assert.ok(container.querySelector('.sub-car-log-banner'), '서브 배너가 있어야 한다')
+    assert.ok(container.textContent.includes('9999 운행일지'))
+    assert.equal(container.querySelector('.summary-client-commission-row'), null, '이 픽스처엔 수수료 없음')
+    // 고정 2×20,000 + 콜 50,000 = 거래처 버킷 90,000 (구조 통일 후 한 행으로 합산)
+    assert.ok(container.textContent.includes('서브거래처 기본 운송료'))
+    assert.ok(container.textContent.includes('90,000원'), '서브 고정+콜 합산')
+    assert.equal(container.textContent.includes('180,000원'), false, '메인 fixedCount 9는 안 보임')
+    assert.equal(
+      container.querySelector('.unpaid-summary-card'),
+      null,
+      'subPaymentOn=false 이면 미수 미니카드 숨김',
+    )
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님(매출과 동일)', async () => {
+  const ownerKey = 'test-calendar-fixedon-false-main'
+  const dateKey = '2026-08-20'
+  const monthKey = '2026-08'
+  commitClients(ownerKey, [
+    { id: 'client-fx', companyName: '고정노선', fixedRouteLinked: true, fixedUnitPrice: 25000 },
+  ])
+  commitSettings(ownerKey, normalizeSettings({ fixedOn: false, paymentOn: true }))
+  commitWorkData(ownerKey, {
+    [dateKey]: { isOff: false, fixedCount: 3, callDetails: [] },
+  })
+
+  const workDataByLogId = { main: getState().workLogs[ownerKey]?.main || {} }
+  const revenue = getOwnerMonthlyFinanceDetail(monthKey, 'owner', buildFinanceSettings(ownerKey), workDataByLogId, [])
+  const expectedFixed = 75000
+  assert.equal(revenue.income.fare.total, expectedFixed, '매출도 fixedOn과 무관하게 고정횟수×단가')
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, logId: 'main', onSelectDay: () => {} }),
+      ))
+    })
+    const clients = getState().clients[ownerKey] || []
+    const settled = monthSettlementSummary(workDataByLogId.main, 2026, 7, {
+      unitPrice: 25000,
+      fixedRouteClient: getFixedRouteClient({ clients }),
+      clients,
+    })
+    assert.equal(settled.fareByClient['고정노선'], expectedFixed)
+    assert.ok(
+      container.textContent.includes('75,000원'),
+      `달력 고정운임이 매출과 같은 75,000원이어야 한다 — 실제: ${container.textContent.slice(0, 500)}`,
+    )
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+// 미연동 고정노선 슬라이스(2026-09-19) — 서브차량 달력이 그 차량 스코프 고정노선을 먼저 쓰고,
+// 없으면 차주 고정노선으로 fallback한다.
+/** @param {string} ownerKey @param {Array<import('../../../domain/clientTypes.js').ClientLike>} clients */
+async function renderSubLogCalendar(ownerKey, clients) {
+  const plate = '서울99가9999'
+  commitCars(ownerKey, [
+    { id: 'main-1', type: 'main', number: '서울00가0000' },
+    { id: 'sub-1', type: 'sub', number: plate, logEnabled: true, shareRevenueWithOwner: true },
+  ])
+  commitClients(ownerKey, clients)
+  commitSettings(ownerKey, normalizeSettings({ paymentOn: true, subPaymentOn: false, fixedOn: true, subFixedOn: true }))
+  commitLogWorkData(ownerKey, plate, { '2026-08-15': { isOff: false, fixedCount: 2, callDetails: [] } })
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => {
+    root.render(React.createElement(
+      MemoryRouter,
+      { initialEntries: [`/app/logs/${encodeURIComponent(plate)}?y=2026&m=7`] },
+      React.createElement(CalendarPage, { ownerKey, logId: plate, onSelectDay: () => {} }),
+    ))
+  })
+  return { container, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
+}
+
+test('서브 달력: 그 차량 스코프 고정노선 단가(70,000)를 쓰고 차주 단가(20,000)는 안 씀', async () => {
+  const { container, cleanup } = await renderSubLogCalendar('test-calendar-sub-scoped-fixed', [
+    { id: 'client-owner-fx', companyName: '차주고정', fixedRouteLinked: true, fixedUnitPrice: 20000 },
+    { id: 'client-sub-fx', companyName: '서브고정', fixedRouteLinked: true, fixedUnitPrice: 70000, scopedToVehicleNumber: '서울99가9999' },
+  ])
+  try {
+    assert.ok(container.textContent.includes('서브고정 기본 운송료'), '스코프 거래처명으로 표시')
+    assert.ok(container.textContent.includes('140,000원'), `2회×70,000=140,000 — 실제: ${container.textContent.slice(0, 400)}`)
+    assert.equal(container.textContent.includes('차주고정 기본 운송료'), false)
+  } finally {
+    await cleanup()
+  }
+})
+
+test('서브 달력: 스코프 고정노선이 없으면 차주 고정노선 단가로 fallback(기존과 동일)', async () => {
+  const { container, cleanup } = await renderSubLogCalendar('test-calendar-sub-fallback-fixed', [
+    { id: 'client-owner-fx', companyName: '차주고정', fixedRouteLinked: true, fixedUnitPrice: 20000 },
+  ])
+  try {
+    assert.ok(container.textContent.includes('차주고정 기본 운송료'))
+    assert.ok(container.textContent.includes('40,000원'), `2회×20,000=40,000 — 실제: ${container.textContent.slice(0, 400)}`)
+  } finally {
+    await cleanup()
+  }
+})
+
+// 스코프 수정 묶음 1(2026-09-21) — 연동기사 본인 세션은 일지가 main인데 거래처는 배정 차량 스코프만 내려온다.
+// 달력이 그 스코프(clientScopeKey)로 고정노선 단가를 찾아야 한다.
+test('연동기사 본인 달력: clientScopeKey로 배정 차량 스코프 고정노선 단가를 쓴다(안 넘기면 못 찾음)', async () => {
+  const plate = '서울99가9999'
+  /** @param {string} ownerKey @param {string|undefined} clientScopeKey */
+  async function renderDriverCalendar(ownerKey, clientScopeKey) {
+    commitClients(ownerKey, [
+      { id: 'client-drv', companyName: '기사고정', fixedRouteLinked: true, fixedUnitPrice: 100000, scopedToVehicleNumber: plate },
+    ])
+    commitWorkData(ownerKey, { '2026-08-06': { isOff: false, fixedCount: 1, callDetails: [] } })
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        React.createElement(CalendarPage, { ownerKey, clientScopeKey, onSelectDay: () => {} }),
+      ))
+    })
+    return { container, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
+  }
+
+  const withScope = await renderDriverCalendar('test-calendar-driver-scope', plate)
+  try {
+    assert.ok(withScope.container.textContent.includes('기사고정 기본 운송료'), '스코프 거래처명으로 표시')
+    assert.ok(withScope.container.textContent.includes('100,000원'), `1회×100,000=100,000 — 실제: ${withScope.container.textContent.slice(0, 400)}`)
+  } finally {
+    await withScope.cleanup()
+  }
+
+  const withoutScope = await renderDriverCalendar('test-calendar-driver-noscope', undefined)
+  try {
+    assert.equal(withoutScope.container.textContent.includes('기사고정 기본 운송료'), false, '스코프를 안 넘기면 예전처럼 못 찾는다(logId=main)')
+  } finally {
+    await withoutScope.cleanup()
+  }
+})
+
+test('새 홈 3단계 — 달력 탭 위쪽은 홈과 같은 한 줄(작은 로고 + 메뉴), 알림 종·큰 로고 없음, 달 이동 그대로', async () => {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app/calendar?y=2026&m=9'] },
+        React.createElement(CalendarPage, { ownerKey: 'test-calendar-topbar', onOpenMenu: () => {}, onSelectDay: () => {} }),
+      ))
+    })
+    assert.ok(container.querySelector('.app-brand')?.textContent?.includes('운행일지'), '왼쪽에 작은 로고가 있어야 한다')
+    const actions = Array.from(container.querySelectorAll('.app-topbar-actions button')).map((btn) => btn.getAttribute('title'))
+    assert.deepEqual(actions, ['메뉴'], '오른쪽엔 메뉴만 — 알림 종은 홈에만')
+    assert.equal(container.querySelector('.banner-container'), null, '예전 큰 로고 줄은 없어야 한다')
+    assert.ok(container.querySelector('button[title="이전 달"]') && container.querySelector('button[title="다음 달"]'), '달 이동 버튼은 그대로')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
