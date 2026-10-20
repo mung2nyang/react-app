@@ -6,7 +6,7 @@ import { DAILY_INSPECTION_SECTIONS, INSPECTION_RESULT_LABEL, allGoodItems, isIns
 import ModalShell from '../../shared/ui/ModalShell.jsx'
 
 /** @typedef {import('../../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
-/** @typedef {import('../../lib/dailyInspections.js').DailyInspection} DailyInspection */
+/** @typedef {import('../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
 
 const INCOMPLETE_TOAST = '모든 항목을 선택해 주세요.'
 

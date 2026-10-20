@@ -8,7 +8,7 @@ const { fakeSupabase, handlers, resetHandlers, countOf } = createFakeSupabase()
 mock.module('./supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
 const { syncExpenseItemsForVehicle } = await import('../../lib/syncExpenseItems.js')
-const { fetchVehiclesDailyInspections } = await import('../../lib/dailyInspections.js')
+const { fetchVehiclesDailyInspections } = await import('../sync/dailyInspections.js')
 
 /** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../store/atomicPersist.js').JsonValue} JsonValue */

@@ -1,0 +1,97 @@
+import { register } from 'node:module'
+import { pathToFileURL } from 'node:url'
+
+register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)
+
+import '../../../testSupport/stubSupabaseClient.js'
+import '../../../testSupport/setupDom.js'
+import assert from 'node:assert/strict'
+import { test } from 'node:test'
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
+
+const React = await import('react')
+const { createRoot } = await import('react-dom/client')
+const { act } = React
+const { default: ReportPage } = await import('./ReportPage.jsx')
+const { default: TaxInvoiceTab } = await import('./TaxInvoiceTab.jsx')
+const { commitClients, commitInvoices, commitWorkData } = await import('../../../data/store/commitHelpers.js')
+
+test('일지를 커밋하면 운송비 내역서가 리마운트 없이 합계를 갱신한다', async () => {
+  const ownerKey = 'sot-workdata-report'
+  const now = new Date()
+  const dateKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-15`
+  commitClients(ownerKey, [
+    { id: 'c-sot', companyName: '소트거래처', fixedRouteLinked: true, fixedUnitPrice: 10000 },
+  ])
+  commitWorkData(ownerKey, {})
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(ReportPage, { ownerKey, onBack: () => {}, viewDate: new Date(), onChangeMonth: () => {} }))
+    })
+    assert.ok(container.textContent.includes('부가세 (공급가액 기준 10%)'), '요약 화면에 부가세 행이 있어야 한다')
+    assert.equal(container.textContent.includes('소트거래처 기본 운송료'), false)
+
+    await act(async () => {
+      commitWorkData(ownerKey, {
+        [dateKey]: { isOff: false, fixedCount: 4 },
+      })
+    })
+    assert.ok(
+      container.textContent.includes('소트거래처 기본 운송료'),
+      'loadWorkData 스냅샷이면 리마운트 없이 거래처 매출이 안 바뀐다',
+    )
+    assert.ok(
+      container.textContent.includes('40,000원'),
+      '4회×10,000원이 리마운트 없이 반영돼야 한다',
+    )
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('계산서를 커밋하면 세금계산서 발급 목록이 리마운트 없이 갱신한다', async () => {
+  const ownerKey = 'sot-invoices-tax'
+  const now = new Date()
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  commitInvoices(ownerKey, [])
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(TaxInvoiceTab, { ownerKey, logKey: 'main', viewDate: new Date(), onChangeMonth: () => {} }))
+    })
+    assert.equal(!!container.querySelector('.report-top-card .settings-segmented-control'), false, '계산서 종류 탭 줄 없음(2026-10-02)')
+    assert.equal(/기사 매입|수수료 발행/.test(container.textContent || ''), false)
+    const issuedTab = [...container.querySelectorAll('button')].find((el) => el.textContent.includes('발급 완료'))
+    assert.ok(issuedTab, '발급 완료 탭이 있어야 한다')
+    await act(async () => { issuedTab.click() })
+
+    await act(async () => {
+      commitInvoices(ownerKey, [{
+        id: `sales|${monthKey}|sot-client__main`,
+        partyKey: 'sot-client__main',
+        flow: 'sales',
+        monthKey,
+        status: 'issued',
+        clientName: '소트계산서거래처',
+        supplyAmount: 10000,
+        taxAmount: 1000,
+      }])
+    })
+    assert.ok(
+      container.textContent.includes('소트계산서거래처'),
+      'loadInvoices 스냅샷이면 리마운트 없이 발급 목록이 안 바뀐다',
+    )
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})

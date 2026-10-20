@@ -29,7 +29,7 @@ mock.module('../data/store/ownerDataHooks.js', {
 mock.module('../data/cloud/cloudSession.js', {
   namedExports: { getCloudOwnerKey: () => cloudOwner, isHydrationReady: () => ready },
 })
-mock.module('./dailyInspections.js', {
+mock.module('../data/sync/dailyInspections.js', {
   namedExports: {
     fetchVehiclesDailyInspections: async (/** @type {Array<string|number>} */ ids) => {
       inspectionCalls.push(ids)

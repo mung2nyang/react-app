@@ -25,7 +25,7 @@ const { commitCars, commitClients, commitLogWorkData, commitSettings, commitWork
 const { getState } = await import('../../data/store/app-store.js')
 const { normalizeSettings } = await import('../../domain/practiceSettings.js')
 const { getMonthlyFareRevenue, getOwnerMonthlyFinanceDetail } = await import('../../domain/finance.js')
-const { buildFinanceSettings } = await import('../../lib/ownerFinance.js')
+const { buildFinanceSettings } = await import('../../data/sync/ownerFinance.js')
 const { monthSettlementSummary } = await import('../../domain/monthSettlement.js')
 const { getFixedRouteClient, resolveFixedUnitPrice } = await import('../../domain/clients.js')
 

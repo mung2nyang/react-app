@@ -9,10 +9,10 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, mock, test } from 'node:test'
 
-/** @type {import('../../lib/dailyInspections.js').DailyInspection|null} */
+/** @type {import('../../data/sync/dailyInspections.js').DailyInspection|null} */
 let serverInspection = null
 let inspectionFetches = 0
-mock.module('../../lib/dailyInspections.js', {
+mock.module('../../data/sync/dailyInspections.js', {
   namedExports: {
     fetchDailyInspection: async () => { inspectionFetches += 1; return serverInspection },
   },

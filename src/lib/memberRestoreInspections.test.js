@@ -26,7 +26,7 @@ mock.module('./memberRestoreRecords.js', {
     isOwnUnlinkedCar: (/** @type {string} */ _owner, /** @type {string} */ plate) => plate === 'main' || plate === '34나5678',
   },
 })
-mock.module('./dailyInspections.js', {
+mock.module('../data/sync/dailyInspections.js', {
   namedExports: {
     fetchVehiclesDailyInspections: async (/** @type {Array<string|number>} */ ids) => {
       fetched.push(ids)

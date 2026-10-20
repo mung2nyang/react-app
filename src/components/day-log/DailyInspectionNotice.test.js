@@ -9,14 +9,14 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, mock, test } from 'node:test'
 
-/** @type {import('../../lib/dailyInspections.js').DailyInspection|null} */
+/** @type {import('../../data/sync/dailyInspections.js').DailyInspection|null} */
 let serverRecord = null
 let failFetch = false
 /** @type {Promise<null>|null} */
 let holdFetch = null
 /** @type {Array<Record<string, unknown>>} */
 let saved = []
-mock.module('../../lib/dailyInspections.js', {
+mock.module('../../data/sync/dailyInspections.js', {
   namedExports: {
     fetchDailyInspection: async () => { if (holdFetch) return holdFetch; if (failFetch) throw new Error('down'); return serverRecord },
     saveDailyInspection: async (/** @type {Record<string, unknown>} */ input) => { saved.push(input) },

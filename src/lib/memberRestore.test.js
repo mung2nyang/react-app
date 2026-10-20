@@ -42,7 +42,7 @@ mock.module('../data/sync/clientCloudSave.js', {
 mock.module('./expenses.js', {
   namedExports: { saveExpenses: async () => { order.push('expenses'); if (failStep.expenses) throw new Error('x') } },
 })
-mock.module('./dailyInspections.js', {
+mock.module('../data/sync/dailyInspections.js', {
   namedExports: {
     fetchVehiclesDailyInspections: async () => ({}),
     saveDailyInspection: async () => { order.push('inspections') },

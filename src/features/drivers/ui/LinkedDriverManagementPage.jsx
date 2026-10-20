@@ -12,7 +12,7 @@ import {
   getLinkedDriverSettlementDetail,
 } from '../../../domain/finance.js'
 import { setYearMonth, shiftMonth } from '../../../lib/calendar.js'
-import { buildFinanceSettings } from '../../../lib/ownerFinance.js'
+import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
 import {
   useOwnerCars,
   useOwnerClients,

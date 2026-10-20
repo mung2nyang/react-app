@@ -14,7 +14,7 @@ import {
 import { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
 import { dueSoonItems, groupByClientMonth, groupItems } from './receivables.js'
 import { addPartialPayment, markReceivableItemPaid } from './payments.js'
-import { markMonthlyReceivablesPaid } from '../lib/ownerFinance.js'
+import { markMonthlyReceivablesPaid } from '../data/sync/ownerFinance.js'
 
 /** @template T @param {T} a @param {T} b */
 function same(a, b) {

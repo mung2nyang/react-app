@@ -1,6 +1,6 @@
 // @ts-check
 // 오너/기사 월별 손익 상세(getOwnerMonthlyFinanceDetail). 이 함수의 반환 모양은
-// components/revenue/OwnerMonthlyCards.jsx가 ReturnType으로 그대로 참조하므로,
+// features/revenue/ui/OwnerMonthlyCards.jsx가 ReturnType으로 그대로 참조하므로,
 // 필드 이름·구조를 바꾸면 그쪽도 같이 깨진다(타입 체크가 잡아 준다).
 import { getShortCarNum, isVehicleRevenueSharedWithOwner } from './cars.js'
 import { getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'

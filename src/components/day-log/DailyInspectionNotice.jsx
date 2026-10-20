@@ -2,7 +2,7 @@
 // 일지 화면의 일상점검표 안내 줄(피그마 1번) — 그 차량 스위치 켜짐·휴무 아님·로그인·차량이 서버에 있을 때만.
 // 열 때 서버에서 그날 1장을 읽어 "작성 필요 [+ 입력]" / "작성 완료 [보기]"를 보이고, 누르면 점검표 모달.
 import { useEffect, useState } from 'react'
-import { fetchDailyInspection, saveDailyInspection } from '../../lib/dailyInspections.js'
+import { fetchDailyInspection, saveDailyInspection } from '../../data/sync/dailyInspections.js'
 import { vehicleSupabaseIdForLog } from '../../data/sync/mainDayLogRouting.js'
 import { useOwnerCars } from '../../data/store/ownerDataHooks.js'
 import { useOwnerProfile } from '../../data/store/ownerProfileDriversHooks.js'
@@ -11,7 +11,7 @@ import './daily-inspection.css'
 import './daily-inspection-loading.css'
 import { SERVER_SAVE_FAIL } from '../../lib/failureMessages.js'
 
-/** @typedef {import('../../lib/dailyInspections.js').DailyInspection} DailyInspection */
+/** @typedef {import('../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 

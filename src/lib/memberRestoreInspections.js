@@ -6,12 +6,12 @@ import { readOwnerCars } from '../data/store/ownerDataHooks.js'
 import { isPlainObject } from '../data/store/persistDomainRecords.js'
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
 import { sanitizeInspectionItems } from '../domain/dailyInspectionItems.js'
-import { fetchVehiclesDailyInspections, saveDailyInspection } from './dailyInspections.js'
+import { fetchVehiclesDailyInspections, saveDailyInspection } from '../data/sync/dailyInspections.js'
 import { isOwnUnlinkedCar } from './memberRestoreRecords.js'
 import { SERVER_SAVE_FAIL } from './failureMessages.js'
 
 /** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-/** @typedef {import('./dailyInspections.js').DailyInspection} DailyInspection */
+/** @typedef {import('../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
 /** @typedef {DailyInspection & { vehicleId: string|number, workDate: string }} InspectionPick */
 
 const INVALID_FILE = '파일 내용이 올바르지 않습니다.'
