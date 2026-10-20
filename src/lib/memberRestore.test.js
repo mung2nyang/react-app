@@ -31,7 +31,7 @@ mock.module('../data/store/ownerDataHooks.js', {
   },
 })
 mock.module('../data/cloud/cloudSession.js', { namedExports: { getCloudUserId: () => 'o-1' } })
-mock.module('./clientCloudSave.js', {
+mock.module('../data/sync/clientCloudSave.js', {
   namedExports: {
     saveClientsToCloud: async (/** @type {{ next: object[] }} */ args) => {
       order.push('clients')

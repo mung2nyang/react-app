@@ -9,7 +9,7 @@ mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeS
 
 const { buildClientRow } = await import('../data/cloud/cloudStorage.js')
 const { upsertClientFromList } = await import('../data/sync/syncVehiclesClients.js')
-const { requestClientSave } = await import('./clientMutations.js')
+const { requestClientSave } = await import('../data/sync/clientMutations.js')
 const { buildEmployedDriverSnapshot } = await import('../data/hydrate/hydrateEmployedDriver.js')
 const { mergeClientsFromRows } = await import('../data/hydrate/hydrateMergeClients.js')
 const { beginSessionEpoch, captureSession, endCloudSession } = await import('../data/cloud/cloudSession.js')

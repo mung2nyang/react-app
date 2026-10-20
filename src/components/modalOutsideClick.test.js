@@ -14,16 +14,16 @@ Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
-const { default: CarFormModal } = await import('./cars/CarFormModal.jsx')
-const { default: ClientFormModal } = await import('./clients/ClientFormModal.jsx')
+const { default: CarFormModal } = await import('../features/cars/ui/CarFormModal.jsx')
+const { default: ClientFormModal } = await import('../features/clients/ui/ClientFormModal.jsx')
 const { default: ExpenseFormModal } = await import('./ExpenseFormModal.jsx')
-const { default: DriverFormModal } = await import('./DriverFormModal.jsx')
+const { default: DriverFormModal } = await import('../features/drivers/ui/DriverFormModal.jsx')
 const { default: TaxInvoiceDraftModal } = await import('./TaxInvoiceDraftModal.jsx')
 const { default: ConfirmModal } = await import('../shared/ui/ConfirmModal.jsx')
 const { default: InviteRedeemModal } = await import('./InviteRedeemModal.jsx')
 const { default: FixedRouteClientModal } = await import('./FixedRouteClientModal.jsx')
 
-/** @type {import('./cars/CarFormModal.jsx').CarFormDraft} */
+/** @type {import('../features/cars/ui/CarFormModal.jsx').CarFormDraft} */
 const CAR_DRAFT = {
   number: '12가3456', tonnage: '', type: 'sub', driverName: '', driverPhone: '',
   driverPayMode: 'revenue', driverSalaryAmount: '', commEnabled: false, commType: 'percent', commission: '',

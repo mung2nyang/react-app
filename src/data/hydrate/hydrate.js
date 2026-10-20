@@ -23,7 +23,7 @@ import { expenseFromMiscRecord, replaceMiscExpenses } from '../../domain/miscExp
 import { mergeTaxInvoiceRecords } from '../../domain/taxInvoices.js'
 import { buildEmployedDriverSnapshot } from './hydrateEmployedDriver.js'
 import { fetchOwnerDriverExpenses } from './hydrateOwnerDriverExpenses.js'
-import { fetchOwnerDriverLinks } from '../../lib/driverUnlink.js'
+import { fetchOwnerDriverLinks } from '../sync/driverUnlink.js'
 import { fetchAllRows } from '../cloud/fetchAllRows.js'
 
 /** @param {string} userId @param {string} ownerKey @param {{ employedDriver?: boolean }} [options] */

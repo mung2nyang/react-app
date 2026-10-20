@@ -1,6 +1,6 @@
 // @ts-check
 import { savePracticeSettings } from './practiceSettings.js'
-import { requestVehicleSave } from './vehicleMutations.js'
+import { requestVehicleSave } from '../data/sync/vehicleMutations.js'
 
 /**
  * @typedef {Object} OnboardingWizard

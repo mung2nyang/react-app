@@ -1,0 +1,199 @@
+// @ts-check
+// 기사 관리 화면(조회 전용). 연동(linkId)·미연동 서브(logId) 두 모드.
+// 모드 판별은 domain/driverManagementContext.js — §6 응집도(≤250).
+// 정산 요약·거래처 세금계산서 JSX는 SettlementSummaryCard·ClientInvoiceGroups로 분리.
+import { useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { resolveDriverManagementContext } from '../../../domain/driverManagementContext.js'
+import { getShortCarNum } from '../../../domain/cars.js'
+import { getAssignmentState } from '../../../domain/drivers.js'
+import {
+  getLinkedDriverClientInvoiceGroups,
+  getLinkedDriverSettlementDetail,
+} from '../../../domain/finance.js'
+import { setYearMonth, shiftMonth } from '../../../lib/calendar.js'
+import { buildFinanceSettings } from '../../../lib/ownerFinance.js'
+import {
+  useOwnerCars,
+  useOwnerClients,
+  useOwnerDrivers,
+  useOwnerProfile,
+  useOwnerSettings,
+  useOwnerWorkDataByLogId,
+} from '../../../data/store/ownerDataHooks.js'
+import CarBusinessInfoSection from './CarBusinessInfoSection.jsx'
+import ClientInvoiceGroups from './ClientInvoiceGroups.jsx'
+import SettlementSummaryCard from './SettlementSummaryCard.jsx'
+import { toLinkedDriverLink } from './linkedDriverLink.js'
+import PageHeader from '../../../shared/ui/PageHeader.jsx'
+import './linked-driver.css'
+
+function GearIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+  )
+}
+
+/**
+ * @param {Object} props
+ * @param {string} [props.ownerKey]
+ * @param {() => void} [props.onBack]
+ * @param {(message: string) => void} [props.showToast]
+ * @param {(() => void)} [props.onOpenMenu]
+ */
+export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack, showToast, onOpenMenu }) {
+  const navigate = useNavigate()
+  const { linkId: rawLinkId, logId: rawLogId } = useParams()
+  const linkId = decodeURIComponent(rawLinkId || '')
+  const logId = decodeURIComponent(rawLogId || '')
+  const drivers = useOwnerDrivers(ownerKey)
+  const cars = useOwnerCars(ownerKey)
+  const clients = useOwnerClients(ownerKey)
+  const practiceSettings = useOwnerSettings(ownerKey)
+  const profile = useOwnerProfile(ownerKey)
+  const workByLogId = useOwnerWorkDataByLogId(ownerKey)
+  const [viewDate, setViewDate] = useState(() => new Date())
+
+  const ctx = useMemo(
+    () => resolveDriverManagementContext({ linkId, logId }, drivers, cars),
+    [linkId, logId, drivers, cars],
+  )
+  const link = ctx.driver ? toLinkedDriverLink(ctx.driver) : null
+  const plate = ctx.plate
+  const unlinked = ctx.mode === 'unlinked'
+
+  const settings = useMemo(() => {
+    void clients
+    void cars
+    void practiceSettings
+    void profile
+    void drivers
+    return buildFinanceSettings(ownerKey)
+  }, [ownerKey, clients, cars, practiceSettings, profile, drivers])
+
+  const year = viewDate.getFullYear()
+  const month = viewDate.getMonth()
+  const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
+  const dayData = (plate && workByLogId?.[plate]) || {}
+
+  /** @type {import('../../../domain/financeTypes.js').CarLike} */
+  const carOrEmpty = ctx.car || { number: '' }
+
+  const detail = useMemo(() => {
+    if (ctx.notFound) return null
+    if (ctx.mode === 'linked') {
+      if (!link) return null
+      return { ...getLinkedDriverSettlementDetail(dayData, monthKey, link, carOrEmpty, settings), car: carOrEmpty }
+    }
+    if (ctx.mode === 'unlinked' && ctx.car) {
+      // 미연동은 할당기간 없음 — assignmentStart 빈 값은 isDateWithinAssignment가 전부 포함(link=null과 동일).
+      const openLink = /** @type {import('../../../domain/financeTypes.js').DriverLinkLike} */ ({
+        id: '',
+        vehicleNumber: plate,
+        assignmentStart: '',
+        assignmentEnd: '',
+      })
+      return { ...getLinkedDriverSettlementDetail(dayData, monthKey, openLink, carOrEmpty, settings), car: carOrEmpty }
+    }
+    return null
+  }, [ctx.notFound, ctx.mode, ctx.car, dayData, monthKey, link, carOrEmpty, plate, settings])
+
+  const invoice = useMemo(() => {
+    if (!detail) return { groups: [], unassignedCount: 0, unassignedTrips: [] }
+    return getLinkedDriverClientInvoiceGroups(detail.trips, carOrEmpty, settings)
+  }, [detail, carOrEmpty, settings])
+
+  const title = unlinked
+    ? `${ctx.car?.driverName || getShortCarNum(plate) || '차량'} 기사 관리`
+    : ((link?.driverName || '기사') + ' 기사 관리')
+
+  if (ctx.notFound) {
+    return (
+      <div className="page">
+        <PageHeader title={unlinked ? title : '기사 관리'} onBack={onBack} onOpenMenu={onOpenMenu} />
+        <div className="empty-state">
+          {unlinked ? '차량 정보를 찾을 수 없습니다.' : '연동 중인 기사 정보를 찾을 수 없습니다.'}
+        </div>
+      </div>
+    )
+  }
+
+  const assignment = link ? getAssignmentState(link) : null
+  const driverName = link?.driverName || '기사'
+  const carDriverName = unlinked ? String(ctx.car?.driverName || '').trim() : ''
+  const nameLine = unlinked
+    ? (carDriverName ? `${carDriverName} ${plate}` : plate)
+    : `${driverName} ${plate || '차량 미지정'}`
+  const initial = String(unlinked ? (carDriverName || plate) : driverName).slice(0, 1)
+
+  return (
+    <div className="page">
+      <PageHeader title={title} onBack={onBack} onOpenMenu={onOpenMenu} />
+      <section className="linked-driver-profile-card">
+        <div>
+          <span className="linked-driver-avatar">{initial}</span>
+          <span>
+            <strong>{nameLine}</strong>
+            {unlinked
+              ? carDriverName && <small>{ctx.car?.driverPhone || '연락처 없음'}</small>
+              : <small>{link?.phone || '연락처 없음'}</small>}
+          </span>
+        </div>
+        <div>
+          {unlinked ? (
+            <div className="linked-driver-profile-actions">
+              <button
+                type="button"
+                className="linked-driver-chip"
+                onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}`)}
+              >
+                운행일지
+              </button>
+              <button
+                type="button"
+                className="action-icon-btn"
+                title="기사 차량 운행일지 설정"
+                aria-label="기사 차량 운행일지 설정"
+                onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/settings`)}
+              >
+                <GearIcon />
+              </button>
+            </div>
+          ) : (
+            <>
+              {assignment && <em className={assignment.key}>{assignment.label}</em>}
+            </>
+          )}
+        </div>
+      </section>
+
+      <div className="linked-driver-chip-row">
+        <button
+          type="button"
+          className="linked-driver-chip"
+          onClick={() => {
+            if (unlinked) navigate(`/app/logs/${encodeURIComponent(plate)}/clients`)
+            else navigate(`/app/drivers/${encodeURIComponent(linkId)}/clients`)
+          }}
+        >
+          거래처
+        </button>
+        <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/report`)}>서류 발급</button>
+        <button type="button" className="linked-driver-chip" onClick={() => navigate(`/app/logs/${encodeURIComponent(plate)}/expenses`)}>차량 유지비</button>
+      </div>
+
+      <SettlementSummaryCard
+        viewDate={viewDate}
+        onPrevMonth={() => setViewDate(shiftMonth(viewDate, -1))}
+        onNextMonth={() => setViewDate(shiftMonth(viewDate, 1))}
+        onYearChange={(y) => setViewDate(setYearMonth(viewDate, y, month))}
+        onMonthChange={(m) => setViewDate(setYearMonth(viewDate, year, m))}
+        detail={detail}
+      />
+      <ClientInvoiceGroups invoice={invoice} />
+      {ctx.car?.type === 'sub' && ctx.car.id && (
+        <CarBusinessInfoSection key={ctx.car.id} ownerKey={ownerKey} car={ctx.car} cars={cars} profile={profile} showToast={showToast} />
+      )}
+    </div>
+  )
+}

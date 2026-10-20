@@ -37,7 +37,7 @@ test('하루 화면 운행·지출 카드 버튼 44px', () => {
 })
 
 test('거래처 카드 이름 줄은 버튼 자리(44×2+8)만큼 비켜 주고, 칩 줄 없으면 높이 44px', () => {
-  const text = css('components/clients/client-management.css')
+  const text = css('features/clients/ui/client-management.css')
   assert.match(text, /\.client-list-card \.client-card-badges \{ padding-right: 100px; \}/)
   assert.match(text, /\.client-card-title:not\(:has\(\+ \.client-card-badges\)\) \{ min-height: 44px;/)
 })

@@ -1,17 +1,17 @@
 // AppShell.jsx가 쓰는 지연 로드 페이지 컴포넌트 목록.
 import { lazy } from 'react'
 
-export const CarManagementPage = lazy(() => import('../components/CarManagementPage.jsx'))
-export const ClientManagementPage = lazy(() => import('../components/ClientManagementPage.jsx'))
-export const OwnerScopedClientsView = lazy(() => import('../components/clients/OwnerScopedClientsView.jsx'))
+export const CarManagementPage = lazy(() => import('../features/cars/ui/CarListPage.jsx'))
+export const ClientManagementPage = lazy(() => import('../features/clients/ui/ClientListPage.jsx'))
+export const OwnerScopedClientsView = lazy(() => import('../features/clients/ui/OwnerScopedClientsView.jsx'))
 export const PersonalInfoPage = lazy(() => import('../components/PersonalInfoPage.jsx'))
 export const AppSettingsPage = lazy(() => import('../components/AppSettingsPage.jsx'))
 export const MaintFuelPage = lazy(() => import('../components/MaintFuelPage.jsx'))
 export const ReceivablesPage = lazy(() => import('../components/ReceivablesPage.jsx'))
 export const DocumentIssuePage = lazy(() => import('../components/documents/DocumentIssuePage.jsx'))
-export const DriverConnectionPage = lazy(() => import('../components/DriverConnectionPage.jsx'))
-export const LinkedDriverManagementPage = lazy(() => import('../components/drivers/LinkedDriverManagementPage.jsx'))
-export const LinkedDriverClientsPage = lazy(() => import('../components/drivers/LinkedDriverClientsPage.jsx'))
+export const DriverConnectionPage = lazy(() => import('../features/drivers/ui/DriverConnectionPage.jsx'))
+export const LinkedDriverManagementPage = lazy(() => import('../features/drivers/ui/LinkedDriverManagementPage.jsx'))
+export const LinkedDriverClientsPage = lazy(() => import('../features/drivers/ui/LinkedDriverClientsPage.jsx'))
 export const ComingSoonPage = lazy(() => import('../components/ComingSoonPage.jsx'))
 export const RevenuePage = lazy(() => import('../components/RevenuePage.jsx'))
 export const MyPage = lazy(() => import('../components/MyPage.jsx'))

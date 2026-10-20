@@ -5,7 +5,7 @@ import { readOwnerCars, readOwnerClients, readOwnerDrivers, readOwnerExpenses, r
 import { isPersistedClient, isPersistedExpense, isPlainObject } from '../data/store/persistDomainRecords.js'
 import { isPersistedInvoice } from '../data/store/persistDomainInvoice.js'
 import { isValidCalendarDateKey } from '../domain/dateKey.js'
-import { saveClientsToCloud } from './clientCloudSave.js'
+import { saveClientsToCloud } from '../data/sync/clientCloudSave.js'
 import { getCloudUserId } from '../data/cloud/cloudSession.js'
 import { saveExpenses } from './expenses.js'
 import { saveInvoices } from './invoices.js'

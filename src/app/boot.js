@@ -6,7 +6,7 @@ import { supabase } from '../data/cloud/supabaseClient.js'
 import { hydrateFromSupabase } from '../data/hydrate/hydrate.js'
 import { singleFlight } from '../data/cloud/singleFlight.js'
 import { checkLinkedDriverLink, fetchLinkedDriverLink } from '../data/sync/driverLinkRpc.js'
-import { settleExpiredDriverUnlinks } from '../lib/driverUnlink.js'
+import { settleExpiredDriverUnlinks } from '../data/sync/driverUnlink.js'
 
 /** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
 
