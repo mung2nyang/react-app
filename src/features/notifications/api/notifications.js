@@ -9,7 +9,7 @@ import { getReceivableItems } from '../../../lib/finance.js'
 import { readJsonKey } from '../../../data/store/persist.js'
 import { commitDismissedNotifications } from '../../../data/store/commitHelpers.js'
 import { readOwnerDrivers, readOwnerSettings } from '../../../data/store/ownerDataHooks.js'
-import { getLastBackupAt } from '../../../lib/guestBackup.js'
+import { getLastBackupAt } from '../../../data/sync/guestBackup.js'
 import { isCloudSession } from '../../../data/cloud/cloudSession.js'
 
 /** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */

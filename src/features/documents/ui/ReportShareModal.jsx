@@ -5,7 +5,7 @@ import {
   getDetailReportClientContact,
   getReportShareCompanyName,
 } from '../api/report.js'
-import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../../../lib/messageTemplates.js'
+import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../../../data/sync/messageTemplates.js'
 import { createReportImageFile, createReportPdfFile } from '../api/reportExport.js'
 import ShareFileModal from './ShareFileModal.jsx'
 

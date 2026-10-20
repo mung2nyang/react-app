@@ -14,7 +14,7 @@ Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
-const { default: MyPage } = await import('./MyPage.jsx')
+const { default: MyPage } = await import('../features/account/ui/MyPage.jsx')
 const { default: SideMenu } = await import('./SideMenu.jsx')
 
 /** @param {import('react').ReactElement} element */

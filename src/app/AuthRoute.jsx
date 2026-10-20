@@ -3,7 +3,7 @@
 // 세션이 이미 있으면(홈 이동은 BrowserRouter가 startTransition으로 늦게 처리) 넘어갈 때까지 로딩 표시 유지.
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import AuthPage from '../components/AuthPage.jsx'
+import AuthPage from '../features/account/ui/AuthPage.jsx'
 import LoadingScreen from '../components/LoadingScreen.jsx'
 
 /** 세션이 있는데 이만큼 지나도 다른 화면으로 안 넘어가면(주소창에 /auth 직접 입력 등) 홈으로. */

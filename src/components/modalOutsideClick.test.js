@@ -20,8 +20,8 @@ const { default: ExpenseFormModal } = await import('../features/expenses/ui/Expe
 const { default: DriverFormModal } = await import('../features/drivers/ui/DriverFormModal.jsx')
 const { default: TaxInvoiceDraftModal } = await import('../features/documents/ui/TaxInvoiceDraftModal.jsx')
 const { default: ConfirmModal } = await import('../shared/ui/ConfirmModal.jsx')
-const { default: InviteRedeemModal } = await import('./InviteRedeemModal.jsx')
-const { default: FixedRouteClientModal } = await import('./FixedRouteClientModal.jsx')
+const { default: InviteRedeemModal } = await import('../features/account/ui/InviteRedeemModal.jsx')
+const { default: FixedRouteClientModal } = await import('../features/settings/ui/FixedRouteClientModal.jsx')
 
 /** @type {import('../features/cars/ui/CarFormModal.jsx').CarFormDraft} */
 const CAR_DRAFT = {

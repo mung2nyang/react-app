@@ -11,7 +11,7 @@ import {
   fillReportShareMessagePattern,
   getDefaultMessageTemplatePatterns,
   saveMessageTemplateSettings,
-} from '../../../lib/messageTemplates.js'
+} from '../../../data/sync/messageTemplates.js'
 
 const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globalThis)
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true

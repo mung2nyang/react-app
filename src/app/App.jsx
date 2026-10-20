@@ -1,8 +1,8 @@
 // @ts-check
 // 라우터 최상위. 세션·부트·토스트 상태만 두고 화면별 로직은 AuthRoute/AppShell이 맡는다.
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import OnboardingPage from '../components/OnboardingPage.jsx'
-import WelcomeProfileView from '../components/auth/WelcomeProfileView.jsx'
+import OnboardingPage from '../features/account/ui/OnboardingPage.jsx'
+import WelcomeProfileView from '../features/account/ui/WelcomeProfileView.jsx'
 import BootRetryScreen from '../components/BootRetryScreen.jsx'
 import LoadFailScreen from '../components/LoadFailScreen.jsx'
 import PageLoadErrorBoundary from '../components/PageLoadErrorBoundary.jsx'
@@ -14,7 +14,7 @@ import { AccountFlowBodyClass, PendingWriteRetryBridge } from './providers.jsx'
 import AuthRoute from './AuthRoute.jsx'
 import AppShell from './AppShell.jsx'
 import RequireSession from './RequireSession.jsx'
-import { applyOnboardingWizard } from '../lib/onboardingFinish.js'
+import { applyOnboardingWizard } from '../data/sync/onboardingFinish.js'
 import { GUEST_APP_SESSION, setGuestModePersisted } from './guestSessionPersist.js'
 import { useAppSession } from './useAppSession.js'
 import ToastMessage from './ToastMessage.jsx'
@@ -121,7 +121,7 @@ export default function App() {
               <div className="container account-flow-container">
                 <OnboardingPage
                   accountType={session?.accountType || 'owner_driver'}
-                  onFinish={async (/** @type {import('../lib/onboardingFinish.js').OnboardingWizard} */ wizard) => {
+                  onFinish={async (/** @type {import('../data/sync/onboardingFinish.js').OnboardingWizard} */ wizard) => {
                     const outcome = await applyOnboardingWizard({
                       ownerKey,
                       userId: session?.userId,

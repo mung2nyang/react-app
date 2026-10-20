@@ -4,7 +4,7 @@ import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, mock, test } from 'node:test'
 import { collectNotifications } from './notifications.js'
-import { markBackupDone } from '../../../lib/guestBackup.js'
+import { markBackupDone } from '../../../data/sync/guestBackup.js'
 import { commitSettings } from '../../../data/store/commitHelpers.js'
 import { normalizeSettings } from '../../../domain/practiceSettings.js'
 
