@@ -31,7 +31,7 @@ test('거래처·차량 카드·유지비 기록 버튼 44px, 버튼 사이 8px'
 })
 
 test('하루 화면 운행·지출 카드 버튼 44px', () => {
-  const size = rule(css('components/day-log/day-log-shell.css'), '.work-log-page .maint-fuel-actions .action-icon-btn')
+  const size = rule(css('features/day-log/ui/day-log-shell.css'), '.work-log-page .maint-fuel-actions .action-icon-btn')
   assert.match(size, /width:\s*44px/)
   assert.match(size, /height:\s*44px/)
 })

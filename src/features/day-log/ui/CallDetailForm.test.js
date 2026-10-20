@@ -1,0 +1,183 @@
+// 로드맵 4-2 슬라이스 3 — 콜 상세 "산재보험료" 칸은 기사연동 계정 세션에서 숨긴다.
+import { register } from 'node:module'
+import { pathToFileURL } from 'node:url'
+
+register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)
+
+import '../../../testSupport/setupDom.js'
+import assert from 'node:assert/strict'
+import { describe, test } from 'node:test'
+import { normalizeSettings } from '../../../domain/practiceSettings.js'
+
+/** DOM 노드가 없는지 boolean으로만 비교한다 — assert.equal(node, null)은 실패 시 노드 전체를 직렬화하려다 OOM이 난다. */
+function assertMissing(/** @type {Element|null} */ el, /** @type {string} */ message) {
+  assert.equal(!!el, false, message)
+}
+
+Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+
+const React = await import('react')
+const { createRoot } = await import('react-dom/client')
+const { act } = React
+const { default: CallDetailForm } = await import('./CallDetailForm.jsx')
+
+const noop = () => {}
+const PAYMENT_ON_SETTINGS = normalizeSettings({ paymentOn: true })
+
+/** @param {Record<string, unknown>} props */
+async function mount(props) {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => {
+    root.render(React.createElement(CallDetailForm, {
+      value: null, previousItem: null, dateKey: '2026-09-27', clients: [], settings: PAYMENT_ON_SETTINGS,
+      onSave: noop, onClose: noop, ...props,
+    }))
+  })
+  return { container, async cleanup() { await act(async () => { root.unmount() }); container.remove() } }
+}
+
+test('결제 및 수금 입력이 켜져 있고 기사연동 계정이 아니면 산재보험료 칸이 보인다(기존 동작)', async () => {
+  const view = await mount({ isEmployedDriver: false })
+  try {
+    assert.ok(view.container.querySelector('#callInsuranceFee'))
+  } finally { await view.cleanup() }
+})
+
+test('기사연동 계정이면 결제 및 수금 입력이 켜져 있어도 산재보험료 칸이 안 보인다', async () => {
+  const view = await mount({ isEmployedDriver: true })
+  try {
+    assertMissing(view.container.querySelector('#callInsuranceFee'), '산재보험료 칸이 없어야 한다')
+    // 같은 영역의 다른 칸(계산서 종류·부가세 해제·입금 예정일)은 그대로 보여야 한다(범위 밖 — 안 건드림).
+    assert.ok(view.container.querySelector('#callVatExempt'))
+    assert.ok(view.container.querySelector('#callPaymentDueDate'))
+  } finally { await view.cleanup() }
+})
+
+test('isEmployedDriver를 안 넘기면(기본값) 미연동과 같은 기존 동작 — 칸이 보인다', async () => {
+  const view = await mount({})
+  try {
+    assert.ok(view.container.querySelector('#callInsuranceFee'))
+  } finally { await view.cleanup() }
+})
+
+test('이미 산재보험료 값이 있는 콜 상세를 기사연동 계정이 열어도 칸만 숨고 값은 저장 시 그대로 남는다', async () => {
+  let saved = /** @type {{ insuranceFee?: string }|null} */ (null)
+  const view = await mount({
+    value: { id: 'c1', loadLoc: '', unloadLoc: '', fare: '100,000', client: '', insuranceFee: '3,000' },
+    isEmployedDriver: true,
+    onSave: (/** @type {{ insuranceFee?: string }} */ draft) => { saved = draft },
+  })
+  try {
+    assertMissing(view.container.querySelector('#callInsuranceFee'), '칸은 숨는다')
+    const saveBtn = /** @type {HTMLButtonElement} */ (view.container.querySelector('.modal-btn.confirm'))
+    assert.ok(saveBtn)
+    await act(async () => { saveBtn.click() })
+    assert.equal(saved?.insuranceFee, '3,000', '입력칸이 안 보여도 기존 값은 지워지지 않고 그대로 저장된다')
+  } finally { await view.cleanup() }
+})
+
+test('결제 및 수금 입력이 꺼져 있으면 기사연동 여부와 무관하게 산재보험료 칸이 안 보인다(기존 동작 불변)', async () => {
+  const paymentOffSettings = normalizeSettings({ paymentOn: false })
+  const view = await mount({ settings: paymentOffSettings, isEmployedDriver: false })
+  try {
+    assertMissing(view.container.querySelector('#callInsuranceFee'), '결제 스위치가 꺼지면 칸이 없어야 한다')
+  } finally { await view.cleanup() }
+})
+
+test('운송료 이름표 "(부가세 별도)"는 보통 공백 — 큰 글씨에서 줄을 바꿔 칸 안에 들어간다(로드맵 49)', async () => {
+  const view = await mount({})
+  try {
+    const label = view.container.querySelector('label[for="callFare"]')
+    const text = label?.textContent || ''
+    assert.equal(text, '운송료(부가세 별도)')
+    assert.equal(text.includes(' '), false, '줄바꿈 안 되는 공백이 없어야 한다')
+  } finally { await view.cleanup() }
+})
+
+describe('운송료 1,000만원 초과 저장 확인(로드맵 43-C)', () => {
+  /** @param {string} fare @param {boolean} answer */
+  async function clickSave(fare, answer) {
+    /** @type {Array<string>} */
+    const asked = []
+    let saved = 0
+    const original = window.confirm
+    window.confirm = (/** @type {string|undefined} */ message) => { asked.push(String(message)); return answer }
+    const view = await mount({
+      value: { id: 'c1', loadLoc: 'A', unloadLoc: '', fare, client: '' },
+      onSave: () => { saved += 1 },
+    })
+    try {
+      const saveBtn = /** @type {HTMLButtonElement} */ (view.container.querySelector('.modal-btn.confirm'))
+      assert.ok(saveBtn)
+      await act(async () => { saveBtn.click() })
+      return { asked, saved, stillOpen: !!view.container.querySelector('#callFare') }
+    } finally {
+      window.confirm = original
+      await view.cleanup()
+    }
+  }
+
+  test('초과 + 취소 → 저장 안 함, 입력 창 그대로', async () => {
+    const result = await clickSave('20,000,000', false)
+    // 앱 확인 창을 그릴 곳(AppShell)이 없는 테스트에서는 같은 문구로 기본 창이 대신 묻는다.
+    assert.deepEqual(result.asked, ['운송료가 1,000만원을 넘습니다\n입력한 운송료: 20,000,000원. 이 금액이 맞으면 저장해 주세요.'])
+    assert.equal(result.saved, 0)
+    assert.equal(result.stillOpen, true)
+  })
+
+  test('초과 + 확인 → 저장', async () => {
+    const result = await clickSave('20,000,000', true)
+    assert.equal(result.asked.length, 1)
+    assert.equal(result.saved, 1)
+  })
+
+  test('딱 1,000만원이면 확인 창 없이 저장', async () => {
+    const result = await clickSave('10,000,000', false)
+    assert.equal(result.asked.length, 0)
+    assert.equal(result.saved, 1)
+  })
+})
+
+/** React 제어 입력에 값을 넣고 input 이벤트를 보낸다. @param {HTMLInputElement} input @param {string} value */
+function typeInto(input, value) {
+  const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value')?.set
+  setter?.call(input, value)
+  input.dispatchEvent(new window.Event('input', { bubbles: true }))
+}
+
+describe('입력이 잘못된 칸 표시(로드맵 82-C)', () => {
+  test('아무것도 안 넣고 저장 → 상차지 칸 표시·문구·커서, 저장 안 함, 채우면 사라짐', async () => {
+    /** @type {Array<object>} */
+    const saves = []
+    const view = await mount({ onSave: (/** @type {object} */ item) => saves.push(item) })
+    try {
+      const saveButton = [...view.container.querySelectorAll('button')].find((button) => button.textContent === '저장')
+      await act(async () => { saveButton?.click() })
+      const input = /** @type {HTMLInputElement} */ (view.container.querySelector('#callLoadLoc'))
+      assert.equal(saves.length, 0)
+      assert.equal(input.getAttribute('aria-invalid'), 'true')
+      assert.equal(view.container.querySelector('#callLoadLoc-error')?.textContent, '운임, 상차지, 하차지 중 하나를 입력해 주세요.')
+      assert.equal(document.activeElement, input)
+      await act(async () => { typeInto(input, '부산') })
+      assert.equal(input.getAttribute('aria-invalid'), null)
+      assertMissing(view.container.querySelector('#callLoadLoc-error'), '채우면 문구가 사라져야 한다')
+    } finally { await view.cleanup() }
+  })
+
+  test('마감 계기판이 출발보다 작으면 마감 칸 표시·문구, 고치면 운행거리', async () => {
+    const view = await mount({ settings: normalizeSettings({ distanceOn: true }) })
+    try {
+      const start = /** @type {HTMLInputElement} */ (view.container.querySelector('#callStartOdometer'))
+      const end = /** @type {HTMLInputElement} */ (view.container.querySelector('#callEndOdometer'))
+      await act(async () => { typeInto(start, '1000') })
+      await act(async () => { typeInto(end, '900') })
+      assert.equal(end.getAttribute('aria-invalid'), 'true')
+      assert.equal(view.container.querySelector('#callEndOdometer-error')?.textContent, '마감 계기판이 출발 계기판보다 작습니다.')
+      await act(async () => { typeInto(end, '1100') })
+      assert.equal(end.getAttribute('aria-invalid'), null)
+      assert.ok(view.container.textContent?.includes('운행거리 100km'))
+    } finally { await view.cleanup() }
+  })
+})

@@ -8,7 +8,7 @@ import BizNumberHint from '../../../shared/ui/BizNumberHint.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 import ClientTradeFields from './ClientTradeFields.jsx'
-import { StarIcon } from '../../../components/day-log/icons.jsx'
+import { StarIcon } from '../../../shared/ui/icons.jsx'
 import './client-management.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 

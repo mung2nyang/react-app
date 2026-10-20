@@ -4,7 +4,7 @@
 import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import CalendarPage from '../features/calendar/ui/CalendarPage.jsx'
-import DayLogPage from '../components/day-log/DayLogPage.jsx'
+import DayLogPage from '../features/day-log/ui/DayLogPage.jsx'
 import { resolveLogSettings } from '../domain/carSettingsScope.js'
 import { parseDateKeySelection } from '../lib/calendar.js'
 import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../data/store/ownerDataHooks.js'

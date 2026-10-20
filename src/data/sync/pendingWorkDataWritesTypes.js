@@ -1,7 +1,7 @@
 // @ts-check
 // pending 큐 타입 정본(타입 전용 모듈).
 /**
- * day-log/dayLogTypes.js의 CallDetailLike(domain 정본 + id 필수)와 같은 좁힘이다 —
+ * features/day-log/ui/dayLogTypes.js의 CallDetailLike(domain 정본 + id 필수)와 같은 좁힘이다 —
  * lib/는 components/를 참조하지 않는 방향을 지키려고 여기서 직접 좁혀서 정의한다
  * (durable에 저장되는 콜상세는 useDayDraft.js 진입 전에
  * backfillCallDetailIds가 이미 돌아 id가 항상 있다).

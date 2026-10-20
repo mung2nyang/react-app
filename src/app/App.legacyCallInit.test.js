@@ -15,7 +15,7 @@ Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 const React = await import('react')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
-const { default: DayLogPage } = await import('../components/day-log/DayLogPage.jsx')
+const { default: DayLogPage } = await import('../features/day-log/ui/DayLogPage.jsx')
 const { MemoryRouter } = await import('react-router-dom')
 const { commitBatch, getState, subscribe } = await import('../data/store/app-store.js')
 const { initializeOwnerFromPersist } = await import('../data/store/owner-state.js')
