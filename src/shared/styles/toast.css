@@ -1,4 +1,4 @@
-/* 화면 아래 알림(app/ToastMessage.jsx) — 실패 문구는 빨간 바탕·느낌표(로드맵 83). */
+/* 화면 아래 알림(app/shell/ToastMessage.jsx) — 실패 문구는 빨간 바탕·느낌표(로드맵 83). */
 
 .toast-message {
   position: fixed;

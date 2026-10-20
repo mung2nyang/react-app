@@ -142,7 +142,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
 
   test('saveExpenses: 서버 기록 후 Store, expenses LS setItem 0', async () => {
     const ownerKey = 'cms-exp-ok'
-    const userId = ownerKey // 차주 세션은 로그인 id = ownerKey(boot.js ownerKeyFromSession)
+    const userId = ownerKey // 차주 세션은 로그인 id = ownerKey(appSession.js ownerKeyFromSession)
     beginReady(userId, ownerKey)
     commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }])
     writeJsonKey('expenses', ownerKey, [{ id: 'old', kind: 'fuel', date: '2026-08-01' }])

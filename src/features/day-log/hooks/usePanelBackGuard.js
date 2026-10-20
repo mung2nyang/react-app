@@ -2,7 +2,7 @@
 // 입력 칸이 열린 동안 붙잡기 기록을 1장 쌓아, 휴대폰 뒤로가기도 ← 처럼 먼저 묻는다(로드맵 63-B).
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { panelGuardOnTop, popPanelGuardThen, takeGuardSkip } from '../../../app/historyMoves.js'
+import { panelGuardOnTop, popPanelGuardThen, takeGuardSkip } from '../../../shared/utils/historyMoves.js'
 import { cancelConfirmDialog, confirmDialogOpen } from '../../../shared/ui/confirmDialog.jsx'
 
 /**

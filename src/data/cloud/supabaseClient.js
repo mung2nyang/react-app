@@ -1,6 +1,6 @@
 // @ts-check
 import { createClient } from '@supabase/supabase-js'
-import { routerBasename } from '../../app/routerBasename.js'
+import { routerBasename } from '../../shared/utils/routerBasename.js'
 
 // 원래 앱 supabase-config.js와 같은 공개 주소/키입니다.
 // (브라우저에 보여도 되는 공개 키. 비밀 열쇠가 아닙니다.)

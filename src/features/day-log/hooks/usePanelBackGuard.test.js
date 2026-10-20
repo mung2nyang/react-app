@@ -15,7 +15,7 @@ const { createRoot } = await import('react-dom/client')
 const { act, useState } = React
 const { BrowserRouter, useNavigate } = await import('react-router-dom')
 const { default: usePanelBackGuard } = await import('./usePanelBackGuard.js')
-const { panelGuardOnTop, popPanelGuardThen } = await import('../../../app/historyMoves.js')
+const { panelGuardOnTop, popPanelGuardThen } = await import('../../../shared/utils/historyMoves.js')
 const { ConfirmDialogHost, confirmDialog } = await import('../../../shared/ui/confirmDialog.jsx')
 
 /** @param {number} ms */

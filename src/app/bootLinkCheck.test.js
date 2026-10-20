@@ -77,7 +77,7 @@ test('확인 성공 + 연동 없음 → 지금처럼 본인 칸, 재확인 안 �
 test('화면: 안내 화면 문구·다시 시도', async () => {
   const React = await import('react')
   const { createRoot } = await import('react-dom/client')
-  const { default: BootRetryScreen } = await import('../components/BootRetryScreen.jsx')
+  const { default: BootRetryScreen } = await import('./shell/BootRetryScreen.jsx')
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)

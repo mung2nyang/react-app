@@ -17,7 +17,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: CustomerCenterPage } = await import('./CustomerCenterPage.jsx')
-const { default: SideMenu } = await import('../../../components/SideMenu.jsx')
+const { default: SideMenu } = await import('../../../app/shell/SideMenu.jsx')
 const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.js')
 const { setHydration } = await import('../../../data/store/app-store.js')
 

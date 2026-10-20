@@ -27,7 +27,7 @@ export async function saveExpenses(ownerKey, items) {
   if (blocked) throw new Error(blocked)
   const logs = getState().workLogs[ownerKey] || {}
   const captured = captureSession()
-  // 연동 기사 세션(ownerKey = 차주 id, boot.js ownerKeyFromSession): 배정 차량 칸을 항목 단위로.
+  // 연동 기사 세션(ownerKey = 차주 id, appSession.js ownerKeyFromSession): 배정 차량 칸을 항목 단위로.
   if (userId !== ownerKey) {
     const assignedCar = (getState().cars[ownerKey] || []).find((car) => car.supabaseId)
     const previous = /** @type {Array<ExpenseItem>} */ (getState().expenses[ownerKey] || [])

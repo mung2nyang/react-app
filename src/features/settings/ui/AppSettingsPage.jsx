@@ -4,7 +4,7 @@ import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../../../data/s
 import { applyTheme, savePracticeSettings } from '../../../data/sync/settingsSave.js'
 import { defaultCarSettings } from '../../../domain/practiceSettings.js'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
-import { useHydrationLock } from '../../../app/useHydrationLock.js'
+import { useHydrationLock } from '../../../data/store/useHydrationLock.js'
 import SwitchRow from '../../../shared/ui/SwitchRow.jsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'

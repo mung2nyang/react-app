@@ -1,0 +1,21 @@
+// AppShell.jsx가 쓰는 지연 로드 페이지 컴포넌트 목록.
+import { lazy } from 'react'
+
+export const CarManagementPage = lazy(() => import('../../features/cars/ui/CarListPage.jsx'))
+export const ClientManagementPage = lazy(() => import('../../features/clients/ui/ClientListPage.jsx'))
+export const OwnerScopedClientsView = lazy(() => import('../../features/clients/ui/OwnerScopedClientsView.jsx'))
+export const PersonalInfoPage = lazy(() => import('../../features/account/ui/PersonalInfoPage.jsx'))
+export const AppSettingsPage = lazy(() => import('../../features/settings/ui/AppSettingsPage.jsx'))
+export const MaintFuelPage = lazy(() => import('../../features/expenses/ui/MaintFuelPage.jsx'))
+export const ReceivablesPage = lazy(() => import('../../features/receivables/ui/ReceivablesPage.jsx'))
+export const DocumentIssuePage = lazy(() => import('../../features/documents/ui/DocumentIssuePage.jsx'))
+export const DriverConnectionPage = lazy(() => import('../../features/drivers/ui/DriverConnectionPage.jsx'))
+export const LinkedDriverManagementPage = lazy(() => import('../../features/drivers/ui/LinkedDriverManagementPage.jsx'))
+export const LinkedDriverClientsPage = lazy(() => import('../../features/drivers/ui/LinkedDriverClientsPage.jsx'))
+export const ComingSoonPage = lazy(() => import('../shell/ComingSoonPage.jsx'))
+export const RevenuePage = lazy(() => import('../../features/revenue/ui/RevenuePage.jsx'))
+export const MyPage = lazy(() => import('../../features/account/ui/MyPage.jsx'))
+export const CustomerCenterPage = lazy(() => import('../../features/support/ui/CustomerCenterPage.jsx'))
+export const NoticePage = lazy(() => import('../../features/support/ui/NoticePage.jsx'))
+export const MessageSettingsPage = lazy(() => import('../../features/settings/ui/MessageSettingsPage.jsx'))
+export const NotificationsPage = lazy(() => import('../../features/notifications/ui/NotificationsPage.jsx'))

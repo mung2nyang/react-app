@@ -7,7 +7,7 @@ import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
 mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
-const { isProfileRowMissing } = await import('./boot.js')
+const { isProfileRowMissing } = await import('../data/cloud/appSession.js')
 
 beforeEach(() => { resetHandlers() })
 

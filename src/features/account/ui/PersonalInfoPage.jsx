@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../../domain/formatPhone.js'
 import { requestAccountWithdrawal } from '../api/accountWithdrawal.js'
-import { useHydrationLock } from '../../../app/useHydrationLock.js'
+import { useHydrationLock } from '../../../data/store/useHydrationLock.js'
 import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.js'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 import EmployerLinkCard from '../../drivers/ui/EmployerLinkCard.jsx'

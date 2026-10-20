@@ -1,4 +1,4 @@
-/* 인터넷 끊김 띠(app/OfflineBanner.jsx) — 화면 맨 위에 붙음, 실패 알림과 같은 빨강. */
+/* 인터넷 끊김 띠(app/shell/OfflineBanner.jsx) — 화면 맨 위에 붙음, 실패 알림과 같은 빨강. */
 
 .offline-banner {
   position: sticky;

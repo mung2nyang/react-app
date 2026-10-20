@@ -7,7 +7,7 @@ import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
 mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 
-const { buildCloudAppSession } = await import('./boot.js')
+const { buildCloudAppSession } = await import('../data/cloud/appSession.js')
 
 /** @type {Array<string>} */
 let order = []

@@ -15,7 +15,7 @@ mock.module('../../../data/cloud/supabaseClient.js', { namedExports: { supabase:
 /** @type {Array<string>} */
 let flow = []
 const NEXT_SESSION = { userId: 'driver-1', name: '기사', phone: '', accountType: 'owner_driver', linkedOwnerId: null, guestMode: false }
-mock.module('../../../app/boot.js', {
+mock.module('../../../data/cloud/appSession.js', {
   namedExports: {
     buildCloudAppSession: async (/** @type {string} */ userId) => { flow.push(`session:${userId}`); return NEXT_SESSION },
     ownerKeyFromSession: (/** @type {{ userId: string }} */ session) => session.userId,

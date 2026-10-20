@@ -2,7 +2,7 @@
 /** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
 import { useState } from 'react'
 import { redeemDriverInviteCode } from '../../../data/sync/driverLinkRpc.js'
-import { buildCloudAppSession, ownerKeyFromSession } from '../../../app/boot.js'
+import { buildCloudAppSession, ownerKeyFromSession } from '../../../data/cloud/appSession.js'
 import { hydrateFromSupabase } from '../../../data/hydrate/hydrate.js'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import './InviteRedeemModal.css'

@@ -2,7 +2,7 @@
 import '../testSupport/stubSupabaseClient.js'
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { ownerKeyFromSession } from './boot.js'
+import { ownerKeyFromSession } from '../data/cloud/appSession.js'
 import { carFromAssignedSummary } from '../data/hydrate/hydrateEmployedDriver.js'
 
 describe('ownerKeyFromSession', () => {
