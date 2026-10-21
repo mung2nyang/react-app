@@ -10,7 +10,7 @@ import { vehicleSupabaseIdForLog } from '../../../data/sync/mainDayLogRouting.js
 import { useOwnerCars, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
 import { useOwnerProfile } from '../../../data/store/ownerProfileDriversHooks.js'
 import DailyInspectionExportBar from './DailyInspectionExportBar.jsx'
-import MonthNavigator from './MonthNavigator.jsx'
+import MonthNavigator from '../../../shared/ui/MonthNavigator.jsx'
 import { SkeletonLines } from '../../../shared/ui/Skeleton.jsx'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 

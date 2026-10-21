@@ -1,17 +1,16 @@
 // @ts-check
-// 메인·서브 스코프를 한 화면에서 처리 — §6 예외(≤250).
+// 메인·서브 스코프를 한 화면에서 처리. 날짜별 목록은 MaintFuelDayList, 달 이동은 공용 MonthNavigator.
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import CalendarDateSelect from '../../../shared/ui/CalendarDateSelect.jsx'
+import MonthNavigator from '../../../shared/ui/MonthNavigator.jsx'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
+import MaintFuelDayList from './MaintFuelDayList.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
-import CardActionButtons from '../../../shared/ui/CardActionButtons.jsx'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
 import { getExpensesForLog } from '../../../domain/expenseScope.js'
-import { getYearOptions, setYearMonth, shiftMonth } from '../../../domain/calendar.js'
 import { saveExpenses } from '../../../data/sync/expensesSave.js'
 import {
-  emptyExpenseDraft, expenseTitle, filterMonth, groupExpensesByDate, KINDS, monthTotal,
+  emptyExpenseDraft, filterMonth, groupExpensesByDate, KINDS, monthTotal,
   removeExpense, upsertExpense,
 } from '../../../domain/expenses.js'
 import { formatWon } from '../../../domain/money.js'
@@ -24,34 +23,6 @@ import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../../../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
-
-const YEAR_OPTIONS = getYearOptions()
-
-/** @param {{ kind: ExpenseItem['kind'] }} props */
-function KindRecordIcon({ kind }) {
-  if (kind === 'fuel') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <line x1="3" x2="15" y1="22" y2="22"></line>
-        <line x1="4" x2="14" y1="9" y2="9"></line>
-        <path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"></path>
-        <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.83a2 2 0 0 0-.59-1.42L18 5"></path>
-      </svg>
-    )
-  }
-  if (kind === 'misc') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3 6h18M3 12h18M3 18h18"></path>
-      </svg>
-    )
-  }
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-    </svg>
-  )
-}
 
 /**
  * @param {Object} props
@@ -145,30 +116,7 @@ export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) 
       <PageHeader title={title} onBack={onBack} onOpenMenu={onOpenMenu} />
 
       <div className="maint-top-card">
-        <div className="maint-fuel-nav">
-          <div className="date-navigator">
-            <button type="button" className="arrow-btn" title="이전 달" onClick={() => setViewDate((d) => shiftMonth(d, -1))}>
-              <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-            </button>
-            <div className="date-select-group">
-              <CalendarDateSelect
-                label="년도 선택"
-                value={year}
-                options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y}년` }))}
-                onChange={(next) => setViewDate(setYearMonth(viewDate, Number(next), month))}
-              />
-              <CalendarDateSelect
-                label="월 선택"
-                value={month}
-                options={Array.from({ length: 12 }, (_, m) => ({ value: String(m), label: `${m + 1}월` }))}
-                onChange={(next) => setViewDate(setYearMonth(viewDate, year, Number(next)))}
-              />
-            </div>
-            <button type="button" className="arrow-btn" title="다음 달" onClick={() => setViewDate((d) => shiftMonth(d, 1))}>
-              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-            </button>
-          </div>
-        </div>
+        <MonthNavigator viewDate={viewDate} onChange={setViewDate} />
         <div className="settings-segmented-control maint-fuel-tabs maint-management-tabs">
           {KINDS.map((item) => (
             <button
@@ -188,48 +136,7 @@ export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) 
         </div>
       </div>
 
-      <div className="car-list">
-        {groups.length === 0 && <div className="empty-state">이번 달 등록된 {kindLabel} 내역이 없습니다.</div>}
-        {groups.map((group) => (
-          <section key={group.date} className={`management-day-card ${kind}-day`}>
-            <div className="management-day-head">
-              <strong>{group.date}</strong>
-              <div>
-                <span>{kindLabel} 합계</span>
-                <b>{formatWon(group.dailyTotal)}</b>
-              </div>
-            </div>
-            <div className="management-day-items">
-              {group.items.map((item) => (
-                <div key={item.id} className={`management-record-item ${kind}-record`}>
-                  <div className="management-record-head">
-                    <div className="management-record-title">
-                      <KindRecordIcon kind={kind} />
-                      <strong>{expenseTitle(item, kindLabel)}</strong>
-                    </div>
-                    <div className="management-record-actions">
-                      <CardActionButtons
-                        onEdit={() => openEdit(item)}
-                        onDelete={() => remove(item.id)}
-                      />
-                    </div>
-                  </div>
-                  <div className="management-record-info">
-                    <div>
-                      {item.kind !== 'fuel' && <span>{item.payment || '카드'}</span>}
-                      {item.kind !== 'fuel' && item.category && <span>{item.category}</span>}
-                      {item.kind === 'fuel' && (item.mileage || 0) > 0 && <span>누적 {(item.mileage || 0).toLocaleString('ko-KR')}km</span>}
-                      {item.kind === 'fuel' && (item.subsidy || 0) > 0 && <span>보조금 {formatWon(item.subsidy)}</span>}
-                      {item.kind !== 'fuel' && (item.mileage || 0) > 0 && <span>누적 {(item.mileage || 0).toLocaleString('ko-KR')}km</span>}
-                    </div>
-                    <strong>{formatWon(item.cost)}</strong>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
+      <MaintFuelDayList groups={groups} kind={kind} kindLabel={kindLabel} onEdit={openEdit} onDelete={remove} />
 
       <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>
 

@@ -13,7 +13,7 @@ import {
 import { buildDetailReport, detailReportClientOptions } from '../api/reportDetail.js'
 import { buildMonthReport } from '../api/reportSummary.js'
 import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
-import MonthNavigator from './MonthNavigator.jsx'
+import MonthNavigator from '../../../shared/ui/MonthNavigator.jsx'
 import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'
 import ReportShareModal from './ReportShareModal.jsx'

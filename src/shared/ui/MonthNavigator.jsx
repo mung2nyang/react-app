@@ -1,7 +1,7 @@
 // @ts-check
-// 서류 발급(9-C-1): ReportPage.jsx의 달 이동(이전 달·년·월 선택·다음 달)을 그대로 옮긴 공용 부품 — 운송비 내역서·일상점검표 탭이 같이 쓴다.
-import { getYearOptions, setYearMonth, shiftMonth } from '../../../domain/calendar.js'
-import CalendarDateSelect from '../../../shared/ui/CalendarDateSelect.jsx'
+// 여러 화면이 같이 쓰는 달 이동(이전 달·년·월 선택·다음 달) — 서류 발급 탭들과 차량 유지비.
+import { getYearOptions, setYearMonth, shiftMonth } from '../../domain/calendar.js'
+import CalendarDateSelect from './CalendarDateSelect.jsx'
 
 const YEAR_OPTIONS = getYearOptions()
 

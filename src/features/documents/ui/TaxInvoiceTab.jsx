@@ -22,7 +22,7 @@ import {
 import SummaryInfoToggle from '../../../shared/ui/SummaryInfoToggle.jsx'
 import TaxInvoiceDraftModal from './TaxInvoiceDraftModal.jsx'
 import TaxInvoiceEntryList from './TaxInvoiceEntryList.jsx'
-import MonthNavigator from './MonthNavigator.jsx'
+import MonthNavigator from '../../../shared/ui/MonthNavigator.jsx'
 import './tax-invoice.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
