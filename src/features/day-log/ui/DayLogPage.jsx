@@ -1,21 +1,15 @@
 // @ts-check
-// 일지 화면 조합만 맡고, draft 편집·디바운스·커밋은 useDayDraft.js가,
-// 콜상세 폼은 CallDetailForm.jsx가, 비용(정비/주유/기타)은 useExpenseForm.js가
-// 별도 expenses 스토어에서 즉시 저장으로 관리한다(day record에 넣지 않는다).
-// §6 예외: 즐겨찾기 칩용 이력 구독·고정 저장 배선은 이 페이지 조합 책임에 둔다.
+// 운행일지 화면 조합 — 임시 편집·저장은 useDayDraft, 콜 상세·수금·고정 노선 처리는 useCallDetailActions,
+// 비용(정비/주유/기타)은 useExpenseForm(일지 기록이 아닌 비용 저장소에 바로 저장).
 import { useMemo, useState } from 'react'
 import { expensesForVehicleDay } from '../../../domain/calendarBadges.js'
-import { applyFixedRouteRun, getFixedRouteCounts } from '../../../domain/day-record.js'
 import { getFixedRouteClient } from '../../../domain/clients.js'
-import { removeCallDetail, upsertCallDetail } from '../../../domain/call-details.js'
-import { getDetailPaymentSummary } from '../../../domain/finance.js'
-import { locationShortcutList, togglePinnedLocation } from '../../../domain/locationShortcuts.js'
-import { toggleCallPaymentStatus } from '../../../domain/payments.js'
+import { locationShortcutList } from '../../../domain/locationShortcuts.js'
 import { confirmLeaveIfUnsafe } from '../../../data/sync/durableWriteGuard.js'
-import { savePracticeSettings } from '../../../data/sync/settingsSave.js'
 import { useOwnerDrivers, useOwnerWorkData, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
 import { useDayDraft } from '../hooks/useDayDraft.js'
 import { useExpenseForm } from '../hooks/useExpenseForm.js'
+import useCallDetailActions from '../hooks/useCallDetailActions.js'
 import { bindInlinePanelActions } from './inlinePanelActions.js'
 import usePanelBackGuard from '../hooks/usePanelBackGuard.js'
 import { popPanelGuardThen } from '../../../shared/utils/historyMoves.js'
@@ -35,13 +29,10 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './day-log-shell.css'
 import './fixed-route.css'
 import './day-log.css'
-import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 /** @typedef {import('./dayLogTypes.js').Settings} Settings */
-/** @typedef {import('../hooks/day-log-reducer.js').DayDraft} DayDraft */
-/** @typedef {import('../../../domain/call-details.js').CallDetailDraft} CallDetailDraft */
 
 const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
 
@@ -61,9 +52,9 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  */
 export default function DayLogPage({ month, day, dateKey, clients, settings, onWorkChanged, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false }) {
   const { ownerKey } = useSession()
-  const showToast = useToast()
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, logId)
+  const { patchDraft, runRoute, saveCall, deleteCall, togglePayment, togglePinnedLocation } = useCallDetailActions(draft, dispatch, { dateKey, clients, settings, editingCallId })
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
   const mainWorkData = useOwnerWorkData(ownerKey)
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
@@ -79,11 +70,7 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onW
   const dayExpenses = expensesForVehicleDay(expenseForm.expenses, dateKey, logId !== 'main' ? logId : undefined)
   const routePresets = settings.fixedRouteOn ? (settings.fixedRoutePresets || []) : []
   const quickCounts = settings.runCountToggle ? (settings.runCountPresets || []) : []
-  // settings.clients는 항상 비어 있다(normalizeSettings가 안 만든다) — 실제 거래처
-  // 목록은 이 화면의 clients prop(MainPageRoute.jsx가 넘긴다)이라 그쪽을 써야 한다.
-  // 연동기사 본인 로그인이면 배정 차량 스코프(clientScopeKey)를 먼저 보고, 그
-  // 스코프에 아직 자기 고정노선이 없으면 차주 것으로 fallback한다(getFixedRouteClient
-  // 내부 규칙) — 전체 clients를 넘겨야 fallback 대상(차주 것)도 같이 보인다.
+  // 거래처는 settings가 아닌 clients prop 전체로 — 연동 기사 배정 차량에 고정노선이 없으면 차주 것으로 넘어간다.
   const fixedRouteClient = getFixedRouteClient({ clients }, clientScopeKey || logId)
   const palletVisible = !!(settings.fixedOn && fixedRouteClient?.palletOn)
   const showCallDetailList = settings.callDetail || draft.callDetails.length > 0
@@ -91,64 +78,14 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onW
   const previousCallItem = draft.callDetails.length > 0 ? draft.callDetails[draft.callDetails.length - 1] : null
   const messageItem = messageCallId ? draft.callDetails.find((item) => item.id === messageCallId) : null
 
-  // durable 기록조차 실패한 상태(durableWriteGuard.js)로 나가면 편집이 사라질 수
-  // 있다 — beforeunload는 pendingWriteRetryListeners.js가 막지만, 화면 안 이동
-  // (뒤로가기)은 데이터 라우터가 아니라 useBlocker를 못 써서(main.jsx) 여기서 직접 확인. 열린 입력 칸 확인도 같이 한다.
+  // 화면 안 뒤로가기는 useBlocker를 못 써서 여기서 저장 실패 상태와 열린 입력 칸을 직접 확인한다.
   async function handleClose() {
     if (confirmLeaveIfUnsafe() && await confirmLeaveOpenPanel()) popPanelGuardThen(() => onClose?.())
   }
 
-  /** @param {Partial<DayDraft>} patch */
-  function patchDraft(patch) { dispatch({ type: 'patchDraft', patch }) }
-  /** @param {string} id */
-  function indexOfCall(id) { return draft.callDetails.findIndex((item) => item.id === id) }
-
-  // 콜상세/비용 인라인 패널이 서로 다른 state라 하나를 열어도 안 닫히던 문제 —
-  // inlinePanelActions.js 참고(200줄 제한 때문에 로직을 옮겼다).
+  // 콜 상세·비용 입력 칸은 하나만 열리게 inlinePanelActions.js가 묶는다.
   const { openCallForm, openExpenseAdd, openExpenseEdit, openExpenseKindPick, confirmLeaveOpenPanel } = bindInlinePanelActions(dispatch, expenseForm, { callFormOpen, editingCallId })
   usePanelBackGuard(callFormOpen || expenseForm.modalOpen, confirmLeaveOpenPanel, () => { expenseForm.closeAll(); dispatch({ type: 'closeCallForm' }); onClose?.() })
-
-  /** @param {string} routeId @param {number} delta */
-  function handleRouteRun(routeId, delta) {
-    const nextCounts = applyFixedRouteRun(getFixedRouteCounts(draft), routeId, delta)
-    const nextCount = Math.max(0, (Number(draft.fixedCount) || 0) + delta)
-    patchDraft({ fixedRouteCounts: nextCounts, fixedCount: nextCount })
-  }
-
-  /** @param {CallDetailDraft} formDraft */
-  function handleSaveCall(formDraft) {
-    const editingIndex = editingCallId ? indexOfCall(editingCallId) : -1
-    const result = upsertCallDetail(draft.callDetails, formDraft, editingIndex, dateKey, clients)
-    if (result.error) { showToast?.(result.error); return }
-    // upsertCallDetail(도메인 레벨)은 id를 optional로 선언하지만, buildCallDetail이
-    // 항상 실제 id를 붙이므로 여기선 항상 있다 — day-log의 "id 항상 있음" 계약으로 좁힌다.
-    patchDraft({ callDetails: /** @type {Array<DayDraft['callDetails'][number]>} */ (result.items) })
-    dispatch({ type: 'closeCallForm' })
-    showToast?.(editingIndex >= 0 ? '세부 입력을 수정했습니다.' : '세부 입력을 저장했습니다.')
-  }
-
-  /** @param {string} location */
-  async function handleTogglePinnedLocation(location) {
-    const result = togglePinnedLocation(settings, location)
-    if (result.error) { showToast?.(result.error); return }
-    try {
-      await savePracticeSettings(ownerKey, (current) => ({ pinnedLocations: togglePinnedLocation(current, location).settings.pinnedLocations }))
-    } catch {
-      showToast?.('고정 장소 저장에 실패했습니다.')
-    }
-  }
-
-  /** @param {string} id */
-  function handleTogglePayment(id) {
-    const detail = draft.callDetails.find((item) => item.id === id)
-    if (!detail) return
-    const unpaid = getDetailPaymentSummary(detail).status !== 'paid'
-    const wrapped = { [dateKey]: { ...draft, callDetails: draft.callDetails } }
-    const result = toggleCallPaymentStatus(wrapped, dateKey, id)
-    if (result.error) { showToast?.(result.error); return }
-    patchDraft({ callDetails: result.data[dateKey].callDetails })
-    showToast?.(unpaid ? '수금 처리했습니다.' : '수금을 취소했습니다.')
-  }
 
   if (periodNotice) return <AssignmentPeriodPage title={`${month}월 ${day}일 운행일지`} notice={periodNotice} onBack={onClose ? handleClose : undefined} onOpenMenu={onOpenMenu} />
   return (
@@ -166,7 +103,7 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onW
             <div className="modal-section-title">고정 노선</div>
             <div className="form-group fixed-route-group">
               <FixedCountSection count={draft.fixedCount} isOff={draft.isOff} quickCounts={quickCounts} fixedRouteClient={fixedRouteClient} onChange={(count) => patchDraft({ fixedCount: Math.max(0, parseInt(String(count), 10) || 0) })} />
-              <FixedRouteChips routePresets={routePresets} routeCounts={draft.fixedRouteCounts} isOff={draft.isOff} onRun={handleRouteRun} />
+              <FixedRouteChips routePresets={routePresets} routeCounts={draft.fixedRouteCounts} isOff={draft.isOff} onRun={runRoute} />
             </div>
             <PalletSection visible={palletVisible} palletCount={draft.palletCount} isOff={draft.isOff} fixedRouteClient={fixedRouteClient} onChange={(count) => patchDraft({ palletCount: Math.max(0, parseInt(String(count), 10) || 0) })} />
           </div>
@@ -181,8 +118,8 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onW
             clients={clients}
             canAdd={settings.callDetail}
             onEdit={(id) => openCallForm(id)}
-            onDelete={(id) => patchDraft({ callDetails: /** @type {Array<DayDraft['callDetails'][number]>} */ (removeCallDetail(draft.callDetails, indexOfCall(id))) })}
-            onTogglePayment={handleTogglePayment}
+            onDelete={deleteCall}
+            onTogglePayment={togglePayment}
             onMessage={(id) => setMessageCallId(id)}
             onAdd={() => openCallForm(null)}
           >
@@ -203,9 +140,9 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onW
                   clientScopeKey={clientScopeKey}
                   locationShortcuts={locationShortcuts}
                   pinnedLocations={pinnedLocations}
-                  onTogglePinnedLocation={handleTogglePinnedLocation}
+                  onTogglePinnedLocation={togglePinnedLocation}
                   isEmployedDriver={isEmployedDriver}
-                  onSave={handleSaveCall}
+                  onSave={saveCall}
                   onClose={() => dispatch({ type: 'closeCallForm' })}
                 />
               </InlineSheet>
