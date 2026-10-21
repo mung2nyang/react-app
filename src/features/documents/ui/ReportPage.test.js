@@ -7,12 +7,26 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { test } from 'node:test'
+import { mock, test } from 'node:test'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
+// 내려받기 테스트용 가짜 html2pdf — 그리는 동안 pdf-export-mode가 붙어 있었는지 적어 둔다.
+const html2pdfCalls = /** @type {Array<string>} */ ([])
+const canvasFail = { on: false }
+const fakeWorker = {
+  set() { return fakeWorker },
+  from() { html2pdfCalls.push(document.body.classList.contains('pdf-export-mode') ? 'from(내보내기 모드)' : 'from'); return fakeWorker },
+  async save() { html2pdfCalls.push('save') },
+  async outputPdf() { html2pdfCalls.push('outputPdf'); return new Blob(['%PDF'], { type: 'application/pdf' }) },
+  toCanvas() { return fakeWorker },
+  async get() { return { toBlob: (/** @type {(blob: Blob|null) => void} */ done) => done(canvasFail.on ? null : new Blob(['png'], { type: 'image/png' })) } },
+}
+mock.module('html2pdf.js', { defaultExport: () => fakeWorker })
+
 const React = await import('react')
 const { withSession } = await import('../../../testSupport/withSession.js')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { MemoryRouter } = await import('react-router-dom')
@@ -119,5 +133,98 @@ test('세부 보기에서도 머리 뒤로가기는 화면 나가기', async () 
     assert.equal(backCount, 1)
   } finally {
     await cleanup()
+  }
+})
+
+// 로드맵 99-B — 내려받기 코드를 공용으로 옮기기 전 동작(알림·파일 이름·내보내기 모드 떼기)을 적어 둔다.
+/** @param {string} ownerKey */
+async function renderForDownload(ownerKey) {
+  commitWorkData(ownerKey, {})
+  html2pdfCalls.length = 0
+  const toasts = /** @type {Array<string>} */ ([])
+  const links = /** @type {Array<string>} */ ([])
+  const clickSpy = mock.method(window.HTMLAnchorElement.prototype, 'click', function recordLink() { links.push(this.download) })
+  const originalCreate = URL.createObjectURL
+  const originalRevoke = URL.revokeObjectURL
+  URL.createObjectURL = () => 'blob:fake'
+  URL.revokeObjectURL = () => {}
+  const quiet = mock.method(console, 'error', () => {})
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => {
+    root.render(withToast(React.createElement(
+      MemoryRouter,
+      { initialEntries: ['/app/report'] },
+      withSession(React.createElement(ReportPage, { viewDate: new Date(2026, 9, 1), onChangeMonth: () => {} }), { ownerKey }),
+    ), (/** @type {string} */ m) => { toasts.push(m) }))
+  })
+  /** @param {string} label */
+  async function saveAs(label) {
+    await act(async () => { buttonByText(container, label).click() })
+    await act(async () => { buttonByText(container, '저장').click() })
+    await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 0) }) })
+  }
+  return {
+    container, toasts, links, saveAs,
+    async cleanup() {
+      await act(async () => { root.unmount() })
+      container.remove()
+      clickSpy.mock.restore()
+      quiet.mock.restore()
+      URL.createObjectURL = originalCreate
+      URL.revokeObjectURL = originalRevoke
+      canvasFail.on = false
+    },
+  }
+}
+
+test('이미지 저장 → 확인 창 [저장] → 파일 이름으로 내려받기, 성공 알림, 내보내기 모드 떨어짐', async () => {
+  const view = await renderForDownload('report-download-image')
+  try {
+    await view.saveAs('이미지 저장')
+    assert.deepEqual(view.links, ['2026년_10월_운송비내역서.png'])
+    assert.deepEqual(view.toasts, ['이미지를 저장했습니다.'])
+    assert.ok(html2pdfCalls.includes('from(내보내기 모드)'), '그리는 동안 내보내기 모드')
+    assert.equal(document.body.classList.contains('pdf-export-mode'), false)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('PDF 저장 → 성공 알림, 내보내기 모드 떨어짐', async () => {
+  const view = await renderForDownload('report-download-pdf')
+  try {
+    await view.saveAs('PDF 다운로드')
+    assert.deepEqual(view.toasts, ['PDF를 저장했습니다.'])
+    assert.ok(html2pdfCalls.includes('from(내보내기 모드)'), '그리는 동안 내보내기 모드')
+    assert.equal(document.body.classList.contains('pdf-export-mode'), false)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('이미지 그리기 실패 → 실패 알림, 내려받기 없음, 내보내기 모드 떨어짐', async () => {
+  const view = await renderForDownload('report-download-fail')
+  canvasFail.on = true
+  try {
+    await view.saveAs('이미지 저장')
+    assert.deepEqual(view.toasts, ['이미지 저장에 실패했습니다.'])
+    assert.deepEqual(view.links, [])
+    assert.equal(document.body.classList.contains('pdf-export-mode'), false)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('PDF 저장도 파일을 만들어 링크로 내려받는다(파일 이름 .pdf)', async () => {
+  const view = await renderForDownload('report-download-pdf-link')
+  try {
+    await view.saveAs('PDF 다운로드')
+    assert.deepEqual(view.links, ['2026년_10월_운송비내역서.pdf'])
+    assert.ok(html2pdfCalls.includes('outputPdf'), '파일로 만들기')
+    assert.equal(html2pdfCalls.includes('save'), false, 'html2pdf 자체 저장은 안 씀')
+  } finally {
+    await view.cleanup()
   }
 })

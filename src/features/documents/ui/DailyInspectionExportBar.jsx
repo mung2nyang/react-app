@@ -7,19 +7,7 @@ import { createReportImageFile, createReportPdfFile } from '../api/reportExport.
 import DailyInspectionLegalForm from './DailyInspectionLegalForm.jsx'
 import DailyInspectionShareModal from './DailyInspectionShareModal.jsx'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
-import { useToast } from '../../../shared/hooks/useToast.js'
-
-/** @param {File} file */
-function downloadFile(file) {
-  const url = URL.createObjectURL(file)
-  const link = document.createElement('a')
-  link.download = file.name
-  link.href = url
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
+import useFileDownload from '../hooks/useFileDownload.js'
 
 /**
  * @param {Object} props
@@ -27,9 +15,7 @@ function downloadFile(file) {
  * @param {boolean} props.ready 그 달 점검표를 읽었을 때만 내보내기
  */
 export default function DailyInspectionExportBar({ form, ready }) {
-  const showToast = useToast()
   const formRef = useRef(/** @type {HTMLDivElement|null} */ (null))
-  const [saving, setSaving] = useState(/** @type {'pdf'|'image'|null} */ (null))
   const [shareOpen, setShareOpen] = useState(false)
   const [confirmType, setConfirmType] = useState(/** @type {'pdf'|'image'|null} */ (null))
   const baseName = inspectionFileBaseName(form.year, form.month, form.head.carNumber)
@@ -41,20 +27,7 @@ export default function DailyInspectionExportBar({ form, ready }) {
     return type === 'image' ? createReportImageFile(element, baseName, { orientation: 'landscape' }) : createReportPdfFile(element, baseName, { orientation: 'landscape' })
   }
 
-  /** @param {'pdf'|'image'} type */
-  async function save(type) {
-    if (saving) return
-    setSaving(type)
-    try {
-      downloadFile(await buildFile(type))
-      showToast?.(type === 'pdf' ? 'PDF를 저장했습니다.' : '이미지를 저장했습니다.')
-    } catch (error) {
-      console.error('일상점검표 내보내기 실패:', error)
-      showToast?.(type === 'pdf' ? 'PDF 저장에 실패했습니다. 다시 시도해 주세요.' : '이미지 저장에 실패했습니다.')
-    } finally {
-      setSaving(null)
-    }
-  }
+  const { saving, download } = useFileDownload(buildFile, '일상점검표')
 
   return (
     <>
@@ -81,7 +54,7 @@ export default function DailyInspectionExportBar({ form, ready }) {
           message={`${confirmType === 'pdf' ? 'PDF' : '이미지'}로 저장하시겠습니까?`}
           confirmLabel="저장"
           onCancel={() => setConfirmType(null)}
-          onConfirm={() => { setConfirmType(null); void save(confirmType) }}
+          onConfirm={() => { setConfirmType(null); void download(confirmType) }}
         />
       )}
       {shareOpen && <DailyInspectionShareModal month={form.month} buildFile={buildFile} onClose={() => setShareOpen(false)} />}

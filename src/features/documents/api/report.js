@@ -30,22 +30,16 @@ export function buildDetailReportFileName(year, monthIndex, clientFilter) {
 }
 
 /**
- * 월간 운송비 내역서 PNG 파일명(이미지 저장용, PDF 파일명 규칙 재사용).
- * @param {number} year
- * @param {number} monthIndex
- */
-export function buildReportImageFileName(year, monthIndex) {
-  return buildReportFileName(year, monthIndex).replace(/\.pdf$/, '.png')
-}
-
-/**
- * 세부 내역서 PNG 파일명.
+ * 내려받기·공유 파일의 확장자 없는 이름(요약이면 월간, 세부면 거래처 붙음).
+ * @param {'summary'|'detail'} viewMode
  * @param {number} year
  * @param {number} monthIndex
  * @param {string} clientFilter
  */
-export function buildDetailReportImageFileName(year, monthIndex, clientFilter) {
-  return buildDetailReportFileName(year, monthIndex, clientFilter).replace(/\.pdf$/, '.png')
+export function reportBaseFileName(viewMode, year, monthIndex, clientFilter) {
+  return (viewMode === 'detail'
+    ? buildDetailReportFileName(year, monthIndex, clientFilter)
+    : buildReportFileName(year, monthIndex)).replace(/\.pdf$/, '')
 }
 
 /**

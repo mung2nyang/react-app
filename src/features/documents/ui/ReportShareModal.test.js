@@ -22,6 +22,7 @@ mock.module('../api/reportExport.js', {
   namedExports: {
     createReportImageFile: async () => fakeFile,
     createReportPdfFile: async () => fakeFile,
+    buildReportExportFile: async () => fakeFile,
   },
 })
 

@@ -65,3 +65,31 @@ export async function createReportPdfFile(element, baseName, { orientation = 'po
   const blob = /** @type {Blob} */ (await html2pdf().set(opt).from(element).outputPdf('blob'))
   return new File([blob], `${baseName}.pdf`, { type: 'application/pdf' })
 }
+
+/**
+ * 화면의 운송비 내역서를 내보내기 모드로 그려 파일로 — 끝나면(실패해도) 모드를 뗀다.
+ * @param {HTMLElement} element
+ * @param {'pdf'|'image'} type
+ * @param {string} baseName 확장자 없는 파일명
+ * @returns {Promise<File>}
+ */
+export async function buildReportExportFile(element, type, baseName) {
+  document.body.classList.add('pdf-export-mode')
+  try {
+    return type === 'image' ? await createReportImageFile(element, baseName) : await createReportPdfFile(element, baseName)
+  } finally {
+    document.body.classList.remove('pdf-export-mode')
+  }
+}
+
+/** 만든 파일을 링크로 내려받기. @param {File} file */
+export function downloadFile(file) {
+  const url = URL.createObjectURL(file)
+  const link = document.createElement('a')
+  link.download = file.name
+  link.href = url
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
+}

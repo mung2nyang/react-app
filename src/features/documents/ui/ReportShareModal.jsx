@@ -1,12 +1,11 @@
 // @ts-check
 import {
-  buildDetailReportFileName,
-  buildReportFileName,
   getDetailReportClientContact,
   getReportShareCompanyName,
+  reportBaseFileName,
 } from '../api/report.js'
 import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../../../data/sync/messageTemplates.js'
-import { createReportImageFile, createReportPdfFile } from '../api/reportExport.js'
+import { buildReportExportFile } from '../api/reportExport.js'
 import ShareFileModal from './ShareFileModal.jsx'
 
 /** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
@@ -24,9 +23,7 @@ const NO_CONTACT = '문자로 보내려면 [세부 내역]에서 거래처를 �
  * @param {() => void} props.onClose
  */
 export default function ReportShareModal({ exportRef, viewMode, clientFilter, clients, year, month, onClose }) {
-  const baseFileName = (viewMode === 'detail'
-    ? buildDetailReportFileName(year, month, clientFilter)
-    : buildReportFileName(year, month)).replace(/\.pdf$/, '')
+  const baseFileName = reportBaseFileName(viewMode, year, month, clientFilter)
   const companyName = getReportShareCompanyName(viewMode, clientFilter)
   const contact = getDetailReportClientContact(viewMode, clientFilter, clients)
 
@@ -34,12 +31,7 @@ export default function ReportShareModal({ exportRef, viewMode, clientFilter, cl
   async function buildFile(type) {
     const element = exportRef.current
     if (!element) throw new Error('내역서를 만들지 못했습니다. 창을 닫았다가 다시 시도해 주세요.')
-    document.body.classList.add('pdf-export-mode')
-    try {
-      return type === 'image' ? await createReportImageFile(element, baseFileName) : await createReportPdfFile(element, baseFileName)
-    } finally {
-      document.body.classList.remove('pdf-export-mode')
-    }
+    return buildReportExportFile(element, type, baseFileName)
   }
 
   return (

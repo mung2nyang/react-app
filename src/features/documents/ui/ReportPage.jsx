@@ -1,15 +1,11 @@
 // @ts-check
-// §6: PDF/이미지 내보내기·공유 모달이 같은 exportRef·pdf-export-mode·viewMode/clientFilter를 공유해 나란히 둠(응집도). 달 이동은 documents/MonthNavigator.jsx, 보는 달은 서류 발급이 줌
+// 운송비 내역서 화면(요약·세부 보기) — 내려받기는 useFileDownload, 공유는 ReportShareModal, 보는 달은 서류 발급이 줌.
 import { useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { formatWon } from '../../../domain/money.js'
-import {
-  buildDetailReportFileName,
-  buildDetailReportImageFileName,
-  buildReportFileName,
-  buildReportImageFileName,
-  dash,
-} from '../api/report.js'
+import { dash, reportBaseFileName } from '../api/report.js'
+import { buildReportExportFile } from '../api/reportExport.js'
+import useFileDownload from '../hooks/useFileDownload.js'
 import { buildDetailReport, detailReportClientOptions } from '../api/reportDetail.js'
 import { buildMonthReport } from '../api/reportSummary.js'
 import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
@@ -37,8 +33,6 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
   const showToast = useToast()
   const { logId: rawLogId } = useParams()
   const logKey = (logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)) || 'main'
-  const [savingPdf, setSavingPdf] = useState(false)
-  const [savingImage, setSavingImage] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [confirmType, setConfirmType] = useState(/** @type {'pdf'|'image'|null} */ (null))
   const [viewMode, setViewMode] = useState(/** @type {'summary'|'detail'} */ ('summary'))
@@ -69,80 +63,14 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
     [workData, year, month, clientFilter, clients],
   )
 
-  async function handleDownloadPdf() {
+  /** @param {'pdf'|'image'} type */
+  async function buildFile(type) {
     const element = exportRef.current
-    if (!element || savingPdf) return
-    setSavingPdf(true)
-    document.body.classList.add('pdf-export-mode')
-    try {
-      const mod = await import('html2pdf.js')
-      const html2pdf = mod.default
-      /** @type {Parameters<InstanceType<(typeof html2pdf)['Worker']>['set']>[0]} */
-      const opt = {
-        margin: [12, 10, 12, 10],
-        filename: viewMode === 'detail'
-          ? buildDetailReportFileName(year, month, clientFilter)
-          : buildReportFileName(year, month),
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      }
-      await html2pdf().set(opt).from(element).save()
-      showToast?.('PDF를 저장했습니다.')
-    } catch (error) {
-      console.error('PDF 저장 실패:', error)
-      showToast?.('PDF 저장에 실패했습니다. 다시 시도해 주세요.')
-    } finally {
-      document.body.classList.remove('pdf-export-mode')
-      setSavingPdf(false)
-    }
+    if (!element) throw new Error('내역서를 만들지 못했습니다. 창을 닫았다가 다시 시도해 주세요.')
+    return buildReportExportFile(element, type, reportBaseFileName(viewMode, year, month, clientFilter))
   }
 
-  async function handleDownloadImage() {
-    const element = exportRef.current
-    if (!element || savingImage) return
-    setSavingImage(true)
-    document.body.classList.add('pdf-export-mode')
-    let imageUrl = ''
-    try {
-      const mod = await import('html2pdf.js')
-      const html2pdf = mod.default
-      const worker = html2pdf().set({
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          scrollX: 0,
-          scrollY: 0,
-          backgroundColor: '#ffffff',
-          windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight,
-        },
-      }).from(element).toCanvas()
-      const canvas = /** @type {HTMLCanvasElement} */ (await worker.get('canvas'))
-      const blob = await new Promise((resolve, reject) => {
-        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('PNG 이미지 생성 실패'))), 'image/png')
-      })
-      const fileName = viewMode === 'detail'
-        ? buildDetailReportImageFileName(year, month, clientFilter)
-        : buildReportImageFileName(year, month)
-      imageUrl = URL.createObjectURL(/** @type {Blob} */ (blob))
-      const link = document.createElement('a')
-      link.download = fileName
-      link.href = imageUrl
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      showToast?.('이미지를 저장했습니다.')
-    } catch (error) {
-      console.error('운송비 내역서 이미지 저장 실패:', error)
-      showToast?.('이미지 저장에 실패했습니다.')
-    } finally {
-      if (imageUrl) setTimeout(() => URL.revokeObjectURL(imageUrl), 1000)
-      document.body.classList.remove('pdf-export-mode')
-      setSavingImage(false)
-    }
-  }
+  const { saving, download } = useFileDownload(buildFile, '운송비 내역서')
 
   function openDetailPicker() {
     setPickerValue(clientFilter)
@@ -186,18 +114,18 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
             dash={dash}
             formatWon={formatWon}
             distanceOn={!!practiceSettings.distanceOn}
-            isExporting={savingPdf || savingImage}
+            isExporting={saving !== null}
           />
         )}
       </div>
 
       <div className="doc-action-card">
         <div className="report-pdf-actions">
-          <button type="button" className="theme-toggle-btn" disabled={savingPdf} onClick={() => setConfirmType('pdf')}>
-            {savingPdf ? 'PDF 저장 중…' : 'PDF 다운로드'}
+          <button type="button" className="theme-toggle-btn" disabled={saving !== null} onClick={() => setConfirmType('pdf')}>
+            {saving === 'pdf' ? 'PDF 저장 중…' : 'PDF 다운로드'}
           </button>
-          <button type="button" className="theme-toggle-btn" disabled={savingImage} onClick={() => setConfirmType('image')}>
-            {savingImage ? '이미지 저장 중…' : '이미지 저장'}
+          <button type="button" className="theme-toggle-btn" disabled={saving !== null} onClick={() => setConfirmType('image')}>
+            {saving === 'image' ? '이미지 저장 중…' : '이미지 저장'}
           </button>
           <button type="button" className="theme-toggle-btn" onClick={() => setShareOpen(true)}>공유</button>
         </div>
@@ -217,7 +145,7 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
           message={`${confirmType === 'pdf' ? 'PDF' : '이미지'}로 저장하시겠습니까?`}
           confirmLabel="저장"
           onCancel={() => setConfirmType(null)}
-          onConfirm={() => { setConfirmType(null); void (confirmType === 'pdf' ? handleDownloadPdf() : handleDownloadImage()) }}
+          onConfirm={() => { setConfirmType(null); void download(confirmType) }}
         />
       )}
       {shareOpen && (
