@@ -2,7 +2,7 @@
 // 메인·서브 스코프를 한 화면에서 처리 — §6 예외(≤250).
 import { useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import CalendarDateSelect from '../../calendar/ui/CalendarDateSelect.jsx'
+import CalendarDateSelect from '../../../shared/ui/CalendarDateSelect.jsx'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import CardActionButtons from '../../../shared/ui/CardActionButtons.jsx'

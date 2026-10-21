@@ -1,5 +1,5 @@
 // @ts-check
-import CalendarDateSelect from '../../calendar/ui/CalendarDateSelect.jsx'
+import CalendarDateSelect from '../../../shared/ui/CalendarDateSelect.jsx'
 import { getYearOptions } from '../../../domain/calendar.js'
 import { formatWon } from '../../../domain/money.js'
 import { getDriverSettlementBreakdown } from '../../../domain/driverIncomeDeductions.js'

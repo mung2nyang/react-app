@@ -1,6 +1,6 @@
 // @ts-check
 // 연/월 이동(DateNav). OwnerRevenueView·DriverRevenueView가 같이 쓴다.
-import CalendarDateSelect from '../../calendar/ui/CalendarDateSelect.jsx'
+import CalendarDateSelect from '../../../shared/ui/CalendarDateSelect.jsx'
 import { getYearOptions, setYearMonth } from '../../../domain/calendar.js'
 
 const YEAR_OPTIONS = getYearOptions()

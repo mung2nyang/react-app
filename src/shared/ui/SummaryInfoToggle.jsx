@@ -1,6 +1,6 @@
 // @ts-check
 // 정산 카드 한 줄 + 이름 옆 (i) 버튼, 누르면 (i) 바로 아래에 설명 카드가 뜬다.
-import InfoTip from '../../../shared/ui/InfoTip.jsx'
+import InfoTip from './InfoTip.jsx'
 
 /**
  * @param {Object} props

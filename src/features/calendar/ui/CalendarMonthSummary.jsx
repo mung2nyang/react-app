@@ -1,7 +1,7 @@
 // @ts-check
 // 미수금 미니 카드 + 월간 운송료 정산 카드. monthSettlementSummary 결과로 거래처별·파렛트·서브수수료·지출 행을 그린다.
 import { formatWon } from '../../../domain/money.js'
-import SummaryInfoToggle from './SummaryInfoToggle.jsx'
+import SummaryInfoToggle from '../../../shared/ui/SummaryInfoToggle.jsx'
 
 /**
  * @typedef {ReturnType<typeof import('../../../domain/monthSettlement.js').monthSettlementSummary>} MonthSettlementSummary

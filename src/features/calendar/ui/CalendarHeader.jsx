@@ -1,6 +1,6 @@
 // @ts-check
 import AppTopBar from '../../../shared/ui/AppTopBar.jsx'
-import CalendarDateSelect from './CalendarDateSelect.jsx'
+import CalendarDateSelect from '../../../shared/ui/CalendarDateSelect.jsx'
 
 /**
  * @param {Object} props
