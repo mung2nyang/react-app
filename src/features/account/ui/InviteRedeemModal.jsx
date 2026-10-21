@@ -8,11 +8,13 @@ import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import './InviteRedeemModal.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
- * @param {{ session: AppSession|null, onClose: () => void, onLinked: (session: AppSession) => void }} props
+ * @param {{ onClose: () => void, onLinked: (session: AppSession) => void }} props
  */
-export default function InviteRedeemModal({ session, onClose, onLinked }) {
+export default function InviteRedeemModal({ onClose, onLinked }) {
+  const { session } = useSession()
   const showToast = useToast()
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)

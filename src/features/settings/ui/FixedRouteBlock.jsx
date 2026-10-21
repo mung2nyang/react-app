@@ -10,12 +10,11 @@ import FixedRouteClientLink from './FixedRouteClientLink.jsx'
 /**
  * @param {Object} props
  * @param {'main'|'sub'} props.scope
- * @param {string} props.ownerKey
  * @param {string} props.clientScopeKey 고정노선 거래처 스코프(docs/sot.md §4-4e)
  * @param {FinanceSettings} props.settings
  * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
  */
-export default function FixedRouteBlock({ scope, ownerKey, clientScopeKey, settings, onPatch }) {
+export default function FixedRouteBlock({ scope, clientScopeKey, settings, onPatch }) {
   const isSub = scope === 'sub'
   const fixedOn = isSub ? settings.subFixedOn : settings.fixedOn
   const routeOn = isSub ? settings.subFixedRouteOn : settings.fixedRouteOn
@@ -31,7 +30,7 @@ export default function FixedRouteBlock({ scope, ownerKey, clientScopeKey, setti
       />
       {fixedOn && (
         <div className="tree-line-group">
-          <FixedRouteClientLink ownerKey={ownerKey} scopeKey={clientScopeKey} />
+          <FixedRouteClientLink scopeKey={clientScopeKey} />
           <SwitchRow
             id={isSub ? 'subFixedRouteToggle' : 'fixedRouteToggle'}
             label="상하차지 사용"

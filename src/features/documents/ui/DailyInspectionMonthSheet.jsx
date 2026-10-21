@@ -12,11 +12,13 @@ import { useOwnerProfile } from '../../../data/store/ownerProfileDriversHooks.js
 import DailyInspectionExportBar from './DailyInspectionExportBar.jsx'
 import MonthNavigator from './MonthNavigator.jsx'
 import { SkeletonLines } from '../../../shared/ui/Skeleton.jsx'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../domain/dailyInspectionMonth.js').MonthInspection} MonthInspection */
 
-/** @param {{ ownerKey: string, logKey: string, viewDate: Date, onChangeMonth: (next: Date) => void, tabs?: import('react').ReactNode }} props */
-export default function DailyInspectionMonthSheet({ ownerKey, logKey, viewDate, onChangeMonth, tabs }) {
+/** @param {{ logKey: string, viewDate: Date, onChangeMonth: (next: Date) => void, tabs?: import('react').ReactNode }} props */
+export default function DailyInspectionMonthSheet({ logKey, viewDate, onChangeMonth, tabs }) {
+  const { ownerKey } = useSession()
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const [rangeIndex, setRangeIndex] = useState(() => initialRangeIndex(year, month, new Date()))

@@ -9,6 +9,7 @@ import { test } from 'node:test'
 
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
 const { commitDrivers } = await import('../../../data/store/commitHelpers.js')
@@ -22,15 +23,15 @@ test('로그인 초대는 수동 연동 버튼 없이 수정·취소만, 비회�
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const props = { ownerKey, onBack: () => {} }
+  const props = { onBack: () => {} }
   const findButton = (/** @type {string} */ label) =>
     [...container.querySelectorAll('button')].find((button) => button.textContent === label)
   resetStubSupabaseCallCounts()
   try {
     await React.act(async () => {
-      root.render(React.createElement(DriverConnectionPage, {
-        ...props, session: { userId: ownerKey, name: '차주', phone: '' },
-      }))
+      root.render(withSession(React.createElement(DriverConnectionPage, {
+        ...props,
+      }), { ownerKey, session: { userId: ownerKey, name: '차주', phone: '' } }))
     })
     assert.equal(Boolean(findButton('연동 완료')), false, '차주가 기사 동의 없이 연동시키는 버튼은 없어야 함')
     assert.ok(findButton('초대 수정'))
@@ -39,7 +40,7 @@ test('로그인 초대는 수동 연동 버튼 없이 수정·취소만, 비회�
     assert.equal(stubSupabaseCallCounts.update, 0)
     endCloudSession()
     await React.act(async () => {
-      root.render(React.createElement(DriverConnectionPage, { ...props, session: null }))
+      root.render(withSession(React.createElement(DriverConnectionPage, { ...props }), { ownerKey, session: null }))
     })
     const manual = findButton('연동 완료')
     assert.ok(manual, '비회원용 로컬 동작은 유지')

@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: AppSettingsPage } = await import('./AppSettingsPage.jsx')
@@ -26,7 +27,7 @@ test('설정을 커밋하면 앱 설정 화면이 리마운트 없이 표시 방
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(AppSettingsPage, { ownerKey, onBack: () => {} }))
+      root.render(withSession(React.createElement(AppSettingsPage, { onBack: () => {} }), { ownerKey }))
     })
     const fareBtn = [...container.querySelectorAll('button')].find((el) => el.textContent === '금액')
     assert.ok(fareBtn, '금액 버튼이 있어야 한다')

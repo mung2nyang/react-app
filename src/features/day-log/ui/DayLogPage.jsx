@@ -36,6 +36,7 @@ import './day-log-shell.css'
 import './fixed-route.css'
 import './day-log.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 /** @typedef {import('./dayLogTypes.js').Settings} Settings */
@@ -49,7 +50,6 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  * @param {number} props.month
  * @param {number} props.day
  * @param {string} props.dateKey
- * @param {string} props.ownerKey
  * @param {Array<ClientLike>} props.clients
  * @param {Settings} props.settings
  * @param {(() => void)} [props.onWorkChanged] 커밋될 때만(AppShell 알림 뱃지).
@@ -59,7 +59,8 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  * @param {string} [props.clientScopeKey] 거래처 스코프(연동 기사는 배정 차량번호). 없으면 logId.
  * @param {boolean} [props.isEmployedDriver] 기사연동 계정 세션이면 콜 상세의 산재보험료 칸을 숨긴다(CallDetailForm 참고).
  */
-export default function DayLogPage({ month, day, dateKey, ownerKey, clients, settings, onWorkChanged, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false }) {
+export default function DayLogPage({ month, day, dateKey, clients, settings, onWorkChanged, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false }) {
+  const { ownerKey } = useSession()
   const showToast = useToast()
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, logId)
@@ -170,7 +171,7 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
             <PalletSection visible={palletVisible} palletCount={draft.palletCount} isOff={draft.isOff} fixedRouteClient={fixedRouteClient} onChange={(count) => patchDraft({ palletCount: Math.max(0, parseInt(String(count), 10) || 0) })} />
           </div>
         )}
-        <DailyInspectionNotice ownerKey={ownerKey} logId={logId} dateKey={dateKey} month={month} day={day} enabled={!!settings.dailyInspectionOn} isOff={draft.isOff} />
+        <DailyInspectionNotice logId={logId} dateKey={dateKey} month={month} day={day} enabled={!!settings.dailyInspectionOn} isOff={draft.isOff} />
 
         {/* callDetail OFF여도 기존 callDetails 카드는 보여 준다 — 추가 진입만 canAdd로 막는다. */}
         {showCallDetailList && (
@@ -200,7 +201,6 @@ export default function DayLogPage({ month, day, dateKey, ownerKey, clients, set
                   settings={settings}
                   logId={logId}
                   clientScopeKey={clientScopeKey}
-                  ownerKey={ownerKey}
                   locationShortcuts={locationShortcuts}
                   pinnedLocations={pinnedLocations}
                   onTogglePinnedLocation={handleTogglePinnedLocation}

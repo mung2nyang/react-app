@@ -10,14 +10,15 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import ScopedClientsList from '../../clients/ui/ScopedClientsList.jsx'
 import '../../clients/ui/client-management.css'
 import './linked-driver.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, onOpenMenu }) {
+export default function LinkedDriverClientsPage({ onBack, onOpenMenu }) {
+  const { ownerKey } = useSession()
   const navigate = useNavigate()
   const { linkId: rawLinkId, logId: rawLogId } = useParams()
   const linkId = decodeURIComponent(rawLinkId || '')
@@ -56,7 +57,7 @@ export default function LinkedDriverClientsPage({ ownerKey = 'guest', onBack, on
   return (
     <div className="page client-management-page">
       <PageHeader title={title} onBack={handleBack} onOpenMenu={onOpenMenu} />
-      <ScopedClientsList ownerKey={ownerKey} scopeKey={scopeKey} listId="linkedDriverClientsListContainer" />
+      <ScopedClientsList scopeKey={scopeKey} listId="linkedDriverClientsListContainer" />
     </div>
   )
 }

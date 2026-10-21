@@ -11,6 +11,7 @@ import { monthKeyOf } from './revenueFormat.js'
 import { scopeSettingsToVehicle, scopeWorkDataToVehicle } from './driverRevenueScope.js'
 import { filterDriverExpensesByVehicle } from '../../../domain/financeOwnerExpenseSweep.js'
 import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 const SCOPES = [
   { value: 'all', label: '전체 손익' },
   { value: 'owner', label: '차주' },
@@ -19,8 +20,8 @@ const SCOPES = [
 
 const ALL_DRIVERS = ''
 
-/** @param {{ ownerKey: string }} props */
-export default function OwnerRevenueView({ ownerKey }) {
+export default function OwnerRevenueView() {
+  const { ownerKey } = useSession()
   const period = useRevenuePeriod()
   const { year, month, yearly } = period
   const [scope, setScope] = useState('owner')

@@ -11,6 +11,7 @@ import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
 import './client-management.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../domain/clientTypes.js').ClientDraft} ClientDraft */
 /** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
@@ -26,11 +27,11 @@ const emptyDraft = {
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ClientListPage({ ownerKey = 'guest', onBack, onOpenMenu }) {
+export default function ClientListPage({ onBack, onOpenMenu }) {
+  const { ownerKey } = useSession()
   const showToast = useToast()
   const clients = useOwnerClients(ownerKey)
   const [modalOpen, setModalOpen] = useState(false)

@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
 const { commitDrivers } = await import('../../../data/store/commitHelpers.js')
@@ -24,7 +25,7 @@ async function renderPage(ownerKey, session) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await React.act(async () => {
-    root.render(React.createElement(DriverConnectionPage, { ownerKey, session, onBack: () => {} }))
+    root.render(withSession(React.createElement(DriverConnectionPage, { onBack: () => {} }), { ownerKey, session }))
   })
   return { container, root }
 }

@@ -13,6 +13,7 @@ import { mock, test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
@@ -35,11 +36,10 @@ async function renderPage(ownerKey, more = {}) {
     root.render(withToast(React.createElement(
       MemoryRouter,
       { initialEntries: ['/app/notifications'] },
-      React.createElement(NotificationsPage, {
-        ownerKey,
+      withSession(React.createElement(NotificationsPage, {
         onBack: () => {},
         onOpenPage: more.onOpenPage || (() => {}),
-      }),
+      }), { ownerKey }),
     ), more.showToast || (() => {})))
   })
   return {

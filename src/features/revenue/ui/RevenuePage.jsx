@@ -6,22 +6,22 @@ import DriverRevenueView from './DriverRevenueView.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './revenue.css'
 import './revenue-controls.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
- * @param {{ accountType?: string }} [props.session]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function RevenuePage({ ownerKey = 'guest', session, onOpenMenu }) {
+export default function RevenuePage({ onOpenMenu }) {
+  const { session } = useSession()
   const isDriver = session?.accountType === 'employed_driver'
 
   return (
     <div className="page revenue-page">
       <PageHeader title="매출" onOpenMenu={onOpenMenu} />
       {isDriver
-        ? <DriverRevenueView ownerKey={ownerKey} />
-        : <OwnerRevenueView ownerKey={ownerKey} />}
+        ? <DriverRevenueView />
+        : <OwnerRevenueView />}
     </div>
   )
 }

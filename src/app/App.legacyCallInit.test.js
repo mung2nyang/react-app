@@ -13,6 +13,7 @@ import { wait } from '../testSupport/fakeSupabaseClient.js'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../testSupport/withSession.js')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: DayLogPage } = await import('../features/day-log/ui/DayLogPage.jsx')
@@ -64,9 +65,9 @@ test('id 없는 레거시 콜은 initialize 후 첫 mount에서 ID를 한 번만
   const settings = normalizeSettings({ callDetail: true })
   try {
     await act(async () => {
-      root.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
-        month: 8, day: 21, dateKey, ownerKey, clients: [], settings, onClose: () => {},
-      })))
+      root.render(React.createElement(MemoryRouter, null, withSession(React.createElement(DayLogPage, {
+        month: 8, day: 21, dateKey, clients: [], settings, onClose: () => {},
+      }), { ownerKey })))
     })
     await act(async () => {
       const deadline = Date.now() + 2000
@@ -84,9 +85,9 @@ test('id 없는 레거시 콜은 initialize 후 첫 mount에서 ID를 한 번만
     const notifyAfterUnmount = notifyCount
     const root2 = createRoot(container)
     await act(async () => {
-      root2.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
-        month: 8, day: 21, dateKey, ownerKey, clients: [], settings, onClose: () => {},
-      })))
+      root2.render(React.createElement(MemoryRouter, null, withSession(React.createElement(DayLogPage, {
+        month: 8, day: 21, dateKey, clients: [], settings, onClose: () => {},
+      }), { ownerKey })))
     })
     await act(async () => { await wait(50) })
     assert.equal(storeCallId(ownerKey, dateKey), firstId)

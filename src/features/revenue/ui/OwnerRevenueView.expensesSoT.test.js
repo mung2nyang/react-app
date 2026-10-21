@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: OwnerRevenueView } = await import('./OwnerRevenueView.jsx')
@@ -27,7 +28,7 @@ test('일지에서 비용을 커밋하면 매출 화면이 리마운트 없이 �
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(OwnerRevenueView, { ownerKey }))
+      root.render(withSession(React.createElement(OwnerRevenueView, {}), { ownerKey }))
     })
     assert.ok(container.textContent.includes('운행 지출'), '손익 지출 카드가 보여야 한다')
 

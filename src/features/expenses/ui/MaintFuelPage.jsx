@@ -20,6 +20,7 @@ import { getCloudOwnerKey } from '../../../data/cloud/cloudSession.js'
 import { saveFailMessage } from '../../../shared/utils/failureMessages.js'
 import './maint-fuel.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../../../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
@@ -54,12 +55,12 @@ function KindRecordIcon({ kind }) {
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {string} [props.logId]
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function MaintFuelPage({ ownerKey = 'guest', logId: logIdProp, onBack, onOpenMenu }) {
+export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) {
+  const { ownerKey } = useSession()
   const showToast = useToast()
   const { logId: rawLogId } = useParams()
   const logId = logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)

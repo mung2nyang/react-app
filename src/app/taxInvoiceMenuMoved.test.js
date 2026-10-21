@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: MyPage } = await import('../features/account/ui/MyPage.jsx')
@@ -34,12 +35,10 @@ test('사이드메뉴·마이페이지에 "세금계산서" 메뉴 없음(서류
   assert.ok(side.includes('서류 발급'))
   assert.equal(side.includes('세금계산서'), false)
 
-  const my = await renderText(React.createElement(MyPage, {
-    session: { userId: 'u-1', name: '차주', phone: '010-0000-0000', accountType: 'owner' },
-    ownerKey: 'tax-menu-moved',
+  const my = await renderText(withSession(React.createElement(MyPage, {
     onOpen: () => {},
     onBack: () => {},
-  }))
+  }), { session: { userId: 'u-1', name: '차주', phone: '010-0000-0000', accountType: 'owner' }, ownerKey: 'tax-menu-moved' }))
   assert.ok(my.includes('서류 발급'))
   assert.equal(my.includes('세금계산서'), false)
 })

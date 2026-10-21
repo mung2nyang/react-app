@@ -19,6 +19,7 @@ import usePageTransition from './usePageTransition.js'
 import { withFromLogState } from './fromLogNavigation.js'
 import { chooseMove, historyIdx, markRewind, popPanelGuardThen } from '../../shared/utils/historyMoves.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
+import { useSession } from '../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
 
@@ -47,13 +48,12 @@ function pagePath(page) {
 
 /**
  * @param {Object} props
- * @param {string} props.ownerKey
- * @param {AppSession|null} props.session
  * @param {() => void} [props.onBackToAuth]
  * @param {() => void} [props.onGoAuth]
  * @param {(session: AppSession) => void} [props.onSessionUpdate]
  */
-export default function AppShell({ ownerKey, session, onBackToAuth, onGoAuth, onSessionUpdate }) {
+export default function AppShell({ onBackToAuth, onGoAuth, onSessionUpdate }) {
+  const { ownerKey, session } = useSession()
   const location = useLocation()
   const rawNavigate = useNavigate()
   // 화면 이동은 모두 이 navigate를 거치므로 저장 안 된 편집 확인(durableWriteGuard)을 여기서 한 번에 건다.
@@ -147,15 +147,13 @@ export default function AppShell({ ownerKey, session, onBackToAuth, onGoAuth, on
 
   return (
     <div className="container main-app-container">
-      <OfflineBanner session={session} />
+      <OfflineBanner />
       <HydrationRetryBanner />
       <ConfirmDialogHost />
       <div ref={pageBoxRef} className="page-transition">
         <PageLoadErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={<PageSkeleton path={location.pathname} onOpenMenu={() => setMenuOpen(true)} />}>
           <AppShellRoutes
-            ownerKey={ownerKey}
-            session={session}
             notifCount={notifications.length}
             onOpenMenu={() => setMenuOpen(true)}
             onOpenNotifs={() => navigate('/app/notifications')}

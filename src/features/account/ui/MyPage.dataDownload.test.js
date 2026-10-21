@@ -12,6 +12,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: MyPage } = await import('./MyPage.jsx')
@@ -22,7 +23,7 @@ async function render(session) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(MyPage, { session, ownerKey: 'data-download-test', onOpen: () => {} }))
+    root.render(withSession(React.createElement(MyPage, { onOpen: () => {} }), { session, ownerKey: 'data-download-test' }))
   })
   const links = [...container.querySelectorAll('.mypage-notice-link')]
   return {

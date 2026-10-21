@@ -12,6 +12,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: MyPage } = await import('./MyPage.jsx')
@@ -39,11 +40,9 @@ test('초대코드 입력 버튼을 누르면 팝업이 뜨고, 4자 미만이�
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(MyPage, {
-        session: { userId: 'u-1', name: '기사', phone: '010-0000-0000', accountType: 'owner' },
-        ownerKey: 'invite-modal-test',
+      root.render(withSession(React.createElement(MyPage, {
         onOpen: (page) => { opened.push(page) },
-      }))
+      }), { session: { userId: 'u-1', name: '기사', phone: '010-0000-0000', accountType: 'owner' }, ownerKey: 'invite-modal-test' }))
     })
     assert.equal(container.querySelector('.invite-redeem-modal'), null, '처음에는 팝업이 없다')
 

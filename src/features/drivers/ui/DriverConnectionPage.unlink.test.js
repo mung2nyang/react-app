@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
@@ -38,7 +39,7 @@ test('연동 중 카드 세 가지 상태: [해제 요청] / 요청 중·[요청
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(DriverConnectionPage, { ownerKey, session: { userId: ownerKey, name: '차주', phone: '' }, onBack: () => {} }))
+      root.render(withSession(React.createElement(DriverConnectionPage, { onBack: () => {} }), { ownerKey, session: { userId: ownerKey, name: '차주', phone: '' } }))
     })
     const cards = [...container.querySelectorAll('.driver-connection-card')]
     const byName = (/** @type {string} */ name) => cards.find((card) => card.textContent?.includes(name))

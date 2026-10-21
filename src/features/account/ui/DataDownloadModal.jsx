@@ -8,6 +8,7 @@ import { addInspectionPicks, applyMemberRestore, planMemberRestore } from '../ap
 import { describeRestoreCounts } from '../api/memberRestoreRecords.js'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../api/memberRestore.js').RestorePlan} RestorePlan */
 
@@ -29,11 +30,11 @@ function saveJsonFile(data) {
 
 /**
  * @param {Object} props
- * @param {string} props.ownerKey
  * @param {() => void} props.onClose
  * @param {boolean} [props.employed] 연동 기사(22-D): 다운로드 없이 일지 불러오기만
  */
-export default function DataDownloadModal({ ownerKey, onClose, employed = false }) {
+export default function DataDownloadModal({ onClose, employed = false }) {
+  const { ownerKey } = useSession()
   const showToast = useToast()
   const [busy, setBusy] = useState(false)
   const [plan, setPlan] = useState(/** @type {RestorePlan|null} */ (null))

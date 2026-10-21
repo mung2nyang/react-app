@@ -22,6 +22,7 @@ beforeEach(() => { serverInspection = null; inspectionFetches = 0 })
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
@@ -45,10 +46,9 @@ async function renderHome(ownerKey, onOpenToday, more = {}) {
     root.render(React.createElement(
       MemoryRouter,
       { initialEntries: ['/app'] },
-      React.createElement(HomePage, {
-        ownerKey, onOpenToday, onOpenMenu: () => {}, onOpenNotifs: () => {},
+      withSession(React.createElement(HomePage, { onOpenToday, onOpenMenu: () => {}, onOpenNotifs: () => {},
         onOpenReceivables: more.onOpenReceivables || (() => {}), onOpenCalendar: more.onOpenCalendar || (() => {}),
-      }),
+      }), { ownerKey }),
     ))
   })
   return {
@@ -241,7 +241,7 @@ test('2단계 — 이번 달 정산 합계 = 달력 탭 "합계", 거래처 단�
       calRoot.render(React.createElement(
         MemoryRouter,
         { initialEntries: [`/app/calendar?y=${now.getFullYear()}&m=${now.getMonth()}`] },
-        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { onSelectDay: () => {} }), { ownerKey }),
       ))
     })
     const calendarTotal = () => calContainer.querySelector('.summary-row.total .summary-value')?.textContent

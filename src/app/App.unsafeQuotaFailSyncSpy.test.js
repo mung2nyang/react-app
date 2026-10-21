@@ -14,6 +14,7 @@ import { wait } from '../testSupport/fakeSupabaseClient.js'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../testSupport/withSession.js')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: DayLogPage } = await import('../features/day-log/ui/DayLogPage.jsx')
@@ -115,12 +116,12 @@ test('재감사 16차 — oops+quota 실패는 unmount/cleanup 뒤에도 Store·
   let unmounted = false
   try {
     await act(async () => {
-      root.render(React.createElement(MemoryRouter, null, React.createElement(DayLogPage, {
-        month: 10, day: 5, dateKey, ownerKey,
+      root.render(React.createElement(MemoryRouter, null, withSession(React.createElement(DayLogPage, {
+        month: 10, day: 5, dateKey,
         clients: spyClients,
         settings: normalizeSettings({ fixedOn: true, callDetail: true }),
         onClose: () => {},
-      })))
+      }), { ownerKey })))
     })
     await act(async () => {
       const deadline = Date.now() + 2000

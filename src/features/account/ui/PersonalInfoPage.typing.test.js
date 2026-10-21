@@ -12,6 +12,7 @@ import { mock, test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
@@ -80,9 +81,8 @@ async function mount(owner, toasts = []) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(withToast(React.createElement(PersonalInfoPage, {
-      ownerKey: owner, session: null, onBack: () => {},
-    }), (/** @type {string} */ message) => toasts.push(message)))
+    root.render(withToast(withSession(React.createElement(PersonalInfoPage, { onBack: () => {},
+    }), { ownerKey: owner, session: null }), (/** @type {string} */ message) => toasts.push(message)))
   })
   return {
     container,

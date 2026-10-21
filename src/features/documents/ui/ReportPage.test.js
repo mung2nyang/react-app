@@ -12,6 +12,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { MemoryRouter } = await import('react-router-dom')
@@ -30,7 +31,7 @@ async function renderReport(ownerKey, onBack = () => {}) {
     root.render(React.createElement(
       MemoryRouter,
       { initialEntries: ['/app/report'] },
-      React.createElement(ReportPage, { ownerKey, onBack, viewDate: new Date(), onChangeMonth: () => {} }),
+      withSession(React.createElement(ReportPage, { onBack, viewDate: new Date(), onChangeMonth: () => {} }), { ownerKey }),
     ))
   })
   return {

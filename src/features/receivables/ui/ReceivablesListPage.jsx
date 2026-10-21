@@ -11,17 +11,18 @@ import ReceivableItemCard from './ReceivableItemCard.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './receivables.css'
 import './receivablesGroupHead.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {boolean} [props.isEmployedDriver]
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ReceivablesListPage({ ownerKey = 'guest', isEmployedDriver = false, onBack, onOpenMenu }) {
+export default function ReceivablesListPage({ isEmployedDriver = false, onBack, onOpenMenu }) {
+  const { ownerKey } = useSession()
   const navigate = useNavigate()
   const { search } = useLocation()
   const [tab, setTab] = useState('monthly')

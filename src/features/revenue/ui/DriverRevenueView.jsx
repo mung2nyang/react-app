@@ -7,9 +7,10 @@ import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { RevenuePeriodBar, RevenueYearList } from './RevenuePeriodParts.jsx'
 import { buildYearlyRows, useRevenueFinanceSettings, useRevenuePeriod } from './revenuePeriod.js'
 import { monthKeyOf } from './revenueFormat.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @param {{ ownerKey: string }} props */
-export default function DriverRevenueView({ ownerKey }) {
+export default function DriverRevenueView() {
+  const { ownerKey } = useSession()
   const period = useRevenuePeriod()
   const { year, month, yearly } = period
   const settings = useRevenueFinanceSettings(ownerKey)

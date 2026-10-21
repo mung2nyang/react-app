@@ -11,6 +11,7 @@ import './daily-inspection.css'
 import './daily-inspection-loading.css'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
 
@@ -18,11 +19,12 @@ const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 
 /**
  * @param {{
- *   ownerKey: string, logId: string, dateKey: string, month: number|string, day: number|string,
+ *   logId: string, dateKey: string, month: number|string, day: number|string,
  *   enabled: boolean, isOff: boolean,
  * }} props
  */
-export default function DailyInspectionNotice({ ownerKey, logId, dateKey, month, day, enabled, isOff }) {
+export default function DailyInspectionNotice({ logId, dateKey, month, day, enabled, isOff }) {
+  const { ownerKey } = useSession()
   const showToast = useToast()
   const cars = useOwnerCars(ownerKey)
   const profile = useOwnerProfile(ownerKey)

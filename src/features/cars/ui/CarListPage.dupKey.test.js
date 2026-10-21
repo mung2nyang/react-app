@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
@@ -35,10 +36,9 @@ test('같은 차량 id가 두 번 커밋돼도 목록 key 경고가 나지 않�
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(MemoryRouter, null, React.createElement(CarListPage, {
-        ownerKey,
+      root.render(React.createElement(MemoryRouter, null, withSession(React.createElement(CarListPage, {
         onBack: () => {},
-      })))
+      }), { ownerKey })))
     })
     assert.equal(container.querySelectorAll('.management-list-card').length, 1)
     assert.equal(

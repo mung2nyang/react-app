@@ -11,6 +11,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: OwnerRevenueView } = await import('./OwnerRevenueView.jsx')
@@ -42,7 +43,7 @@ test('로드맵 5-A-2: 서브 표시 비용은 "차주" 탭이 아니라 "기사
   document.body.appendChild(container)
   const root = createRoot(container)
   try {
-    await act(async () => { root.render(React.createElement(OwnerRevenueView, { ownerKey })) })
+    await act(async () => { root.render(withSession(React.createElement(OwnerRevenueView, {}), { ownerKey })) })
     const ownerText = container.textContent || ''
     assert.ok(ownerText.includes('-12,345원'), '"차주" 탭 정비 = 메인 것만')
     assert.equal(ownerText.includes('13,1'), false, '"차주" 탭에 서브 비용이 더해지면 안 된다')

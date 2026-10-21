@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
@@ -42,7 +43,7 @@ async function render(owner, path, session = null) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const page = React.createElement(AppSettingsPage, { ownerKey: owner, session, onBack: () => {} })
+  const page = withSession(React.createElement(AppSettingsPage, { onBack: () => {} }), { ownerKey: owner, session })
   await act(async () => {
     root.render(withToast(React.createElement(MemoryRouter, { initialEntries: [path] },
       React.createElement(Routes, null,

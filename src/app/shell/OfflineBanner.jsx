@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from 'react'
 import { isCloudSession } from '../../data/cloud/cloudSession.js'
 import '../../shared/styles/offline-banner.css'
+import { useSession } from '../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
 
@@ -21,11 +22,8 @@ function readOnline() {
   return navigator.onLine !== false
 }
 
-/**
- * @param {Object} props
- * @param {AppSession|null} [props.session]
- */
-export default function OfflineBanner({ session }) {
+export default function OfflineBanner() {
+  const { session } = useSession()
   const online = useSyncExternalStore(subscribe, readOnline, () => true)
   if (online || !isCloudSession(session)) return null
   return (

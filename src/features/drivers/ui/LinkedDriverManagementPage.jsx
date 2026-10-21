@@ -26,6 +26,7 @@ import SettlementSummaryCard from './SettlementSummaryCard.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './linked-driver.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 function GearIcon() {
   return (
@@ -35,11 +36,11 @@ function GearIcon() {
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack, onOpenMenu }) {
+export default function LinkedDriverManagementPage({ onBack, onOpenMenu }) {
+  const { ownerKey } = useSession()
   const navigate = useNavigate()
   const { linkId: rawLinkId, logId: rawLogId } = useParams()
   const linkId = decodeURIComponent(rawLinkId || '')
@@ -190,7 +191,7 @@ export default function LinkedDriverManagementPage({ ownerKey = 'guest', onBack,
       />
       <ClientInvoiceGroups invoice={invoice} />
       {ctx.car?.type === 'sub' && ctx.car.id && (
-        <CarBusinessInfoSection key={ctx.car.id} ownerKey={ownerKey} car={ctx.car} cars={cars} profile={profile} />
+        <CarBusinessInfoSection key={ctx.car.id} car={ctx.car} cars={cars} profile={profile} />
       )}
     </div>
   )

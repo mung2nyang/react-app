@@ -26,6 +26,7 @@ mock.module('../api/accountWithdrawal.js', {
 })
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
@@ -47,12 +48,10 @@ async function renderPage(session, handlers = {}) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(withToast(React.createElement(PersonalInfoPage, {
-      ownerKey: session?.userId || 'guest',
-      session,
+    root.render(withToast(withSession(React.createElement(PersonalInfoPage, {
       onBack: () => {},
       onGoAuth: handlers.onGoAuth || (() => {}),
-    }), handlers.showToast || (() => {})))
+    }), { ownerKey: session?.userId || 'guest', session }), handlers.showToast || (() => {})))
   })
   return { container, root }
 }

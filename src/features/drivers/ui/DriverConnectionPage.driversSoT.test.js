@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
@@ -25,11 +26,9 @@ test('기사를 커밋하면 연동 목록이 리마운트 없이 갱신한다',
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(DriverConnectionPage, {
-        ownerKey,
-        session: null,
+      root.render(withSession(React.createElement(DriverConnectionPage, {
         onBack: () => {},
-      }))
+      }), { ownerKey, session: null }))
     })
     assert.ok(container.textContent.includes('초대된 기사가 없습니다.'))
 

@@ -21,10 +21,10 @@ import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './report.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {string} [props.logId] 특정 차량(연동기사 배정차량·미연동 서브차량)으로 스코프. 없으면 메인 차량.
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
@@ -32,7 +32,8 @@ import { useToast } from '../../../shared/hooks/useToast.js'
  * @param {Date} props.viewDate
  * @param {(next: Date) => void} props.onChangeMonth
  */
-export default function ReportPage({ ownerKey = 'guest', logId: logIdProp, onBack, onOpenMenu, tabs, viewDate, onChangeMonth }) {
+export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs, viewDate, onChangeMonth }) {
+  const { ownerKey } = useSession()
   const showToast = useToast()
   const { logId: rawLogId } = useParams()
   const logKey = (logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)) || 'main'

@@ -17,6 +17,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
@@ -48,7 +49,7 @@ test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 �
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { onSelectDay: () => {} }), { ownerKey }),
       ))
     })
 
@@ -95,7 +96,7 @@ test('고정노선 거래처가 없으면 정산 카드에 1회 단가가 없고
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { onSelectDay: () => {} }), { ownerKey }),
       ))
     })
     assert.equal(container.querySelector('.summary-price-input'), null)
@@ -138,7 +139,7 @@ test('홈 월간 정산 카드는 그 화면 자신의 거래처 수수료를 �
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { onSelectDay: () => {} }), { ownerKey }),
       ))
     })
 
@@ -213,7 +214,7 @@ test('수수료가 없으면 거래처 수수료 행이 없고 합계는 monthSe
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { onSelectDay: () => {} }), { ownerKey }),
       ))
     })
 
@@ -241,7 +242,7 @@ test('년/월 커스텀 드롭다운은 listbox로 열리고 선택하면 쿼리
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { onSelectDay: () => {} }), { ownerKey }),
       ))
     })
     const yearBtn = container.querySelector('[aria-label="년도 선택"]')
@@ -283,7 +284,7 @@ test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { onSelectDay: () => {} }), { ownerKey }),
       ))
     })
     const withoutProp = container.textContent
@@ -294,7 +295,7 @@ test('슬라이스 B 회귀: logId 기본 main — 수수료·합계가 prop 생
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, logId: 'main', onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { logId: 'main', onSelectDay: () => {} }), { ownerKey }),
       ))
     })
     assert.equal(container.textContent.includes('메인수수료 수수료 (10%)'), true)
@@ -342,7 +343,7 @@ test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: [`/app/logs/${encodeURIComponent(plate)}?y=2026&m=7`] },
-        React.createElement(CalendarPage, { ownerKey, logId: plate, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { logId: plate, onSelectDay: () => {} }), { ownerKey }),
       ))
     })
     assert.ok(container.querySelector('.sub-car-log-banner'), '서브 배너가 있어야 한다')
@@ -388,7 +389,7 @@ test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, logId: 'main', onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { logId: 'main', onSelectDay: () => {} }), { ownerKey }),
       ))
     })
     const clients = getState().clients[ownerKey] || []
@@ -428,7 +429,7 @@ async function renderSubLogCalendar(ownerKey, clients) {
     root.render(React.createElement(
       MemoryRouter,
       { initialEntries: [`/app/logs/${encodeURIComponent(plate)}?y=2026&m=7`] },
-      React.createElement(CalendarPage, { ownerKey, logId: plate, onSelectDay: () => {} }),
+      withSession(React.createElement(CalendarPage, { logId: plate, onSelectDay: () => {} }), { ownerKey }),
     ))
   })
   return { container, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
@@ -477,7 +478,7 @@ test('연동기사 본인 달력: clientScopeKey로 배정 차량 스코프 고�
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app?y=2026&m=7'] },
-        React.createElement(CalendarPage, { ownerKey, clientScopeKey, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { clientScopeKey, onSelectDay: () => {} }), { ownerKey }),
       ))
     })
     return { container, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
@@ -508,7 +509,7 @@ test('새 홈 3단계 — 달력 탭 위쪽은 홈과 같은 한 줄(작은 로�
       root.render(React.createElement(
         MemoryRouter,
         { initialEntries: ['/app/calendar?y=2026&m=9'] },
-        React.createElement(CalendarPage, { ownerKey: 'test-calendar-topbar', onOpenMenu: () => {}, onSelectDay: () => {} }),
+        withSession(React.createElement(CalendarPage, { onOpenMenu: () => {}, onSelectDay: () => {} }), { ownerKey: 'test-calendar-topbar' }),
       ))
     })
     assert.ok(container.querySelector('.app-brand')?.textContent?.includes('운행일지'), '왼쪽에 작은 로고가 있어야 한다')

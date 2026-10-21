@@ -6,15 +6,16 @@ import ClientListItem from './ClientListItem.jsx'
 import { useScopedClients } from '../hooks/useScopedClients.js'
 import '../../drivers/ui/linked-driver.css'
 import './client-management.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
  * @param {Object} props
- * @param {string} props.ownerKey
  * @param {string} props.scopeKey 거래처를 묶는 차량 번호
  * @param {string} props.listId
  * @param {import('react').ReactNode} [props.notice] 목록 위 안내
  */
-export default function ScopedClientsList({ ownerKey, scopeKey, listId, notice }) {
+export default function ScopedClientsList({ scopeKey, listId, notice }) {
+  const { ownerKey } = useSession()
   const scoped = useScopedClients({ ownerKey, scopeKey })
 
   return (

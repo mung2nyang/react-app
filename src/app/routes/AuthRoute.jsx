@@ -5,6 +5,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthPage from '../../features/account/ui/AuthPage.jsx'
 import LoadingScreen from '../shell/LoadingScreen.jsx'
+import { useSession } from '../../data/cloud/sessionContext.js'
 
 /** 세션이 있는데 이만큼 지나도 다른 화면으로 안 넘어가면(주소창에 /auth 직접 입력 등) 홈으로. */
 export const AUTH_WITH_SESSION_REDIRECT_MS = 1500
@@ -12,10 +13,10 @@ export const AUTH_WITH_SESSION_REDIRECT_MS = 1500
 /**
  * @param {Object} props
  * @param {boolean} props.booting
- * @param {import('../../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {() => void} [props.onGuest]
  */
-export default function AuthRoute({ booting, session = null, onGuest }) {
+export default function AuthRoute({ booting, onGuest }) {
+  const { session } = useSession()
   const navigate = useNavigate()
   const signedIn = !booting && !!session
 

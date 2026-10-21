@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
@@ -38,10 +39,10 @@ async function render(element) {
 /** @param {string} dateKey @param {boolean} isEmployedDriver */
 function dayLog(dateKey, isEmployedDriver) {
   const [, m, d] = dateKey.split('-')
-  return React.createElement(DayLogPage, {
-    month: Number(m), day: Number(d), dateKey, ownerKey: OWNER, clients: [],
+  return withSession(React.createElement(DayLogPage, {
+    month: Number(m), day: Number(d), dateKey, clients: [],
     settings: normalizeSettings({ fixedOn: true }), isEmployedDriver,
-  })
+  }), { ownerKey: OWNER })
 }
 
 test('문구: 시작일 전·종료일 뒤만 안내, 기간 안·기간 없음은 null, 해가 다르면 해까지', () => {
@@ -85,7 +86,7 @@ test('차주 계정은 날짜 상관없이 입력칸', async () => {
 })
 
 test('소속 연결 카드에 계약기간(로드맵 47-A, 옛 "배정 기간")', async () => {
-  const view = await render(React.createElement(EmployerLinkCard, { ownerKey: OWNER, session: { userId: 'driver-1', name: '김기사' } }))
+  const view = await render(withSession(React.createElement(EmployerLinkCard, {}), { ownerKey: OWNER, session: { userId: 'driver-1', name: '김기사' } }))
   try {
     assert.ok(view.text().includes('계약기간 2026-10-05 ~ 2026-12-31'), view.text())
   } finally {

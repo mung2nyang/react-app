@@ -25,6 +25,7 @@ import TaxInvoiceEntryList from './TaxInvoiceEntryList.jsx'
 import MonthNavigator from './MonthNavigator.jsx'
 import './tax-invoice.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
@@ -39,13 +40,13 @@ const HOMETAX_GUIDE = [
 
 /**
  * @param {Object} props
- * @param {string} props.ownerKey
  * @param {string} props.logKey 'main' 또는 차량번호
  * @param {Date} props.viewDate
  * @param {(next: Date) => void} props.onChangeMonth
  * @param {import('react').ReactNode} [props.tabs]
  */
-export default function TaxInvoiceTab({ ownerKey, logKey, viewDate, onChangeMonth, tabs }) {
+export default function TaxInvoiceTab({ logKey, viewDate, onChangeMonth, tabs }) {
+  const { ownerKey } = useSession()
   const showToast = useToast()
   const clients = useOwnerClients(ownerKey)
   const cars = useOwnerCars(ownerKey)

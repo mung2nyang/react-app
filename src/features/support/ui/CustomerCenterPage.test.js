@@ -14,6 +14,7 @@ const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globa
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: CustomerCenterPage } = await import('./CustomerCenterPage.jsx')
@@ -30,11 +31,10 @@ async function openSupportTab(session, tabLabel) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(CustomerCenterPage, {
+    root.render(withSession(React.createElement(CustomerCenterPage, {
       onBack: () => {},
-      session,
       onGoAuth: () => {},
-    }))
+    }), { session }))
   })
   const tab = /** @type {HTMLButtonElement|undefined} */ (
     [...container.querySelectorAll('.support-tab')].find((el) => el.textContent?.includes(tabLabel))

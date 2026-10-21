@@ -12,6 +12,7 @@ import { beforeEach, test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Routes, Route } = await import('react-router-dom')
@@ -92,7 +93,7 @@ beforeEach(() => { document.body.innerHTML = '' })
 
 test('연동 기사 앱 거래처: 안내 문구, 내 차량 거래처만, 추가는 내 차량으로, 수정 값 채움, 삭제', async () => {
   seed({ cars: [{ id: 'car-1', number: '12가3456', type: 'main' }], clients: [MINE, OTHER, MAIN_ONLY], workLogs: { main: {} } })
-  const view = await mount(React.createElement(OwnerScopedClientsView, { ownerKey: OWNER }))
+  const view = await mount(withSession(React.createElement(OwnerScopedClientsView, {}), { ownerKey: OWNER }))
   try {
     assert.ok(view.container.textContent?.includes('차주와 공유하는 거래처 목록입니다.'))
     assert.deepEqual(view.names(), ['한빛물류'])
@@ -103,7 +104,7 @@ test('연동 기사 앱 거래처: 안내 문구, 내 차량 거래처만, 추�
 
 test('차주의 미연동 기사 거래처: 제목, 그 차량 거래처만, 추가는 그 차량으로, 수정 값 채움, 삭제', async () => {
   seed({ cars: [{ id: 'car-1', number: '11가1111', type: 'main' }, { id: 'car-2', number: '12가3456', type: 'sub', driverName: '박기사' }], clients: [MINE, OTHER, MAIN_ONLY], drivers: [], workLogs: { main: {} } })
-  const view = await mount(React.createElement(LinkedDriverClientsPage, { ownerKey: OWNER }), '/logs/12가3456/clients', '/logs/:logId/clients')
+  const view = await mount(withSession(React.createElement(LinkedDriverClientsPage, {}), { ownerKey: OWNER }), '/logs/12가3456/clients', '/logs/:logId/clients')
   try {
     assert.ok(view.container.textContent?.includes('박기사 거래처'))
     assert.equal(view.container.textContent?.includes('차주와 공유하는'), false)
@@ -119,7 +120,7 @@ test('차주의 연동 기사 거래처: "○○ 기사 거래처" 제목, 그 �
     drivers: [{ id: 'd-1', name: '최연동', phone: '010-3333-4444', inviteCode: '111111', status: 'linked', vehicleNumber: '12가3456' }],
     workLogs: { main: {} },
   })
-  const view = await mount(React.createElement(LinkedDriverClientsPage, { ownerKey: OWNER }), '/drivers/d-1/clients', '/drivers/:linkId/clients')
+  const view = await mount(withSession(React.createElement(LinkedDriverClientsPage, {}), { ownerKey: OWNER }), '/drivers/d-1/clients', '/drivers/:linkId/clients')
   try {
     assert.ok(view.container.textContent?.includes('최연동 기사 거래처'))
     assert.deepEqual(view.names(), ['한빛물류'])
@@ -128,11 +129,11 @@ test('차주의 연동 기사 거래처: "○○ 기사 거래처" 제목, 그 �
 
 test('차주의 기사 거래처: 차량·기사를 못 찾으면 안내', async () => {
   seed({ cars: [{ id: 'car-1', number: '11가1111', type: 'main' }], clients: [MINE], drivers: [], workLogs: { main: {} } })
-  const plate = await mount(React.createElement(LinkedDriverClientsPage, { ownerKey: OWNER }), '/logs/00가0000/clients', '/logs/:logId/clients')
+  const plate = await mount(withSession(React.createElement(LinkedDriverClientsPage, {}), { ownerKey: OWNER }), '/logs/00가0000/clients', '/logs/:logId/clients')
   try {
     assert.ok(plate.container.textContent?.includes('차량 정보를 찾을 수 없습니다.'))
   } finally { await plate.cleanup() }
-  const link = await mount(React.createElement(LinkedDriverClientsPage, { ownerKey: OWNER }), '/drivers/none/clients', '/drivers/:linkId/clients')
+  const link = await mount(withSession(React.createElement(LinkedDriverClientsPage, {}), { ownerKey: OWNER }), '/drivers/none/clients', '/drivers/:linkId/clients')
   try {
     assert.ok(link.container.textContent?.includes('연동된 기사 정보를 찾을 수 없습니다.'))
     assert.ok(link.container.textContent?.includes('기사 거래처'))

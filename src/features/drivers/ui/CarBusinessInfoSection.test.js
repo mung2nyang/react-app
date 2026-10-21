@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
@@ -57,9 +58,8 @@ async function mount(ownerKey, profile, toasts) {
   const root = createRoot(container)
   const car = subCar(ownerKey)
   await act(async () => {
-    root.render(withToast(React.createElement(CarBusinessInfoSection, {
-      ownerKey, car, cars: getState().cars[ownerKey], profile,
-    }), (/** @type {string} */ message) => toasts.push(message)))
+    root.render(withToast(withSession(React.createElement(CarBusinessInfoSection, { car, cars: getState().cars[ownerKey], profile,
+    }), { ownerKey }), (/** @type {string} */ message) => toasts.push(message)))
   })
   return {
     container,

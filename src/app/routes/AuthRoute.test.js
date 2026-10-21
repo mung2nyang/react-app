@@ -19,6 +19,7 @@ mock.module('../../data/cloud/supabaseClient.js', {
 })
 
 const React = await import('react')
+const { withSession } = await import('../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Routes, Route } = await import('react-router-dom')
 const { act } = React
@@ -33,7 +34,7 @@ async function render(session, booting) {
   await act(async () => {
     root.render(h(MemoryRouter, { initialEntries: ['/auth'] },
       h(Routes, null,
-        h(Route, { path: '/auth', element: h(AuthRoute, { booting, session }) }),
+        h(Route, { path: '/auth', element: withSession(h(AuthRoute, { booting }), { session }) }),
         h(Route, { path: '/app', element: h('div', { id: 'home' }, '홈') }))))
   })
   return { container, async cleanup() { await act(async () => { root.unmount() }); container.remove() } }

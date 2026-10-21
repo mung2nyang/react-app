@@ -24,6 +24,7 @@ mock.module('../../../data/sync/dailyInspections.js', {
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
@@ -51,7 +52,7 @@ async function render({ path = '/report', owner = false } = {}) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    const page = React.createElement(DocumentIssuePage, { ownerKey: OWNER, onBack: () => {}, isEmployedDriver: !owner })
+    const page = withSession(React.createElement(DocumentIssuePage, { onBack: () => {}, isEmployedDriver: !owner }), { ownerKey: OWNER })
     root.render(React.createElement(MemoryRouter, { initialEntries: [path] },
       React.createElement(Routes, null,
         React.createElement(Route, { path: '/report', element: page }),

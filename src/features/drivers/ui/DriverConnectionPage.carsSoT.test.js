@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
@@ -25,11 +26,9 @@ test('차량을 커밋하면 기사 초대 모달이 리마운트 없이 할당 
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(DriverConnectionPage, {
-        ownerKey,
-        session: { userId: 'sot-cars-drivers-owner', guestMode: false },
+      root.render(withSession(React.createElement(DriverConnectionPage, {
         onBack: () => {},
-      }))
+      }), { ownerKey, session: { userId: 'sot-cars-drivers-owner', guestMode: false } }))
     })
 
     const addBtn = [...container.querySelectorAll('button')].find((el) => el.textContent.includes('+ 초대'))

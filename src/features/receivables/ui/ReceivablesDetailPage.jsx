@@ -10,15 +10,16 @@ import { useConfirm } from '../hooks/useConfirm.jsx'
 import ReceivableItemCard from './ReceivableItemCard.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './receivables.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {boolean} [props.isEmployedDriver]
  */
-export default function ReceivablesDetailPage({ ownerKey = 'guest', isEmployedDriver = false }) {
+export default function ReceivablesDetailPage({ isEmployedDriver = false }) {
+  const { ownerKey } = useSession()
   const navigate = useNavigate()
   const { search } = useLocation()
   const { client: clientParam, month: monthParam } = useParams()

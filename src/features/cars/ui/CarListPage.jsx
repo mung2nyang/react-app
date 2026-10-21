@@ -14,6 +14,7 @@ import { generateInviteCode } from '../../../domain/drivers.js'
 import { todayIsoDate } from '../api/carInviteFromDraft.js'
 import { useOwnerCars, useOwnerDrivers } from '../../../data/store/ownerDataHooks.js'
 import './car-management.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('./CarFormModal.jsx').CarFormDraft} CarFormDraft */
 
@@ -29,12 +30,11 @@ const DISCONNECT_CONFIRM = '연동 중인 기사에게는 해제 요청이 가�
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
- * @param {import('../../../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function CarListPage({ ownerKey = 'guest', session = null, onBack, onOpenMenu }) {
+export default function CarListPage({ onBack, onOpenMenu }) {
+  const { ownerKey, session } = useSession()
   const cars = useOwnerCars(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
   const viewerIsEmployedDriver = session?.accountType === 'employed_driver'

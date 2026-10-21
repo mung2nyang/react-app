@@ -12,6 +12,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: PageHeader } = await import('./PageHeader.jsx')
@@ -58,14 +59,14 @@ test('onBack이 없으면 뒤로가기 대신 빈 자리, 제목·메뉴는 그�
 })
 
 test('하단 메뉴 첫 화면: 마이페이지·매출에는 뒤로가기가 없다', async () => {
-  const my = await render(React.createElement(MyPage, { session: null, ownerKey: 'page-header-test', onOpen: () => {}, onOpenMenu: () => {} }))
+  const my = await render(withSession(React.createElement(MyPage, { onOpen: () => {}, onOpenMenu: () => {} }), { session: null, ownerKey: 'page-header-test' }))
   try {
     assert.equal(my.header?.querySelector('.settings-title')?.textContent, '마이페이지')
     assert.equal(Boolean(my.back), false, '마이페이지에 뒤로가기가 없어야 한다')
   } finally {
     await my.cleanup()
   }
-  const revenue = await render(React.createElement(RevenuePage, { ownerKey: 'page-header-test', onOpenMenu: () => {} }))
+  const revenue = await render(withSession(React.createElement(RevenuePage, { onOpenMenu: () => {} }), { ownerKey: 'page-header-test' }))
   try {
     assert.equal(revenue.header?.querySelector('.settings-title')?.textContent, '매출')
     assert.equal(Boolean(revenue.back), false, '매출에 뒤로가기가 없어야 한다')

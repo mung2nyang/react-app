@@ -3,12 +3,14 @@
 import { useId, useState } from 'react'
 import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.js'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
  * 카드 버튼 안에 칩 버튼을 넣지 않으려고 카드를 감싸고 칩을 옆에 겹쳐 둔다.
- * @param {{ ownerKey: string, employed: boolean, onOpenProfile: () => void, children: import('react').ReactNode }} props
+ * @param {{ employed: boolean, onOpenProfile: () => void, children: import('react').ReactNode }} props
  */
-export default function LinkStatusChip({ ownerKey, employed, onOpenProfile, children }) {
+export default function LinkStatusChip({ employed, onOpenProfile, children }) {
+  const { ownerKey } = useSession()
   const drivers = useOwnerDrivers(ownerKey)
   const profile = useOwnerProfile(ownerKey)
   const [open, setOpen] = useState(false)

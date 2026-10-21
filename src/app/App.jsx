@@ -1,5 +1,6 @@
 // @ts-check
 // 라우터 최상위. 세션·부트·토스트 상태만 두고 화면별 로직은 AuthRoute/AppShell이 맡는다.
+import { useMemo } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import OnboardingPage from '../features/account/ui/OnboardingPage.jsx'
 import WelcomeProfileView from '../features/account/ui/WelcomeProfileView.jsx'
@@ -19,6 +20,7 @@ import { GUEST_APP_SESSION, setGuestModePersisted } from './guestSessionPersist.
 import { useAppSession } from './useAppSession.js'
 import ToastMessage from './shell/ToastMessage.jsx'
 import { ToastProvider } from '../shared/hooks/useToast.js'
+import { SessionProvider } from '../data/cloud/sessionContext.js'
 import '../shared/styles/variables.css'
 import '../shared/styles/app-base.css'
 import '../shared/styles/account-flow.css'
@@ -54,12 +56,14 @@ export default function App() {
     goHome,
     handleLogout,
   } = useAppSession()
+  const sessionValue = useMemo(() => ({ session, ownerKey }), [session, ownerKey])
 
   if (bootLinkFailed) return <BootRetryScreen />
   if (guestLoadFailed) return <LoadFailScreen />
 
   return (
     <ToastProvider value={showToast}>
+    <SessionProvider value={sessionValue}>
       <PendingWriteRetryBridge />
       <AccountFlowBodyClass active={inAccountFlow} />
 
@@ -71,7 +75,6 @@ export default function App() {
           element={(
             <AuthRoute
               booting={booting}
-              session={session}
               onGuest={() => {
                 endCloudSession()
                 setGuestModePersisted(true)
@@ -87,7 +90,7 @@ export default function App() {
         <Route
           path="/welcome"
           element={(
-            <RequireSession session={session} booting={booting}>
+            <RequireSession booting={booting}>
               <div className="container account-flow-container">
                 <WelcomeProfileView
                   initialName={session?.name || ''}
@@ -117,7 +120,7 @@ export default function App() {
         <Route
           path="/onboarding"
           element={(
-            <RequireSession session={session} booting={booting}>
+            <RequireSession booting={booting}>
               <div className="container account-flow-container">
                 <OnboardingPage
                   accountType={session?.accountType || 'owner_driver'}
@@ -139,10 +142,8 @@ export default function App() {
         <Route
           path="/app/*"
           element={(
-            <RequireSession session={session} booting={booting}>
+            <RequireSession booting={booting}>
               <AppShell
-                ownerKey={ownerKey}
-                session={session}
                 onBackToAuth={() => handleLogout()}
                 onGoAuth={() => handleLogout({ signOut: true })}
                 onSessionUpdate={(/** @type {AppSession} */ next) => setSession(next)}
@@ -157,6 +158,7 @@ export default function App() {
 
 
       <ToastMessage message={toast} />
+    </SessionProvider>
     </ToastProvider>
   )
 }

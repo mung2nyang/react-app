@@ -13,6 +13,7 @@ const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globa
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
@@ -38,11 +39,9 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
       // 1) 소속 기사 세션
       await act(async () => {
         root.render(
-          React.createElement(MyPage, {
-            ownerKey,
-            session: /** @type {any} */ ({ accountType: 'employed_driver', name: '홍길동' }),
+          withSession(React.createElement(MyPage, {
             onOpen: () => {},
-          }),
+          }), { ownerKey, session: /** @type {any} */ ({ accountType: 'employed_driver', name: '홍길동' }) }),
         )
       })
 
@@ -52,11 +51,9 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
       // 2) 차주 세션
       await act(async () => {
         root.render(
-          React.createElement(MyPage, {
-            ownerKey,
-            session: /** @type {any} */ ({ accountType: 'owner_driver', name: '홍길동' }),
+          withSession(React.createElement(MyPage, {
             onOpen: () => {},
-          }),
+          }), { ownerKey, session: /** @type {any} */ ({ accountType: 'owner_driver', name: '홍길동' }) }),
         )
       })
 
@@ -126,11 +123,9 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
       await act(async () => {
         root.render(
           React.createElement(MemoryRouter, null,
-            React.createElement(CarListPage, {
-              ownerKey,
-              session: /** @type {any} */ ({ accountType: 'employed_driver' }),
+            withSession(React.createElement(CarListPage, {
               onBack: () => {},
-            }),
+            }), { ownerKey, session: /** @type {any} */ ({ accountType: 'employed_driver' }) }),
           ),
         )
       })
@@ -145,11 +140,9 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
       await act(async () => {
         root.render(
           React.createElement(MemoryRouter, null,
-            React.createElement(CarListPage, {
-              ownerKey,
-              session: /** @type {any} */ ({ accountType: 'owner_driver' }),
+            withSession(React.createElement(CarListPage, {
               onBack: () => {},
-            }),
+            }), { ownerKey, session: /** @type {any} */ ({ accountType: 'owner_driver' }) }),
           ),
         )
       })

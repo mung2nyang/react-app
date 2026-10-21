@@ -3,15 +3,16 @@
 import { Route, Routes } from 'react-router-dom'
 import ReceivablesListPage from './ReceivablesListPage.jsx'
 import ReceivablesDetailPage from './ReceivablesDetailPage.jsx'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {boolean} [props.isEmployedDriver] 연동 기사 계정이면 차량 배지를 안 그린다(자기 차가 "메인 차량"으로 보이지 않게).
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function ReceivablesPage({ ownerKey = 'guest', isEmployedDriver = false, onBack, onOpenMenu }) {
+export default function ReceivablesPage({ isEmployedDriver = false, onBack, onOpenMenu }) {
+  const { ownerKey } = useSession()
   const shared = { ownerKey, isEmployedDriver }
   return (
     <Routes>

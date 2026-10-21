@@ -13,12 +13,12 @@ import CalendarSubLogBanner from './CalendarSubLogBanner.jsx'
 import useMonthSettlement from '../hooks/useMonthSettlement.js'
 import './calendar-grid.css'
 import './calendar.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 const YEAR_OPTIONS = getYearOptions()
 
 /**
  * @param {Object} props
- * @param {string} props.ownerKey
  * @param {string} [props.logId]
  * @param {string} [props.clientScopeKey] 고정노선 거래처 스코프(연동기사 본인은 배정 차량번호). 없으면 logId.
  * @param {string} [props.userName]
@@ -27,8 +27,9 @@ const YEAR_OPTIONS = getYearOptions()
  * @param {(sel: { dateKey: string, month: number, day: number }) => void} props.onSelectDay
  */
 export default function CalendarPage({
-  ownerKey, logId = 'main', clientScopeKey, userName: _userName, onOpenMenu, onBackToAuth: _onBackToAuth, onSelectDay,
+  logId = 'main', clientScopeKey, userName: _userName, onOpenMenu, onBackToAuth: _onBackToAuth, onSelectDay,
 }) {
+  const { ownerKey } = useSession()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const viewDate = useMemo(() => viewDateFromSearchParams(searchParams), [searchParams])

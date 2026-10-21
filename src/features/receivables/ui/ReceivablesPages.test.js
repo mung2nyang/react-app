@@ -12,6 +12,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
@@ -33,7 +34,7 @@ async function renderAt(ownerKey, path, isEmployedDriver) {
       { initialEntries: [path] },
       React.createElement(Routes, null, React.createElement(Route, {
         path: '/app/receivables/*',
-        element: React.createElement(ReceivablesPage, { ownerKey, isEmployedDriver }),
+        element: withSession(React.createElement(ReceivablesPage, { isEmployedDriver }), { ownerKey }),
       })),
     ))
   })

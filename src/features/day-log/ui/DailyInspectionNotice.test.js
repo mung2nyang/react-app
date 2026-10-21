@@ -26,6 +26,7 @@ mock.module('../../../data/sync/dailyInspections.js', {
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
@@ -50,15 +51,15 @@ beforeEach(() => {
 
 /** @param {Partial<{ ownerKey: string, logId: string, enabled: boolean, isOff: boolean }>} [props] */
 async function render(props = {}) {
+  const { ownerKey = OWNER, ...rest } = props
   /** @type {Array<string>} */
   const toasts = []
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const element = React.createElement(DailyInspectionNotice, {
-    ownerKey: OWNER, logId: 'main', dateKey: '2026-10-01', month: 10, day: 1, enabled: true, isOff: false,
-    ...props,
-  })
+  const element = withSession(React.createElement(DailyInspectionNotice, { logId: 'main', dateKey: '2026-10-01', month: 10, day: 1, enabled: true, isOff: false,
+    ...rest,
+  }), { ownerKey })
   await act(async () => { root.render(withToast(element, (/** @type {string} */ m) => { toasts.push(m) })) })
   /** @param {string} label */
   const click = async (label) => {

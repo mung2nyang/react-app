@@ -9,6 +9,7 @@ import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import { SkeletonLines } from '../../../shared/ui/Skeleton.jsx'
 import './customer-center.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
 /** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
@@ -164,11 +165,11 @@ function MyInquiriesList({ userId }) {
 /**
  * @param {Object} props
  * @param {() => void} [props.onBack]
- * @param {AppSession|null} [props.session]
  * @param {() => void} [props.onGoAuth]
  * @param {(() => void)} [props.onOpenMenu]
  */
-export default function CustomerCenterPage({ onBack, session = null, onGoAuth, onOpenMenu }) {
+export default function CustomerCenterPage({ onBack, onGoAuth, onOpenMenu }) {
+  const { session } = useSession()
   const [tab, setTab] = useState(/** @type {SupportTab} */ ('faq'))
   const [openFaq, setOpenFaq] = useState(/** @type {number|null} */ (null))
   const cloud = isCloudSession(session)

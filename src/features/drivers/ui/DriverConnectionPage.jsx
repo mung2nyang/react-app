@@ -18,13 +18,15 @@ import DriverFormModal from './DriverFormModal.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './driver-connection.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 const emptyDraft = { name: '', phone: '', inviteCode: '', vehicleNumber: '', startDate: '', endDate: '' }
 
 /**
- * @param {{ ownerKey?: string, session: AppSession|null, onBack: () => void, navigate?: (to: import('react-router-dom').To | number, options?: import('react-router-dom').NavigateOptions) => void }} props
+ * @param {{ onBack: () => void, navigate?: (to: import('react-router-dom').To | number, options?: import('react-router-dom').NavigateOptions) => void }} props
  */
-export default function DriverConnectionPage({ ownerKey = 'guest', session, onBack, navigate }) {
+export default function DriverConnectionPage({ onBack, navigate }) {
+  const { ownerKey, session } = useSession()
   const showToast = useToast()
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)

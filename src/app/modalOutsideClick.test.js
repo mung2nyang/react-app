@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: CarFormModal } = await import('../features/cars/ui/CarFormModal.jsx')
@@ -41,7 +42,7 @@ const INPUT_MODALS = [
   { name: '거래처', element: (close) => React.createElement(ClientFormModal, { draft: { companyName: '한빛물류' }, setDraft: () => {}, editingId: null, onCancel: close, onSave: () => {} }) },
   { name: '정비·주유·기타', element: (close) => React.createElement(ExpenseFormModal, { draft: { kind: 'maint', date: '2026-10-01' }, kindLabel: '정비', onChange: () => {}, onClose: close, onSave: () => {} }) },
   { name: '기사 초대', element: (close) => React.createElement(DriverFormModal, { draft: { name: '기사', phone: '', inviteCode: '123456', vehicleNumber: '', startDate: '', endDate: '' }, setDraft: () => {}, editingId: null, drivers: [], assignableCars: [], onCancel: close, onSave: () => {} }) },
-  { name: '초대코드 입력', element: (close) => React.createElement(InviteRedeemModal, { session: null, onClose: close, onLinked: () => {} }) },
+  { name: '초대코드 입력', element: (close) => withSession(React.createElement(InviteRedeemModal, { onClose: close, onLinked: () => {} }), { session: null }) },
   { name: '세금계산서 작성', element: (close) => React.createElement(TaxInvoiceDraftModal, { modalItem: { id: 'inv-1', clientName: '한빛물류' }, flowMeta: { label: '매출 발행', partyHeading: '공급받는 자' }, onChange: () => {}, onCancel: close, onSave: () => {} }) },
 ]
 
@@ -96,7 +97,7 @@ for (const modal of INPUT_MODALS) {
 }
 
 test('고정 노선 거래처 창(화면 맨 바깥에 그려짐): 바깥 누름·Esc로 안 닫히고 취소로 닫힌다, 화면 읽기 "창"', async () => {
-  const view = await mount((close) => React.createElement(FixedRouteClientModal, { ownerKey: 'guest', clients: [], candidates: [], linked: null, onClose: close }))
+  const view = await mount((close) => withSession(React.createElement(FixedRouteClientModal, { clients: [], candidates: [], linked: null, onClose: close }), { ownerKey: 'guest' }))
   try {
     const box = document.querySelector('.modal-overlay > .fixed-route-client-modal')
     assert.ok(box, '공용 껍데기의 창 상자가 있어야 한다')

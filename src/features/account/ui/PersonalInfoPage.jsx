@@ -12,6 +12,7 @@ import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import { usePersonalInfoDraft } from '../hooks/usePersonalInfoDraft.js'
 import './PersonalInfoPage.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {null|'first'|'second'} WithdrawStep */
 
@@ -21,14 +22,13 @@ const WITHDRAW_LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습�
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
- * @param {import('../../../data/sync/syncTypes.js').AppSession|null|undefined} [props.session]
  * @param {() => void} [props.onBack]
  * @param {() => void} [props.onGoAuth]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(next: import('../../../data/sync/syncTypes.js').AppSession) => void} [props.onUnlinked] 기사가 연동 해제를 확정했을 때(7-C-2)
  */
-export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, onGoAuth, onOpenMenu, onUnlinked }) {
+export default function PersonalInfoPage({ onBack, onGoAuth, onOpenMenu, onUnlinked }) {
+  const { ownerKey, session } = useSession()
   const showToast = useToast()
   const locked = useHydrationLock()
   const profile = useOwnerProfile(ownerKey)
@@ -141,7 +141,7 @@ export default function PersonalInfoPage({ ownerKey = 'guest', session, onBack, 
           </div>
         </section>
 
-        {employed && <EmployerLinkCard ownerKey={ownerKey} session={session} onUnlinked={onUnlinked} />}
+        {employed && <EmployerLinkCard onUnlinked={onUnlinked} />}
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">{employed ? '04' : '03'}</span>

@@ -13,6 +13,7 @@ const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globa
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: AppSettingsPage } = await import('./AppSettingsPage.jsx')
@@ -25,7 +26,7 @@ test('AppSettingsPage 백업 섹션: 게스트 세션에서만 노출되고 비�
   try {
     // 1. 게스트 세션 (ownerKey === 'guest')
     await act(async () => {
-      root.render(React.createElement(AppSettingsPage, { ownerKey: 'guest', onBack: () => {} }))
+      root.render(withSession(React.createElement(AppSettingsPage, { onBack: () => {} }), { ownerKey: 'guest' }))
     })
 
     const buttonsGuest = [...container.querySelectorAll('button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())
@@ -36,7 +37,7 @@ test('AppSettingsPage 백업 섹션: 게스트 세션에서만 노출되고 비�
 
     // 2. 비게스트(로그인/소속기사/차주) 세션 (ownerKey !== 'guest')
     await act(async () => {
-      root.render(React.createElement(AppSettingsPage, { ownerKey: 'owner-user-99', onBack: () => {} }))
+      root.render(withSession(React.createElement(AppSettingsPage, { onBack: () => {} }), { ownerKey: 'owner-user-99' }))
     })
 
     const buttonsOwner = [...container.querySelectorAll('button')].map((b) => b.textContent?.replace(/\s+/g, ' ').trim())

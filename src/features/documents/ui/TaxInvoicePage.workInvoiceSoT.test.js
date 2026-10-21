@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: ReportPage } = await import('./ReportPage.jsx')
@@ -31,7 +32,7 @@ test('일지를 커밋하면 운송비 내역서가 리마운트 없이 합계�
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(ReportPage, { ownerKey, onBack: () => {}, viewDate: new Date(), onChangeMonth: () => {} }))
+      root.render(withSession(React.createElement(ReportPage, { onBack: () => {}, viewDate: new Date(), onChangeMonth: () => {} }), { ownerKey }))
     })
     assert.ok(container.textContent.includes('부가세 (공급가액 기준 10%)'), '요약 화면에 부가세 행이 있어야 한다')
     assert.equal(container.textContent.includes('소트거래처 기본 운송료'), false)
@@ -66,7 +67,7 @@ test('계산서를 커밋하면 세금계산서 발급 목록이 리마운트 �
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(TaxInvoiceTab, { ownerKey, logKey: 'main', viewDate: new Date(), onChangeMonth: () => {} }))
+      root.render(withSession(React.createElement(TaxInvoiceTab, { logKey: 'main', viewDate: new Date(), onChangeMonth: () => {} }), { ownerKey }))
     })
     assert.equal(!!container.querySelector('.report-top-card .settings-segmented-control'), false, '계산서 종류 탭 줄 없음(2026-10-02)')
     assert.equal(/기사 매입|수수료 발행/.test(container.textContent || ''), false)

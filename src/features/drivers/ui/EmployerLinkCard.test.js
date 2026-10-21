@@ -32,6 +32,7 @@ mock.module('../../../data/hydrate/hydrate.js', {
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
@@ -65,9 +66,8 @@ async function renderCard() {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(withToast(React.createElement(EmployerLinkCard, {
-      ownerKey: OWNER, session: SESSION, onUnlinked: (/** @type {object} */ next) => { unlinked.push(next) },
-    }), (/** @type {string} */ msg) => { toasts.push(msg) }))
+    root.render(withToast(withSession(React.createElement(EmployerLinkCard, { onUnlinked: (/** @type {object} */ next) => { unlinked.push(next) },
+    }), { ownerKey: OWNER, session: SESSION }), (/** @type {string} */ msg) => { toasts.push(msg) }))
   })
   return { container, unlinked, toasts, cleanup: async () => { await act(async () => { root.unmount() }); container.remove() } }
 }

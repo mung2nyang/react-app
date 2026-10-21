@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: MyPage } = await import('./MyPage.jsx')
@@ -33,7 +34,7 @@ async function mount({ accountType, drivers }) {
   const root = createRoot(container)
   const session = /** @type {import('../../../data/sync/syncTypes.js').AppSession} */ ({ userId: 'driver-85', accountType, name: '홍길동' })
   await act(async () => {
-    root.render(React.createElement(MyPage, { session, ownerKey: OWNER, onOpen: (/** @type {string} */ page) => { opened.push(page) } }))
+    root.render(withSession(React.createElement(MyPage, { onOpen: (/** @type {string} */ page) => { opened.push(page) } }), { session, ownerKey: OWNER }))
   })
   return {
     container,

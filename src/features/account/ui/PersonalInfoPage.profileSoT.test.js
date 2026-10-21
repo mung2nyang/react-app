@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: PersonalInfoPage } = await import('./PersonalInfoPage.jsx')
@@ -27,7 +28,7 @@ test('프로필을 커밋하면 개인정보 화면이 리마운트 없이 상�
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(PersonalInfoPage, { ownerKey, session: null, onBack: () => {} }))
+      root.render(withSession(React.createElement(PersonalInfoPage, { onBack: () => {} }), { ownerKey, session: null }))
     })
     const input = container.querySelector('#bizName')
     assert.ok(input, '사업자명 입력이 있어야 한다')
@@ -56,12 +57,10 @@ test('프로필을 커밋하면 마이페이지 이름이 리마운트 없이 �
   const root = createRoot(container)
   try {
     await act(async () => {
-      root.render(React.createElement(MyPage, {
-        ownerKey,
-        session: { name: '비회원' },
+      root.render(withSession(React.createElement(MyPage, {
         onOpen: () => {},
         onBack: () => {},
-      }))
+      }), { ownerKey, session: { name: '비회원' } }))
     })
     assert.equal(container.querySelector('.mypage-user-name')?.textContent, '이전이름')
 

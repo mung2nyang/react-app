@@ -10,25 +10,23 @@ import { parseDateKeySelection } from '../../domain/calendar.js'
 import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../../data/store/ownerDataHooks.js'
 import { confirmLeaveIfUnsafe } from '../../data/sync/durableWriteGuard.js'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
+import { useSession } from '../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
 
 /**
  * @param {Object} props
- * @param {string} props.ownerKey
- * @param {AppSession|null} [props.session]
  * @param {string} [props.userName]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(() => void)} [props.onBackToAuth]
  */
 export default function MainPageRoute({
-  ownerKey,
-  session,
   userName,
   
   onOpenMenu,
   onBackToAuth,
 }) {
+  const { ownerKey, session } = useSession()
   const { date, logId: rawLogId } = useParams()
   const logId = rawLogId ? decodeURIComponent(rawLogId) : 'main'
   const navigate = useNavigate()
@@ -68,7 +66,6 @@ export default function MainPageRoute({
         month={selected.month}
         day={selected.day}
         dateKey={selected.dateKey}
-        ownerKey={ownerKey}
         logId={logId}
         clientScopeKey={clientScopeKey}
         clients={clients}
@@ -82,7 +79,6 @@ export default function MainPageRoute({
 
   return (
     <CalendarPage
-      ownerKey={ownerKey}
       logId={logId}
       clientScopeKey={clientScopeKey}
       userName={userName}

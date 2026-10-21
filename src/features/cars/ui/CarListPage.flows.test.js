@@ -52,6 +52,7 @@ mock.module('../../../data/sync/directMutationActions.js', {
 })
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
@@ -79,7 +80,7 @@ async function render(ownerKey, entry = '/app/cars') {
   const root = createRoot(container)
   await act(async () => {
     root.render(withToast(React.createElement(MemoryRouter, { initialEntries: [entry] },
-      React.createElement(CarListPage, { ownerKey, session: { userId: ownerKey, name: '차주', phone: '' } }),
+      withSession(React.createElement(CarListPage, {}), { ownerKey, session: { userId: ownerKey, name: '차주', phone: '' } }),
       React.createElement(LocationProbe)), (/** @type {string} */ m) => toasts.push(m)))
   })
   /** @param {string} text @param {ParentNode} [scope] */

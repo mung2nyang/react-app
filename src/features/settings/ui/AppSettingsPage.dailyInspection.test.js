@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
@@ -25,7 +26,7 @@ async function render(ownerKey, path) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const page = React.createElement(AppSettingsPage, { ownerKey, onBack: () => {} })
+  const page = withSession(React.createElement(AppSettingsPage, { onBack: () => {} }), { ownerKey })
   await act(async () => {
     root.render(React.createElement(MemoryRouter, { initialEntries: [path] },
       React.createElement(Routes, null,

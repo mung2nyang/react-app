@@ -11,6 +11,7 @@ import { test } from 'node:test'
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
+const { withSession } = await import('../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: OfflineBanner } = await import('./OfflineBanner.jsx')
@@ -32,7 +33,7 @@ async function mount(session) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(React.createElement(OfflineBanner, { session })) })
+  await act(async () => { root.render(withSession(React.createElement(OfflineBanner, {}), { session })) })
   return {
     container,
     async unmount() {

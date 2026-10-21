@@ -12,6 +12,7 @@ import { test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const React = await import('react')
+const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: OwnerRevenueView } = await import('./OwnerRevenueView.jsx')
@@ -28,7 +29,7 @@ async function mount(View, ownerKey) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(React.createElement(View, { ownerKey })) })
+  await act(async () => { root.render(withSession(React.createElement(View), { ownerKey })) })
   return {
     container,
     picked: () => [...container.querySelectorAll('.date-navigator .app-dropdown-trigger')].map((el) => el.textContent?.trim()).join(' '),

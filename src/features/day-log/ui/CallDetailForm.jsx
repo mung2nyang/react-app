@@ -14,6 +14,7 @@ import TemporalInput from '../../../shared/ui/TemporalInput.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 import CallDetailPaymentFields, { CallInsuranceFeeField, CallVatExemptRow } from './CallDetailPaymentFields.jsx'
 import './call-detail-form.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전국화물콜', '카카오T트럭커']
 
@@ -31,7 +32,6 @@ const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전�
  * @param {Settings} props.settings
  * @param {string} [props.logId] 일지 차량 키(`main` 또는 서브 번호). workData용.
  * @param {string} [props.clientScopeKey] 거래처 스코프. 없으면 logId로 폴백.
- * @param {string} [props.ownerKey]
  * @param {Array<string>} [props.locationShortcuts]
  * @param {Array<string>} [props.pinnedLocations]
  * @param {(location: string) => void} [props.onTogglePinnedLocation]
@@ -40,9 +40,10 @@ const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전�
  * @param {boolean} [props.isEmployedDriver] 기사연동 계정(고용된 기사 본인) 세션이면 산재보험료 칸을 숨긴다 — 자기 명의로 플랫폼 일을 받는 게 아니라서 의미가 없다.
  */
 export default function CallDetailForm({
-  value, previousItem, dateKey, clients, settings, logId, clientScopeKey, ownerKey, onSave, onClose,
+  value, previousItem, dateKey, clients, settings, logId, clientScopeKey, onSave, onClose,
   locationShortcuts = [], pinnedLocations = [], onTogglePinnedLocation, isEmployedDriver = false,
 }) {
+  const { ownerKey } = useSession()
   const [draft, setDraft] = useState(() => (value ? draftFromDetail(value, dateKey, clients) : { ...emptyDraft, paymentDueDate: dueDateForClient(dateKey, null) }))
   const [activeLocationTarget, setActiveLocationTarget] = useState(/** @type {'load'|'unload'} */ ('load'))
 
@@ -127,7 +128,6 @@ export default function CallDetailForm({
           </datalist>
           {ownerKey && (
             <CallClientQuickAdd
-              ownerKey={ownerKey}
               clients={clients}
               logId={scopeKey}
               onClientAdded={applyClient}

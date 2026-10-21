@@ -13,11 +13,10 @@ import HomeTodayCard from './HomeTodayCard.jsx'
 import HomeTodoCard from './HomeTodoCard.jsx'
 import useTodayInspectionMissing from '../hooks/useTodayInspectionMissing.js'
 import './home.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
  * @param {Object} props
- * @param {string} props.ownerKey
- * @param {import('../../../data/sync/syncTypes.js').AppSession|null} [props.session]
  * @param {number} [props.notifCount]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(() => void)} [props.onOpenNotifs]
@@ -26,8 +25,9 @@ import './home.css'
  * @param {() => void} props.onOpenCalendar
  */
 export default function HomePage({
-  ownerKey, session, notifCount = 0, onOpenMenu, onOpenNotifs, onOpenToday, onOpenReceivables, onOpenCalendar,
+  notifCount = 0, onOpenMenu, onOpenNotifs, onOpenToday, onOpenReceivables, onOpenCalendar,
 }) {
+  const { ownerKey, session } = useSession()
   const cars = useOwnerCars(ownerKey)
   // 달력과 같은 규칙(MainPageRoute): 연동 기사 본인은 배정 차량 거래처 스코프.
   const clientScopeKey = session?.linkedOwnerId ? (cars[0]?.number || 'main') : 'main'

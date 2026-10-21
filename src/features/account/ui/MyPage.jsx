@@ -8,6 +8,7 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import LinkStatusChip from './LinkStatusChip.jsx'
 import './mypage.css'
 import './mypage-shortcuts.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
 
@@ -86,13 +87,12 @@ const SHORTCUTS = [
 
 /**
  * @param {Object} props
- * @param {AppSession|null} [props.session]
- * @param {string} [props.ownerKey]
  * @param {(page: string, label?: string) => void} props.onOpen
  * @param {(() => void)} [props.onOpenMenu]
  * @param {(session: AppSession) => void} [props.onLinked]
  */
-export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu, onLinked }) {
+export default function MyPage({ onOpen, onOpenMenu, onLinked }) {
+  const { ownerKey, session } = useSession()
   const [inviteOpen, setInviteOpen] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const profile = useOwnerProfile(ownerKey)
@@ -107,7 +107,7 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
     <div className="page my-page">
       <PageHeader title="마이페이지" onOpenMenu={onOpenMenu} />
 
-      <LinkStatusChip ownerKey={ownerKey} employed={employed} onOpenProfile={() => onOpen('profile')}>
+      <LinkStatusChip employed={employed} onOpenProfile={() => onOpen('profile')}>
         <button type="button" className="mypage-profile-card" onClick={() => onOpen('profile')}>
           <span className="mypage-profile-icon" aria-hidden="true"><PersonIcon /></span>
           <span className="mypage-profile-copy">
@@ -187,12 +187,11 @@ export default function MyPage({ session, ownerKey = 'guest', onOpen, onOpenMenu
       </div>
       {inviteOpen && (
         <InviteRedeemModal
-          session={session ?? null}
           onClose={() => setInviteOpen(false)}
           onLinked={(next) => onLinked?.(next)}
         />
       )}
-      {downloadOpen && <DataDownloadModal ownerKey={ownerKey} employed={employed} onClose={() => setDownloadOpen(false)} />}
+      {downloadOpen && <DataDownloadModal employed={employed} onClose={() => setDownloadOpen(false)} />}
     </div>
   )
 }

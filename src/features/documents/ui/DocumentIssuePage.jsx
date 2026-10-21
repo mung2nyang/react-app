@@ -15,15 +15,16 @@ import ReportPage from './ReportPage.jsx'
 import DailyInspectionMonthSheet from './DailyInspectionMonthSheet.jsx'
 import TaxInvoiceTab from './TaxInvoiceTab.jsx'
 import './documents.css'
+import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /**
  * @param {Object} props
- * @param {string} [props.ownerKey]
  * @param {() => void} [props.onBack]
  * @param {(() => void)} [props.onOpenMenu]
  * @param {boolean} [props.isEmployedDriver] 연동 기사 본인 앱이면 세금계산서 탭 숨김
  */
-export default function DocumentIssuePage({ ownerKey = 'guest', onBack, onOpenMenu, isEmployedDriver = false }) {
+export default function DocumentIssuePage({ onBack, onOpenMenu, isEmployedDriver = false }) {
+  const { ownerKey } = useSession()
   const { logId: rawLogId } = useParams()
   const logKey = (rawLogId ? decodeURIComponent(rawLogId) : '') || 'main'
   const settings = resolveLogSettings(useOwnerSettings(ownerKey), logKey === 'main' ? '' : logKey)
@@ -61,14 +62,14 @@ export default function DocumentIssuePage({ ownerKey = 'guest', onBack, onOpenMe
   ) : null
 
   if (activeTab === 'report') {
-    return <ReportPage ownerKey={ownerKey} logId={logKey} onBack={onBack} onOpenMenu={onOpenMenu} tabs={tabs} viewDate={viewDate} onChangeMonth={setViewDate} />
+    return <ReportPage logId={logKey} onBack={onBack} onOpenMenu={onOpenMenu} tabs={tabs} viewDate={viewDate} onChangeMonth={setViewDate} />
   }
   return (
     <div className="page report-page-wrap">
       <PageHeader title="서류 발급" onBack={onBack} onOpenMenu={onOpenMenu} />
       {activeTab === 'tax'
-        ? <TaxInvoiceTab ownerKey={ownerKey} logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} />
-        : <DailyInspectionMonthSheet ownerKey={ownerKey} logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} />}
+        ? <TaxInvoiceTab logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} />
+        : <DailyInspectionMonthSheet logKey={logKey} viewDate={viewDate} onChangeMonth={setViewDate} tabs={tabs} />}
     </div>
   )
 }
