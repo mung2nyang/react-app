@@ -95,6 +95,8 @@ export default function AppShellRoutes({
       <Route path="message-settings" element={<MessageSettingsPage onBack={() => goBack(backTarget)} />} />
       <Route path="notifications" element={<NotificationsPage onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} onOpenPage={(/** @type {string} */ page) => goToPage(page)} />} />
       <Route path="soon" element={<ComingSoonRoute />} />
+      {/* 앱 안에서 모르는 주소는 홈으로(로드맵 96) */}
+      <Route path="*" element={<Navigate to="/app" replace />} />
     </Routes>
   )
 }
