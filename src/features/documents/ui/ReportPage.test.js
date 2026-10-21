@@ -163,7 +163,12 @@ async function renderForDownload(ownerKey) {
   async function saveAs(label) {
     await act(async () => { buttonByText(container, label).click() })
     await act(async () => { buttonByText(container, '저장').click() })
-    await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 0) }) })
+    // 성공·실패 모두 알림으로 끝나므로, 알림이 뜰 때까지 짧게 여러 번 기다린다(느린 CI에서도 끝까지 기다림).
+    for (let i = 0; i < 100 && toasts.length === 0; i += 1) {
+      // eslint-disable-next-line no-await-in-loop -- 폴링 대기라 순차 await가 맞다.
+      await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 20) }) })
+    }
+    assert.ok(toasts.length > 0, '알림이 안 뜸')
   }
   return {
     container, toasts, links, saveAs,
