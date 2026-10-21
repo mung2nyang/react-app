@@ -33,7 +33,7 @@ jobs:
       - name: 의존성 설치
         run: npm ci
 
-      # 아래 3개는 하나가 실패해도 나머지를 계속 돌려서 전체 그림을 보여준다.
+      # 아래 4개는 하나가 실패해도 나머지를 계속 돌려서 전체 그림을 보여준다.
       - name: 테스트 (npm test)
         if: ${{ !cancelled() }}
         run: npm test
@@ -45,6 +45,10 @@ jobs:
       - name: 빌드 (npm run build)
         if: ${{ !cancelled() }}
         run: npm run build
+
+      - name: 의존 방향 검사 (npm run depcheck)
+        if: ${{ !cancelled() }}
+        run: npm run depcheck
 
       # 배포용 준비는 앞 단계가 모두 성공한 main 에서만.
       - name: 깊은 주소 새로고침용 404.html
