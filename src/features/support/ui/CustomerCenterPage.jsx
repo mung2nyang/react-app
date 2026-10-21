@@ -1,19 +1,14 @@
 // @ts-check
-// 고객센터 한 화면(FAQ·문의 작성·내 문의) — 하위 패널을 파일 분리하면 같이 읽어야 해서 응집 유지(§6).
-import { useEffect, useState } from 'react'
+// 고객센터 탭 화면(FAQ는 여기, 문의 작성은 InquiryForm, 내 문의는 MyInquiriesList).
+import { useState } from 'react'
 import { isCloudSession } from '../../../data/cloud/cloudSession.js'
-import { fetchMyInquiries, requestSupportInquirySave } from '../api/supportInquiryMutations.js'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
-import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
-import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
-import { SkeletonLines } from '../../../shared/ui/Skeleton.jsx'
+import InquiryForm from './InquiryForm.jsx'
+import MyInquiriesList from './MyInquiriesList.jsx'
 import './customer-center.css'
-import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
 /** @typedef {'faq'|'inquiry'|'myInquiries'} SupportTab */
-/** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
-/** @typedef {import('../api/supportInquiryMutations.js').SupportInquiryRow} SupportInquiryRow */
 
 const FAQ_ITEMS = [
   {
@@ -34,9 +29,6 @@ const FAQ_ITEMS = [
   },
 ]
 
-const INQUIRY_TYPES = ['문의', '기능 건의', '오류 신고']
-const FETCH_FAIL_TOAST = '문의 목록을 불러오지 못했습니다.'
-
 /**
  * @param {Object} props
  * @param {() => void} [props.onGoAuth]
@@ -46,118 +38,6 @@ function GuestLoginPrompt({ onGoAuth }) {
     <div className="support-panel-empty">
       <p>로그인 후 이용해 주세요.</p>
       <button type="button" className="personal-account-btn" onClick={onGoAuth}>로그인하러 가기</button>
-    </div>
-  )
-}
-
-/**
- * @param {Object} props
- * @param {string} props.userId
- */
-function InquiryForm({ userId }) {
-  const showToast = useToast()
-  const [type, setType] = useState(INQUIRY_TYPES[0])
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  /** @param {import('react').FormEvent<HTMLFormElement>} event */
-  async function onSubmit(event) {
-    event.preventDefault()
-    if (busy) return
-    setBusy(true)
-    const result = await requestSupportInquirySave({
-      userId,
-      type,
-      title: title.trim(),
-      content: content.trim(),
-    })
-    setBusy(false)
-    showToast?.(result.toast)
-    if (!result.ok) return
-    setType(INQUIRY_TYPES[0])
-    setTitle('')
-    setContent('')
-  }
-
-  return (
-    <form className="inquiry-form" onSubmit={onSubmit}>
-      <label>
-        문의 유형
-        <AppDropdown
-          label="문의 유형"
-          value={type}
-          options={INQUIRY_TYPES.map((option) => ({ value: option, label: option }))}
-          onChange={setType}
-          className="app-dropdown-boxed"
-        />
-      </label>
-      <label>
-        제목
-        <ClearableInput className="input-box" maxLength={50} placeholder="제목을 입력해 주세요" value={title} onChange={(e) => setTitle(e.target.value)} required />
-      </label>
-      <label>
-        내용
-        <textarea className="input-box" rows={6} maxLength={1000} placeholder="문의 내용을 자세히 적어주세요" value={content} onChange={(e) => setContent(e.target.value)} required />
-      </label>
-      <button className="personal-account-btn" type="submit" disabled={busy}>문의 접수하기</button>
-    </form>
-  )
-}
-
-/**
- * @param {Object} props
- * @param {string} props.userId
- */
-function MyInquiriesList({ userId }) {
-  const showToast = useToast()
-  const [items, setItems] = useState(/** @type {Array<SupportInquiryRow>} */ ([]))
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    setLoading(true)
-    fetchMyInquiries(userId)
-      .then((rows) => { if (!cancelled) setItems(rows) })
-      .catch(() => {
-        if (cancelled) return
-        setItems([])
-        showToast?.(FETCH_FAIL_TOAST)
-      })
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
-  }, [userId, showToast])
-
-  if (loading) return <SkeletonLines lines={3} label="문의 목록 불러오는 중" />
-  if (!items.length) return <div className="support-panel-empty">아직 접수한 문의나 건의가 없습니다.</div>
-
-  return (
-    <div className="my-inquiries-list">
-      {items.map((inquiry) => {
-        const answered = !!inquiry.answer
-        const dateText = inquiry.created_at
-          ? new Date(inquiry.created_at).toLocaleDateString('ko-KR')
-          : ''
-        return (
-          <div key={inquiry.id} className="my-inquiry-card">
-            <div className="my-inquiry-head">
-              <span className="my-inquiry-type">{inquiry.type || '문의'}</span>
-              <span className={`my-inquiry-status ${answered ? 'answered' : 'pending'}`}>
-                {answered ? '답변 완료' : '답변 대기'}
-              </span>
-            </div>
-            <strong className="my-inquiry-title">{inquiry.title || ''}</strong>
-            <p className="my-inquiry-content">{inquiry.content || ''}</p>
-            {dateText ? <div className="my-inquiry-date">{dateText}</div> : null}
-            {answered ? (
-              <div className="my-inquiry-answer">
-                <span className="my-inquiry-answer-label">운영자 답변</span>
-                <p>{inquiry.answer}</p>
-              </div>
-            ) : null}
-          </div>
-        )
-      })}
     </div>
   )
 }

@@ -8,13 +8,14 @@ import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { stubSupabaseMethodImpls } from '../../../testSupport/stubSupabaseClient.js'
+import { stubSupabaseCallCounts, stubSupabaseMethodImpls } from '../../../testSupport/stubSupabaseClient.js'
 
 const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globalThis)
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true
 
 const React = await import('react')
 const { withSession } = await import('../../../testSupport/withSession.js')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: CustomerCenterPage } = await import('./CustomerCenterPage.jsx')
@@ -183,6 +184,71 @@ describe('CustomerCenterPage — 나의 문의·건의 확인', () => {
       assert.ok(container.textContent?.includes('확인했습니다.'))
       assert.ok(container.querySelector('.my-inquiry-status.pending'))
       assert.ok(container.querySelector('.my-inquiry-status.answered'))
+    } finally {
+      await act(async () => { root.unmount() })
+      container.remove()
+      endCloudSession()
+    }
+  })
+})
+
+// 로드맵 99-C — 부품을 각자 파일로 옮기기 전 동작(문의 접수·목록 실패)을 적어 둔다.
+describe('CustomerCenterPage — 문의 접수·목록 실패 알림', () => {
+  /** @param {string} userId @param {string} tabLabel */
+  async function openWithToasts(userId, tabLabel) {
+    beginSessionEpoch(userId, userId)
+    setHydration({ status: 'ready', userId, ownerKey: userId })
+    /** @type {Array<string>} */
+    const toasts = []
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const root = createRoot(container)
+    await act(async () => {
+      root.render(withToast(withSession(React.createElement(CustomerCenterPage, { onBack: () => {} }), { session: { userId, guestMode: false, name: '테스트' } }), (/** @type {string} */ m) => { toasts.push(m) }))
+    })
+    const tab = /** @type {HTMLButtonElement|undefined} */ ([...container.querySelectorAll('.support-tab')].find((el) => el.textContent?.includes(tabLabel)))
+    assert.ok(tab)
+    await act(async () => { tab.click() })
+    return { container, root, toasts }
+  }
+
+  test('로그인 상태에서 문의를 접수하면 성공 알림이 뜨고 제목·내용 칸이 비워진다', async () => {
+    stubSupabaseMethodImpls.insert = async () => ({ data: null, error: null })
+    const before = stubSupabaseCallCounts.insert
+    const { container, root, toasts } = await openWithToasts('u-submit', '1:1')
+    try {
+      const title = /** @type {HTMLInputElement} */ (container.querySelector('.inquiry-form input'))
+      const content = /** @type {HTMLTextAreaElement} */ (container.querySelector('.inquiry-form textarea'))
+      await act(async () => {
+        Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set?.call(title, '앱 문의')
+        title.dispatchEvent(new window.Event('input', { bubbles: true }))
+        Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set?.call(content, '내용입니다')
+        content.dispatchEvent(new window.Event('input', { bubbles: true }))
+      })
+      assert.equal(title.value, '앱 문의')
+      const form = container.querySelector('.inquiry-form')
+      assert.ok(form)
+      await act(async () => { form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true })) })
+      await act(async () => { await Promise.resolve() })
+      assert.equal(stubSupabaseCallCounts.insert - before, 1)
+      assert.deepEqual(toasts, ['문의가 접수되었습니다.'])
+      assert.equal(title.value, '')
+      assert.equal(content.value, '')
+    } finally {
+      await act(async () => { root.unmount() })
+      container.remove()
+      endCloudSession()
+    }
+  })
+
+  test('내 문의 목록을 못 불러오면 실패 알림과 빈 목록 안내가 보인다', async () => {
+    stubSupabaseMethodImpls.select = async () => ({ data: null, error: { message: '조회 실패 흉내' } })
+    const { container, root, toasts } = await openWithToasts('u-fetch-fail', '나의 문의')
+    try {
+      await act(async () => { await Promise.resolve() })
+      assert.deepEqual(toasts, ['문의 목록을 불러오지 못했습니다.'])
+      assert.ok(container.textContent?.includes('아직 접수한 문의나 건의가 없습니다'))
+      assert.equal(container.querySelector('.my-inquiry-card'), null)
     } finally {
       await act(async () => { root.unmount() })
       container.remove()
