@@ -9,10 +9,8 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
 import { getExpensesForLog } from '../../../domain/expenseScope.js'
 import { saveExpenses } from '../../../data/sync/expensesSave.js'
-import {
-  emptyExpenseDraft, filterMonth, groupExpensesByDate, KINDS, monthTotal,
-  removeExpense, upsertExpense,
-} from '../../../domain/expenses.js'
+import { filterMonth, groupExpensesByDate, KINDS, monthTotal } from '../../../domain/expenses.js'
+import { emptyExpenseDraft, removeExpense, upsertExpense } from '../../../domain/expenseDraft.js'
 import { formatWon } from '../../../domain/money.js'
 import { readOwnerExpenses, useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import { getCloudOwnerKey } from '../../../data/cloud/cloudSession.js'

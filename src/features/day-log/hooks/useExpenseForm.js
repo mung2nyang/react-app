@@ -3,7 +3,7 @@
 // 화면은 useOwnerExpenses로 구독하고, 저장·삭제 직전엔 readOwnerExpenses로 최신값을 다시 읽는다 — 옛 값으로 덮어쓰지 않게.
 import { useState } from 'react'
 import { saveExpenses } from '../../../data/sync/expensesSave.js'
-import { emptyExpenseDraft, upsertExpense } from '../../../domain/expenses.js'
+import { emptyExpenseDraft, upsertExpense } from '../../../domain/expenseDraft.js'
 import { readOwnerExpenses, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import { getCloudOwnerKey } from '../../../data/cloud/cloudSession.js'
 import { saveFailMessage } from '../../../shared/utils/failureMessages.js'
