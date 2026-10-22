@@ -1,0 +1,100 @@
+// @ts-check
+// 로드맵 24-B-1 — 운비서 서버 함수 부르기: 보내는 값, 응답 모양 확인, 실패 문구.
+import assert from 'node:assert/strict'
+import { beforeEach, mock, test } from 'node:test'
+import { FunctionsFetchError, FunctionsHttpError } from '@supabase/supabase-js'
+
+/** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
+/** @type {Array<{ name: string, body: JsonValue }>} */
+const calls = []
+/** @type {() => Promise<{ data: JsonValue, error: Error|null }>} */
+let reply = async () => ({ data: null, error: null })
+
+mock.module('../../../data/cloud/supabaseClient.ts', {
+  namedExports: {
+    supabase: {
+      functions: {
+        /** @param {string} name @param {{ body: JsonValue }} options */
+        invoke: async (name, options) => { calls.push({ name, body: options.body }); return reply() },
+      },
+    },
+  },
+})
+
+const { requestUnbiseoParse, clientNamesForAi, BAD_INPUT, LOGIN_NEEDED, NOT_UNDERSTOOD, TRY_LATER } = await import('./unbiseoParse.ts')
+
+beforeEach(() => { calls.length = 0; reply = async () => ({ data: null, error: null }) })
+
+/** @param {number} status */
+function httpError(status) {
+  return new FunctionsHttpError(new Response('{}', { status }))
+}
+
+test('보내는 값: 앞뒤 공백 정리한 말·오늘·거래처 이름(빈 이름·51자·겹침 빼고), 운행 칸을 그대로 돌려준다', async () => {
+  reply = async () => ({ data: { kind: 'call', call: { date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '' } }, error: null })
+  const result = await requestUnbiseoParse({ text: '  어제 수원 화성 15만 ', today: '2026-10-22', clientNames: ['한진', ' ', '한진', 'ㄱ'.repeat(51), '롯데'] })
+  assert.deepEqual(calls, [{ name: 'unbiseo-parse', body: { text: '어제 수원 화성 15만', today: '2026-10-22', clientNames: ['한진', '롯데'] } }])
+  assert.deepEqual(result, { kind: 'call', call: { date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '' } })
+})
+
+test('거래처 이름은 200개까지만', () => {
+  const names = Array.from({ length: 250 }, (_, i) => `거래처${i}`)
+  assert.equal(clientNamesForAi(names).length, 200)
+})
+
+test('운행 칸이 이상하면 고쳐 담는다: 날짜 모양이 아니면 오늘, 금액이 정수가 아니거나 음수면 없음', async () => {
+  reply = async () => ({ data: { kind: 'call', call: { date: '어제', loadLoc: 3, fare: -5 } }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '평택 용인', today: '2026-10-22', clientNames: [] }), {
+    kind: 'call', call: { date: '2026-10-22', loadLoc: '', unloadLoc: '', fare: null, client: '' },
+  })
+  reply = async () => ({ data: { kind: 'call', call: { fare: 1.5 } }, error: null })
+  const odd = await requestUnbiseoParse({ text: '평택 용인', today: '2026-10-22', clientNames: [] })
+  assert.equal(odd.kind === 'call' ? odd.call.fare : 'x', null)
+})
+
+test('지출·질문·관계없음은 종류만, 모르는 종류·모양이 틀리면 알아듣지 못함', async () => {
+  for (const kind of ['expense', 'question', 'unknown']) {
+    reply = async () => ({ data: { kind }, error: null })
+    assert.deepEqual(await requestUnbiseoParse({ text: '주유 8만원', today: '2026-10-22', clientNames: [] }), { kind })
+  }
+  for (const data of [{ kind: 'weather' }, { kind: 'call' }, null, 'call', []]) {
+    reply = async () => ({ data, error: null })
+    assert.deepEqual(await requestUnbiseoParse({ text: '뭐', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
+  }
+})
+
+test('빈 말·301자는 서버를 부르지 않는다', async () => {
+  assert.deepEqual(await requestUnbiseoParse({ text: '   ', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: BAD_INPUT })
+  assert.deepEqual(await requestUnbiseoParse({ text: '가'.repeat(301), today: '2026-10-22', clientNames: [] }), { kind: 'error', message: BAD_INPUT })
+  assert.equal(calls.length, 0)
+})
+
+test('실패 문구: 401 로그인, 400 다시 말하기, 502 알아듣지 못함, 503·연결 끊김·던짐은 잠시 뒤', async () => {
+  /** @type {Array<[Error, string]>} */
+  const cases = [
+    [httpError(401), LOGIN_NEEDED],
+    [httpError(400), BAD_INPUT],
+    [httpError(502), NOT_UNDERSTOOD],
+    [httpError(503), TRY_LATER],
+    [new FunctionsFetchError({}), TRY_LATER],
+  ]
+  for (const [error, message] of cases) {
+    reply = async () => ({ data: null, error })
+    assert.deepEqual(await requestUnbiseoParse({ text: '평택 용인', today: '2026-10-22', clientNames: [] }), { kind: 'error', message })
+  }
+  reply = async () => { throw new Error('network') }
+  assert.deepEqual(await requestUnbiseoParse({ text: '평택 용인', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: TRY_LATER })
+})
+
+test('결과 문장: 오늘이면 "오늘", 빈 칸은 빼고, 끝 글자 받침에 따라 "으로"/"로"', async () => {
+  const { describeCall, describeResult } = await import('./unbiseoParse.ts')
+  const today = '2026-10-22'
+  assert.equal(describeCall({ date: today, loadLoc: '평택', unloadLoc: '용인', fare: 300000, client: '한진' }, today), '오늘 평택 → 용인, 300,000원, 한진으로 알아들었어요.')
+  assert.equal(describeCall({ date: today, loadLoc: '인천', unloadLoc: '부산', fare: 450000, client: '롯데' }, today), '오늘 인천 → 부산, 450,000원, 롯데로 알아들었어요.')
+  assert.equal(describeCall({ date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '' }, today), '10월 21일 수원 → 화성, 150,000원으로 알아들었어요.')
+  assert.equal(describeCall({ date: today, loadLoc: '평택', unloadLoc: '', fare: null, client: '' }, today), '오늘 평택으로 알아들었어요.')
+  assert.equal(describeCall({ date: today, loadLoc: '', unloadLoc: '', fare: null, client: '' }, today), '오늘 운행으로 알아들었어요.')
+  assert.equal(describeResult({ kind: 'question' }, today), '질문 답하기는 곧 할 수 있게 됩니다.')
+  assert.equal(describeResult({ kind: 'unknown' }, today), '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.')
+  assert.equal(describeResult({ kind: 'error', message: TRY_LATER }, today), TRY_LATER)
+})

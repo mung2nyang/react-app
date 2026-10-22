@@ -1,11 +1,22 @@
-/* AI 비서 입력 줄(HomeAssistantBar 전용) — 오늘 카드와 할 일 사이 얇은 한 줄.
-   .home-card(home.css, 나중에 불러옴)의 display·padding을 이기려고 두 이름을 같이 씀. */
+/* AI 비서 운비서 카드(HomeAssistantBar·HomeAssistantPanel 전용) — 오늘 카드와 할 일 사이 얇은 한 줄, 누르면 아래로 늘어남.
+   .home-card(home.css, 나중에 불러옴)의 padding을 이기려고 두 이름을 같이 씀. */
 .home-card.home-assistant {
+  padding: 6px 16px;
+}
+
+.home-assistant-toggle {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
   min-height: 56px;
-  padding: 6px 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .home-assistant-avatar {
@@ -54,4 +65,97 @@
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.home-assistant-panel {
+  display: grid;
+  gap: 10px;
+  padding: 4px 0 12px;
+}
+
+.home-assistant-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-assistant-mic-btn {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--input-bg);
+  cursor: pointer;
+}
+
+.home-assistant-mic-btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--text-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.home-assistant-mic-btn.listening {
+  border-color: transparent;
+  background: var(--primary-fill);
+}
+
+.home-assistant-mic-btn.listening svg {
+  stroke: #fff;
+}
+
+.home-assistant-form .home-assistant-input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.home-assistant-send {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--primary-fill);
+  color: #fff;
+  font: inherit;
+  font-size: var(--fs-3);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.home-assistant-send:disabled,
+.home-assistant-mic-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.home-assistant-note,
+.home-assistant-said {
+  margin: 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-3);
+}
+
+.home-assistant-answer {
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+.home-assistant-result {
+  margin: 0;
+  color: var(--text-color);
+  font-size: var(--fs-4);
+  font-weight: 700;
+  line-height: 1.5;
 }
