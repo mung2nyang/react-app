@@ -2,10 +2,12 @@
 import { useState } from 'react'
 import { isCloudSession } from '../../../data/cloud/cloudSession.ts'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
-import { useOwnerClients, useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
+import { useOwnerClients, useOwnerDrivers, useOwnerSettings, useOwnerWorkData } from '../../../data/store/ownerDataHooks.ts'
 import { savePracticeSettings } from '../../../data/sync/settingsSave.ts'
 import { resolveLogSettings } from '../../../domain/carSettingsScope.ts'
 import { todayWorkLogSelection } from '../../../domain/calendar.ts'
+import { isOffDay } from '../../../domain/day-record.ts'
+import { assignmentPeriodNotice } from '../../../domain/drivers.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { describeResult, requestUnbiseoParse } from '../api/unbiseoParse.ts'
@@ -20,6 +22,8 @@ export default function useUnbiseoAssistant() {
   const settings = useOwnerSettings(ownerKey)
   const showToast = useToast()
   const loggedIn = isCloudSession(session)
+  const workData = useOwnerWorkData(ownerKey)
+  const myLink = useOwnerDrivers(ownerKey).find((driver) => driver.status === 'linked')
   const callDetailOn = !!resolveLogSettings(settings, 'main').callDetail
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
@@ -54,7 +58,12 @@ export default function useUnbiseoAssistant() {
     setEnabling(false)
   }
 
-  return { loggedIn, text, setText, busy, answer, send, speech, callDetailOn, enabling, enableCallDetail }
+  // [기록하기] 전에 일지와 같은 기준으로 계약 기간·휴무를 본다.
+  const callDate = answer?.call?.date
+  const periodNotice = callDate && session?.accountType === 'employed_driver' ? assignmentPeriodNotice(callDate, myLink?.startDate, myLink?.endDate) : null
+  const dayOff = !!callDate && isOffDay(workData[callDate])
+
+  return { loggedIn, text, setText, busy, answer, send, speech, callDetailOn, enabling, enableCallDetail, periodNotice, dayOff }
 }
 
 export type UnbiseoAssistant = ReturnType<typeof useUnbiseoAssistant>

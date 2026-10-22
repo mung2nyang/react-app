@@ -31,11 +31,11 @@ window.confirm = () => { confirms += 1; return true }
 const DATE = '2026-10-21'
 const CALL = { loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '한진' }
 
-/** @param {string} ownerKey @param {object|null} usr 주소 상태 @param {{ callDetail?: boolean }} [options] */
-async function render(ownerKey, usr, { callDetail = true } = {}) {
+/** @param {string} ownerKey @param {object|null} usr 주소 상태 @param {{ callDetail?: boolean, workData?: object }} [options] */
+async function render(ownerKey, usr, { callDetail = true, workData = {} } = {}) {
   commitSettings(ownerKey, normalizeSettings({ callDetail }))
   commitClients(ownerKey, [{ id: 'c1', companyName: '한진' }])
-  commitWorkData(ownerKey, {})
+  commitWorkData(ownerKey, workData)
   window.history.replaceState(usr ? { usr, key: 'k1', idx: 0 } : null, '', `/app/day/${DATE}`)
   const toasts = /** @type {Array<string>} */ ([])
   const container = document.createElement('div')
@@ -146,7 +146,7 @@ test('"콜 상세"가 꺼진 계정이면 입력 창을 열지 않는다', async
 test('이상한 값은 그 칸만 빈 칸 — 음수·소수 금액, 100자 넘는 글자, 글자가 아닌 값', async () => {
   assert.deepEqual(
     readAssistantCall({ assistantCall: { loadLoc: '가'.repeat(101), unloadLoc: ' 화성 ', fare: -5, client: 3 } }),
-    { loadLoc: '', unloadLoc: '화성', fare: null, client: '' },
+    { loadLoc: '', unloadLoc: '화성', fare: null, client: '', cancelOff: false },
   )
   assert.equal(readAssistantCall({ assistantCall: { ...CALL, fare: 1.5 } })?.fare, null)
   assert.equal(readAssistantCall({ from: 'home' }), null)
@@ -158,4 +158,54 @@ test('이상한 값은 그 칸만 빈 칸 — 음수·소수 금액, 100자 넘�
     assert.equal(view.valueOf('callUnloadLoc'), '화성')
     assert.equal(view.valueOf('callFare'), '')
   } finally { await view.cleanup() }
+})
+
+// 로드맵 24-B-3-A — "휴무 취소하고 기록"이면 휴무를 끄고(휴무 단추와 같은 저장) 채운 입력 창을 연다.
+const OFF_DAY = { [DATE]: { isOff: true } }
+
+test('cancelOff: 휴무가 꺼지고 채운 입력 창이 눌리는 상태로 열린다, 닫아도 휴무는 꺼진 채', async () => {
+  const view = await render('assist-cancel-off', { from: 'home', assistantCall: { ...CALL, cancelOff: true } }, { workData: OFF_DAY })
+  try {
+    assert.equal(view.container.querySelector('.modal-work-details.is-off'), null, '휴무 꺼짐')
+    assert.equal(view.valueOf('callLoadLoc'), '수원')
+    assert.equal(confirms, 0)
+    await view.click(view.button('취소'))
+  } finally { await view.cleanup() }
+  assert.equal(!!readOwnerLogWorkData('assist-cancel-off', 'main')[DATE]?.isOff, false, '저장된 기록도 휴무 아님')
+})
+
+test('cancelOff 없이 들어오면 휴무는 그대로(입력 창은 흐린 칸 안)', async () => {
+  const view = await render('assist-keep-off', { from: 'home', assistantCall: CALL }, { workData: OFF_DAY })
+  try {
+    assert.ok(view.container.querySelector('.modal-work-details.is-off'))
+  } finally { await view.cleanup() }
+  assert.equal(readOwnerLogWorkData('assist-keep-off', 'main')[DATE]?.isOff, true)
+})
+
+test('cancelOff는 참일 때만 참 — 글자 "true"·1은 거짓', () => {
+  assert.equal(readAssistantCall({ assistantCall: { ...CALL, cancelOff: true } })?.cancelOff, true)
+  assert.equal(readAssistantCall({ assistantCall: { ...CALL, cancelOff: 'true' } })?.cancelOff, false)
+  assert.equal(readAssistantCall({ assistantCall: { ...CALL, cancelOff: 1 } })?.cancelOff, false)
+})
+
+test('휴무를 끈 뒤 주소 상태가 지워져 다시 그려도 휴무를 또 건드리지 않는다', async () => {
+  const first = await render('assist-off-again', { from: 'home', assistantCall: { ...CALL, cancelOff: true } }, { workData: OFF_DAY })
+  const cleared = window.history.state
+  await first.click(first.button('취소'))
+  await first.cleanup()
+  commitWorkData('assist-off-again', OFF_DAY)
+  window.history.replaceState(cleared, '', `/app/day/${DATE}`)
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  const routes = React.createElement(Routes, null, React.createElement(Route, { path: '/app/day/:date', element: React.createElement(MainPageRoute) }))
+  try {
+    await act(async () => { root.render(React.createElement(BrowserRouter, null, withSession(routes, { ownerKey: 'assist-off-again' }))) })
+    assert.ok(container.querySelector('.modal-work-details.is-off'), '다시 휴무로 한 날은 그대로')
+    assert.equal(container.querySelector('#callLoadLoc'), null)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+  assert.equal(readOwnerLogWorkData('assist-off-again', 'main')[DATE]?.isOff, true)
 })

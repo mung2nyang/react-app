@@ -4,10 +4,11 @@ import { TEXT_MAX } from '../api/unbiseoParse.ts'
 import type { UnbiseoCall } from '../api/unbiseoParse.ts'
 import type { UnbiseoAssistant } from '../hooks/useUnbiseoAssistant.ts'
 
-type Props = { assistant: UnbiseoAssistant, onOpenCall?: (call: UnbiseoCall) => void }
+type OpenCallOptions = { cancelOff: boolean }
+type Props = { assistant: UnbiseoAssistant, onOpenCall?: (call: UnbiseoCall, options: OpenCallOptions) => void }
 
 export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
-  const { loggedIn, text, setText, busy, answer, send, speech, callDetailOn, enabling, enableCallDetail } = assistant
+  const { loggedIn, text, setText, busy, answer, send, speech, callDetailOn, enabling, enableCallDetail, periodNotice, dayOff } = assistant
   const call = answer?.call
 
   if (!loggedIn) {
@@ -17,6 +18,35 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     void send(text)
+  }
+
+  // 버튼 자리는 하나만 — 계약 기간 밖 → 콜 상세 꺼짐 → 휴무 → [기록하기] 순서.
+  function actionFor(call: UnbiseoCall) {
+    if (periodNotice) {
+      return (
+        <div className="home-assistant-enable" role="status">
+          <p className="home-assistant-note">{periodNotice.title}</p>
+          <p className="home-assistant-note">{periodNotice.body}</p>
+        </div>
+      )
+    }
+    if (!callDetailOn) {
+      return (
+        <div className="home-assistant-enable">
+          <p className="home-assistant-note">콜 상세가 꺼져 있어요. 켤까요?</p>
+          <button type="button" className="home-assistant-action" disabled={enabling} onClick={() => void enableCallDetail()}>켜기</button>
+        </div>
+      )
+    }
+    if (dayOff) {
+      return (
+        <div className="home-assistant-enable">
+          <p className="home-assistant-note">휴무를 취소하고 운행을 기록할까요?</p>
+          <button type="button" className="home-assistant-action" onClick={() => onOpenCall?.(call, { cancelOff: true })}>휴무 취소하고 기록</button>
+        </div>
+      )
+    }
+    return <button type="button" className="home-assistant-action" onClick={() => onOpenCall?.(call, { cancelOff: false })}>기록하기</button>
   }
 
   return (
@@ -39,15 +69,7 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
         <div className="home-assistant-answer" aria-live="polite">
           <p className="home-assistant-said">내가 한 말: {answer.said}</p>
           <p className="home-assistant-result">{answer.sentence}</p>
-          {call && callDetailOn && (
-            <button type="button" className="home-assistant-action" onClick={() => onOpenCall?.(call)}>기록하기</button>
-          )}
-          {call && !callDetailOn && (
-            <div className="home-assistant-enable">
-              <p className="home-assistant-note">콜 상세가 꺼져 있어요. 켤까요?</p>
-              <button type="button" className="home-assistant-action" disabled={enabling} onClick={() => void enableCallDetail()}>켜기</button>
-            </div>
-          )}
+          {call && actionFor(call)}
         </div>
       )}
     </div>

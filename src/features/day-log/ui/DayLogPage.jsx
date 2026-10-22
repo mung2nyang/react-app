@@ -4,6 +4,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { expensesForVehicleDay } from '../../../domain/calendarBadges.ts'
 import { getFixedRouteClient } from '../../../domain/clients.ts'
+import { assignmentPeriodNotice } from '../../../domain/drivers.ts'
 import { locationShortcutList } from '../../../domain/locationShortcuts.ts'
 import { confirmLeaveIfUnsafe } from '../../../data/sync/durableWriteGuard.ts'
 import { useOwnerDrivers, useOwnerWorkData, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.ts'
@@ -22,7 +23,7 @@ import CallDetailList from './CallDetailList.jsx'
 import CallDetailForm from './CallDetailForm.jsx'
 import DayLogExpenses from './DayLogExpenses.jsx'
 import DailyInspectionNotice from './DailyInspectionNotice.jsx'
-import AssignmentPeriodPage, { assignmentPeriodNotice } from './AssignmentPeriodPage.jsx'
+import AssignmentPeriodPage from './AssignmentPeriodPage.jsx'
 import MessageTemplateSheet from './MessageTemplateSheet.jsx'
 import InlineSheet from './InlineSheet.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
@@ -48,7 +49,7 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  * @param {string} [props.logId]
  * @param {string} [props.clientScopeKey] 거래처 스코프(연동 기사는 배정 차량번호). 없으면 logId.
  * @param {boolean} [props.isEmployedDriver] 기사연동 계정 세션이면 콜 상세의 산재보험료 칸을 숨긴다(CallDetailForm 참고).
- * @param {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string }|null} [props.assistantCall] 운비서가 넘긴 운행 — 처음 그릴 때 받아 두고, 주소 상태가 지워져 없어지면 입력 창을 연다
+ * @param {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string, cancelOff: boolean }|null} [props.assistantCall] 운비서가 넘긴 운행 — 처음 그릴 때 받아 두고, 주소 상태가 지워져 없어지면 입력 창을 연다
  */
 export default function DayLogPage({ month, day, dateKey, clients, settings, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false, assistantCall = null }) {
   const { ownerKey } = useSession()
@@ -63,8 +64,11 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onC
   if (prefill && prefillShown && (!callFormOpen || editingCallId)) setPrefill(null)
   // 주소 상태가 지워진 뒤(assistantCall 없음)에 연다 — 같이 바뀌면 뒤로가기 붙잡기가 나가기로 안다.
   useEffect(() => {
-    if (prefill && !prefillShown && !assistantCall) dispatch({ type: 'openCallForm', id: null })
-  }, [prefill, prefillShown, assistantCall, dispatch])
+    if (!prefill || prefillShown || assistantCall) return
+    // 운비서에서 "휴무 취소하고 기록"을 눌렀으면 휴무를 끄고 연다(휴무 단추와 같은 저장).
+    if (prefill.cancelOff && draft.isOff) dispatch({ type: 'patchDraft', patch: { isOff: false, fixedCount: draft.fixedCount } })
+    dispatch({ type: 'openCallForm', id: null })
+  }, [prefill, prefillShown, assistantCall, draft.isOff, draft.fixedCount, dispatch])
   const mainWorkData = useOwnerWorkData(ownerKey)
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const workData = logId === 'main' ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)

@@ -18,7 +18,6 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { commitDrivers } = await import('../../../data/store/commitHelpers.ts')
-const { assignmentPeriodNotice } = await import('./AssignmentPeriodPage.jsx')
 const { default: DayLogPage } = await import('./DayLogPage.jsx')
 const { default: EmployerLinkCard } = await import('../../drivers/ui/EmployerLinkCard.jsx')
 
@@ -45,14 +44,6 @@ function dayLog(dateKey, isEmployedDriver) {
     settings: normalizeSettings({ fixedOn: true }), isEmployedDriver,
   }), { ownerKey: OWNER })
 }
-
-test('문구: 시작일 전·종료일 뒤만 안내, 기간 안·기간 없음은 null, 해가 다르면 해까지', () => {
-  assert.deepEqual(assignmentPeriodNotice('2026-10-01', '2026-10-05', ''), { title: '계약기간 전 날짜입니다.', body: '10월 5일부터 기록할 수 있습니다.' })
-  assert.deepEqual(assignmentPeriodNotice('2027-01-02', '2026-10-05', '2026-12-31'), { title: '계약기간이 끝난 날짜입니다.', body: '2026년 12월 31일까지 기록할 수 있습니다.' })
-  assert.equal(assignmentPeriodNotice('2026-10-05', '2026-10-05', '2026-12-31'), null, '시작일 당일')
-  assert.equal(assignmentPeriodNotice('2026-12-31', '2026-10-05', '2026-12-31'), null, '종료일 당일')
-  assert.equal(assignmentPeriodNotice('2020-01-01', '', ''), null, '기간 없음')
-})
 
 test('연동 기사 + 시작일 전 날짜: 입력칸 대신 안내', async () => {
   const view = await render(dayLog('2026-10-01', true))

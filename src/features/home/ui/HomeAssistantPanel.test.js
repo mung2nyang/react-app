@@ -16,7 +16,7 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { withSession } = await import('../../../testSupport/withSession.js')
 const { supabase } = await import('../../../data/cloud/supabaseClient.ts')
-const { commitClients, commitSettings } = await import('../../../data/store/commitHelpers.ts')
+const { commitClients, commitDrivers, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { readOwnerSettings } = await import('../../../data/store/ownerDataHooks.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
@@ -176,13 +176,13 @@ test('콜 상세 켜짐: 운행 결과 아래 [기록하기] — 누르면 알�
   commitSettings('u-assistant-on', normalizeSettings({ callDetail: true }))
   reply = CALL_REPLY
   const opened = []
-  const view = await mount('u-assistant-on', CLOUD, { props: { onOpenAssistantCall: (call) => opened.push(call) } })
+  const view = await mount('u-assistant-on', CLOUD, { props: { onOpenAssistantCall: (call, options) => opened.push({ call, options }) } })
   try {
     await view.type('어제 수원 화성 15만 한진')
     await view.send()
     assert.equal(view.container.querySelector('.home-assistant-enable'), null)
     await act(async () => { actionButton(view.container, '기록하기').click() })
-    assert.deepEqual(opened, [{ date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '한진' }])
+    assert.deepEqual(opened, [{ call: { date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '한진' }, options: { cancelOff: false } }])
   } finally { await view.cleanup() }
 })
 
@@ -214,5 +214,59 @@ test('지출·실패 결과에는 [기록하기]·[켜기]가 없다', async () 
     reply = async () => { throw new Error('network') }
     await view.send()
     assert.equal(view.container.querySelector('.home-assistant-action'), null)
+  } finally { await view.cleanup() }
+})
+
+// 로드맵 24-B-3-A — [기록하기] 전에 일지와 같은 기준으로 계약 기간·휴무를 본다.
+const DRIVER = { userId: 'u-assistant-driver', name: '김기사', accountType: 'employed_driver' }
+const callOn = (date) => async () => ({ data: { kind: 'call', call: { date, loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '' } }, error: null })
+
+async function askAs(ownerKey, session, date, opened = []) {
+  commitSettings(ownerKey, normalizeSettings({ callDetail: true }))
+  reply = callOn(date)
+  const view = await mount(ownerKey, session, { props: { onOpenAssistantCall: (call, options) => opened.push({ call, options }) } })
+  await view.type('수원 화성 15만')
+  await view.send()
+  return view
+}
+
+test('연동 기사 + 계약 시작 전·끝난 뒤 날짜: 일지와 같은 안내 두 줄, 버튼 없음', async () => {
+  commitDrivers('u-assistant-driver', [{ id: 'link-1', name: '김기사', phone: '', vehicleNumber: '34나5678', startDate: '2026-10-05', endDate: '2026-10-25', status: 'linked' }])
+  let view = await askAs('u-assistant-driver', DRIVER, '2026-10-01')
+  try {
+    const notes = [...view.container.querySelectorAll('.home-assistant-enable .home-assistant-note')].map((el) => el.textContent)
+    assert.deepEqual(notes, ['계약기간 전 날짜입니다.', '10월 5일부터 기록할 수 있습니다.'])
+    assert.equal(view.container.querySelector('.home-assistant-action'), null)
+  } finally { await view.cleanup() }
+  view = await askAs('u-assistant-driver', DRIVER, '2026-10-26')
+  try {
+    const notes = [...view.container.querySelectorAll('.home-assistant-enable .home-assistant-note')].map((el) => el.textContent)
+    assert.deepEqual(notes, ['계약기간이 끝난 날짜입니다.', '10월 25일까지 기록할 수 있습니다.'])
+    assert.equal(view.container.querySelector('.home-assistant-action'), null)
+  } finally { await view.cleanup() }
+  view = await askAs('u-assistant-driver', DRIVER, '2026-10-10')
+  try {
+    assert.ok(actionButton(view.container, '기록하기'), '기간 안이면 그대로')
+  } finally { await view.cleanup() }
+})
+
+test('차주는 연동 기사 줄이 있어도 기간 안내 없이 [기록하기]', async () => {
+  commitDrivers('u-assistant-owner', [{ id: 'link-1', name: '김기사', phone: '', vehicleNumber: '34나5678', startDate: '2026-10-05', endDate: '', status: 'linked' }])
+  const view = await askAs('u-assistant-owner', { userId: 'u-assistant-owner', name: '보리', accountType: 'owner' }, '2026-10-01')
+  try {
+    assert.ok(actionButton(view.container, '기록하기'))
+  } finally { await view.cleanup() }
+})
+
+test('그날 휴무: "휴무를 취소하고 운행을 기록할까요?" + [휴무 취소하고 기록] → cancelOff를 같이 넘긴다', async () => {
+  commitWorkData('u-assistant-off-day', { '2026-10-21': { isOff: true } })
+  const opened = []
+  const view = await askAs('u-assistant-off-day', { ...CLOUD, userId: 'u-assistant-off-day' }, '2026-10-21', opened)
+  try {
+    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '휴무를 취소하고 운행을 기록할까요?')
+    assert.equal(actionButton(view.container, '기록하기'), undefined)
+    await act(async () => { actionButton(view.container, '휴무 취소하고 기록').click() })
+    assert.deepEqual(opened.map((item) => item.options), [{ cancelOff: true }])
+    assert.equal(opened[0].call.date, '2026-10-21')
   } finally { await view.cleanup() }
 })

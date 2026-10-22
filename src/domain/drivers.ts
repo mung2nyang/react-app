@@ -144,3 +144,17 @@ export function getAssignmentState(link: { assignmentStart?: string, assignmentE
   if (end && end < today) return { key: 'ended', label: '배정 종료' }
   return { key: 'active', label: '배정 중' }
 }
+
+/** 'YYYY-MM-DD' → '10월 1일'(해가 다르면 '2025년 10월 1일') */
+function dayLabel(dateKey: string, baseKey: string): string {
+  const [y, m, d] = dateKey.split('-')
+  const md = `${Number(m)}월 ${Number(d)}일`
+  return y === baseKey.slice(0, 4) ? md : `${y}년 ${md}`
+}
+
+/** 연동 기사 계약기간 밖 날짜 안내(일지 화면·운비서 카드가 같이 씀) — 기간 안이면 null. 서버가 기간 밖 기록을 거절함(DB 0010). */
+export function assignmentPeriodNotice(dateKey: string, start: string | null | undefined, end: string | null | undefined): { title: string, body: string } | null {
+  if (start && dateKey < start) return { title: '계약기간 전 날짜입니다.', body: `${dayLabel(start, dateKey)}부터 기록할 수 있습니다.` }
+  if (end && dateKey > end) return { title: '계약기간이 끝난 날짜입니다.', body: `${dayLabel(end, dateKey)}까지 기록할 수 있습니다.` }
+  return null
+}

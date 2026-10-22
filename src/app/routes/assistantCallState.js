@@ -3,7 +3,7 @@
 
 const TEXT_MAX = 100
 
-/** @typedef {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string }} AssistantCall */
+/** @typedef {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string, cancelOff: boolean }} AssistantCall */
 
 /** @param {object} row @param {string} key */
 function textOf(row, key) {
@@ -26,5 +26,7 @@ export function readAssistantCall(state) {
     unloadLoc: textOf(row, 'unloadLoc'),
     fare: typeof fare === 'number' && Number.isSafeInteger(fare) && fare >= 0 ? fare : null,
     client: textOf(row, 'client'),
+    // 휴무를 끄라는 표시 — 참일 때만 참.
+    cancelOff: Reflect.get(row, 'cancelOff') === true,
   }
 }

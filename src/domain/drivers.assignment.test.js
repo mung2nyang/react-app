@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { checkDriverDraft, getAssignmentState } from './drivers.ts'
+import { assignmentPeriodNotice, checkDriverDraft, getAssignmentState } from './drivers.ts'
 
 describe('getAssignmentState', () => {
   test('시작일이 미래면 할당 예정', () => {
@@ -49,4 +49,13 @@ describe('checkDriverDraft — 로드맵 82-B 어느 칸이 문제인지', () =>
       { field: 'endDate', message: '계약 종료일은 시작일 이후로 선택해 주세요.' },
     )
   })
+})
+
+// 로드맵 26 → 24-B-3-A: 일지 화면에서 옮겨 와 운비서 카드도 같이 씀.
+test('문구: 시작일 전·종료일 뒤만 안내, 기간 안·기간 없음은 null, 해가 다르면 해까지', () => {
+  assert.deepEqual(assignmentPeriodNotice('2026-10-01', '2026-10-05', ''), { title: '계약기간 전 날짜입니다.', body: '10월 5일부터 기록할 수 있습니다.' })
+  assert.deepEqual(assignmentPeriodNotice('2027-01-02', '2026-10-05', '2026-12-31'), { title: '계약기간이 끝난 날짜입니다.', body: '2026년 12월 31일까지 기록할 수 있습니다.' })
+  assert.equal(assignmentPeriodNotice('2026-10-05', '2026-10-05', '2026-12-31'), null, '시작일 당일')
+  assert.equal(assignmentPeriodNotice('2026-12-31', '2026-10-05', '2026-12-31'), null, '종료일 당일')
+  assert.equal(assignmentPeriodNotice('2020-01-01', '', ''), null, '기간 없음')
 })

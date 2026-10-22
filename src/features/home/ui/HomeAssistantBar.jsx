@@ -10,7 +10,7 @@ const AVATAR = assetPath('/images/assistant_unbiseo.png')
 
 /**
  * @param {Object} props
- * @param {(call: import('../api/unbiseoParse.ts').UnbiseoCall) => void} [props.onOpenAssistantCall]
+ * @param {(call: import('../api/unbiseoParse.ts').UnbiseoCall, options: { cancelOff: boolean }) => void} [props.onOpenAssistantCall] cancelOff면 그날 휴무를 끄고 연다
  */
 export default function HomeAssistantBar({ onOpenAssistantCall }) {
   const [open, setOpen] = useState(false)
