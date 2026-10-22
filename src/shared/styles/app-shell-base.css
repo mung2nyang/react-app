@@ -16,8 +16,8 @@ body:not(.account-flow-active) {
   text-align: center;
 }
 
-/* 운비서 줄(unbiseo-dock.css, 64px)이 떠 있는 동안만 그만큼 더 — 화면 끝 내용이 줄에 가리지 않게. */
-.container.main-app-container:has(.unbiseo-dock) { padding-bottom: calc(108px + 64px); }
+/* 운비서 버튼(unbiseo-dock.css, 60px)이 떠 있는 동안만 그만큼 더 — 화면 끝 내용이 버튼에 가리지 않게. */
+.container.main-app-container:has(.unbiseo-dock) { padding-bottom: calc(108px + 60px); }
 
 /* 누름 효과 — 브라우저 기본 사각형 대신 눌리는 느낌(누를 때 0.12초, 뗄 때 0.2초 부드럽게 복귀(튕김 없음)). scale은 transform과 따로라 위치 이동 버튼과 안 겹친다. */
 html { -webkit-tap-highlight-color: transparent; }
