@@ -1,8 +1,6 @@
-// AI 회사(Google Gemini) 부르기만 — 회사를 바꿀 땐 이 파일과 비밀값만 바꾼다(로드맵 24-A).
-import { ApiError, GoogleGenAI, ThinkingLevel } from 'npm:@google/genai@2.27.0'
-
-// 2026-10-22 3.5 Flash-Lite 무료 구간이 계속 시간 넘김이라 3.1 Flash-Lite로(보리 결정, 2.5는 API에 없음).
-const MODEL = 'gemini-3.1-flash-lite'
+// AI 회사(xAI Grok) 부르기만 — 회사를 바꿀 땐 이 파일과 비밀값만 바꾼다(로드맵 24-A2, 2026-10-23 Gemini 무료 구간 503이 잦아 바꿈).
+const API_URL = 'https://api.x.ai/v1/chat/completions'
+const MODEL = 'grok-4.20-0309-non-reasoning'
 const TIMEOUT_MS = 15000
 // 답이 끝없이 길어지는 걸 막는 상한 — 칸 다섯 개면 충분하다.
 const MAX_OUTPUT_TOKENS = 300
@@ -60,43 +58,53 @@ const RESPONSE_SCHEMA = {
   required: ['kind'],
 }
 
-/** AI가 돌려준 JSON 글자. 거절·빈 답·시간 넘김이면 null(알아듣지 못함). */
+type ChatAnswer = {
+  choices?: Array<{ finish_reason?: string | null, message?: { content?: string | null } }>
+  usage?: { completion_tokens?: number }
+}
+
+/** AI가 돌려준 JSON 글자. 길이 초과·빈 답·시간 넘김이면 null(알아듣지 못함). */
 export async function askAi(input: ParseInput): Promise<string | null> {
-  const apiKey = Deno.env.get('GEMINI_API_KEY')
+  const apiKey = Deno.env.get('XAI_API_KEY')
   if (!apiKey) throw new AiUnavailableError('no key')
-  const ai = new GoogleGenAI({ apiKey })
   const prompt = `날짜 표:\n${dateTable(input.today)}\n거래처 목록: ${input.clientNames.join(', ') || '(없음)'}\n기사가 한 말: ${input.text}`
   const startedAt = Date.now()
+  let response: Response
   try {
-    const response = await ai.models.generateContent({
-      model: MODEL,
-      contents: prompt,
-      config: {
-        systemInstruction: INSTRUCTION,
-        responseMimeType: 'application/json',
-        responseJsonSchema: RESPONSE_SCHEMA,
-        thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+    response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [{ role: 'system', content: INSTRUCTION }, { role: 'user', content: prompt }],
+        response_format: { type: 'json_schema', json_schema: { name: 'unbiseo_parse', schema: RESPONSE_SCHEMA, strict: true } },
         temperature: 0,
-        maxOutputTokens: MAX_OUTPUT_TOKENS,
-        abortSignal: AbortSignal.timeout(TIMEOUT_MS),
-      },
+        max_tokens: MAX_OUTPUT_TOKENS,
+      }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     })
-    const finish = String(response.candidates?.[0]?.finishReason ?? '')
-    // 원인 확인용 — 끝난 이유·쓴 양·걸린 시간만, 말한 문장과 답 내용은 남기지 않는다.
-    console.log('[unbiseo-parse] ai', JSON.stringify({
-      finish,
-      out: response.usageMetadata?.candidatesTokenCount ?? null,
-      think: response.usageMetadata?.thoughtsTokenCount ?? null,
-      ms: Date.now() - startedAt,
-    }))
-    if (finish === 'MAX_TOKENS') return null
-    return response.text || null
   } catch (error) {
-    if (error instanceof ApiError) throw new AiUnavailableError(`status ${error.status}`)
     if (error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError')) {
       console.log('[unbiseo-parse] ai', JSON.stringify({ finish: 'TIMEOUT', ms: Date.now() - startedAt }))
       return null
     }
     throw new AiUnavailableError('request failed')
   }
+  if (!response.ok) throw new AiUnavailableError(`status ${response.status}`)
+  let answer: ChatAnswer
+  try {
+    answer = await response.json()
+  } catch {
+    return null
+  }
+  const choice = answer.choices?.[0]
+  const finish = String(choice?.finish_reason ?? '')
+  // 원인 확인용 — 끝난 이유·쓴 양·걸린 시간만, 말한 문장과 답 내용은 남기지 않는다.
+  console.log('[unbiseo-parse] ai', JSON.stringify({
+    finish,
+    out: answer.usage?.completion_tokens ?? null,
+    ms: Date.now() - startedAt,
+  }))
+  if (finish === 'length') return null
+  return choice?.message?.content || null
 }

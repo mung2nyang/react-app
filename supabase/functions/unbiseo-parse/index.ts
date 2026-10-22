@@ -1,7 +1,7 @@
 // 운비서: 말한 문장을 일지 칸(운행·지출·질문)으로 나눈다(로드맵 24-A). 로그인한 사람만, 저장·계산은 안 하고 말한 내용은 로그에 남기지 않는다.
 import { createClient } from 'npm:@supabase/supabase-js@2.112.3'
-import { AiUnavailableError, askAi } from './gemini.ts'
-import type { ParseInput } from './gemini.ts'
+import { AiUnavailableError, askAi } from './grok.ts'
+import type { ParseInput } from './grok.ts'
 
 type Json = string | number | boolean | null | Array<Json> | { [key: string]: Json }
 type Call = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
