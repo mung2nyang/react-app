@@ -82,6 +82,7 @@ export default function MainPageRoute({
         onOpenMenu={onOpenMenu}
         isEmployedDriver={session?.accountType === 'employed_driver'}
         assistantCall={assistantCall}
+        assistantCallKey={location.key}
       />
     )
   }

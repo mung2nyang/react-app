@@ -21,6 +21,7 @@ const { readOwnerSettings } = await import('../../../data/store/ownerDataHooks.t
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
 const { default: HomeAssistantBar } = await import('./HomeAssistantBar.jsx')
+const { UnbiseoProvider } = await import('../hooks/unbiseoContext.ts')
 
 const calls = []
 let reply = async () => ({ data: null, error: null })
@@ -33,7 +34,7 @@ async function mount(ownerKey, session, { open = true, props = {} } = {}) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(withSession(React.createElement(HomeAssistantBar, props), { ownerKey, session })) })
+  await act(async () => { root.render(withSession(React.createElement(UnbiseoProvider, { onOpenCall: props.onOpenAssistantCall || (() => {}) }, React.createElement(HomeAssistantBar)), { ownerKey, session })) })
   if (open) {
     const toggle = container.querySelector('.home-assistant-toggle')
     await act(async () => { toggle.click() })

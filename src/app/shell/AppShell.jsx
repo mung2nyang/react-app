@@ -21,6 +21,9 @@ import { chooseMove, historyIdx, markRewind, popPanelGuardThen } from '../../sha
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
 import { useSession } from '../../data/cloud/sessionContext.ts'
 import { useIsAdmin } from '../../data/cloud/adminRole.ts'
+import { UnbiseoProvider } from '../../features/home/hooks/unbiseoContext.ts'
+import UnbiseoDock from '../../features/home/ui/UnbiseoDock.tsx'
+import { assistantCallNavState } from '../routes/assistantCallState.js'
 
 /** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
 
@@ -150,6 +153,7 @@ export default function AppShell({ onBackToAuth, onGoAuth, onSessionUpdate }) {
   }
 
   return (
+    <UnbiseoProvider onOpenCall={(call, options) => navigate(`/app/day/${call.date}`, { state: assistantCallNavState(call, options) })}>
     <div className="container main-app-container">
       <OfflineBanner />
       <HydrationRetryBanner />
@@ -171,6 +175,7 @@ export default function AppShell({ onBackToAuth, onGoAuth, onSessionUpdate }) {
         </Suspense>
         </PageLoadErrorBoundary>
       </div>
+      {location.pathname !== '/app' && <UnbiseoDock />}
       <BottomNav active={activeNav} onSelect={selectTab} />
       <PullRefreshIndicator />
       <SideMenu
@@ -188,5 +193,6 @@ export default function AppShell({ onBackToAuth, onGoAuth, onSessionUpdate }) {
         }}
       />
     </div>
+    </UnbiseoProvider>
   )
 }

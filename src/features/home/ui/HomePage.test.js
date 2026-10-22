@@ -27,6 +27,7 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
 const { default: HomePage } = await import('./HomePage.jsx')
+const { UnbiseoProvider } = await import('../hooks/unbiseoContext.ts')
 const { default: CalendarPage } = await import('../../calendar/ui/CalendarPage.jsx')
 const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
@@ -46,9 +47,9 @@ async function renderHome(ownerKey, onOpenToday, more = {}) {
     root.render(React.createElement(
       MemoryRouter,
       { initialEntries: ['/app'] },
-      withSession(React.createElement(HomePage, { onOpenToday, onOpenMenu: () => {}, onOpenNotifs: () => {},
+      withSession(React.createElement(UnbiseoProvider, { onOpenCall: () => {} }, React.createElement(HomePage, { onOpenToday, onOpenMenu: () => {}, onOpenNotifs: () => {},
         onOpenReceivables: more.onOpenReceivables || (() => {}), onOpenCalendar: more.onOpenCalendar || (() => {}),
-      }), { ownerKey }),
+      })), { ownerKey }),
     ))
   })
   return {

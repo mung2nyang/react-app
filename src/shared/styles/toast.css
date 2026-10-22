@@ -20,6 +20,9 @@
   overflow-wrap: break-word;
 }
 
+/* 운비서 줄(unbiseo-dock.css, 64px)이 떠 있으면 그 위로. */
+body:has(.unbiseo-dock) .toast-message { bottom: calc(76px + 64px + env(safe-area-inset-bottom)); }
+
 .toast-line { display: block; } /* 문장마다 새 줄 */
 
 .toast-message.is-error {

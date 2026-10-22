@@ -1,5 +1,5 @@
-// 운비서 말하기·보내기 상태 — 줄의 마이크와 늘어난 카드가 같이 쓴다(로드맵 24-B).
-import { useState } from 'react'
+// 운비서 말하기·보내기 상태 — 앱 틀의 unbiseoContext가 하나만 만들어 홈 카드·떠 있는 줄이 같이 쓴다(로드맵 24-B).
+import { useEffect, useRef, useState } from 'react'
 import { isCloudSession } from '../../../data/cloud/cloudSession.ts'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
 import { useOwnerClients, useOwnerDrivers, useOwnerSettings, useOwnerWorkData } from '../../../data/store/ownerDataHooks.ts'
@@ -29,6 +29,15 @@ export default function useUnbiseoAssistant() {
   const [busy, setBusy] = useState(false)
   const [enabling, setEnabling] = useState(false)
   const [answer, setAnswer] = useState<UnbiseoAnswer | null>(null)
+  // 계정이 바뀌면 대화를 비우고, 앞 계정에서 보낸 답은 버린다.
+  const [answerOwner, setAnswerOwner] = useState(ownerKey)
+  if (answerOwner !== ownerKey) {
+    setAnswerOwner(ownerKey)
+    setText('')
+    setAnswer(null)
+  }
+  const currentOwner = useRef(ownerKey)
+  useEffect(() => { currentOwner.current = ownerKey }, [ownerKey])
   const speech = useSpeechInput((heard) => {
     setText(heard)
     void send(heard)
@@ -38,11 +47,13 @@ export default function useUnbiseoAssistant() {
     const trimmed = said.trim()
     if (!loggedIn || busy || !trimmed) return
     const today = todayWorkLogSelection(new Date()).dateKey
+    const owner = ownerKey
     setBusy(true)
     setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null })
     const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || '') })
-    setAnswer({ said: trimmed, sentence: describeResult(result, today), call: result.kind === 'call' ? result.call : null })
     setBusy(false)
+    if (owner !== currentOwner.current) return
+    setAnswer({ said: trimmed, sentence: describeResult(result, today), call: result.kind === 'call' ? result.call : null })
   }
 
   // 앱 설정 화면의 "콜 상세" 켜기와 같은 값을 저장한다.

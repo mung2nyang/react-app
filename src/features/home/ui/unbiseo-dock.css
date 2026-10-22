@@ -1,0 +1,64 @@
+/* 떠 있는 운비서 줄(UnbiseoDock) — 아래 메뉴(bottom-nav.css, 높이 59px·눕힌 화면 45px) 바로 위, 앱 폭 480px 안.
+   줄 높이 64px는 app-shell-base.css·toast.css의 여백과 같이 맞춘다. */
+.unbiseo-dock {
+  position: fixed;
+  bottom: calc(59px + env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 890; /* 아래 메뉴(900) 바로 아래 — 옆 메뉴·창·확인 창이 그 위 */
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
+  padding: 0 12px 4px;
+  transform: translateX(-50%);
+  text-align: left;
+}
+
+.unbiseo-dock-bar,
+.unbiseo-dock-card {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.unbiseo-dock-bar {
+  height: 60px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border-radius: 16px;
+}
+
+.unbiseo-dock-bar .home-assistant-toggle {
+  min-height: 0;
+  height: 100%;
+}
+
+/* 펼친 카드는 잠깐 쓰는 것 — 너무 길면 카드 안에서만 넘긴다. */
+.unbiseo-dock-card {
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  margin-bottom: 6px;
+  padding: 12px 14px 0;
+  border-radius: 16px;
+}
+
+.unbiseo-dock-chevron {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--sub-text-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.2s ease;
+}
+
+.unbiseo-dock.open .unbiseo-dock-chevron {
+  transform: rotate(180deg);
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+  .unbiseo-dock { bottom: calc(45px + env(safe-area-inset-bottom)); }
+}

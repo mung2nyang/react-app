@@ -2,19 +2,15 @@
 // 홈 운비서 줄 — 마이크를 한 번 누르면 카드가 늘어나며 바로 듣고, 나머지를 누르면 글로 쓰는 칸이 열린다(로드맵 24-B). 이름 "운비서"는 임시.
 import { useState } from 'react'
 import { assetPath } from '../../../shared/utils/assetPath.js'
-import useUnbiseoAssistant from '../hooks/useUnbiseoAssistant.ts'
+import { useUnbiseo } from '../hooks/unbiseoContext.ts'
 import HomeAssistantPanel from './HomeAssistantPanel.tsx'
 import './home-assistant.css'
 
 const AVATAR = assetPath('/images/assistant_unbiseo.png')
 
-/**
- * @param {Object} props
- * @param {(call: import('../api/unbiseoParse.ts').UnbiseoCall, options: { cancelOff: boolean }) => void} [props.onOpenAssistantCall] cancelOff면 그날 휴무를 끄고 연다
- */
-export default function HomeAssistantBar({ onOpenAssistantCall }) {
+export default function HomeAssistantBar() {
   const [open, setOpen] = useState(false)
-  const assistant = useUnbiseoAssistant()
+  const { assistant, openCall } = useUnbiseo()
   const { speech } = assistant
 
   function onMic() {
@@ -52,7 +48,7 @@ export default function HomeAssistantBar({ onOpenAssistantCall }) {
           </button>
         )}
       </div>
-      {open && <HomeAssistantPanel assistant={assistant} onOpenCall={onOpenAssistantCall} />}
+      {open && <HomeAssistantPanel assistant={assistant} onOpenCall={openCall} />}
     </section>
   )
 }

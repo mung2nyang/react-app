@@ -23,10 +23,9 @@ import { useSession } from '../../../data/cloud/sessionContext.ts'
  * @param {(dateKey: string) => void} props.onOpenToday
  * @param {() => void} props.onOpenReceivables
  * @param {() => void} props.onOpenCalendar
- * @param {(call: import('../api/unbiseoParse.ts').UnbiseoCall, options: { cancelOff: boolean }) => void} [props.onOpenAssistantCall] cancelOff면 그날 휴무를 끄고 연다
  */
 export default function HomePage({
-  notifCount = 0, onOpenMenu, onOpenNotifs, onOpenToday, onOpenReceivables, onOpenCalendar, onOpenAssistantCall,
+  notifCount = 0, onOpenMenu, onOpenNotifs, onOpenToday, onOpenReceivables, onOpenCalendar,
 }) {
   const { ownerKey, session } = useSession()
   const cars = useOwnerCars(ownerKey)
@@ -56,7 +55,7 @@ export default function HomePage({
         unitPrice={unitPrice}
         onOpenToday={onOpenToday}
       />
-      <HomeAssistantBar onOpenAssistantCall={onOpenAssistantCall} />
+      <HomeAssistantBar />
       <HomeTodoCard
         inspectionMissing={inspectionMissing}
         unpaidCount={unpaidItems.length}

@@ -30,3 +30,12 @@ export function readAssistantCall(state) {
     cancelOff: Reflect.get(row, 'cancelOff') === true,
   }
 }
+
+/**
+ * 운비서 [기록하기] → 일지로 갈 때 주소 상태. 일지 닫기는 온 곳으로 뒤로가기(from: 'home').
+ * @param {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string }} call
+ * @param {{ cancelOff: boolean }} options
+ */
+export function assistantCallNavState(call, options) {
+  return { from: 'home', assistantCall: { loadLoc: call.loadLoc, unloadLoc: call.unloadLoc, fare: call.fare, client: call.client, cancelOff: options.cancelOff } }
+}
