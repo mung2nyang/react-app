@@ -16,7 +16,9 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { withSession } = await import('../../../testSupport/withSession.js')
 const { supabase } = await import('../../../data/cloud/supabaseClient.ts')
-const { commitClients } = await import('../../../data/store/commitHelpers.ts')
+const { commitClients, commitSettings } = await import('../../../data/store/commitHelpers.ts')
+const { readOwnerSettings } = await import('../../../data/store/ownerDataHooks.ts')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
 const { default: HomeAssistantBar } = await import('./HomeAssistantBar.jsx')
 
@@ -27,11 +29,11 @@ beforeEach(() => { calls.length = 0; reply = async () => ({ data: null, error: n
 
 const CLOUD = { userId: 'u-assistant', name: '보리', accountType: 'owner' }
 
-async function mount(ownerKey, session, { open = true } = {}) {
+async function mount(ownerKey, session, { open = true, props = {} } = {}) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(withSession(React.createElement(HomeAssistantBar), { ownerKey, session })) })
+  await act(async () => { root.render(withSession(React.createElement(HomeAssistantBar, props), { ownerKey, session })) })
   if (open) {
     const toggle = container.querySelector('.home-assistant-toggle')
     await act(async () => { toggle.click() })
@@ -164,4 +166,53 @@ test('비회원이 줄 마이크를 누르면 카드만 열려 로그인 안내,
     await view.cleanup()
     delete window.webkitSpeechRecognition
   }
+})
+
+// 로드맵 24-B-2 — 운행 결과 아래 [기록하기], "콜 상세"가 꺼져 있으면 [켜기] 먼저.
+const CALL_REPLY = async () => ({ data: { kind: 'call', call: { date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '한진' } }, error: null })
+const actionButton = (container, label) => [...container.querySelectorAll('.home-assistant-action')].find((el) => el.textContent === label)
+
+test('콜 상세 켜짐: 운행 결과 아래 [기록하기] — 누르면 알아들은 운행을 그대로 넘긴다', async () => {
+  commitSettings('u-assistant-on', normalizeSettings({ callDetail: true }))
+  reply = CALL_REPLY
+  const opened = []
+  const view = await mount('u-assistant-on', CLOUD, { props: { onOpenAssistantCall: (call) => opened.push(call) } })
+  try {
+    await view.type('어제 수원 화성 15만 한진')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-enable'), null)
+    await act(async () => { actionButton(view.container, '기록하기').click() })
+    assert.deepEqual(opened, [{ date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '한진' }])
+  } finally { await view.cleanup() }
+})
+
+test('콜 상세 꺼짐: "켤까요?" + [켜기] → 앱 설정의 콜 상세가 켜지고 그 자리에 [기록하기]', async () => {
+  commitSettings('u-assistant-off', normalizeSettings({ callDetail: false }))
+  reply = CALL_REPLY
+  const view = await mount('u-assistant-off', CLOUD, { props: { onOpenAssistantCall: () => {} } })
+  try {
+    await view.type('어제 수원 화성 15만')
+    await view.send()
+    assert.equal(actionButton(view.container, '기록하기'), undefined)
+    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '콜 상세가 꺼져 있어요. 켤까요?')
+    await act(async () => { actionButton(view.container, '켜기').click() })
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
+    assert.equal(readOwnerSettings('u-assistant-off').callDetail, true)
+    assert.ok(actionButton(view.container, '기록하기'))
+    assert.equal(view.container.querySelector('.home-assistant-enable'), null)
+  } finally { await view.cleanup() }
+})
+
+test('지출·실패 결과에는 [기록하기]·[켜기]가 없다', async () => {
+  commitSettings('u-assistant-on', normalizeSettings({ callDetail: true }))
+  reply = async () => ({ data: { kind: 'expense' }, error: null })
+  const view = await mount('u-assistant-on', CLOUD)
+  try {
+    await view.type('주유 8만원')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-action'), null)
+    reply = async () => { throw new Error('network') }
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-action'), null)
+  } finally { await view.cleanup() }
 })

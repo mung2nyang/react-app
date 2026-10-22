@@ -8,7 +8,11 @@ import './home-assistant.css'
 
 const AVATAR = assetPath('/images/assistant_unbiseo.png')
 
-export default function HomeAssistantBar() {
+/**
+ * @param {Object} props
+ * @param {(call: import('../api/unbiseoParse.ts').UnbiseoCall) => void} [props.onOpenAssistantCall]
+ */
+export default function HomeAssistantBar({ onOpenAssistantCall }) {
   const [open, setOpen] = useState(false)
   const assistant = useUnbiseoAssistant()
   const { speech } = assistant
@@ -48,7 +52,7 @@ export default function HomeAssistantBar() {
           </button>
         )}
       </div>
-      {open && <HomeAssistantPanel assistant={assistant} />}
+      {open && <HomeAssistantPanel assistant={assistant} onOpenCall={onOpenAssistantCall} />}
     </section>
   )
 }

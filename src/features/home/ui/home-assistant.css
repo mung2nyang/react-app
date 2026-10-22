@@ -155,3 +155,27 @@
   font-weight: 700;
   line-height: 1.5;
 }
+
+.home-assistant-enable {
+  display: grid;
+  gap: 6px;
+}
+
+.home-assistant-action {
+  justify-self: start;
+  min-height: 44px;
+  padding: 8px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--primary-fill);
+  color: #fff;
+  font: inherit;
+  font-size: var(--fs-3);
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.home-assistant-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

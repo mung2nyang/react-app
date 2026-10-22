@@ -27,6 +27,7 @@ const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전�
  * @param {Object} props
  * @param {CallDetailLike|null} props.value 수정 중인 콜상세(없으면 신규)
  * @param {CallDetailLike|null} props.previousItem 직전 항목(신규일 때만 "동일하게 채우기"에 쓴다)
+ * @param {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string }|null} [props.prefill] 새 입력의 처음 값(운비서) — 수정 아님
  * @param {string} props.dateKey
  * @param {Array<ClientLike>} props.clients
  * @param {Settings} props.settings
@@ -40,11 +41,12 @@ const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전�
  * @param {boolean} [props.isEmployedDriver] 기사연동 계정(고용된 기사 본인) 세션이면 산재보험료 칸을 숨긴다 — 자기 명의로 플랫폼 일을 받는 게 아니라서 의미가 없다.
  */
 export default function CallDetailForm({
-  value, previousItem, dateKey, clients, settings, logId, clientScopeKey, onSave, onClose,
+  value, previousItem, prefill = null, dateKey, clients, settings, logId, clientScopeKey, onSave, onClose,
   locationShortcuts = [], pinnedLocations = [], onTogglePinnedLocation, isEmployedDriver = false,
 }) {
   const { ownerKey } = useSession()
-  const [draft, setDraft] = useState(() => (value ? draftFromDetail(value, dateKey, clients) : { ...emptyDraft, paymentDueDate: dueDateForClient(dateKey, null) }))
+  const start = value || (prefill && { ...prefill, id: '', fare: prefill.fare ?? '' })
+  const [draft, setDraft] = useState(() => (start ? draftFromDetail(start, dateKey, clients) : { ...emptyDraft, paymentDueDate: dueDateForClient(dateKey, null) }))
   const [activeLocationTarget, setActiveLocationTarget] = useState(/** @type {'load'|'unload'} */ ('load'))
 
   const scopeKey = clientScopeKey || logId

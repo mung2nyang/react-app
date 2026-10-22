@@ -2,19 +2,28 @@
 import { useState } from 'react'
 import { isCloudSession } from '../../../data/cloud/cloudSession.ts'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
-import { useOwnerClients } from '../../../data/store/ownerDataHooks.ts'
+import { useOwnerClients, useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
+import { savePracticeSettings } from '../../../data/sync/settingsSave.ts'
+import { resolveLogSettings } from '../../../domain/carSettingsScope.ts'
 import { todayWorkLogSelection } from '../../../domain/calendar.ts'
+import { useToast } from '../../../shared/hooks/useToast.js'
+import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { describeResult, requestUnbiseoParse } from '../api/unbiseoParse.ts'
+import type { UnbiseoCall } from '../api/unbiseoParse.ts'
 import useSpeechInput from './useSpeechInput.ts'
 
-export type UnbiseoAnswer = { said: string, sentence: string }
+export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null }
 
 export default function useUnbiseoAssistant() {
   const { ownerKey, session } = useSession()
   const clients = useOwnerClients(ownerKey)
+  const settings = useOwnerSettings(ownerKey)
+  const showToast = useToast()
   const loggedIn = isCloudSession(session)
+  const callDetailOn = !!resolveLogSettings(settings, 'main').callDetail
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
+  const [enabling, setEnabling] = useState(false)
   const [answer, setAnswer] = useState<UnbiseoAnswer | null>(null)
   const speech = useSpeechInput((heard) => {
     setText(heard)
@@ -26,13 +35,26 @@ export default function useUnbiseoAssistant() {
     if (!loggedIn || busy || !trimmed) return
     const today = todayWorkLogSelection(new Date()).dateKey
     setBusy(true)
-    setAnswer({ said: trimmed, sentence: '알아듣는 중…' })
+    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null })
     const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || '') })
-    setAnswer({ said: trimmed, sentence: describeResult(result, today) })
+    setAnswer({ said: trimmed, sentence: describeResult(result, today), call: result.kind === 'call' ? result.call : null })
     setBusy(false)
   }
 
-  return { loggedIn, text, setText, busy, answer, send, speech }
+  // 앱 설정 화면의 "콜 상세" 켜기와 같은 값을 저장한다.
+  async function enableCallDetail() {
+    if (enabling) return
+    setEnabling(true)
+    try {
+      await savePracticeSettings(ownerKey, { callDetail: true })
+    } catch (error) {
+      console.error('설정 저장 실패:', error)
+      showToast(SERVER_SAVE_FAIL)
+    }
+    setEnabling(false)
+  }
+
+  return { loggedIn, text, setText, busy, answer, send, speech, callDetailOn, enabling, enableCallDetail }
 }
 
 export type UnbiseoAssistant = ReturnType<typeof useUnbiseoAssistant>

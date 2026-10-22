@@ -189,3 +189,15 @@ describe('입력이 잘못된 칸 표시(로드맵 82-C)', () => {
     } finally { await view.cleanup() }
   })
 })
+
+test('운비서 처음 값(prefill)은 새 입력으로 채운다 — 제목에 "수정"이 붙지 않는다(로드맵 24-B-2)', async () => {
+  const view = await mount({ prefill: { loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '한진' } })
+  try {
+    const value = (/** @type {string} */ id) => /** @type {HTMLInputElement|null} */ (view.container.querySelector(`#${id}`))?.value
+    assert.equal(view.container.querySelector('.call-detail-modal-title')?.textContent, '27일 일지 세부 입력')
+    assert.equal(value('callLoadLoc'), '수원')
+    assert.equal(value('callUnloadLoc'), '화성')
+    assert.equal(value('callFare'), '150,000')
+    assert.equal(value('callClient'), '한진')
+  } finally { await view.cleanup() }
+})

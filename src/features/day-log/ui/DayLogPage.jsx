@@ -1,7 +1,7 @@
 // @ts-check
 // 운행일지 화면 조합 — 임시 편집·저장은 useDayDraft, 콜 상세·수금·고정 노선 처리는 useCallDetailActions,
 // 비용(정비/주유/기타)은 useExpenseForm(일지 기록이 아닌 비용 저장소에 바로 저장).
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { expensesForVehicleDay } from '../../../domain/calendarBadges.ts'
 import { getFixedRouteClient } from '../../../domain/clients.ts'
 import { locationShortcutList } from '../../../domain/locationShortcuts.ts'
@@ -48,13 +48,23 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  * @param {string} [props.logId]
  * @param {string} [props.clientScopeKey] 거래처 스코프(연동 기사는 배정 차량번호). 없으면 logId.
  * @param {boolean} [props.isEmployedDriver] 기사연동 계정 세션이면 콜 상세의 산재보험료 칸을 숨긴다(CallDetailForm 참고).
+ * @param {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string }|null} [props.assistantCall] 운비서가 넘긴 운행 — 처음 그릴 때 받아 두고, 주소 상태가 지워져 없어지면 입력 창을 연다
  */
-export default function DayLogPage({ month, day, dateKey, clients, settings, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false }) {
+export default function DayLogPage({ month, day, dateKey, clients, settings, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false, assistantCall = null }) {
   const { ownerKey } = useSession()
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, logId)
   const { patchDraft, runRoute, saveCall, deleteCall, togglePayment, togglePinnedLocation } = useCallDetailActions(draft, dispatch, { dateKey, clients, settings, editingCallId })
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
+  // 운비서가 채운 값으로 새 입력 창을 한 번 연다. 닫거나 저장하면 버린다.
+  const [prefill, setPrefill] = useState(() => (assistantCall && settings.callDetail ? assistantCall : null))
+  const [prefillShown, setPrefillShown] = useState(false)
+  if (prefill && !prefillShown && callFormOpen && !editingCallId) setPrefillShown(true)
+  if (prefill && prefillShown && (!callFormOpen || editingCallId)) setPrefill(null)
+  // 주소 상태가 지워진 뒤(assistantCall 없음)에 연다 — 같이 바뀌면 뒤로가기 붙잡기가 나가기로 안다.
+  useEffect(() => {
+    if (prefill && !prefillShown && !assistantCall) dispatch({ type: 'openCallForm', id: null })
+  }, [prefill, prefillShown, assistantCall, dispatch])
   const mainWorkData = useOwnerWorkData(ownerKey)
   const workDataByLogId = useOwnerWorkDataByLogId(ownerKey)
   const workData = logId === 'main' ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)
@@ -132,6 +142,7 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onC
                   key={editingCallId ?? 'new'}
                   value={editingCallItem}
                   previousItem={editingCallId ? null : previousCallItem}
+                  prefill={editingCallId ? null : prefill}
                   dateKey={dateKey}
                   clients={clients}
                   settings={settings}

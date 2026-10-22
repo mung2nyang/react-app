@@ -59,7 +59,7 @@ export default function AppShellRoutes({
   }
   return (
     <Routes>
-      <Route index element={<HomePage notifCount={notifCount} onOpenMenu={onOpenMenu} onOpenNotifs={onOpenNotifs} onOpenToday={(/** @type {string} */ dateKey) => navigate(`/app/day/${dateKey}`, { state: { from: 'home' } })} onOpenReceivables={() => goToPage('receivables', undefined, 'home')} onOpenCalendar={() => navigate('/app/calendar')} />} />
+      <Route index element={<HomePage notifCount={notifCount} onOpenMenu={onOpenMenu} onOpenNotifs={onOpenNotifs} onOpenToday={(/** @type {string} */ dateKey) => navigate(`/app/day/${dateKey}`, { state: { from: 'home' } })} onOpenReceivables={() => goToPage('receivables', undefined, 'home')} onOpenCalendar={() => navigate('/app/calendar')} onOpenAssistantCall={(/** @type {import('../../features/home/api/unbiseoParse.ts').UnbiseoCall} */ call) => navigate(`/app/day/${call.date}`, { state: { from: 'home', assistantCall: { loadLoc: call.loadLoc, unloadLoc: call.unloadLoc, fare: call.fare, client: call.client } } })} />} />
       <Route path="calendar" element={mainPage()} />
       <Route path="day/:date" element={mainPage()} />
       <Route path="logs/:logId/manage" element={<LinkedDriverManagementPage onBack={() => navigate(-1)} onOpenMenu={onOpenMenu} />} />

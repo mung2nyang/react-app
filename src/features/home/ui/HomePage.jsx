@@ -23,9 +23,10 @@ import { useSession } from '../../../data/cloud/sessionContext.ts'
  * @param {(dateKey: string) => void} props.onOpenToday
  * @param {() => void} props.onOpenReceivables
  * @param {() => void} props.onOpenCalendar
+ * @param {(call: import('../api/unbiseoParse.ts').UnbiseoCall) => void} [props.onOpenAssistantCall]
  */
 export default function HomePage({
-  notifCount = 0, onOpenMenu, onOpenNotifs, onOpenToday, onOpenReceivables, onOpenCalendar,
+  notifCount = 0, onOpenMenu, onOpenNotifs, onOpenToday, onOpenReceivables, onOpenCalendar, onOpenAssistantCall,
 }) {
   const { ownerKey, session } = useSession()
   const cars = useOwnerCars(ownerKey)
@@ -55,7 +56,7 @@ export default function HomePage({
         unitPrice={unitPrice}
         onOpenToday={onOpenToday}
       />
-      <HomeAssistantBar />
+      <HomeAssistantBar onOpenAssistantCall={onOpenAssistantCall} />
       <HomeTodoCard
         inspectionMissing={inspectionMissing}
         unpaidCount={unpaidItems.length}
