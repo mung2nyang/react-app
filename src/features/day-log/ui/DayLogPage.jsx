@@ -43,16 +43,15 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  * @param {string} props.dateKey
  * @param {Array<ClientLike>} props.clients
  * @param {Settings} props.settings
- * @param {(() => void)} [props.onWorkChanged] 커밋될 때만(AppShell 알림 뱃지).
  * @param {() => void} [props.onClose] 없으면 뒤로가기 숨김(하단 메뉴 진입)
  * @param {(() => void)} [props.onOpenMenu]
  * @param {string} [props.logId]
  * @param {string} [props.clientScopeKey] 거래처 스코프(연동 기사는 배정 차량번호). 없으면 logId.
  * @param {boolean} [props.isEmployedDriver] 기사연동 계정 세션이면 콜 상세의 산재보험료 칸을 숨긴다(CallDetailForm 참고).
  */
-export default function DayLogPage({ month, day, dateKey, clients, settings, onWorkChanged, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false }) {
+export default function DayLogPage({ month, day, dateKey, clients, settings, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false }) {
   const { ownerKey } = useSession()
-  const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, onWorkChanged, logId)
+  const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, logId)
   const { patchDraft, runRoute, saveCall, deleteCall, togglePayment, togglePinnedLocation } = useCallDetailActions(draft, dispatch, { dateKey, clients, settings, editingCallId })
   const [messageCallId, setMessageCallId] = useState(/** @type {string|null} */ (null))
