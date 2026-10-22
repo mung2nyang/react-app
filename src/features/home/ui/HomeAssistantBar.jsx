@@ -21,14 +21,14 @@ export default function HomeAssistantBar() {
   }
 
   return (
-    <section className={`home-card home-assistant${open ? ' open' : ''}`} aria-label="AI 운비서">
+    <section className={`home-card home-assistant${open ? ' open' : ''}`} aria-label="Ai 운비서">
       <div className="home-assistant-head">
         <button type="button" className="home-assistant-toggle" aria-expanded={open} onClick={() => setOpen((value) => !value)}>
           <span className="home-assistant-avatar">
             <img src={AVATAR} alt="" width="36" height="29" />
           </span>
           <span className="home-assistant-copy">
-            <strong className="home-assistant-name">AI 운비서</strong>
+            <strong className="home-assistant-name">Ai 운비서</strong>
             <span className="home-assistant-hint">운비서에게 무엇이든 물어보세요</span>
           </span>
         </button>

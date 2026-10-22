@@ -304,7 +304,7 @@ test('AI 비서 — 오늘 카드와 할 일 사이에 운비서 줄(그림·이
     assert.deepEqual(order, ['today', 'assistant', 'todo', 'month'])
     const bar = view.container.querySelector('.home-assistant')
     assert.ok(bar?.querySelector('img[src$="assistant_unbiseo.png"]'), '비서 얼굴 그림')
-    assert.equal(bar?.querySelector('.home-assistant-name')?.textContent, 'AI 운비서')
+    assert.equal(bar?.querySelector('.home-assistant-name')?.textContent, 'Ai 운비서')
     assert.equal(bar?.querySelector('.home-assistant-hint')?.textContent, '운비서에게 무엇이든 물어보세요')
     assert.equal(bar?.querySelector('.home-assistant-mic-btn'), null, '테스트 화면은 받아쓰기가 없어 마이크 버튼 없음(마이크는 HomeAssistantPanel.test.js)')
     assert.equal(bar?.tagName, 'SECTION')
