@@ -76,8 +76,8 @@ export function describeCall(call: UnbiseoCall, today: string): string {
   const dateLabel = call.date === today ? '오늘' : `${month}월 ${day}일`
   const route = [call.loadLoc, call.unloadLoc].filter(Boolean).join(' → ')
   const parts = [route, call.fare === null ? '' : formatWon(call.fare), call.client].filter(Boolean)
-  if (!parts.length) return `${dateLabel} 운행으로 알아들었어요.`
-  return `${dateLabel} ${withRo(parts.join(', '))} 알아들었어요.`
+  if (!parts.length) return `${dateLabel} 운행으로 기록할게요.`
+  return `${dateLabel} ${withRo(parts.join(', '))} 기록할게요.`
 }
 
 /** 결과 한 문장(운행·지출·질문·관계없음·실패). */

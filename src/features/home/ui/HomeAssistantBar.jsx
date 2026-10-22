@@ -19,11 +19,14 @@ export default function HomeAssistantBar() {
           <strong className="home-assistant-name">운비서</strong>
           <span className="home-assistant-hint">말로 운행 기록하기</span>
         </span>
-        <svg className="home-assistant-mic" viewBox="0 0 24 24" aria-hidden="true">
-          <rect x="9" y="2" width="6" height="12" rx="3"></rect>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-          <line x1="12" y1="19" x2="12" y2="22"></line>
-        </svg>
+        {/* 늘어나면 누르는 마이크가 아래에 있으니 그림 마이크는 접혔을 때만 */}
+        {!open && (
+          <svg className="home-assistant-mic" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        )}
       </button>
       {open && <HomeAssistantPanel />}
     </section>

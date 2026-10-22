@@ -314,6 +314,7 @@ test('AI 비서 — 오늘 카드와 할 일 사이에 운비서 줄(그림·이
     assert.equal(bar?.querySelector('.home-assistant-panel, .home-assistant-note'), null, '처음엔 접혀 있음')
     await act(async () => { toggle?.click() })
     assert.equal(toggle?.getAttribute('aria-expanded'), 'true')
+    assert.equal(toggle?.querySelector('svg.home-assistant-mic'), null, '늘어나면 그림 마이크는 숨김(누르는 마이크는 아래 하나)')
     assert.equal(bar?.querySelector('.home-assistant-note')?.textContent, '로그인하면 쓸 수 있습니다.', '테스트 계정은 비회원')
   } finally {
     await view.cleanup()

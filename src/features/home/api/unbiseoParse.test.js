@@ -89,11 +89,11 @@ test('실패 문구: 401 로그인, 400 다시 말하기, 502 알아듣지 못�
 test('결과 문장: 오늘이면 "오늘", 빈 칸은 빼고, 끝 글자 받침에 따라 "으로"/"로"', async () => {
   const { describeCall, describeResult } = await import('./unbiseoParse.ts')
   const today = '2026-10-22'
-  assert.equal(describeCall({ date: today, loadLoc: '평택', unloadLoc: '용인', fare: 300000, client: '한진' }, today), '오늘 평택 → 용인, 300,000원, 한진으로 알아들었어요.')
-  assert.equal(describeCall({ date: today, loadLoc: '인천', unloadLoc: '부산', fare: 450000, client: '롯데' }, today), '오늘 인천 → 부산, 450,000원, 롯데로 알아들었어요.')
-  assert.equal(describeCall({ date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '' }, today), '10월 21일 수원 → 화성, 150,000원으로 알아들었어요.')
-  assert.equal(describeCall({ date: today, loadLoc: '평택', unloadLoc: '', fare: null, client: '' }, today), '오늘 평택으로 알아들었어요.')
-  assert.equal(describeCall({ date: today, loadLoc: '', unloadLoc: '', fare: null, client: '' }, today), '오늘 운행으로 알아들었어요.')
+  assert.equal(describeCall({ date: today, loadLoc: '평택', unloadLoc: '용인', fare: 300000, client: '한진' }, today), '오늘 평택 → 용인, 300,000원, 한진으로 기록할게요.')
+  assert.equal(describeCall({ date: today, loadLoc: '인천', unloadLoc: '부산', fare: 450000, client: '롯데' }, today), '오늘 인천 → 부산, 450,000원, 롯데로 기록할게요.')
+  assert.equal(describeCall({ date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '' }, today), '10월 21일 수원 → 화성, 150,000원으로 기록할게요.')
+  assert.equal(describeCall({ date: today, loadLoc: '평택', unloadLoc: '', fare: null, client: '' }, today), '오늘 평택으로 기록할게요.')
+  assert.equal(describeCall({ date: today, loadLoc: '', unloadLoc: '', fare: null, client: '' }, today), '오늘 운행으로 기록할게요.')
   assert.equal(describeResult({ kind: 'question' }, today), '질문 답하기는 곧 할 수 있게 됩니다.')
   assert.equal(describeResult({ kind: 'unknown' }, today), '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.')
   assert.equal(describeResult({ kind: 'error', message: TRY_LATER }, today), TRY_LATER)

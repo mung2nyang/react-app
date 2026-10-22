@@ -77,7 +77,7 @@ test('글로 보내기: 거래처 이름·오늘을 같이 보내고, 내가 한
     assert.equal(calls.length, 1)
     assert.deepEqual(calls[0], { name: 'unbiseo-parse', body: { text: '어제 수원 화성 15만', today: todayWorkLogSelection(new Date()).dateKey, clientNames: ['한진', '롯데'] } })
     assert.equal(view.container.querySelector('.home-assistant-said')?.textContent, '내가 한 말: 어제 수원 화성 15만')
-    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 21일 수원 → 화성, 150,000원으로 알아들었어요.')
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 21일 수원 → 화성, 150,000원으로 기록할게요.')
   } finally { await view.cleanup() }
 })
 
