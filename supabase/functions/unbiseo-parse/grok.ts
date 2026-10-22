@@ -20,6 +20,7 @@ const INSTRUCTION = [
   'loadLoc은 상차지(출발), unloadLoc은 하차지(도착) — 들은 지명 그대로. 먼저 말한 지명이 상차지, 다음이 하차지.',
   'fare는 원 단위 정수("30만원"은 300000, "15만"은 150000, "8만 5천"은 85000). 말하지 않았으면 빼라.',
   'client는 거래처 목록에서 가장 맞는 이름 그대로 — 줄임말·발음도 목록 이름으로(예: "씨제이"·"CJ" → 목록의 "CJ대한통운"). 목록에 없으면 들은 그대로, 말하지 않았으면 빼라. 지어내지 마라.',
+  '말하지 않은 칸은 null — 운송료 0이나 목록 거래처로 채우지 마라.',
 ].join('\n')
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
@@ -45,17 +46,18 @@ export function dateTable(today: string): string {
   return lines.join('\n')
 }
 
+// 모든 칸을 필수로 두고 null을 허용 — 말하지 않은 칸은 AI가 null을 골라 비운다.
 const RESPONSE_SCHEMA = {
   type: 'object',
   properties: {
     kind: { type: 'string', enum: ['call', 'expense', 'question', 'unknown'] },
-    date: { type: 'string', description: 'YYYY-MM-DD' },
-    loadLoc: { type: 'string' },
-    unloadLoc: { type: 'string' },
-    fare: { type: 'integer', description: '원 단위' },
-    client: { type: 'string' },
+    date: { type: ['string', 'null'], description: 'YYYY-MM-DD' },
+    loadLoc: { type: ['string', 'null'] },
+    unloadLoc: { type: ['string', 'null'] },
+    fare: { type: ['integer', 'null'], description: '원 단위' },
+    client: { type: ['string', 'null'] },
   },
-  required: ['kind'],
+  required: ['kind', 'date', 'loadLoc', 'unloadLoc', 'fare', 'client'],
 }
 
 type ChatAnswer = {

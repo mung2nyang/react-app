@@ -71,7 +71,8 @@ export function readAiAnswer(raw: string, input: ParseInput): Parsed | null {
   return {
     kind: 'call',
     call: {
-      date: isDateKey(row.date) ? row.date : input.today,
+      // 앞날(내일·모레)은 오늘로 — 날짜 계산은 AI에 맡기지 않는다.
+      date: isDateKey(row.date) && row.date <= input.today ? row.date : input.today,
       loadLoc: place(row.loadLoc),
       unloadLoc: place(row.unloadLoc),
       fare,
