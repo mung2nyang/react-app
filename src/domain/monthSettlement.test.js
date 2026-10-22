@@ -247,21 +247,21 @@ describe('monthSettlementSummary', () => {
 })
 
 describe('monthSettlementSummary — 부가세는 매출과 같은 규칙(로드맵 38)', () => {
-  test('면세 콜 상세는 부가세 0, 콜 상세는 건마다 반올림 — 하루 화면 callVatTotal 합과 같다', () => {
+  test('면세 콜 상세는 부가세 0, 콜 상세는 건마다 버림 — 하루 화면 callVatTotal 합과 같다', () => {
     const workData = {
       '2026-09-01': day({ callDetails: [{ fare: 100000, vatExempt: true }, { fare: 100000 }] }),
       '2026-09-02': day({ callDetails: [{ fare: 12345 }] }),
       '2026-09-03': day({ callDetails: [{ fare: 12345 }] }),
     }
     const result = monthSettlementSummary(workData, YEAR, MONTH, { clients: [] })
-    // 10000 + round(1234.5) + round(1234.5) = 10000 + 1235 + 1235 (월 합계 한 번 반올림이면 22469)
-    assert.equal(result.vat, 12470)
+    // 10000 + floor(1234.5) + floor(1234.5) = 10000 + 1234 + 1234 (로드맵 102, sot §4-14)
+    assert.equal(result.vat, 12468)
     const dayScreenVat = Object.values(workData).reduce((sum, record) => sum + callVatTotal(record), 0)
     assert.equal(result.vat, dayScreenVat)
     assert.equal(result.total, result.fare - result.commissionTotal + result.vat)
   })
 
-  test('고정노선·파렛트는 날마다 반올림한다', () => {
+  test('고정노선·파렛트는 날마다 버린다', () => {
     const client = { id: 'c1', companyName: '거래처A', palletOn: true, palletPrice: 1235 }
     const workData = {
       '2026-09-01': day({ fixedCount: 1, palletCount: 1 }),
@@ -270,8 +270,8 @@ describe('monthSettlementSummary — 부가세는 매출과 같은 규칙(로드
     const result = monthSettlementSummary(workData, YEAR, MONTH, {
       unitPrice: 12345, fixedRouteClient: client, activeFixedOn: true, clients: [client],
     })
-    // 고정 round(1234.5)×2 = 2470, 파렛트 round(123.5)×2 = 248
-    assert.equal(result.vat, 2470 + 248)
+    // 고정 floor(1234.5)×2 = 2468, 파렛트 floor(123.5)×2 = 246
+    assert.equal(result.vat, 2468 + 246)
   })
 })
 

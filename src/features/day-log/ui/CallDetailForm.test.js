@@ -96,6 +96,13 @@ test('운송료 이름표 "(부가세 별도)"는 보통 공백 — 큰 글씨�
   } finally { await view.cleanup() }
 })
 
+test('부가세 포함 미리보기는 원 미만 버림 — 15,555원이면 17,110원(로드맵 102)', async () => {
+  const view = await mount({ value: { fare: '15,555', client: '' } })
+  try {
+    assert.equal((view.container.textContent || '').match(/부가세 포함 [\d,]+원/)?.[0], '부가세 포함 17,110원')
+  } finally { await view.cleanup() }
+})
+
 describe('운송료 1,000만원 초과 저장 확인(로드맵 43-C)', () => {
   /** @param {string} fare @param {boolean} answer */
   async function clickSave(fare, answer) {

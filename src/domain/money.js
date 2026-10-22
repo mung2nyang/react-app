@@ -10,6 +10,11 @@ export function parseCurrencyValue(str) {
   return parseInt(String(str).replace(/[^0-9]/g, ''), 10) || 0
 }
 
+/** 부가세 = 공급가의 10%, 원 미만 버림(sot §4-14). 화면마다 같은 값이 나오게 부가세는 모두 이 함수로. */
+export function vatOf(/** @type {number} */ amount) {
+  return Math.floor(amount / 10)
+}
+
 /**
  * @param {JsonValue|undefined} amount
  * @returns {string}

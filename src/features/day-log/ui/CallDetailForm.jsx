@@ -2,7 +2,7 @@
 // 순서: 경로·톤수 → 거래처 → 운송료·부가세 → 계산서·입금일 → 시간·계기판·플랫폼 → 산재보험료·비고.
 import { useState } from 'react'
 import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../../domain/clients.js'
-import { parseCurrencyValue } from '../../../domain/money.js'
+import { parseCurrencyValue, vatOf } from '../../../domain/money.js'
 import { checkCallDetailDraft } from '../../../domain/call-details.js'
 import { confirmLargeFareSave, draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
@@ -58,7 +58,7 @@ export default function CallDetailForm({
     ? ''
     : draft.vatExempt
       ? '면세 거래로 부가세가 적용되지 않습니다.'
-      : `부가세 포함 ${(fareNumber + Math.round(fareNumber * 0.1)).toLocaleString('ko-KR')}원`
+      : `부가세 포함 ${(fareNumber + vatOf(fareNumber)).toLocaleString('ko-KR')}원`
   const selectedClient = clients.find((item) => item.companyName === draft.client)
   const paymentGuide = selectedClient
     ? getPaymentTermLabel(selectedClient.paymentTerm, selectedClient.paymentTermValue)

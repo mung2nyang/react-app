@@ -2,7 +2,7 @@
 // 리포트 세부 내역서 — 거래처 옵션·콜상세 집계.
 import { getCallDetails, isOffDay } from '../../../domain/day-record.js'
 import { getCallDetailCommissionAmount, resolveCallDetailCommission } from '../../../domain/financeCore.js'
-import { parseCurrencyValue } from '../../../domain/money.js'
+import { parseCurrencyValue, vatOf } from '../../../domain/money.js'
 
 /** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
 /** @typedef {import('../../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
@@ -102,7 +102,7 @@ export function buildDetailReport(workData, year, monthIndex, clientFilter, sett
       })
       totalFare += fare
       insuranceTotal += parseCurrencyValue(detail?.insuranceFee) // 콜 상세 산재보험료도 뺀다(로드맵 40)
-      if (!detail?.vatExempt) vat += Math.round(fare * 0.1) // 매출과 같이 건마다 반올림, 면세면 0
+      if (!detail?.vatExempt) vat += vatOf(fare) // 매출과 같이 건마다 버림, 면세면 0
       totalCommission += commission
     })
   }

@@ -8,7 +8,7 @@ import { calculateDriverVehicleCommission, getCallDetailCommissionAmount } from 
 import { driverShareBaseAmount, resolveDriverShareBase } from './driverShareBase.js'
 import { getFixedRouteCommissionAmount } from './fixedRouteCommission.js'
 import { callInsuranceTotal } from './call-details.js'
-import { parseCurrencyValue } from './money.js'
+import { parseCurrencyValue, vatOf } from './money.js'
 
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./clientTypes.js').ClientLike} ClientLike */
@@ -94,7 +94,7 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
     if (fixedCount > 0) {
       const fAmount = fixedCount * unitPrice
       fare += fAmount
-      vat += Math.round(fAmount * 0.1)
+      vat += vatOf(fAmount)
       const name = fixedRouteClient?.companyName || ''
       if (name) {
         fareByClient[name] = (fareByClient[name] || 0) + fAmount
@@ -114,13 +114,13 @@ export function monthSettlementSummary(workData, year, month, options = {}) {
     if (palletCount > 0 && activeFixedOn && fixedRouteClient?.palletOn) {
       const pAmount = palletCount * parseCurrencyValue(fixedRouteClient.palletPrice)
       palletFare += pAmount
-      vat += Math.round(pAmount * 0.1)
+      vat += vatOf(pAmount)
     }
 
     getCallDetails(record).forEach((detail) => {
       const gross = parseCurrencyValue(detail?.fare)
       fare += gross
-      if (!detail?.vatExempt) vat += Math.round(gross * 0.1)
+      if (!detail?.vatExempt) vat += vatOf(gross)
       const clientName = detail?.client ? String(detail.client).trim() : ''
       const registered = !!(clientName && clients.some((c) => c.companyName === clientName))
       const comm = getCallDetailCommissionAmount(detail, gross, { clients })

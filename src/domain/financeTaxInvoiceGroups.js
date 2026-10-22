@@ -6,7 +6,7 @@
 import { getVehicleSupplierIdentity } from './cars.js'
 import { computeFixedRouteFare, getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
 import { isDateWithinAssignment } from './drivers.js'
-import { parseCurrencyValue } from './money.js'
+import { parseCurrencyValue, vatOf } from './money.js'
 import { calculateDriverVehicleCommission, getDriverCarWorkData, getMonthlyDriverTotals, logData } from './financeCore.js'
 import { driverShareBaseAmount, getMonthlyDriverClientCommission } from './driverShareBase.js'
 
@@ -64,7 +64,7 @@ export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {
         const group = getOrCreateGroup(clientName, supplier, source.logId)
         group.count += 1
         group.supplyAmount += supplyAmount
-        group.taxAmount += detail.vatExempt ? 0 : Math.round(supplyAmount * 0.1)
+        group.taxAmount += detail.vatExempt ? 0 : vatOf(supplyAmount)
         if (supplier.carNumber) group.vehicleNumbers.add(supplier.carNumber)
       })
 
@@ -75,7 +75,7 @@ export function getTaxInvoiceSourceGroups(monthKey, flow = 'sales', settings = {
           const group = getOrCreateGroup(fixedClientName, supplier, source.logId)
           group.count += fixedCount
           group.supplyAmount += supplyAmount
-          group.taxAmount += Math.round(supplyAmount * 0.1)
+          group.taxAmount += vatOf(supplyAmount)
           if (supplier.carNumber) group.vehicleNumbers.add(supplier.carNumber)
         }
       }
@@ -168,7 +168,7 @@ export function getLinkedDriverClientInvoiceGroups(trips, car, ownerSettings) {
     if (!grouped[key]) grouped[key] = { clientName: trip.client, count: 0, supplyAmount: 0, taxAmount: 0, trips: [] }
     grouped[key].count += 1
     grouped[key].supplyAmount += trip.fare
-    grouped[key].taxAmount += trip.vatExempt ? 0 : Math.round(trip.fare * 0.1)
+    grouped[key].taxAmount += trip.vatExempt ? 0 : vatOf(trip.fare)
     grouped[key].trips.push(trip)
   })
   const groups = Object.values(grouped).map((g) => ({ ...g, totalAmount: g.supplyAmount + g.taxAmount, supplierBiz: supplier.biz, vehicleLabel: supplier.carLabel }))

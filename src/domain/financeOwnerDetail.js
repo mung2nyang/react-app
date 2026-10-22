@@ -4,7 +4,7 @@
 // 필드 이름·구조를 바꾸면 그쪽도 같이 깨진다(타입 체크가 잡아 준다).
 import { getShortCarNum, isVehicleRevenueSharedWithOwner } from './cars.js'
 import { getFixedRouteClient, resolveFixedUnitPrice } from './clients.js'
-import { parseCurrencyValue } from './money.js'
+import { parseCurrencyValue, vatOf } from './money.js'
 import {
   getCallDetailCommissionAmount, getCallDetailDurationMinutes, getDriverCarWorkData,
   getMonthlyDriverSalaryExpense, logData,
@@ -76,7 +76,7 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
           tripCount += count
           const amount = count * fixedUnitPrice
           fareByClient.set(fixedClientLabel, (fareByClient.get(fixedClientLabel) || 0) + amount)
-          vatAmount += Math.round(amount * 0.1)
+          vatAmount += vatOf(amount)
           // 고정노선도 거래처 수수료를 뗀다(달력 monthSettlement와 같은 함수, 로드맵 39).
           const fixedComm = getFixedRouteCommissionAmount(fixedRouteClientForTotals, amount, count)
           if (fixedComm > 0) commissionByClient.set(fixedClientLabel, (commissionByClient.get(fixedClientLabel) || 0) + fixedComm)
@@ -84,7 +84,7 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
         if (Number(record.palletCount) > 0 && activeFixedOn && activePalletOn) {
           const amount = (Number(record.palletCount) || 0) * palletUnitPrice
           fareByClient.set(fixedClientLabel, (fareByClient.get(fixedClientLabel) || 0) + amount)
-          vatAmount += Math.round(amount * 0.1)
+          vatAmount += vatOf(amount)
         }
 
         ;(Array.isArray(record.callDetails) ? record.callDetails : []).forEach((detail) => {
@@ -101,7 +101,7 @@ export function getOwnerMonthlyFinanceDetail(monthKey, scope = 'owner', settings
           const clientLabel = detail?.client || '미지정 거래처'
           fareByClient.set(clientLabel, (fareByClient.get(clientLabel) || 0) + fare)
 
-          if (!detail?.vatExempt) vatAmount += Math.round(fare * 0.1)
+          if (!detail?.vatExempt) vatAmount += vatOf(fare)
 
           const commission = getCallDetailCommissionAmount(detail, fare, settings)
           if (commission > 0) commissionByClient.set(clientLabel, (commissionByClient.get(clientLabel) || 0) + commission)

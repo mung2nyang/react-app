@@ -3,7 +3,7 @@
 // 정본은 각각 dayRecordTypes.js/callDetail.js — 여기선 alias만 한다.
 import { dedupeCallDetailsById, withCoercedCallDetailId } from './callDetailIds.js'
 import { getDetailPaymentSummary } from './finance.js'
-import { parseCurrencyValue } from './money.js'
+import { parseCurrencyValue, vatOf } from './money.js'
 
 /** @typedef {import('./dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('./callDetail.js').CallDetailLike} CallDetailLike */
@@ -114,7 +114,7 @@ export function callVatTotal(record) {
   if (!record || record.isOff) return 0
   return getCallDetails(record).reduce((sum, detail) => {
     const fare = parseCurrencyValue(detail.fare)
-    return sum + (detail.vatExempt ? 0 : Math.round(fare * 0.1))
+    return sum + (detail.vatExempt ? 0 : vatOf(fare))
   }, 0)
 }
 
@@ -135,7 +135,7 @@ export function monthWorkFareSummary(data, year, month, unitPrice) {
   const unit = Math.max(0, parseCurrencyValue(unitPrice))
   const fixedFare = trips * unit
   const fare = fixedFare + callFare
-  const vat = Math.round(fixedFare * 0.1) + callVat
+  const vat = vatOf(fixedFare) + callVat
   return { trips, callTrips, fixedFare, callFare, fare, vat, total: fare + vat }
 }
 
