@@ -16,8 +16,8 @@ const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
-const { commitDrivers } = await import('../../../data/store/commitHelpers.js')
-const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.js')
+const { commitDrivers } = await import('../../../data/store/commitHelpers.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.ts')
 
 /** @param {Element} card */
 function buttons(card) {

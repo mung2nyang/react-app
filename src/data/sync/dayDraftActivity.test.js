@@ -5,8 +5,8 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
-const { flushDayDrafts, hasBusyDayDraft, pruneDayDraft, registerDayDraft, releaseDayDraft } = await import('./dayDraftActivity.js')
-const { confirmReloadIfUnsaved, guardBeforeUnload } = await import('./durableWriteGuard.js')
+const { flushDayDrafts, hasBusyDayDraft, pruneDayDraft, registerDayDraft, releaseDayDraft } = await import('./dayDraftActivity.ts')
+const { confirmReloadIfUnsaved, guardBeforeUnload } = await import('./durableWriteGuard.ts')
 
 const SAVING_MESSAGE = '방금 고친 내용을 아직 저장하는 중입니다. 그래도 나가시겠습니까?'
 

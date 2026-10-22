@@ -1,11 +1,11 @@
 // @ts-check
 // 로그인 계정이 쓰는 중 인터넷이 끊기면 화면 맨 위 빨간 띠(로드맵 84) — 화면 안내만, 저장은 그대로.
 import { useSyncExternalStore } from 'react'
-import { isCloudSession } from '../../data/cloud/cloudSession.js'
+import { isCloudSession } from '../../data/cloud/cloudSession.ts'
 import '../../shared/styles/offline-banner.css'
-import { useSession } from '../../data/cloud/sessionContext.js'
+import { useSession } from '../../data/cloud/sessionContext.ts'
 
-/** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
 
 /** @param {() => void} onChange */
 function subscribe(onChange) {

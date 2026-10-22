@@ -11,7 +11,7 @@ import ReceivableItemCard from './ReceivableItemCard.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './receivables.css'
 import './receivablesGroupHead.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/financeReceivables.ts').ReceivableItemLike} ReceivableItemLike */
 

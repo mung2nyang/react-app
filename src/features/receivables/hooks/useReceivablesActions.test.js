@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { beforeEach, mock, test } from 'node:test'
 
 let persistCalls = 0
-mock.module('../../../data/sync/ownerFinance.js', {
+mock.module('../../../data/sync/ownerFinance.ts', {
   namedExports: {
     markMonthlyReceivablesPaid: (/** @type {object} */ work) => work,
     patchWorkLog: () => ({}),

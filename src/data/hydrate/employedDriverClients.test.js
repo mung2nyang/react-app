@@ -5,15 +5,15 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { buildClientRow } = await import('../cloud/cloudStorage.js')
-const { upsertClientFromList } = await import('../sync/syncVehiclesClients.js')
-const { requestClientSave } = await import('../sync/clientMutations.js')
-const { buildEmployedDriverSnapshot } = await import('./hydrateEmployedDriver.js')
-const { mergeClientsFromRows } = await import('./hydrateMergeClients.js')
-const { beginSessionEpoch, captureSession, endCloudSession } = await import('../cloud/cloudSession.js')
-const { setHydration } = await import('../store/app-store.js')
+const { buildClientRow } = await import('../cloud/cloudStorage.ts')
+const { upsertClientFromList } = await import('../sync/syncVehiclesClients.ts')
+const { requestClientSave } = await import('../sync/clientMutations.ts')
+const { buildEmployedDriverSnapshot } = await import('./hydrateEmployedDriver.ts')
+const { mergeClientsFromRows } = await import('./hydrateMergeClients.ts')
+const { beginSessionEpoch, captureSession, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { setHydration } = await import('../store/app-store.ts')
 
 describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 편집 검증', () => {
   test('buildClientRow는 전달된 ownerId를 user_id로 기록한다 (userId와 무관)', () => {
@@ -128,7 +128,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
   })
 
   test('기사 쓰기 직후 hydrate 경합: 미동기화 로컬 거래처가 서버 hydrate 뒤에도 사라지지 않는다', () => {
-    /** @type {Array<import('./hydrateMergeTypes.js').LocalClient>} */
+    /** @type {Array<import('./hydrateMergeTypes.ts').LocalClient>} */
     const localClients = [
       {
         id: 'client-pending-1',
@@ -142,7 +142,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
       },
     ]
 
-    /** @type {Array<import('./hydrateMergeTypes.js').ClientRow>} */
+    /** @type {Array<import('./hydrateMergeTypes.ts').ClientRow>} */
     const serverRows = [
       {
         id: 101,

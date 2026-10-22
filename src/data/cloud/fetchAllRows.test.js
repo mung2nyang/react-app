@@ -1,7 +1,7 @@
 // 로드맵 67-A — 1,000줄씩 끝까지 이어 받는다.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { PAGE_SIZE, fetchAllRows } from './fetchAllRows.js'
+import { PAGE_SIZE, fetchAllRows } from './fetchAllRows.ts'
 
 /**
  * 서버처럼 range로 잘라 주는 가짜 쿼리. errorAtCall번째 요청이면 오류.

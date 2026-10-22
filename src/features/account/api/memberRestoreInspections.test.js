@@ -18,7 +18,7 @@ const fetched = []
 const saved = []
 let failOnSave = 0
 
-mock.module('../../../data/store/ownerDataHooks.js', {
+mock.module('../../../data/store/ownerDataHooks.ts', {
   namedExports: { readOwnerCars: () => cars, readOwnerDrivers: () => drivers },
 })
 mock.module('./memberRestoreRecords.js', {
@@ -26,7 +26,7 @@ mock.module('./memberRestoreRecords.js', {
     isOwnUnlinkedCar: (/** @type {string} */ _owner, /** @type {string} */ plate) => plate === 'main' || plate === '34나5678',
   },
 })
-mock.module('../../../data/sync/dailyInspections.js', {
+mock.module('../../../data/sync/dailyInspections.ts', {
   namedExports: {
     fetchVehiclesDailyInspections: async (/** @type {Array<string|number>} */ ids) => {
       fetched.push(ids)

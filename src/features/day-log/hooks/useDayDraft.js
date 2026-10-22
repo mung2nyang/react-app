@@ -2,11 +2,11 @@
 // 일지 임시 편집 — Store 값을 복제해 들고, 고치면 0.6초 뒤 저장 담당(dayDraftLifecycle.js)이 저장한다. 닫을 때 남은 것을 저장한다.
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
 import { backfillCallDetailIds } from '../../../domain/day-record.ts'
-import { pendingOwnerForLog } from '../../../data/sync/pendingLogOwner.js'
-import { getUnsafeRegistrationPatch } from '../../../data/sync/durableWriteGuard.js'
-import { getPendingDayWrite } from '../../../data/sync/pendingWorkDataWrites.js'
-import { shouldCommitDayLogToCloud } from '../../../data/sync/mainDayLogRouting.js'
-import { readOwnerLogWorkData } from '../../../data/store/ownerDataHooks.js'
+import { pendingOwnerForLog } from '../../../data/sync/pendingLogOwner.ts'
+import { getUnsafeRegistrationPatch } from '../../../data/sync/durableWriteGuard.ts'
+import { getPendingDayWrite } from '../../../data/sync/pendingWorkDataWrites.ts'
+import { shouldCommitDayLogToCloud } from '../../../data/sync/mainDayLogRouting.ts'
+import { readOwnerLogWorkData } from '../../../data/store/ownerDataHooks.ts'
 import { createDayDraftSaver } from './dayDraftLifecycle.js'
 import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
@@ -56,7 +56,7 @@ export function useDayDraft(ownerKey, dateKey, logId = 'main') {
 
   useEffect(() => () => saver.close(), [saver])
 
-  // 새로고침·앱 닫기 확인과 숨김 때 바로 저장(data/sync/dayDraftActivity.js). 위 저장 뒤에 내려야 저장 중이 남는다.
+  // 새로고침·앱 닫기 확인과 숨김 때 바로 저장(data/sync/dayDraftActivity.ts). 위 저장 뒤에 내려야 저장 중이 남는다.
   useEffect(() => saver.track(), [saver])
 
   return { draft: state.draft, editingCallId: state.editingCallId, callFormOpen: state.callFormOpen, dispatch, commitNow: saver.commitNow, autoSaveStatus }

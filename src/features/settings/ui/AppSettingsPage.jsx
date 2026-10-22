@@ -1,10 +1,10 @@
 // @ts-check
 import { useParams } from 'react-router-dom'
-import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../../../data/store/ownerDataHooks.js'
-import { applyTheme, savePracticeSettings } from '../../../data/sync/settingsSave.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
+import { applyTheme, savePracticeSettings } from '../../../data/sync/settingsSave.ts'
 import { defaultCarSettings } from '../../../domain/practiceSettings.ts'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.ts'
-import { useHydrationLock } from '../../../data/store/useHydrationLock.js'
+import { useHydrationLock } from '../../../data/store/useHydrationLock.ts'
 import SwitchRow from '../../../shared/ui/SwitchRow.tsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
@@ -13,7 +13,7 @@ import './app-settings.css'
 import './app-settings-groups.css'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 /** @typedef {import('../../../domain/financeTypes.ts').SubCarPracticeSettings} SubCarPracticeSettings */
@@ -39,7 +39,7 @@ export default function AppSettingsPage({ onBack, onOpenMenu }) {
   const clientScopeKey = logId || (session?.linkedOwnerId ? (cars[0]?.number || 'main') : '')
 
   /**
-   * @param {import('../../../data/sync/settingsSave.js').SettingsPatch} nextPatch
+   * @param {import('../../../data/sync/settingsSave.ts').SettingsPatch} nextPatch
    */
   async function patch(nextPatch) {
     try {

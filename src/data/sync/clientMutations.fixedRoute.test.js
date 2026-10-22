@@ -6,11 +6,11 @@ import { beforeEach, describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { requestClientSave } = await import('./clientMutations.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { setHydration } = await import('../store/app-store.js')
+const { requestClientSave } = await import('./clientMutations.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { setHydration } = await import('../store/app-store.ts')
 
 /** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
 

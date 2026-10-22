@@ -6,7 +6,7 @@ import ClientListItem from './ClientListItem.jsx'
 import { useScopedClients } from '../hooks/useScopedClients.js'
 import '../../drivers/ui/linked-driver.css'
 import './client-management.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {Object} props

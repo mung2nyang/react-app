@@ -7,12 +7,12 @@ import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 import { clientToDraft } from '../../../domain/clientDraft.ts'
 import { formatCurrencyInput } from '../../../domain/money.ts'
 import CurrencyInput from '../../../shared/ui/CurrencyInput.jsx'
-import { requestClientSave } from '../../../data/sync/clientMutations.js'
-import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
+import { requestClientSave } from '../../../data/sync/clientMutations.ts'
+import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import FieldError, { focusField } from '../../../shared/ui/FieldError.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 

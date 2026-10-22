@@ -4,13 +4,13 @@ import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getShortCarNum } from '../../../domain/cars.ts'
 import { resolveDriverManagementContext } from '../../../domain/driverManagementContext.ts'
-import { useOwnerCars, useOwnerDrivers } from '../../../data/store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers } from '../../../data/store/ownerDataHooks.ts'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import ScopedClientsList from '../../clients/ui/ScopedClientsList.jsx'
 import '../../clients/ui/client-management.css'
 import './linked-driver.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {Object} props

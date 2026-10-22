@@ -1,6 +1,6 @@
 // @ts-check
 import { useState } from 'react'
-import { getSupabaseAuthErrorMessage, signInWithGoogle } from '../../../data/cloud/supabaseClient.js'
+import { getSupabaseAuthErrorMessage, signInWithGoogle } from '../../../data/cloud/supabaseClient.ts'
 import AuthIntroView from './AuthIntroView.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 

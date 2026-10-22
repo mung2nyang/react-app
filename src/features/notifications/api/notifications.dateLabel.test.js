@@ -4,8 +4,8 @@ import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, mock, test } from 'node:test'
 import { collectNotifications } from './notifications.js'
-import { markBackupDone } from '../../../data/sync/guestBackup.js'
-import { commitSettings } from '../../../data/store/commitHelpers.js'
+import { markBackupDone } from '../../../data/sync/guestBackup.ts'
+import { commitSettings } from '../../../data/store/commitHelpers.ts'
 import { normalizeSettings } from '../../../domain/practiceSettings.ts'
 
 describe('notifications — 날짜 줄·끈 종류', () => {

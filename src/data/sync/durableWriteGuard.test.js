@@ -19,10 +19,10 @@ const {
   clearUnsafeRegistrationFailure, confirmLeaveIfUnsafe, guardBeforeUnload, getUnsafeRegistrationPatch,
   hasAnyUnsafeRegistration, hasUnsafeRegistration, isDurableWriteBroken, listUnsafeRegistrations,
   markUnsafeRegistrationFailure,
-} = await import('./durableWriteGuard.js')
-const { registerPendingDayWrite, retryPendingDayWrites } = await import('./pendingWorkDataWrites.js')
+} = await import('./durableWriteGuard.ts')
+const { registerPendingDayWrite, retryPendingDayWrites } = await import('./pendingWorkDataWrites.ts')
 
-/** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */
+/** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */
 const invalidPatch = {
   isOff: false,
   fixedCount: 4,
@@ -31,7 +31,7 @@ const invalidPatch = {
   fixedRouteCounts: {},
 }
 
-/** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */
+/** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */
 const validPatch = { isOff: false, fixedCount: 4, palletCount: 1, callDetails: [], fixedRouteCounts: {} }
 
 test('이 프로세스는 아직 아무 owner도 건드리지 않았으니 시작 시점엔 healthy다', () => {

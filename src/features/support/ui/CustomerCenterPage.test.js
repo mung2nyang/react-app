@@ -20,11 +20,11 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: CustomerCenterPage } = await import('./CustomerCenterPage.jsx')
 const { default: SideMenu } = await import('../../../app/shell/SideMenu.jsx')
-const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.js')
-const { setHydration } = await import('../../../data/store/app-store.js')
+const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.ts')
+const { setHydration } = await import('../../../data/store/app-store.ts')
 
 /**
- * @param {import('../../../data/sync/syncTypes.js').AppSession|null} session
+ * @param {import('../../../data/sync/syncTypes.ts').AppSession|null} session
  * @param {string} tabLabel
  */
 async function openSupportTab(session, tabLabel) {

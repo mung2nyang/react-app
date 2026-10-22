@@ -12,11 +12,11 @@ import { mock, test } from 'node:test'
 const {
   registerPendingDayWrite, clearPendingDayWrite, getPendingDayWrite,
   hasPendingDayWrites, hasUnsafePendingWrites, pendingDayWriteCount, retryPendingDayWrites,
-} = await import('./pendingWorkDataWrites.js')
-const { isDurableWriteBroken } = await import('./durableWriteGuard.js')
-const { getState, subscribe } = await import('../store/app-store.js')
-const { readJsonKey } = await import('../store/persist.js')
-const { commitWorkData } = await import('../store/commitHelpers.js')
+} = await import('./pendingWorkDataWrites.ts')
+const { isDurableWriteBroken } = await import('./durableWriteGuard.ts')
+const { getState, subscribe } = await import('../store/app-store.ts')
+const { readJsonKey } = await import('../store/persist.ts')
+const { commitWorkData } = await import('../store/commitHelpers.ts')
 
 /** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
@@ -267,7 +267,7 @@ test('재감사 4차 FAIL 지적 2번 — owner A의 fallback이 남아 있으�
 // 있으면 beforeunload 경고가 계속 유지돼야 한다 — durableWriteGuard.guardBeforeUnload를
 // 직접 통해 확인한다(app.test.js의 통합 테스트와 상호보완).
 test('재감사 4차 FAIL 지적 2번 — 한 항목 성공 처리 후에도 다른 fallback이 남으면 beforeunload 경고가 유지된다', async () => {
-  const { guardBeforeUnload } = await import('./durableWriteGuard.js')
+  const { guardBeforeUnload } = await import('./durableWriteGuard.ts')
   const ownerA = 'pw-guard-beforeunload-a'
   const ownerB = 'pw-guard-beforeunload-b'
   const dateKey = '2026-08-12'
@@ -295,7 +295,7 @@ test('재감사 4차 FAIL 지적 2번 — 한 항목 성공 처리 후에도 다
   // A만 처리되고 B는 여전히 fallback에 남는다(B의 durable 재시도는 아직 안 됨 — retry
   // 전체를 부르지 않고 A만 직접 clearPendingDayWrite로 정리해, "한 항목만 끝났을 때"를
   // 정확히 재현한다).
-  const { clearPendingDayWrite: clear } = await import('./pendingWorkDataWrites.js')
+  const { clearPendingDayWrite: clear } = await import('./pendingWorkDataWrites.ts')
   clear(ownerA, dateKey, patchA)
 
   const eventAfterA = { prevented: false, preventDefault() { this.prevented = true }, returnValue: false }
@@ -664,7 +664,7 @@ const VALID_PATCH_FOR_DATEKEY_TEST = { isOff: false, fixedCount: 9, palletCount:
 // hasPendingDayWrites는 보수적으로 true, guardBeforeUnload는 예외 없이 이동을
 // 차단해야 한다(사용자가 지정한 key() 실패 주입 시나리오를 그대로 확인한다).
 test('재감사 7차 FAIL 지적 2번 — localStorage.key() 열거 자체가 실패해도 retry는 상태를 안 바꾸고, guardBeforeUnload는 throw 없이 이동을 차단한다', async () => {
-  const { guardBeforeUnload } = await import('./durableWriteGuard.js')
+  const { guardBeforeUnload } = await import('./durableWriteGuard.ts')
   const ownerKey = 'pw-enum-key-fail'
   const dateKey = '2026-09-06'
   registerPendingDayWrite(ownerKey, dateKey, { isOff: false, fixedCount: 7, palletCount: 0, callDetails: [], fixedRouteCounts: {} })
@@ -783,7 +783,7 @@ test('재감사 9차 FAIL 지적 3번 — registerPendingDayWrite가 잘못된 d
 
   // 잘못된 patch(필수 필드 누락) — 실존하는 dateKey를 써도 patch가 계약을 어기면
   // 여전히 거부돼야 한다.
-  const incompletePatch = /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ ({ isOff: false })
+  const incompletePatch = /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ ({ isOff: false })
   const r2 = registerPendingDayWrite(ownerKey, '2026-09-16', incompletePatch, () => { throw new Error('불려지면 안 됨') })
   assert.equal(r2, false, '잘못된 patch는 false를 돌려줘야 한다')
   assert.deepEqual(durableRaw(ownerKey), durableBefore, '잘못된 patch도 기존 durable 원문을 전혀 건드리면 안 된다')
@@ -855,17 +855,17 @@ test('재감사 10차 FAIL 지적 1번 — 임의 문자열·음수·NaN·Infini
     }
   }
   const rejected = [
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('oops'))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(','))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('.'))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('원'))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(-1))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(Number.NaN))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount(Number.POSITIVE_INFINITY))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('1,00'))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('1,,000'))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount('1,000.50'))),
-    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.js').EffectivePatch} */ (patchWithAmount({ nested: 1 }))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount('oops'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount(','))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount('.'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount('원'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount(-1))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount(Number.NaN))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount(Number.POSITIVE_INFINITY))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount('1,00'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount('1,,000'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount('1,000.50'))),
+    registerPendingDayWrite(ownerKey, dateKeyBad, /** @type {import('./pendingWorkDataWritesTypes.ts').EffectivePatch} */ (patchWithAmount({ nested: 1 }))),
   ]
   assert.equal(rejected.every((ok) => ok === false), true, 'oops·기호만·잘못된 쉼표·소수·음수·NaN·Infinity·중첩 객체 amount는 전부 거부돼야 한다')
   assert.equal(localStorage.getItem(`reactPracticeDurablePendingWrites:${ownerKey}`), durableBefore, '거부된 등록은 기존 durable 원문을 건드리면 안 된다')

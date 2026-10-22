@@ -1,7 +1,7 @@
 // 앱을 켤 때·비회원 백업 불러오기의 자료 검사 입구(matchesDomainSchema)와 설정·개인정보·지운 날 검사의 통과/거부를 칸마다 못 박는다.
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { isPersistedProfile, isPersistedSettings, isPersistedWorkDataDeletedDates, matchesDomainSchema } from './persistDomainSchema.js'
+import { isPersistedProfile, isPersistedSettings, isPersistedWorkDataDeletedDates, matchesDomainSchema } from './persistDomainSchema.ts'
 
 /** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 /** @typedef {Record<string, JsonValue>} Rec */
@@ -112,7 +112,7 @@ describe('지운 날 목록 검사', () => {
 })
 
 describe('자료 검사 입구(matchesDomainSchema)', () => {
-  /** @type {Array<[import('./persist.js').PersistDomain, JsonValue, JsonValue]>} 종류, 통과 값, 거부 값 */
+  /** @type {Array<[import('./persist.ts').PersistDomain, JsonValue, JsonValue]>} 종류, 통과 값, 거부 값 */
   const DOMAINS = [
     ['dismissedNotifications', ['backup:never'], [1]],
     ['cars', [CAR], [{ number: 1 }]],
@@ -134,11 +134,11 @@ describe('자료 검사 입구(matchesDomainSchema)', () => {
   })
 
   test('목록 종류에 목록이 아닌 값, 묶음 종류에 배열이면 거부', () => {
-    for (const domain of /** @type {Array<import('./persist.js').PersistDomain>} */ (['dismissedNotifications', 'cars', 'clients', 'expenses', 'invoices', 'drivers'])) {
+    for (const domain of /** @type {Array<import('./persist.ts').PersistDomain>} */ (['dismissedNotifications', 'cars', 'clients', 'expenses', 'invoices', 'drivers'])) {
       assert.equal(matchesDomainSchema(domain, {}), false, domain)
       assert.equal(matchesDomainSchema(domain, []), true, `${domain} 빈 목록`)
     }
-    for (const domain of /** @type {Array<import('./persist.js').PersistDomain>} */ (['settings', 'profile', 'workDataDeletedDates', 'workData'])) {
+    for (const domain of /** @type {Array<import('./persist.ts').PersistDomain>} */ (['settings', 'profile', 'workDataDeletedDates', 'workData'])) {
       assert.equal(matchesDomainSchema(domain, []), false, domain)
     }
   })

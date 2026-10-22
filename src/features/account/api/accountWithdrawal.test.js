@@ -4,7 +4,7 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf } = createFakeSupabase()
-mock.module('../../../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../../../data/cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
 const { requestAccountWithdrawal } = await import('./accountWithdrawal.js')
 

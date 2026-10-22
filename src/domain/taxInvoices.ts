@@ -1,6 +1,6 @@
 // 세금계산서(tax_invoices) 순수 계산 — 금액 파싱, 차량/거래처 id 해소, upsert 행 조립,
-// 서버 행 병합. 실제 Supabase I/O는 data/sync/syncTaxInvoicesTable.js가, 하이드레이트 병합
-// 호출은 data/hydrate/hydrate.js가 한다. 타입은 기존 InvoiceLike/CarLike 재사용.
+// 서버 행 병합. 실제 Supabase I/O는 data/sync/syncTaxInvoicesTable.ts가, 하이드레이트 병합
+// 호출은 data/hydrate/hydrate.ts가 한다. 타입은 기존 InvoiceLike/CarLike 재사용.
 import type { JsonValue } from './jsonTypes.ts'
 import type { InvoiceLike } from './financeTaxInvoiceEntries.ts'
 import type { CarLike } from './financeTypes.ts'

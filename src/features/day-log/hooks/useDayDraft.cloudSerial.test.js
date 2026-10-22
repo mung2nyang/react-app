@@ -5,7 +5,7 @@ import { mock, test } from 'node:test'
 import { createFakeSupabase } from '../../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
-mock.module('../../../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../../../data/cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
@@ -14,11 +14,11 @@ const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { useDayDraft } = await import('./useDayDraft.js')
-const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.js')
-const { setHydration } = await import('../../../data/store/app-store.js')
-const { commitCars, commitWorkData } = await import('../../../data/store/commitHelpers.js')
-const { readOwnerWorkData } = await import('../../../data/store/ownerDataHooks.js')
-const { hasBusyDayDraft } = await import('../../../data/sync/dayDraftActivity.js')
+const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.ts')
+const { setHydration } = await import('../../../data/store/app-store.ts')
+const { commitCars, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
+const { readOwnerWorkData } = await import('../../../data/store/ownerDataHooks.ts')
+const { hasBusyDayDraft } = await import('../../../data/sync/dayDraftActivity.ts')
 
 const DK = '2026-10-21'
 const FAIL_FAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'

@@ -12,9 +12,9 @@ const {
   getState,
   setHydration,
   subscribe,
-} = await import('./app-store.js')
-const { commitCars, commitWorkData } = await import('./commitHelpers.js')
-const { storageKeyFor } = await import('./persist.js')
+} = await import('./app-store.ts')
+const { commitCars, commitWorkData } = await import('./commitHelpers.ts')
+const { storageKeyFor } = await import('./persist.ts')
 
 function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)

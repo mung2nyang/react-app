@@ -5,7 +5,7 @@
  * @typedef {'loading' | 'redirect' | 'allow'} SessionGateResult
  */
 
-/** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
 
 /**
  * @param {{ booting: boolean, session: AppSession | null, guestModePersisted?: boolean }} args

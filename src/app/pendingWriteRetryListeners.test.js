@@ -20,14 +20,14 @@ let retryPendingDayWritesFn = () => {}
 /** @type {(event: Event) => void} */
 let guardBeforeUnloadFn = () => {}
 
-mock.module('../data/sync/pendingWorkDataWrites.js', {
+mock.module('../data/sync/pendingWorkDataWrites.ts', {
   namedExports: {
     hasPendingDayWrites: () => hasPendingDayWritesImpl(),
     retryPendingDayWrites: () => { retryPendingDayWritesFn() },
     registerPendingDayWrite: () => false,
   },
 })
-mock.module('../data/sync/durableWriteGuard.js', {
+mock.module('../data/sync/durableWriteGuard.ts', {
   namedExports: {
     guardBeforeUnload: (/** @type {Event} */ event) => { guardBeforeUnloadFn(event) },
     hasAnyUnsafeRegistration: () => hasAnyUnsafeRegistrationImpl(),

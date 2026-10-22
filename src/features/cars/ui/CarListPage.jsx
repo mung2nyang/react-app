@@ -9,12 +9,12 @@ import useCarListActions from '../hooks/useCarListActions.js'
 import { hasMainCar } from '../../../domain/cars.ts'
 import { NEW_DRIVER_INCOME_DRAFT, driverIncomeDraftFromCar } from '../../../domain/driverIncomeDeductions.ts'
 import { resolveDriverShareBase } from '../../../domain/driverShareBase.ts'
-import { getCloudUserId, isCloudSession } from '../../../data/cloud/cloudSession.js'
+import { getCloudUserId, isCloudSession } from '../../../data/cloud/cloudSession.ts'
 import { generateInviteCode } from '../../../domain/drivers.ts'
 import { todayIsoDate } from '../api/carInviteFromDraft.js'
-import { useOwnerCars, useOwnerDrivers } from '../../../data/store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers } from '../../../data/store/ownerDataHooks.ts'
 import './car-management.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('./CarFormModal.jsx').CarFormDraft} CarFormDraft */
 

@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
-import { requestClientReorder } from '../../../data/sync/clientMutations.js'
-import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
+import { requestClientReorder } from '../../../data/sync/clientMutations.ts'
+import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
 /**

@@ -3,19 +3,19 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-const { writeJsonKey, storageKeyFor, storageKeyForLog } = await import('./persist.js')
-const { getState, subscribe } = await import('./app-store.js')
-const { initializeOwnerFromPersist } = await import('./owner-state.js')
-const { commitCars, commitWorkData, commitLogWorkData } = await import('./commitHelpers.js')
-const { inspectLogPending } = await import('../sync/logPendingLifecycle.js')
+const { writeJsonKey, storageKeyFor, storageKeyForLog } = await import('./persist.ts')
+const { getState, subscribe } = await import('./app-store.ts')
+const { initializeOwnerFromPersist } = await import('./owner-state.ts')
+const { commitCars, commitWorkData, commitLogWorkData } = await import('./commitHelpers.ts')
+const { inspectLogPending } = await import('../sync/logPendingLifecycle.ts')
 const {
   pendingDayWriteCount, hasUnsafePendingWrites, registerPendingDayWrite, retryPendingDayWrites,
-} = await import('../sync/pendingWorkDataWrites.js')
-const { fallback, keyOf } = await import('../sync/pendingWorkDataWritesState.js')
-const { markUnsafeRegistrationFailure, listUnsafeRegistrations } = await import('../sync/durableWriteGuard.js')
-const { pendingOwnerForLog } = await import('../sync/pendingLogOwner.js')
+} = await import('../sync/pendingWorkDataWrites.ts')
+const { fallback, keyOf } = await import('../sync/pendingWorkDataWritesState.ts')
+const { markUnsafeRegistrationFailure, listUnsafeRegistrations } = await import('../sync/durableWriteGuard.ts')
+const { pendingOwnerForLog } = await import('../sync/pendingLogOwner.ts')
 
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
+/** @typedef {import('../sync/pendingWorkDataWritesTypes.ts').EffectivePatch} EffectivePatch */
 
 const PATCH = /** @type {EffectivePatch} */ ({
   isOff: false, fixedCount: 3, palletCount: 0,

@@ -3,18 +3,18 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-const { storageKeyFor, storageKeyForLog } = await import('./persist.js')
-const { getState, subscribe, commitBatch } = await import('./app-store.js')
-const { initializeOwnerFromPersist } = await import('./owner-state.js')
-const { saveProfile } = await import('../sync/profileSave.js')
-const { commitCars, commitClients, commitInvoices } = await import('./commitHelpers.js')
-const { saveExpenses } = await import('../sync/expensesSave.js')
+const { storageKeyFor, storageKeyForLog } = await import('./persist.ts')
+const { getState, subscribe, commitBatch } = await import('./app-store.ts')
+const { initializeOwnerFromPersist } = await import('./owner-state.ts')
+const { saveProfile } = await import('../sync/profileSave.ts')
+const { commitCars, commitClients, commitInvoices } = await import('./commitHelpers.ts')
+const { saveExpenses } = await import('../sync/expensesSave.ts')
 const { upsertExpense, emptyExpenseDraft } = await import('../../domain/expenseDraft.ts')
 const { persistInvoiceRecord } = await import('../../domain/invoices.ts')
 const { buildTaxInvoiceEntry } = await import('../../domain/financeTaxInvoiceEntries.ts')
-const { pendingDayWriteCount, hasUnsafePendingWrites } = await import('../sync/pendingWorkDataWrites.js')
-const { readPersistDomain } = await import('./persistDomainRead.js')
-const { readLogWorkData } = await import('./persist.js')
+const { pendingDayWriteCount, hasUnsafePendingWrites } = await import('../sync/pendingWorkDataWrites.ts')
+const { readPersistDomain } = await import('./persistDomainRead.ts')
+const { readLogWorkData } = await import('./persist.ts')
 
 function methodCounts() {
   return { ...stubSupabaseCallCounts }

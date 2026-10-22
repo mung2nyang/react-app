@@ -1,6 +1,6 @@
 // @ts-check
 // 회원탈퇴: delete_own_account RPC만 호출. 세션 정리·이동은 호출부가 onGoAuth로 처리.
-import { supabase } from '../../../data/cloud/supabaseClient.js'
+import { supabase } from '../../../data/cloud/supabaseClient.ts'
 
 const SUCCESS_TOAST = '탈퇴가 완료되었습니다.'
 const FAIL_TOAST = '탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.'

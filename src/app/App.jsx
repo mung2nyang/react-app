@@ -7,20 +7,20 @@ import WelcomeProfileView from '../features/account/ui/WelcomeProfileView.jsx'
 import BootRetryScreen from './shell/BootRetryScreen.jsx'
 import LoadFailScreen from './shell/LoadFailScreen.jsx'
 import PageLoadErrorBoundary from './shell/PageLoadErrorBoundary.jsx'
-import { ensureProfileRow } from '../data/cloud/supabaseClient.js'
-import { endCloudSession } from '../data/cloud/cloudSession.js'
-import { hydrateFromSupabase } from '../data/hydrate/hydrate.js'
-import { ownerKeyFromSession } from '../data/cloud/appSession.js'
+import { ensureProfileRow } from '../data/cloud/supabaseClient.ts'
+import { endCloudSession } from '../data/cloud/cloudSession.ts'
+import { hydrateFromSupabase } from '../data/hydrate/hydrate.ts'
+import { ownerKeyFromSession } from '../data/cloud/appSession.ts'
 import { AccountFlowBodyClass, PendingWriteRetryBridge } from './providers.jsx'
 import AuthRoute from './routes/AuthRoute.jsx'
 import AppShell from './shell/AppShell.jsx'
 import RequireSession from './routes/RequireSession.jsx'
-import { applyOnboardingWizard } from '../data/sync/onboardingFinish.js'
+import { applyOnboardingWizard } from '../data/sync/onboardingFinish.ts'
 import { GUEST_APP_SESSION, setGuestModePersisted } from './guestSessionPersist.js'
 import { useAppSession } from './useAppSession.js'
 import ToastMessage from './shell/ToastMessage.jsx'
 import { ToastProvider } from '../shared/hooks/useToast.js'
-import { SessionProvider } from '../data/cloud/sessionContext.js'
+import { SessionProvider } from '../data/cloud/sessionContext.ts'
 import '../shared/styles/variables.css'
 import '../shared/styles/app-base.css'
 import '../shared/styles/account-flow.css'
@@ -37,7 +37,7 @@ import '../shared/styles/header-controls.css'
 import '../shared/styles/shared-controls.css'
 import '../shared/styles/modal-form.css'
 
-/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.ts').AppSession} AppSession */
 
 export default function App() {
   const navigate = useNavigate()
@@ -124,7 +124,7 @@ export default function App() {
               <div className="container account-flow-container">
                 <OnboardingPage
                   accountType={session?.accountType || 'owner_driver'}
-                  onFinish={async (/** @type {import('../data/sync/onboardingFinish.js').OnboardingWizard} */ wizard) => {
+                  onFinish={async (/** @type {import('../data/sync/onboardingFinish.ts').OnboardingWizard} */ wizard) => {
                     const outcome = await applyOnboardingWizard({
                       ownerKey,
                       userId: session?.userId,

@@ -7,8 +7,8 @@
 import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { writeAllOrNothing } from './atomicPersist.js'
-import { readJsonKey, storageKeyFor, writeJsonKey } from './persist.js'
+import { writeAllOrNothing } from './atomicPersist.ts'
+import { readJsonKey, storageKeyFor, writeJsonKey } from './persist.ts'
 
 // Storage 전역 이름에 기대지 않고 프로토타입에서 원본 setItem을 직접 캡처한다 —
 // jsdom이 항상 전역 Storage 생성자를 노출한다는 보장이 없다.

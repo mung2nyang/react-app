@@ -1,11 +1,11 @@
 // @ts-check
-// 새로고침 시 Supabase 세션을 복원하는 흐름만 — 세션 만들기(소속기사 판정·ownerKey)는 data/cloud/appSession.js.
-import { supabase } from '../data/cloud/supabaseClient.js'
-import { hydrateFromSupabase } from '../data/hydrate/hydrate.js'
-import { singleFlight } from '../data/cloud/singleFlight.js'
-import { LINK_RETRY_MS, buildBootSession, isProfileRowMissing, ownerKeyFromSession } from '../data/cloud/appSession.js'
+// 새로고침 시 Supabase 세션을 복원하는 흐름만 — 세션 만들기(소속기사 판정·ownerKey)는 data/cloud/appSession.ts.
+import { supabase } from '../data/cloud/supabaseClient.ts'
+import { hydrateFromSupabase } from '../data/hydrate/hydrate.ts'
+import { singleFlight } from '../data/cloud/singleFlight.ts'
+import { LINK_RETRY_MS, buildBootSession, isProfileRowMissing, ownerKeyFromSession } from '../data/cloud/appSession.ts'
 
-/** @typedef {import('../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../data/sync/syncTypes.ts').AppSession} AppSession */
 
 /**
  * needsProfile: 내 profiles 행이 없어 홈 대신 기본 정보 화면(/welcome)으로 보내야 함.

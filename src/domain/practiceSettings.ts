@@ -1,4 +1,4 @@
-// 앱 설정 순수 계산부. 저장과 화면 테마 적용(applyTheme)은 data/sync/settingsSave.js.
+// 앱 설정 순수 계산부. 저장과 화면 테마 적용(applyTheme)은 data/sync/settingsSave.ts.
 // 프리셋(운행 횟수 버튼·노선 이름표) 함수는 practicePresets.ts — 여기서 다시 내보낸다.
 import { normalizePinnedLocations } from './locationShortcuts.ts'
 import { normalizeFixedRoutePresets, normalizeRunCountPresets } from './practicePresets.ts'

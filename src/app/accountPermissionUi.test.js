@@ -21,7 +21,7 @@ const { act } = React
 const { default: MyPage } = await import('../features/account/ui/MyPage.jsx')
 const { default: SideMenu } = await import('./shell/SideMenu.jsx')
 const { default: CarListPage } = await import('../features/cars/ui/CarListPage.jsx')
-const { commitBatch } = await import('../data/store/app-store.js')
+const { commitBatch } = await import('../data/store/app-store.ts')
 
 describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
   test('마이페이지: "차주" / "소속 기사" 역할 뱃지가 렌더되지 않는다', async () => {

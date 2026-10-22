@@ -8,7 +8,7 @@ import {
   mergeWorkDataFromRows,
   mergeExpenseKind,
   findMainCar,
-} from './hydrateMerge.js'
+} from './hydrateMerge.ts'
 
 describe('throwIfAnyHydrateError', () => {
   test('전부 에러가 없으면 조용히 통과한다', () => {
@@ -246,11 +246,11 @@ describe('mergeCarsFromRows', () => {
 })
 
 describe('mergeDriversFromRows — 슬라이스 B 보완: 서버 빈 배열은 삭제 신호다', () => {
-  /** @param {Array<import('./hydrateMergeTypes.js').LocalDriver>} d */
+  /** @param {Array<import('./hydrateMergeTypes.ts').LocalDriver>} d */
   const asLocal = (d) => d
-  /** @param {Array<import('./hydrateMergeTypes.js').LocalCar>} c */
+  /** @param {Array<import('./hydrateMergeTypes.ts').LocalCar>} c */
   const asCars = (c) => c
-  /** @param {Array<import('./hydrateMergeTypes.js').DriverLinkRow>} r */
+  /** @param {Array<import('./hydrateMergeTypes.ts').DriverLinkRow>} r */
   const asRows = (r) => r
   const cars = asCars([{ id: 'car-1', number: '11가1111', supabaseId: 700 }])
 
@@ -292,7 +292,7 @@ describe('mergeDriversFromRows — 슬라이스 B 보완: 서버 빈 배열은 �
 })
 
 describe('mergeClientsFromRows — 슬라이스 C: 서버 빈 배열은 삭제 신호다', () => {
-  /** @param {Array<import('./hydrateMergeTypes.js').LocalClient>} c */
+  /** @param {Array<import('./hydrateMergeTypes.ts').LocalClient>} c */
   const asLocalClients = (c) => c
 
   test('조회 실패(배열 아님)면 로컬 유지, 빈 배열은 서버 정본이라 []다', () => {
@@ -314,7 +314,7 @@ describe('mergeClientsFromRows — 슬라이스 C: 서버 빈 배열은 삭제 �
 
   test('서버 행이 있으면 기존처럼 병합한다', () => {
     const local = asLocalClients([{ id: 'cli-1', companyName: '한진', supabaseId: 700, phone: '010-1' }])
-    /** @type {Array<import('./hydrateMergeTypes.js').ClientRow>} */
+    /** @type {Array<import('./hydrateMergeTypes.ts').ClientRow>} */
     const rows = [{ id: 700, legacy_client_id: 'cli-1', company_name: '한진', is_pinned: false, raw: { phone: '010-1' } }]
     const merged = mergeClientsFromRows(local, rows)
     assert.equal(merged.length, 1)

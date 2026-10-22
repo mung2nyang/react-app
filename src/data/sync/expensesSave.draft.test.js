@@ -4,10 +4,10 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
-const { saveExpenseDraft, deleteExpense } = await import('./expensesSave.js')
-const { commitExpenses } = await import('../store/commitHelpers.js')
-const { getState } = await import('../store/app-store.js')
-const { readJsonKey, storageKeyFor } = await import('../store/persist.js')
+const { saveExpenseDraft, deleteExpense } = await import('./expensesSave.ts')
+const { commitExpenses } = await import('../store/commitHelpers.ts')
+const { getState } = await import('../store/app-store.ts')
+const { readJsonKey, storageKeyFor } = await import('../store/persist.ts')
 const { DEVICE_SAVE_FAIL } = await import('../../shared/utils/failureMessages.js')
 
 const e1 = { id: 'e1', kind: /** @type {'maint'} */ ('maint'), date: '2026-08-01', name: '오일', category: '엔진/미션', payment: '카드', cost: 10000 }

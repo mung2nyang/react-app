@@ -8,13 +8,13 @@ const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
 Object.assign(fakeSupabase.auth, {
   getSession: async () => ({ data: { session: { user: { id: 'driver-1' } } }, error: null }),
 })
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
 const {
   formatInviteCode, generateInviteCode, INVITE_CODE_PATTERN, normalizeInviteCode, upsertDriver,
 } = await import('../../domain/drivers.ts')
 const { buildDriverInviteSmsHref } = await import('../../features/drivers/api/driverInviteSms.js')
-const { redeemDriverInviteCode } = await import('./driverLinkRpc.js')
+const { redeemDriverInviteCode } = await import('./driverLinkRpc.ts')
 
 const draft = { name: '박기사', phone: '010-3333-4444', vehicleNumber: '', startDate: '', endDate: '' }
 
@@ -70,7 +70,7 @@ describe('초대 문자', () => {
 describe('기사 초대코드 수락', () => {
   test('서버에 정리된 코드를 보내고, 빈 결과는 틀림·만료 안내로 바꾼다', async () => {
     resetHandlers()
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue|undefined>} */
+    /** @type {Array<import('../store/atomicPersist.ts').JsonValue|undefined>} */
     const sent = []
     handlers.rpc = { redeem_driver_invite_code: (args) => { sent.push(args); return { data: [], error: null } } }
     await assert.rejects(

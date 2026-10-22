@@ -8,7 +8,7 @@ Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
-const { SessionProvider, useSession } = await import('./sessionContext.js')
+const { SessionProvider, useSession } = await import('./sessionContext.ts')
 
 /** @param {(value: ReturnType<typeof useSession>) => void} seen */
 function Probe({ seen }) {

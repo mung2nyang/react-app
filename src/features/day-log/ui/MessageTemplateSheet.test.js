@@ -11,7 +11,7 @@ import {
   fillMessageTemplatePattern,
   getDefaultMessageTemplatePatterns,
   saveMessageTemplateSettings,
-} from '../../../data/sync/messageTemplates.js'
+} from '../../../data/sync/messageTemplates.ts'
 
 const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globalThis)
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true

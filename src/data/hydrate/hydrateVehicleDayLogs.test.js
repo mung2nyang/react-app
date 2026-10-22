@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
+import { logIdForCar, mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.ts'
 
 describe('logIdForCar', () => {
   test('main -> main, sub -> plate, empty -> null', () => {

@@ -1,4 +1,4 @@
-// 계산서 순수 계산부. 저장은 data/sync/invoicesSave.js.
+// 계산서 순수 계산부. 저장은 data/sync/invoicesSave.ts.
 import {
   getTaxInvoiceFlowMeta,
   getTaxInvoiceRecordId,

@@ -10,18 +10,18 @@ import { beforeEach, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
-mock.module('../../../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../../../data/cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
 /** @type {Array<string>} */
 let flow = []
 const NEXT_SESSION = { userId: 'driver-1', name: '기사', phone: '', accountType: 'owner_driver', linkedOwnerId: null, guestMode: false }
-mock.module('../../../data/cloud/appSession.js', {
+mock.module('../../../data/cloud/appSession.ts', {
   namedExports: {
     buildCloudAppSession: async (/** @type {string} */ userId) => { flow.push(`session:${userId}`); return NEXT_SESSION },
     ownerKeyFromSession: (/** @type {{ userId: string }} */ session) => session.userId,
   },
 })
-mock.module('../../../data/hydrate/hydrate.js', {
+mock.module('../../../data/hydrate/hydrate.ts', {
   namedExports: {
     hydrateFromSupabase: async (/** @type {string} */ userId, /** @type {string} */ ownerKey, /** @type {{ employedDriver: boolean }} */ options) => {
       flow.push(`hydrate:${userId}:${ownerKey}:${options.employedDriver}`)
@@ -37,9 +37,9 @@ const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: EmployerLinkCard } = await import('./EmployerLinkCard.jsx')
-const { commitDrivers } = await import('../../../data/store/commitHelpers.js')
-const { setHydration } = await import('../../../data/store/app-store.js')
-const { beginSessionEpoch } = await import('../../../data/cloud/cloudSession.js')
+const { commitDrivers } = await import('../../../data/store/commitHelpers.ts')
+const { setHydration } = await import('../../../data/store/app-store.ts')
+const { beginSessionEpoch } = await import('../../../data/cloud/cloudSession.ts')
 
 const OWNER = 'owner-1'
 const DRIVER = 'driver-1'

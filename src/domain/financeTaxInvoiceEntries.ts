@@ -17,7 +17,7 @@ export type TaxInvoiceGroup = {
   vehicleNumbers?: Array<string>
 }
 
-/** 저장된 계산서 발급 상태(data/sync/syncTaxInvoicesTable.js가 다루는 값) */
+/** 저장된 계산서 발급 상태(data/sync/syncTaxInvoicesTable.ts가 다루는 값) */
 export type TaxInvoiceRecord = {
   id?: string
   flow?: string

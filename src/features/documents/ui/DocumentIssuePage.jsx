@@ -7,15 +7,15 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { resolveLogSettings } from '../../../domain/carSettingsScope.ts'
-import { hasAnyDailyInspection } from '../../../data/sync/dailyInspections.js'
-import { vehicleSupabaseIdForLog } from '../../../data/sync/mainDayLogRouting.js'
-import { useOwnerSettings } from '../../../data/store/ownerDataHooks.js'
+import { hasAnyDailyInspection } from '../../../data/sync/dailyInspections.ts'
+import { vehicleSupabaseIdForLog } from '../../../data/sync/mainDayLogRouting.ts'
+import { useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import ReportPage from './ReportPage.jsx'
 import DailyInspectionMonthSheet from './DailyInspectionMonthSheet.jsx'
 import TaxInvoiceTab from './TaxInvoiceTab.jsx'
 import './documents.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {Object} props

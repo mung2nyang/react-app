@@ -16,7 +16,7 @@ function totalSupabaseCalls() {
 }
 
 fakeSupabase.auth.getSession = async () => ({ data: { session: null }, error: null })
-mock.module('../data/cloud/supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.ts', {
   namedExports: {
     supabase: fakeSupabase,
     getSupabaseAuthErrorMessage: (error) => error?.message || '',
@@ -43,17 +43,17 @@ async function unmountTracked(root) {
 }
 const { BrowserRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
-const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.js')
+const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.ts')
 const {
   hasPendingDayWrites, pendingDayWriteCount, retryPendingDayWrites,
   getPendingDayWrite,
-} = await import('../data/sync/pendingWorkDataWrites.js')
-const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../data/sync/durableWriteGuard.js')
-const { endCloudSession } = await import('../data/cloud/cloudSession.js')
-const { durableKey } = await import('../data/sync/durableStorage.js')
+} = await import('../data/sync/pendingWorkDataWrites.ts')
+const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../data/sync/durableWriteGuard.ts')
+const { endCloudSession } = await import('../data/cloud/cloudSession.ts')
+const { durableKey } = await import('../data/sync/durableStorage.ts')
 const { clearGuestModePersisted } = await import('./guestSessionPersist.js')
-const { getState, subscribe } = await import('../data/store/app-store.js')
-const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
+const { getState, subscribe } = await import('../data/store/app-store.ts')
+const { readJsonKey, storageKeyFor } = await import('../data/store/persist.ts')
 const { normalizeSettings } = await import('../domain/practiceSettings.ts')
 const { DEVICE_SAVE_FAIL } = await import('../shared/utils/failureMessages.js')
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { singleFlight, resetSingleFlightForTests } from './singleFlight.js'
+import { singleFlight, resetSingleFlightForTests } from './singleFlight.ts'
 
 describe('singleFlight', () => {
   test('같은 key로 동시에 부르면 factory는 한 번만 실행되고 같은 Promise를 공유한다', async () => {

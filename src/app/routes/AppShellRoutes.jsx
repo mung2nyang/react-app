@@ -23,9 +23,9 @@ import {
   MessageSettingsPage,
   NotificationsPage,
 } from './lazyPages.js'
-import { useSession } from '../../data/cloud/sessionContext.js'
+import { useSession } from '../../data/cloud/sessionContext.ts'
 
-/** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
 
 /**
  * @param {Object} props

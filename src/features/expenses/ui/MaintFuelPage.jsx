@@ -8,14 +8,14 @@ import MaintFuelDayList from './MaintFuelDayList.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.ts'
 import { getExpensesForLog } from '../../../domain/expenseScope.ts'
-import { deleteExpense, saveExpenseDraft } from '../../../data/sync/expensesSave.js'
+import { deleteExpense, saveExpenseDraft } from '../../../data/sync/expensesSave.ts'
 import { filterMonth, groupExpensesByDate, KINDS, monthTotal } from '../../../domain/expenses.ts'
 import { emptyExpenseDraft, expenseToDraft } from '../../../domain/expenseDraft.ts'
 import { formatWon } from '../../../domain/money.ts'
-import { useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../../../data/store/ownerDataHooks.ts'
 import './maint-fuel.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
 /** @typedef {import('../../../domain/expenseTypes.ts').ExpenseDraft} ExpenseDraft */

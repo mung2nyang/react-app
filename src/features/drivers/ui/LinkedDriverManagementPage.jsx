@@ -11,7 +11,7 @@ import {
   getLinkedDriverClientInvoiceGroups, getLinkedDriverSettlementDetail,
 } from '../../../domain/finance.ts'
 import { setYearMonth, shiftMonth } from '../../../domain/calendar.ts'
-import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
+import { buildFinanceSettings } from '../../../data/sync/ownerFinance.ts'
 import {
   useOwnerCars,
   useOwnerClients,
@@ -19,14 +19,14 @@ import {
   useOwnerProfile,
   useOwnerSettings,
   useOwnerWorkDataByLogId,
-} from '../../../data/store/ownerDataHooks.js'
+} from '../../../data/store/ownerDataHooks.ts'
 import CarBusinessInfoSection from './CarBusinessInfoSection.jsx'
 import ClientInvoiceGroups from './ClientInvoiceGroups.jsx'
 import SettlementSummaryCard from './SettlementSummaryCard.jsx'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './linked-driver.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 function GearIcon() {
   return (

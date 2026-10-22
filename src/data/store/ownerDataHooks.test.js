@@ -7,8 +7,8 @@ import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from '../../domain/finance.
 
 const { getOwnerMonthlyFinanceDetail } = await import('../../domain/financeOwnerDetail.ts')
 const { getReceivableItems } = await import('../../domain/financeReceivables.ts')
-const { commitLogWorkData, commitWorkData } = await import('./commitHelpers.js')
-const { readOwnerWorkDataByLogId } = await import('./ownerDataHooks.js')
+const { commitLogWorkData, commitWorkData } = await import('./commitHelpers.ts')
+const { readOwnerWorkDataByLogId } = await import('./ownerDataHooks.ts')
 
 describe('Step 9 slice C — readOwnerWorkDataByLogId', () => {
   test('missing owner returns stable { main: {} }', () => {

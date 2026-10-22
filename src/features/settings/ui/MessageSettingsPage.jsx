@@ -7,7 +7,7 @@ import {
   getReportShareMessagePattern,
   resetMessageTemplateSettings,
   saveMessageTemplateSettings,
-} from '../../../data/sync/messageTemplates.js'
+} from '../../../data/sync/messageTemplates.ts'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 import './message-settings.css'

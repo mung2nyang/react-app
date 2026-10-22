@@ -11,9 +11,9 @@ import {
   readOwnerProfile,
   readOwnerSettings,
   readOwnerWorkDataByLogId,
-} from '../../../data/store/ownerDataHooks.js'
-import { getCloudOwnerKey, isHydrationReady } from '../../../data/cloud/cloudSession.js'
-import { fetchVehiclesDailyInspections } from '../../../data/sync/dailyInspections.js'
+} from '../../../data/store/ownerDataHooks.ts'
+import { getCloudOwnerKey, isHydrationReady } from '../../../data/cloud/cloudSession.ts'
+import { fetchVehiclesDailyInspections } from '../../../data/sync/dailyInspections.ts'
 
 /**
  * 서버에서 다 불러오기 전엔 빈 파일이 나가지 않게 막는다.

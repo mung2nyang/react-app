@@ -2,16 +2,16 @@
 // 회원 데이터 불러오기(22-C): 파일의 일상점검표 중 서버에 없는 날짜만 더한다.
 // 점검표는 Store에 없고 저장이 "차량+날짜 덮어쓰기"라, 고르기 전에 서버에 있는 날짜를 먼저 읽는다.
 // 점검자 이름·조치 기록은 파일 그대로(그날 점검한 사람 기록), 점검 항목은 기존 정리 규칙으로 거른다.
-import { readOwnerCars } from '../../../data/store/ownerDataHooks.js'
-import { isPlainObject } from '../../../data/store/persistDomainRecords.js'
+import { readOwnerCars } from '../../../data/store/ownerDataHooks.ts'
+import { isPlainObject } from '../../../data/store/persistDomainRecords.ts'
 import { isValidCalendarDateKey } from '../../../domain/dateKey.ts'
 import { sanitizeInspectionItems } from '../../../domain/dailyInspectionItems.ts'
-import { fetchVehiclesDailyInspections, saveDailyInspection } from '../../../data/sync/dailyInspections.js'
+import { fetchVehiclesDailyInspections, saveDailyInspection } from '../../../data/sync/dailyInspections.ts'
 import { isOwnUnlinkedCar } from './memberRestoreRecords.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
-/** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
+/** @typedef {import('../../../data/sync/dailyInspections.ts').DailyInspection} DailyInspection */
 /** @typedef {DailyInspection & { vehicleId: string|number, workDate: string }} InspectionPick */
 
 const INVALID_FILE = '파일 내용이 올바르지 않습니다.'

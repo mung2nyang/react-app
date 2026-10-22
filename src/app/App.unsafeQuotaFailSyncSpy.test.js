@@ -19,11 +19,11 @@ const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: DayLogPage } = await import('../features/day-log/ui/DayLogPage.jsx')
 const { MemoryRouter } = await import('react-router-dom')
-const { commitClients, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.js')
-const { hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../data/sync/durableWriteGuard.js')
+const { commitClients, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.ts')
+const { hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../data/sync/durableWriteGuard.ts')
 const { normalizeSettings } = await import('../domain/practiceSettings.ts')
-const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
-const { getState } = await import('../data/store/app-store.js')
+const { readJsonKey, storageKeyFor } = await import('../data/store/persist.ts')
+const { getState } = await import('../data/store/app-store.ts')
 
 /** @typedef {import('../domain/clientTypes.ts').ClientLike} ClientLike */
 /** @typedef {import('../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */

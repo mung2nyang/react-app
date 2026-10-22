@@ -1,7 +1,7 @@
 // @ts-check
 import { useMemo } from 'react'
 import { getReceivableItems } from '../../../domain/finance.ts'
-import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
+import { buildFinanceSettings } from '../../../data/sync/ownerFinance.ts'
 import { dueSoonItems, groupByClientMonth } from '../../../domain/receivables.ts'
 import {
   useOwnerCars,
@@ -9,7 +9,7 @@ import {
   useOwnerProfile,
   useOwnerSettings,
   useOwnerWorkDataByLogId,
-} from '../../../data/store/ownerDataHooks.js'
+} from '../../../data/store/ownerDataHooks.ts'
 
 /** @param {string} ownerKey @param {boolean} [isEmployedDriver] */
 export function useReceivablesData(ownerKey, isEmployedDriver = false) {

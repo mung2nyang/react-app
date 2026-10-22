@@ -1,16 +1,16 @@
 // @ts-check
 import { useState } from 'react'
-import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.js'
-import { isCloudSession } from '../../../data/cloud/cloudSession.js'
+import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.ts'
+import { isCloudSession } from '../../../data/cloud/cloudSession.ts'
 import InviteRedeemModal from './InviteRedeemModal.jsx'
 import DataDownloadModal from './DataDownloadModal.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import LinkStatusChip from './LinkStatusChip.jsx'
 import './mypage.css'
 import './mypage-shortcuts.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
-/** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../../data/sync/syncTypes.ts').AppSession} AppSession */
 
 function PersonIcon() {
   return (

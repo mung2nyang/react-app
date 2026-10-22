@@ -20,7 +20,7 @@ const order = []
 /** @type {Record<string, boolean>} */
 const failStep = {}
 
-mock.module('../../../data/store/ownerDataHooks.js', {
+mock.module('../../../data/store/ownerDataHooks.ts', {
   namedExports: {
     readOwnerCars: () => cars,
     readOwnerDrivers: () => drivers,
@@ -30,8 +30,8 @@ mock.module('../../../data/store/ownerDataHooks.js', {
     readOwnerInvoices: () => [],
   },
 })
-mock.module('../../../data/cloud/cloudSession.js', { namedExports: { getCloudUserId: () => 'o-1' } })
-mock.module('../../../data/sync/clientCloudSave.js', {
+mock.module('../../../data/cloud/cloudSession.ts', { namedExports: { getCloudUserId: () => 'o-1' } })
+mock.module('../../../data/sync/clientCloudSave.ts', {
   namedExports: {
     saveClientsToCloud: async (/** @type {{ next: object[] }} */ args) => {
       order.push('clients')
@@ -39,22 +39,22 @@ mock.module('../../../data/sync/clientCloudSave.js', {
     },
   },
 })
-mock.module('../../../data/sync/expensesSave.js', {
+mock.module('../../../data/sync/expensesSave.ts', {
   namedExports: { saveExpenses: async () => { order.push('expenses'); if (failStep.expenses) throw new Error('x') } },
 })
-mock.module('../../../data/sync/dailyInspections.js', {
+mock.module('../../../data/sync/dailyInspections.ts', {
   namedExports: {
     fetchVehiclesDailyInspections: async () => ({}),
     saveDailyInspection: async () => { order.push('inspections') },
   },
 })
-mock.module('../../../data/sync/invoicesSave.js', {
+mock.module('../../../data/sync/invoicesSave.ts', {
   namedExports: { saveInvoices: async () => { order.push('invoices') } },
 })
 mock.module('./memberBackup.js', {
   namedExports: { memberBackupBlockedReason: () => (ready ? null : '기록을 아직 불러오는 중입니다.') },
 })
-mock.module('../../../data/sync/dayLogCloudCommit.js', {
+mock.module('../../../data/sync/dayLogCloudCommit.ts', {
   namedExports: {
     commitMainDayLogMapToCloud: async (/** @type {{ logId: string, dateKeys: string[], previousData: Record<string, object>, nextData: Record<string, object> }} */ args) => {
       commits.push(args)

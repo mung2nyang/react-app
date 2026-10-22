@@ -10,10 +10,10 @@ import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
 import CalendarSubLogBanner from './CalendarSubLogBanner.jsx'
-import useMonthSettlement from '../../../data/store/useMonthSettlement.js'
+import useMonthSettlement from '../../../data/store/useMonthSettlement.ts'
 import './calendar-grid.css'
 import './calendar.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 const YEAR_OPTIONS = getYearOptions()
 

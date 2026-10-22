@@ -7,8 +7,8 @@ import { PageSkeleton } from '../../shared/ui/Skeleton.jsx'
 import SideMenu, { preloadSideMenuBanner } from './SideMenu.jsx'
 import PullRefreshIndicator from './PullRefreshIndicator.jsx'
 import useNotifications from '../../features/notifications/hooks/useNotifications.js'
-import { confirmLeaveIfUnsafe } from '../../data/sync/durableWriteGuard.js'
-import { useOwnerCars, useOwnerDrivers } from '../../data/store/ownerDataHooks.js'
+import { confirmLeaveIfUnsafe } from '../../data/sync/durableWriteGuard.ts'
+import { useOwnerCars, useOwnerDrivers } from '../../data/store/ownerDataHooks.ts'
 import PageLoadErrorBoundary from './PageLoadErrorBoundary.jsx'
 import HydrationRetryBanner from './HydrationRetryBanner.jsx'
 import OfflineBanner from './OfflineBanner.jsx'
@@ -19,9 +19,9 @@ import usePageTransition from './usePageTransition.js'
 import { withFromLogState } from './fromLogNavigation.js'
 import { chooseMove, historyIdx, markRewind, popPanelGuardThen } from '../../shared/utils/historyMoves.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
-import { useSession } from '../../data/cloud/sessionContext.js'
+import { useSession } from '../../data/cloud/sessionContext.ts'
 
-/** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
 
 // 옛 appPage 식별자 → 실제 라우트 경로. SideMenu/MyPage/알림패널이 공유한다.
 /** @type {Record<string, string>} */

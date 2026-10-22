@@ -7,14 +7,14 @@ import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
 const { mock } = await import('node:test')
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { persistReceivableWorkDataChange, markMonthlyReceivablesPaid } = await import('./ownerFinance.js')
-const { commitMainDayLogMapToCloud, commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { setHydration, getState } = await import('../store/app-store.js')
-const { commitCars, commitLogWorkData, commitWorkData } = await import('../store/commitHelpers.js')
-const { readOwnerLogWorkData, readOwnerWorkData } = await import('../store/ownerDataHooks.js')
+const { persistReceivableWorkDataChange, markMonthlyReceivablesPaid } = await import('./ownerFinance.ts')
+const { commitMainDayLogMapToCloud, commitMainDayLogToCloud } = await import('./dayLogCloudCommit.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { setHydration, getState } = await import('../store/app-store.ts')
+const { commitCars, commitLogWorkData, commitWorkData } = await import('../store/commitHelpers.ts')
+const { readOwnerLogWorkData, readOwnerWorkData } = await import('../store/ownerDataHooks.ts')
 const { getReceivableItems, getDetailPaymentSummary } = await import('../../domain/finance.ts')
 const { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK } = await import('../../domain/finance.fixtures.ts')
 const { markReceivableItemPaid, addPartialPayment, toggleCallPaymentStatus } = await import('../../domain/payments.ts')
@@ -285,7 +285,7 @@ describe('64 receivables cloud commit — 기사 차량', () => {
 
   test('H-1 — 기사 차량 운행 입금 완료: 그 차량으로 서버 저장 후 Store 반영', async () => {
     beginWithSubCar('u-rc-h1', 'rc-h1')
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const upserts = []
     handlers.daily_logs = { upsert: (row) => { upserts.push(row ?? null); return { data: { id: 6001 }, error: null } } }
     commitLogWorkData('rc-h1', PLATE, subLog('h1-d1'))

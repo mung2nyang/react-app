@@ -16,7 +16,7 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
 const { default: CarListPage } = await import('./CarListPage.jsx')
-const { commitCars } = await import('../../../data/store/commitHelpers.js')
+const { commitCars } = await import('../../../data/store/commitHelpers.ts')
 
 test('같은 차량 id가 두 번 커밋돼도 목록 key 경고가 나지 않는다', async () => {
   const ownerKey = 'sot-cars-dup-key'

@@ -17,8 +17,8 @@ const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: CarBusinessInfoSection } = await import('./CarBusinessInfoSection.jsx')
-const { commitCars } = await import('../../../data/store/commitHelpers.js')
-const { getState } = await import('../../../data/store/app-store.js')
+const { commitCars } = await import('../../../data/store/commitHelpers.ts')
+const { getState } = await import('../../../data/store/app-store.ts')
 
 const OWNER_PROFILE = { bizName: '차주상사', bizNumber: '111-22-33333', bankName: '차주은행', accountNumber: '000-111', accountHolder: '차주명의' }
 

@@ -22,7 +22,7 @@ const cars = [
 ]
 const drivers = [{ id: 'd-1', status: 'linked', vehicleNumber: '56다7890' }]
 
-mock.module('../../../data/store/ownerDataHooks.js', {
+mock.module('../../../data/store/ownerDataHooks.ts', {
   namedExports: {
     readOwnerCars: () => cars,
     readOwnerDrivers: () => drivers,
@@ -31,8 +31,8 @@ mock.module('../../../data/store/ownerDataHooks.js', {
     readOwnerInvoices: () => invoices,
   },
 })
-mock.module('../../../data/cloud/cloudSession.js', { namedExports: { getCloudUserId: () => 'o-1' } })
-mock.module('../../../data/sync/clientCloudSave.js', {
+mock.module('../../../data/cloud/cloudSession.ts', { namedExports: { getCloudUserId: () => 'o-1' } })
+mock.module('../../../data/sync/clientCloudSave.ts', {
   namedExports: {
     saveClientsToCloud: async (/** @type {{ next: Array<Record<string, unknown>>, changedIds: string[] }} */ args) => {
       clientSaves.push(args)
@@ -40,7 +40,7 @@ mock.module('../../../data/sync/clientCloudSave.js', {
     },
   },
 })
-mock.module('../../../data/sync/expensesSave.js', {
+mock.module('../../../data/sync/expensesSave.ts', {
   namedExports: {
     saveExpenses: async (/** @type {string} */ _owner, /** @type {Array<Record<string, unknown>>} */ items) => {
       expenseSaves.push(items)
@@ -48,7 +48,7 @@ mock.module('../../../data/sync/expensesSave.js', {
     },
   },
 })
-mock.module('../../../data/sync/invoicesSave.js', { namedExports: { saveInvoices: async () => {} } })
+mock.module('../../../data/sync/invoicesSave.ts', { namedExports: { saveInvoices: async () => {} } })
 
 const { describeRestoreCounts, pickMemberRecords, restoreClients, restoreExpenses } = await import('./memberRestoreRecords.js')
 

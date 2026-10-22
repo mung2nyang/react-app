@@ -4,13 +4,13 @@ import { todayKey } from '../../../domain/expenses.ts'
 import { todayWorkLogSelection } from '../../../domain/calendar.ts'
 import { formatWon } from '../../../domain/money.ts'
 import { getDdayLabel, overdueItems } from '../../../domain/receivables.ts'
-import { buildFinanceSettings, loadWorkDataByLogId } from '../../../data/sync/ownerFinance.js'
+import { buildFinanceSettings, loadWorkDataByLogId } from '../../../data/sync/ownerFinance.ts'
 import { getReceivableItems } from '../../../domain/finance.ts'
-import { readJsonKey } from '../../../data/store/persist.js'
-import { commitDismissedNotifications } from '../../../data/store/commitHelpers.js'
-import { readOwnerDrivers, readOwnerSettings } from '../../../data/store/ownerDataHooks.js'
-import { getLastBackupAt } from '../../../data/sync/guestBackup.js'
-import { isCloudSession } from '../../../data/cloud/cloudSession.js'
+import { readJsonKey } from '../../../data/store/persist.ts'
+import { commitDismissedNotifications } from '../../../data/store/commitHelpers.ts'
+import { readOwnerDrivers, readOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
+import { getLastBackupAt } from '../../../data/sync/guestBackup.ts'
+import { isCloudSession } from '../../../data/cloud/cloudSession.ts'
 
 /** @typedef {import('../../../domain/financeReceivables.ts').ReceivableItemLike} ReceivableItemLike */
 
@@ -40,7 +40,7 @@ export function dismissNotification(ownerKey, id) {
 
 /**
  * @param {string} [ownerKey]
- * @param {import('../../../data/cloud/cloudSession.js').AppSession|null} [session]
+ * @param {import('../../../data/cloud/cloudSession.ts').AppSession|null} [session]
  */
 export function collectNotifications(ownerKey = 'guest', session = null) {
   const dismissed = loadDismissed(ownerKey)

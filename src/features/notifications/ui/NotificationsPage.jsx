@@ -1,15 +1,15 @@
 // @ts-check
 // 알림 화면(알림 단추 → /app/notifications): 맨 위 "알림 받기" 종류별 스위치 + 알림 목록(날짜 줄·[닫기]). 옆 창(NotificationPanel)을 대체.
-import { isCloudSession } from '../../../data/cloud/cloudSession.js'
+import { isCloudSession } from '../../../data/cloud/cloudSession.ts'
 import { dismissNotification } from '../api/notifications.js'
 import useNotifications from '../hooks/useNotifications.js'
-import { savePracticeSettings } from '../../../data/sync/settingsSave.js'
-import { useOwnerSettings } from '../../../data/store/ownerDataHooks.js'
+import { savePracticeSettings } from '../../../data/sync/settingsSave.ts'
+import { useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './notifications-page.css'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {ReturnType<typeof useNotifications>[number]} NotificationItem */
 

@@ -1,7 +1,7 @@
 // 저장된 세금계산서(33칸·공급자 사업자 정보) 검사의 통과/거부를 칸마다 못 박는다 — 검사 코드를 라이브러리로 바꿔도 결과가 같아야 한다.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { isPersistedInvoice } from './persistDomainInvoice.js'
+import { isPersistedInvoice } from './persistDomainInvoice.ts'
 
 /** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 

@@ -8,9 +8,9 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
-const { saveWorkDataWithTombstoneCheck, saveWorkData } = await import('./workDataSave.js')
-const { commitBatch, getState, subscribe } = await import('../store/app-store.js')
-const { readJsonKey } = await import('../store/persist.js')
+const { saveWorkDataWithTombstoneCheck, saveWorkData } = await import('./workDataSave.ts')
+const { commitBatch, getState, subscribe } = await import('../store/app-store.ts')
+const { readJsonKey } = await import('../store/persist.ts')
 
 test('날짜가 실제로 지워지면(있었는데 없어짐) workData 커밋과 같은 트랜잭션에 tombstone을 기록한다', () => {
   const ownerKey = 'wd-tombstone-delete'

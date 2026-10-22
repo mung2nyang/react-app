@@ -17,14 +17,14 @@ const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: PersonalInfoPage } = await import('./PersonalInfoPage.jsx')
-const { commitDrivers } = await import('../../../data/store/commitHelpers.js')
+const { commitDrivers } = await import('../../../data/store/commitHelpers.ts')
 
 const LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습니다.'
 const CONFIRM_MSG = '정말 탈퇴하시겠습니까?'
 
 /**
  * @param {string} ownerKey
- * @param {import('../../../data/sync/syncTypes.js').AppSession} session
+ * @param {import('../../../data/sync/syncTypes.ts').AppSession} session
  */
 async function clickWithdraw(ownerKey, session) {
   /** @type {Array<string>} */

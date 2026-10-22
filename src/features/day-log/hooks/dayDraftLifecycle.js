@@ -1,17 +1,17 @@
 // @ts-check
 // 일지 한 날짜의 저장 담당 — 타이머·저장 대기·판 번호·서버 저장 중을 한곳에 두고 기기/서버 저장과 결과 처리를 한다.
 import { saveDayRecord } from '../../../domain/day-record.ts'
-import { pendingOwnerForLog } from '../../../data/sync/pendingLogOwner.js'
-import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../../data/sync/durableWriteGuard.js'
-import { clearPendingDayWrite, registerPendingDayWrite } from '../../../data/sync/pendingWorkDataWrites.js'
-import { saveLogWorkDataWithTombstoneCheck } from '../../../data/sync/workDataSave.js'
-import { commitMainDayLogToCloud } from '../../../data/sync/dayLogCloudCommit.js'
-import { shouldCommitDayLogToCloud } from '../../../data/sync/mainDayLogRouting.js'
-import { readOwnerLogWorkData } from '../../../data/store/ownerDataHooks.js'
-import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../../data/sync/dayDraftActivity.js'
+import { pendingOwnerForLog } from '../../../data/sync/pendingLogOwner.ts'
+import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../../data/sync/durableWriteGuard.ts'
+import { clearPendingDayWrite, registerPendingDayWrite } from '../../../data/sync/pendingWorkDataWrites.ts'
+import { saveLogWorkDataWithTombstoneCheck } from '../../../data/sync/workDataSave.ts'
+import { commitMainDayLogToCloud } from '../../../data/sync/dayLogCloudCommit.ts'
+import { shouldCommitDayLogToCloud } from '../../../data/sync/mainDayLogRouting.ts'
+import { readOwnerLogWorkData } from '../../../data/store/ownerDataHooks.ts'
+import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../../data/sync/dayDraftActivity.ts'
 import { DEVICE_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
-/** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
+/** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.ts').EffectivePatch} EffectivePatch */
 /** @typedef {Record<string, import('../../../domain/dayRecordTypes.ts').DayRecordLike>} WorkMap */
 /** @typedef {import('./day-log-reducer.js').DayDraft} DayDraft */
 /** @typedef {'idle'|'pending'|'saved'|'failed'} AutoSaveState */

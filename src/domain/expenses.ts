@@ -1,4 +1,4 @@
-// 지출 순수 계산부(상수·달 계산·화면 표시). 입력값·검사·목록 고치기는 expenseDraft.ts, 저장은 data/sync/expensesSave.js, 타입 정본은 expenseTypes.ts.
+// 지출 순수 계산부(상수·달 계산·화면 표시). 입력값·검사·목록 고치기는 expenseDraft.ts, 저장은 data/sync/expensesSave.ts, 타입 정본은 expenseTypes.ts.
 import type { ExpenseItem } from './expenseTypes.ts'
 
 export const KINDS = [

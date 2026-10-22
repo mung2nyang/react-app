@@ -1,8 +1,8 @@
 // @ts-check
 // hydrate 실패를 배너로 알리고 다시 시도 버튼을 준다(편집 보호는 hydrate.js가 맡고, 여기는 표시만).
 import { useEffect, useState } from 'react'
-import { getState, subscribe } from '../../data/store/app-store.js'
-import { retryHydrate } from '../../data/hydrate/hydrate.js'
+import { getState, subscribe } from '../../data/store/app-store.ts'
+import { retryHydrate } from '../../data/hydrate/hydrate.ts'
 import { useToast } from '../../shared/hooks/useToast.js'
 
 const bannerStyle = {

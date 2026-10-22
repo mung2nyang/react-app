@@ -5,9 +5,9 @@ import { removeCallDetail, upsertCallDetail } from '../../../domain/call-details
 import { getDetailPaymentSummary } from '../../../domain/finance.ts'
 import { togglePinnedLocation as togglePinnedLocationIn } from '../../../domain/locationShortcuts.ts'
 import { toggleCallPaymentStatus } from '../../../domain/payments.ts'
-import { savePracticeSettings } from '../../../data/sync/settingsSave.js'
+import { savePracticeSettings } from '../../../data/sync/settingsSave.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../ui/dayLogTypes.js').ClientLike} ClientLike */
 /** @typedef {import('../ui/dayLogTypes.js').Settings} Settings */

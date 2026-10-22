@@ -3,10 +3,10 @@
 // 달은 서류 발급이 주고, 위 카드 = 달 이동 → 서류 탭 줄 → [작성 전][발급 완료].
 import { useMemo, useState } from 'react'
 import { getTaxInvoiceFlowMeta } from '../../../domain/finance.ts'
-import { saveInvoices } from '../../../data/sync/invoicesSave.js'
+import { saveInvoices } from '../../../data/sync/invoicesSave.ts'
 import { lastDayOfMonth, listMonthInvoices, invoiceCanIssue } from '../../../domain/invoices.ts'
 import { formatWon } from '../../../domain/money.ts'
-import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
+import { buildFinanceSettings } from '../../../data/sync/ownerFinance.ts'
 import { changeTaxInvoiceStatus, saveTaxInvoiceDraft } from '../api/taxInvoiceActions.js'
 import { exportTaxInvoiceExcel } from '../api/taxInvoiceExcel.js'
 import {
@@ -18,14 +18,14 @@ import {
   useOwnerProfile,
   useOwnerSettings,
   useOwnerWorkDataByLogId,
-} from '../../../data/store/ownerDataHooks.js'
+} from '../../../data/store/ownerDataHooks.ts'
 import SummaryInfoToggle from '../../../shared/ui/SummaryInfoToggle.jsx'
 import TaxInvoiceDraftModal from './TaxInvoiceDraftModal.jsx'
 import TaxInvoiceEntryList from './TaxInvoiceEntryList.jsx'
 import MonthNavigator from '../../../shared/ui/MonthNavigator.jsx'
 import './tax-invoice.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
 

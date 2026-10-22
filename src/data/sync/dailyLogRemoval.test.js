@@ -5,9 +5,9 @@ import { beforeEach, describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { removeDayLogOnServer } = await import('./dailyLogRemoval.js')
+const { removeDayLogOnServer } = await import('./dailyLogRemoval.ts')
 
 /** @param {unknown} value @param {string} key */
 function field(value, key) {

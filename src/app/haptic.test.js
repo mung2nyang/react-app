@@ -12,7 +12,7 @@ import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 const { fakeSupabase, handlers, emptyOkHandlers } = createFakeSupabase()
 Object.assign(handlers, emptyOkHandlers())
 fakeSupabase.auth.getSession = async () => ({ data: { session: null }, error: null })
-mock.module('../data/cloud/supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.ts', {
   namedExports: {
     supabase: fakeSupabase,
     getSupabaseAuthErrorMessage: () => '',

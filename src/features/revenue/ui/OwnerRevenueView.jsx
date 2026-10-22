@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { isVehicleRevenueSharedWithOwner } from '../../../domain/cars.ts'
 import { getOwnerMonthlyFinanceDetail } from '../../../domain/finance.ts'
-import { useOwnerCars, useOwnerDriverExpenses, useOwnerExpenses, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerDriverExpenses, useOwnerExpenses, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.ts'
 import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { RevenuePeriodBar, RevenueYearList } from './RevenuePeriodParts.jsx'
 import { buildYearlyRows, useRevenueFinanceSettings, useRevenuePeriod } from './revenuePeriod.js'
@@ -11,7 +11,7 @@ import { monthKeyOf } from './revenueFormat.js'
 import { scopeSettingsToVehicle, scopeWorkDataToVehicle } from './driverRevenueScope.js'
 import { filterDriverExpensesByVehicle } from '../../../domain/financeOwnerExpenseSweep.ts'
 import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 const SCOPES = [
   { value: 'all', label: '전체 손익' },
   { value: 'owner', label: '차주' },

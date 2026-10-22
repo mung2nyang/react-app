@@ -12,8 +12,8 @@ const React = await import('react')
 const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { default: DriverConnectionPage } = await import('./DriverConnectionPage.jsx')
-const { commitDrivers } = await import('../../../data/store/commitHelpers.js')
-const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.js')
+const { commitDrivers } = await import('../../../data/store/commitHelpers.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.ts')
 
 test('로그인 초대는 수동 연동 버튼 없이 수정·취소만, 비회원 수동 연동은 유지', async () => {
   const ownerKey = 'security-driver-page'

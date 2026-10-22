@@ -10,8 +10,8 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { useDayDraft } = await import('./useDayDraft.js')
-const { commitWorkData } = await import('../../../data/store/commitHelpers.js')
-const { readOwnerLogWorkData } = await import('../../../data/store/ownerDataHooks.js')
+const { commitWorkData } = await import('../../../data/store/commitHelpers.ts')
+const { readOwnerLogWorkData } = await import('../../../data/store/ownerDataHooks.ts')
 
 const DK = '2026-10-20'
 

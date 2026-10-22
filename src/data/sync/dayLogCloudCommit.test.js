@@ -7,14 +7,14 @@ import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
 const { mock } = await import('node:test')
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
-const { shouldCommitDayLogToCloud } = await import('./mainDayLogRouting.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { setHydration, getState } = await import('../store/app-store.js')
-const { commitCars, commitWorkData } = await import('../store/commitHelpers.js')
-const { readJsonKey } = await import('../store/persist.js')
+const { commitMainDayLogToCloud } = await import('./dayLogCloudCommit.ts')
+const { shouldCommitDayLogToCloud } = await import('./mainDayLogRouting.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { setHydration, getState } = await import('../store/app-store.ts')
+const { commitCars, commitWorkData } = await import('../store/commitHelpers.ts')
+const { readJsonKey } = await import('../store/persist.ts')
 
 const FAIL_FAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 const DK = '2026-10-10'
@@ -177,14 +177,14 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
 })
 
 describe('로드맵 69 — 그날 콜 상세는 서버 함수 한 번으로 교체', () => {
-  /** @param {Array<import('../store/atomicPersist.js').JsonValue>} calls */
+  /** @param {Array<import('../store/atomicPersist.ts').JsonValue>} calls */
   function captureRpc(calls) {
     handlers.rpc = { replace_transport_details: (args) => { calls.push(args ?? null); return { data: null, error: null } } }
   }
 
   test('69-1: 콜 2건 저장 — 서버 함수 1회, 표에 직접 지우기·넣기 0회, 칸 값 그대로', async () => {
     beginLoggedIn('u1', 'dlc-69a')
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const calls = []
     captureRpc(calls)
     const callDetails = [
@@ -225,7 +225,7 @@ describe('로드맵 69 — 그날 콜 상세는 서버 함수 한 번으로 교�
 
   test('69-3: 콜 0건이면 빈 목록으로 서버 함수 1회(그날 콜 지우기만)', async () => {
     beginLoggedIn('u1', 'dlc-69c')
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const calls = []
     captureRpc(calls)
 

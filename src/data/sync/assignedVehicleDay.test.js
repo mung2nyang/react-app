@@ -5,15 +5,15 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { isPersistedDayRecord, parsePersistedWorkDataMap } = await import('../store/persistDayRecord.js')
-const { mergeWorkDataFromRows } = await import('../hydrate/hydrateMergeWork.js')
+const { isPersistedDayRecord, parsePersistedWorkDataMap } = await import('../store/persistDayRecord.ts')
+const { mergeWorkDataFromRows } = await import('../hydrate/hydrateMergeWork.ts')
 const { saveDayRecord } = await import('../../domain/day-record.ts')
-const { commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { setHydration, getState } = await import('../store/app-store.js')
-const { commitCars, commitWorkData } = await import('../store/commitHelpers.js')
+const { commitMainDayLogToCloud } = await import('./dayLogCloudCommit.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { setHydration, getState } = await import('../store/app-store.ts')
+const { commitCars, commitWorkData } = await import('../store/commitHelpers.ts')
 
 const DK = '2026-09-20'
 const PLATE = '11가1111'
@@ -68,7 +68,7 @@ describe('서버 쓰기(commitMainDayLogToCloud)', () => {
   function begin(ownerKey, record) {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const upserts = []
     handlers.daily_logs = { upsert: (row) => { upserts.push(row ?? null); return { data: { id: 5001 }, error: null } } }
     handlers.maintenance_records = { select: () => ({ data: [{ id: 'm-1' }], error: null }) }

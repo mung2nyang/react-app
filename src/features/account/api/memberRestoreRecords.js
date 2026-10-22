@@ -1,14 +1,14 @@
 // @ts-check
 // 회원 데이터 불러오기(22-B): 파일의 거래처·지출·세금계산서 중 지금 없는 것만 고르고, 기존 저장 길로 더한다.
 // 같은 것 판단: 거래처는 업체명·번호, 지출·계산서는 번호. 내 차량이 아니거나 연동 차량 기록은 건너뛴다.
-import { readOwnerCars, readOwnerClients, readOwnerDrivers, readOwnerExpenses, readOwnerInvoices } from '../../../data/store/ownerDataHooks.js'
-import { isPersistedClient, isPersistedExpense, isPlainObject } from '../../../data/store/persistDomainRecords.js'
-import { isPersistedInvoice } from '../../../data/store/persistDomainInvoice.js'
+import { readOwnerCars, readOwnerClients, readOwnerDrivers, readOwnerExpenses, readOwnerInvoices } from '../../../data/store/ownerDataHooks.ts'
+import { isPersistedClient, isPersistedExpense, isPlainObject } from '../../../data/store/persistDomainRecords.ts'
+import { isPersistedInvoice } from '../../../data/store/persistDomainInvoice.ts'
 import { isValidCalendarDateKey } from '../../../domain/dateKey.ts'
-import { saveClientsToCloud } from '../../../data/sync/clientCloudSave.js'
-import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
-import { saveExpenses } from '../../../data/sync/expensesSave.js'
-import { saveInvoices } from '../../../data/sync/invoicesSave.js'
+import { saveClientsToCloud } from '../../../data/sync/clientCloudSave.ts'
+import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
+import { saveExpenses } from '../../../data/sync/expensesSave.ts'
+import { saveInvoices } from '../../../data/sync/invoicesSave.ts'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */

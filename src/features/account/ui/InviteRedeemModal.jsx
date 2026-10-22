@@ -1,14 +1,14 @@
 // @ts-check
-/** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../../data/sync/syncTypes.ts').AppSession} AppSession */
 import { useState } from 'react'
-import { redeemDriverInviteCode } from '../../../data/sync/driverLinkRpc.js'
-import { buildCloudAppSession, ownerKeyFromSession } from '../../../data/cloud/appSession.js'
-import { hydrateFromSupabase } from '../../../data/hydrate/hydrate.js'
+import { redeemDriverInviteCode } from '../../../data/sync/driverLinkRpc.ts'
+import { buildCloudAppSession, ownerKeyFromSession } from '../../../data/cloud/appSession.ts'
+import { hydrateFromSupabase } from '../../../data/hydrate/hydrate.ts'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import './InviteRedeemModal.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {{ onClose: () => void, onLinked: (session: AppSession) => void }} props

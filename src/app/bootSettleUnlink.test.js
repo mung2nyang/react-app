@@ -5,9 +5,9 @@ import { beforeEach, mock, test } from 'node:test'
 import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
-mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { buildCloudAppSession } = await import('../data/cloud/appSession.js')
+const { buildCloudAppSession } = await import('../data/cloud/appSession.ts')
 
 /** @type {Array<string>} */
 let order = []

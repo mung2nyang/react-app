@@ -4,12 +4,12 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers, countOf } = createFakeSupabase()
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
 const {
   buildEmployedDriverSnapshot,
   remapEmployedDriverWorkLogs,
-} = await import('./hydrateEmployedDriver.js')
+} = await import('./hydrateEmployedDriver.ts')
 
 describe('remapEmployedDriverWorkLogs', () => {
   test('(a) 번호판 키 서버 일지 → workLogs.main, 번호판 키 없음', () => {

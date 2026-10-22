@@ -1,6 +1,6 @@
 // @ts-check
 import { parseCurrencyValue } from '../../../domain/money.ts'
-import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../../data/sync/messageTemplates.js'
+import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../../data/sync/messageTemplates.ts'
 import './message-template.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { buildSmsHref } from '../../../domain/smsHref.ts'

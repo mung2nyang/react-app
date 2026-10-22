@@ -11,8 +11,8 @@ const {
   endCloudSession,
   isCloudSession,
   isSessionStillCurrent,
-} = await import('./cloudSession.js')
-const { setHydration, getState } = await import('../store/app-store.js')
+} = await import('./cloudSession.ts')
+const { setHydration, getState } = await import('../store/app-store.ts')
 
 describe('isCloudSession', () => {
   test('userId가 있고 guestMode가 아니면 true', () => {

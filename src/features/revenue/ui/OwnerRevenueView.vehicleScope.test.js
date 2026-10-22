@@ -15,7 +15,7 @@ const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: OwnerRevenueView } = await import('./OwnerRevenueView.jsx')
-const { commitCars, commitExpenses } = await import('../../../data/store/commitHelpers.js')
+const { commitCars, commitExpenses } = await import('../../../data/store/commitHelpers.ts')
 
 /** @param {HTMLElement} container @param {string} text */
 function clickButton(container, text) {

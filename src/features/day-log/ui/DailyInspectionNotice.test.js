@@ -9,14 +9,14 @@ import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, mock, test } from 'node:test'
 
-/** @type {import('../../../data/sync/dailyInspections.js').DailyInspection|null} */
+/** @type {import('../../../data/sync/dailyInspections.ts').DailyInspection|null} */
 let serverRecord = null
 let failFetch = false
 /** @type {Promise<null>|null} */
 let holdFetch = null
 /** @type {Array<Record<string, unknown>>} */
 let saved = []
-mock.module('../../../data/sync/dailyInspections.js', {
+mock.module('../../../data/sync/dailyInspections.ts', {
   namedExports: {
     fetchDailyInspection: async () => { if (holdFetch) return holdFetch; if (failFetch) throw new Error('down'); return serverRecord },
     saveDailyInspection: async (/** @type {Record<string, unknown>} */ input) => { saved.push(input) },
@@ -31,8 +31,8 @@ const { withToast } = await import('../../../testSupport/withToast.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: DailyInspectionNotice } = await import('./DailyInspectionNotice.jsx')
-const { commitCars, commitProfile } = await import('../../../data/store/commitHelpers.js')
-const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.js')
+const { commitCars, commitProfile } = await import('../../../data/store/commitHelpers.ts')
+const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.ts')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')
 
 const OWNER = 'di-notice-owner'

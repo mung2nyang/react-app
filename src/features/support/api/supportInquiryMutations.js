@@ -1,13 +1,13 @@
 // @ts-check
 /** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 고객센터 문의 — 로컬 캐시 없이 support_inquiries insert·조회(Fail-Fast).
-import { supabase } from '../../../data/cloud/supabaseClient.js'
+import { supabase } from '../../../data/cloud/supabaseClient.ts'
 import {
   assertCloudWriteReady,
   assertSessionStillCurrent,
   captureSession,
-} from '../../../data/cloud/cloudSession.js'
-import { StaleSessionError } from '../../../data/sync/saveErrors.js'
+} from '../../../data/cloud/cloudSession.ts'
+import { StaleSessionError } from '../../../data/sync/saveErrors.ts'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../../shared/utils/failureMessages.js'
 
 const SUCCESS_TOAST = '문의가 접수되었습니다.'

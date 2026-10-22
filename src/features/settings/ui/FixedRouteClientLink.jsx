@@ -5,8 +5,8 @@ import FixedRouteClientModal from './FixedRouteClientModal.jsx'
 import { fixedRouteCandidates } from '../../../domain/clientDraft.ts'
 import { getFixedRouteClient } from '../../../domain/clients.ts'
 import { formatCurrencyInput } from '../../../domain/money.ts'
-import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useOwnerClients } from '../../../data/store/ownerDataHooks.ts'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {Object} props

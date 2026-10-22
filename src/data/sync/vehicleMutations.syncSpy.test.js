@@ -4,15 +4,15 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 
-const { commitCars, commitLogWorkData } = await import('../store/commitHelpers.js')
-const { getState, subscribe, setHydration } = await import('../store/app-store.js')
-const { requestVehicleSave } = await import('./vehicleMutations.js')
-const { requestVehicleDeletion } = await import('./directMutationActions.js')
-const { storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { pendingOwnerForLog } = await import('./pendingLogOwner.js')
-const { registerPendingDayWrite, getPendingDayWrite } = await import('./pendingWorkDataWrites.js')
-const { durableKey } = await import('./durableStorage.js')
+const { commitCars, commitLogWorkData } = await import('../store/commitHelpers.ts')
+const { getState, subscribe, setHydration } = await import('../store/app-store.ts')
+const { requestVehicleSave } = await import('./vehicleMutations.ts')
+const { requestVehicleDeletion } = await import('./directMutationActions.ts')
+const { storageKeyFor, storageKeyForLog } = await import('../store/persist.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { pendingOwnerForLog } = await import('./pendingLogOwner.ts')
+const { registerPendingDayWrite, getPendingDayWrite } = await import('./pendingWorkDataWrites.ts')
+const { durableKey } = await import('./durableStorage.ts')
 
 function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)

@@ -15,8 +15,8 @@ Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 /** @typedef {import('../../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
 
 const save = { fail: false }
-const { commitExpenses } = await import('../../../data/store/commitHelpers.js')
-const { storageKeyFor } = await import('../../../data/store/persist.js')
+const { commitExpenses } = await import('../../../data/store/commitHelpers.ts')
+const { storageKeyFor } = await import('../../../data/store/persist.ts')
 const storageProto = Object.getPrototypeOf(localStorage)
 const originalSetItem = storageProto.setItem
 mock.method(storageProto, 'setItem', /** @this {Storage} @param {string} key @param {string} value */ function patchedSetItem(key, value) {
@@ -31,7 +31,7 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { MemoryRouter } = await import('react-router-dom')
 const { default: MaintFuelPage } = await import('./MaintFuelPage.jsx')
-const { getState } = await import('../../../data/store/app-store.js')
+const { getState } = await import('../../../data/store/app-store.ts')
 const { saveFailMessage } = await import('../../../shared/utils/failureMessages.js')
 
 /** 오늘 기준 offset 달의 day일 — 'YYYY-MM-DD' @param {number} offset @param {number} day */

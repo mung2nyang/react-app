@@ -2,8 +2,8 @@
 // 차주·연동 기사 매출 화면이 같이 쓰는 것: 보는 달·탭과 이동, 계산 설정 준비, 12달 순이익 줄.
 import { useMemo, useState } from 'react'
 import { shiftMonth } from '../../../domain/calendar.ts'
-import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
-import { useOwnerCars, useOwnerDrivers, useOwnerProfile, useOwnerSettings } from '../../../data/store/ownerDataHooks.js'
+import { buildFinanceSettings } from '../../../data/sync/ownerFinance.ts'
+import { useOwnerCars, useOwnerDrivers, useOwnerProfile, useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
 import { monthKeyOf } from './revenueFormat.js'
 
 /** 년 매출이면 1년, 월 매출이면 1달씩 옮긴다. */

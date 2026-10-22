@@ -5,14 +5,14 @@ import { describe, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { requestVehicleSave } = await import('./vehicleMutations.js')
-const { saveExpenses } = await import('./expensesSave.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { getState, setHydration } = await import('../store/app-store.js')
-const { commitCars, commitClients, commitDrivers, commitExpenses, commitSettings } = await import('../store/commitHelpers.js')
-const { readJsonKey } = await import('../store/persist.js')
+const { requestVehicleSave } = await import('./vehicleMutations.ts')
+const { saveExpenses } = await import('./expensesSave.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { getState, setHydration } = await import('../store/app-store.ts')
+const { commitCars, commitClients, commitDrivers, commitExpenses, commitSettings } = await import('../store/commitHelpers.ts')
+const { readJsonKey } = await import('../store/persist.ts')
 
 const OLD = '99가9999'
 const NEW = '99가9998'
@@ -87,7 +87,7 @@ describe('66 기사 차량 번호 변경 — 묶인 것 옮기기', () => {
   test('R-2 로그인: 서버 함수 1회 → 차량 저장 1회 → 화면 전부 새 번호', async () => {
     const owner = 'own-r2'
     beginLoggedIn(owner)
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const rpcArgs = []
     handlers.rpc = { rename_sub_vehicle: (args) => { rpcArgs.push(args ?? null); return { data: [{ old_number: OLD, new_number: NEW, clients_updated: 1 }], error: null } } }
     seed(owner)
@@ -157,7 +157,7 @@ describe('66 기사 차량 번호 변경 — 묶인 것 옮기기', () => {
     const owner = 'own-r5'
     beginLoggedIn(owner)
     handlers.rpc = { rename_sub_vehicle: () => ({ data: [], error: null }) }
-    /** @type {Array<import('../store/atomicPersist.js').JsonValue>} */
+    /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const fuelRows = []
     handlers.daily_logs = { select: () => ({ data: [], error: null }), upsert: () => ({ data: { id: 'dl-1' }, error: null }) }
     handlers.fuel_records = { insert: (rows) => { fuelRows.push(...(Array.isArray(rows) ? rows : [rows ?? null])); return { data: null, error: null } } }

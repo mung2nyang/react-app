@@ -3,7 +3,7 @@
 import { Route, Routes } from 'react-router-dom'
 import ReceivablesListPage from './ReceivablesListPage.jsx'
 import ReceivablesDetailPage from './ReceivablesDetailPage.jsx'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {Object} props

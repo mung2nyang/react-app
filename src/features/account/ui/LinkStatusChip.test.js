@@ -16,7 +16,7 @@ const { withSession } = await import('../../../testSupport/withSession.js')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: MyPage } = await import('./MyPage.jsx')
-const { replaceOwnerState } = await import('../../../data/store/owner-state.js')
+const { replaceOwnerState } = await import('../../../data/store/owner-state.ts')
 
 const OWNER = 'cloud:driver-85'
 const LINK = { id: 'link-1', name: '홍길동', phone: '010-1111-2222', inviteCode: '123456', status: 'linked', vehicleNumber: '12가3456', startDate: '2026-10-01', endDate: '' }
@@ -32,7 +32,7 @@ async function mount({ accountType, drivers }) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const session = /** @type {import('../../../data/sync/syncTypes.js').AppSession} */ ({ userId: 'driver-85', accountType, name: '홍길동' })
+  const session = /** @type {import('../../../data/sync/syncTypes.ts').AppSession} */ ({ userId: 'driver-85', accountType, name: '홍길동' })
   await act(async () => {
     root.render(withSession(React.createElement(MyPage, { onOpen: (/** @type {string} */ page) => { opened.push(page) } }), { session, ownerKey: OWNER }))
   })

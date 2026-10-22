@@ -1,17 +1,17 @@
 // @ts-check
 // 기사 개인정보 화면의 "소속 연결" 카드 — 해제 요청·취소·동의. 해제가 확정되면 내 계정으로 다시 불러온 뒤 화면을 바꾼다(초대코드 연동의 반대 방향).
 import { useState } from 'react'
-import { buildCloudAppSession, ownerKeyFromSession } from '../../../data/cloud/appSession.js'
-import { requestDriverUnlinkAction } from '../../../data/sync/driverUnlink.js'
-import { hydrateFromSupabase } from '../../../data/hydrate/hydrate.js'
-import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.js'
+import { buildCloudAppSession, ownerKeyFromSession } from '../../../data/cloud/appSession.ts'
+import { requestDriverUnlinkAction } from '../../../data/sync/driverUnlink.ts'
+import { hydrateFromSupabase } from '../../../data/hydrate/hydrate.ts'
+import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.ts'
 import DriverUnlinkControls from './DriverUnlinkControls.jsx'
 import { SkeletonLines } from '../../../shared/ui/Skeleton.jsx'
 import './driver-connection.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
-/** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../../data/sync/syncTypes.ts').AppSession} AppSession */
 
 const HYDRATE_FAIL_TOAST = '연동은 해제됐지만 내 기록 일부를 불러오지 못했습니다.'
 
@@ -29,7 +29,7 @@ export default function EmployerLinkCard({ onUnlinked }) {
   const link = drivers.find((driver) => driver.status === 'linked')
   const meId = session?.userId || ''
 
-  /** @param {import('../../../data/sync/driverUnlink.js').UnlinkAction} action */
+  /** @param {import('../../../data/sync/driverUnlink.ts').UnlinkAction} action */
   async function run(action) {
     if (busy || !link || !meId) return
     setBusy(true)

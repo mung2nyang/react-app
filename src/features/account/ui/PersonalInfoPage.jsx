@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../../domain/formatPhone.ts'
 import { requestAccountWithdrawal } from '../api/accountWithdrawal.js'
-import { useHydrationLock } from '../../../data/store/useHydrationLock.js'
-import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.js'
+import { useHydrationLock } from '../../../data/store/useHydrationLock.ts'
+import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.ts'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 import EmployerLinkCard from '../../drivers/ui/EmployerLinkCard.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
@@ -12,7 +12,7 @@ import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import { usePersonalInfoDraft } from '../hooks/usePersonalInfoDraft.js'
 import './PersonalInfoPage.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {null|'first'|'second'} WithdrawStep */
 
@@ -25,7 +25,7 @@ const WITHDRAW_LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습�
  * @param {() => void} [props.onBack]
  * @param {() => void} [props.onGoAuth]
  * @param {(() => void)} [props.onOpenMenu]
- * @param {(next: import('../../../data/sync/syncTypes.js').AppSession) => void} [props.onUnlinked] 기사가 연동 해제를 확정했을 때(7-C-2)
+ * @param {(next: import('../../../data/sync/syncTypes.ts').AppSession) => void} [props.onUnlinked] 기사가 연동 해제를 확정했을 때(7-C-2)
  */
 export default function PersonalInfoPage({ onBack, onGoAuth, onOpenMenu, onUnlinked }) {
   const { ownerKey, session } = useSession()
@@ -41,7 +41,7 @@ export default function PersonalInfoPage({ onBack, onGoAuth, onOpenMenu, onUnlin
 
   // 글자는 즉시 화면에 반영하고 저장은 입력을 멈춘 뒤·칸을 벗어날 때·화면을 나갈 때 묶어서 한다.
   const { get, set, flush } = usePersonalInfoDraft({ ownerKey, profile })
-  /** @param {keyof import('../../../data/hydrate/hydrateMergeTypes.js').LocalProfile} field @param {string} value */
+  /** @param {keyof import('../../../data/hydrate/hydrateMergeTypes.ts').LocalProfile} field @param {string} value */
   function update(field, value) { set(field, value) }
 
   // 연동 중(차주: linked 기사 있음, 기사: employed_driver)이면 탈퇴를 막는다 — 서버 delete_own_account도 거절.

@@ -2,11 +2,11 @@
 // 개인정보 화면 입력 임시값: 글자는 즉시 화면에 보이고, 저장은 묶어서 기존 saveProfile로 한 번에 한다.
 // 로그인 상태의 saveProfile은 서버 저장 뒤에야 Store를 바꾸므로, 글자마다 저장하면 입력이 늦게 보이거나 사라졌다.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { saveProfile } from '../../../data/sync/profileSave.js'
+import { saveProfile } from '../../../data/sync/profileSave.ts'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
-/** @typedef {import('../../../data/hydrate/hydrateMergeTypes.js').LocalProfile} LocalProfile */
+/** @typedef {import('../../../data/hydrate/hydrateMergeTypes.ts').LocalProfile} LocalProfile */
 /** @typedef {Partial<Record<keyof LocalProfile, string>>} ProfileDraft */
 
 export const SAVE_DELAY_MS = 700

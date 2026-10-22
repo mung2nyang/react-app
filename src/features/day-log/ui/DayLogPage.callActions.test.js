@@ -14,7 +14,7 @@ import { mock, test } from 'node:test'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const pinSave = { calls: 0 }
-mock.module('../../../data/sync/settingsSave.js', {
+mock.module('../../../data/sync/settingsSave.ts', {
   namedExports: {
     savePracticeSettings: async () => { pinSave.calls += 1; throw new Error('저장 실패 흉내') },
     applyTheme: () => {},
@@ -28,7 +28,7 @@ const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { BrowserRouter } = await import('react-router-dom')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
-const { commitWorkData } = await import('../../../data/store/commitHelpers.js')
+const { commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { default: DayLogPage } = await import('./DayLogPage.jsx')
 
 const DATE = '2026-10-17'

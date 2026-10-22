@@ -5,11 +5,11 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-const { writeJsonKey, storageKeyFor, storageKeyForLog } = await import('./persist.js')
-const { getState, subscribe } = await import('./app-store.js')
-const { initializeOwnerFromPersist, replaceOwnerState } = await import('./owner-state.js')
-const { commitCars, commitLogWorkData, commitSettings } = await import('./commitHelpers.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
+const { writeJsonKey, storageKeyFor, storageKeyForLog } = await import('./persist.ts')
+const { getState, subscribe } = await import('./app-store.ts')
+const { initializeOwnerFromPersist, replaceOwnerState } = await import('./owner-state.ts')
+const { commitCars, commitLogWorkData, commitSettings } = await import('./commitHelpers.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
 const { normalizeSettings } = await import('../../domain/practiceSettings.ts')
 
 function totalStubCalls() {
@@ -164,9 +164,9 @@ describe('replaceOwnerState — sync:false는 클라우드 동기화를 예약�
 
 describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   test('최소 차량 row는 replace 후 initialize에서도 supabaseId가 남는다', async () => {
-    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { readPersistDomain } = await import('./persistDomainRead.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { readPersistDomain } = await import('./persistDomainRead.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const owner = 'hydrate-car-roundtrip'
     resetStubSupabaseCallCounts()
     const merged = mergeCarsFromRows([], [{ id: 501, number: '11가1111', type: 'main', raw: {} }])
@@ -187,9 +187,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   // 테스트는 hydrateMergeCars.js/hydrateMergeClients.js의 `...raw`를 되돌리면 실패한다 —
   // 되돌려서 확인 후 복원함).
   test('바닐라 personalInfo(phone/bank/account/accountHolder) raw는 initialize 왕복 후 보존된다', async () => {
-    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { readPersistDomain } = await import('./persistDomainRead.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { readPersistDomain } = await import('./persistDomainRead.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const owner = 'hydrate-personalinfo-roundtrip'
     resetStubSupabaseCallCounts()
     const merged = mergeCarsFromRows([], [{
@@ -221,9 +221,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('raw.settlementMode가 bogus여도 안 읽혀 initialize가 성공하지만, 검증기에 bogus를 직접 넣으면 여전히 schema 실패다', async () => {
-    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { readPersistDomain } = await import('./persistDomainRead.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { readPersistDomain } = await import('./persistDomainRead.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const owner = 'hydrate-bogus-enum'
     resetStubSupabaseCallCounts()
     const merged = mergeCarsFromRows([], [{ id: 701, number: '33다3333', type: 'main', raw: JSON.parse('{"settlementMode":"bogus"}') }])
@@ -252,9 +252,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('거래처 raw에 정본 밖 extra 키가 섞여도 persist 가능한 거래처 1건으로 정규화되고 extra 키는 없다', async () => {
-    const { mergeClientsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { readPersistDomain } = await import('./persistDomainRead.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeClientsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { readPersistDomain } = await import('./persistDomainRead.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const owner = 'hydrate-client-extra-key'
     resetStubSupabaseCallCounts()
     // raw는 실제 Supabase JSONB(정본 밖 키가 실제로 섞일 수 있는 "미확인 JSON")라
@@ -291,9 +291,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   // 한 번으로 전부 false(비공유)가 돼 버린다(감지력: 아래 3개는 hydrateMergeCars.js의
   // boolOrOmit을 boolOrFalse로 되돌리면 실패한다 — 되돌려서 확인 후 복원함).
   test('raw:{}인 최소 row는 shareRevenueWithOwner 키가 없고, 소비 쪽 기본값(공유)으로 읽힌다', async () => {
-    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { readPersistDomain } = await import('./persistDomainRead.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { readPersistDomain } = await import('./persistDomainRead.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const { isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.ts')
     const owner = 'hydrate-share-default'
     resetStubSupabaseCallCounts()
@@ -313,8 +313,8 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('raw.shareRevenueWithOwner:false는 정규화·왕복 후에도 false로 남는다', async () => {
-    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const { isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.ts')
     const owner = 'hydrate-share-false'
     resetStubSupabaseCallCounts()
@@ -330,8 +330,8 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('React upsertCar가 실제로 저장하는 모양(불리언 필드 없음)도 hydrate 왕복 후 공유가 true로 유지된다', async () => {
-    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const { upsertCar, isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.ts')
     const owner = 'hydrate-share-upsertcar-shape'
     resetStubSupabaseCallCounts()
@@ -351,9 +351,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   // 로드맵 4-2 — 새 차량 필드(기사 유형·원천징수·필요경비율·산재요율)가 저장 화이트리스트(CAR_KEYS)에서 빠지면
   // 다음 새로고침 때 cars 도메인 전체가 사라진다(과거 subCarSettings 누락 사고와 같은 종류).
   test('기사 유형·원천징수·필요경비율·산재요율은 서버 raw→hydrate→저장→새로고침 왕복 후에도 유지된다', async () => {
-    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { readPersistDomain } = await import('./persistDomainRead.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { readPersistDomain } = await import('./persistDomainRead.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const owner = 'hydrate-income-fields'
     resetStubSupabaseCallCounts()
     const raw = /** @type {Partial<import('../../domain/financeTypes.ts').CarLike>} */ ({ driverIncomeType: 'employee', insuranceOn: false, withholdingOn: true, expenseRate: '43.1', insuranceRate: 2 })
@@ -378,9 +378,9 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('서버 raw의 새 필드 값이 이상하면(잘못된 타입) 그 필드만 빠지고 차량·다른 필드는 남는다', async () => {
-    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { readPersistDomain } = await import('./persistDomainRead.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.ts')
+    const { readPersistDomain } = await import('./persistDomainRead.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const owner = 'hydrate-income-fields-bad'
     resetStubSupabaseCallCounts()
     // 서버가 준 JSON을 흉내 낸다 — 타입이 어긋난 값을 그대로 담기 위해 JSON.parse를 쓴다.
@@ -397,7 +397,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('저장 검증기는 새 필드의 잘못된 타입을 거부하고 올바른 값은 받아들인다', async () => {
-    const { isPersistedCar } = await import('./persistDomainRecords.js')
+    const { isPersistedCar } = await import('./persistDomainRecords.ts')
     const base = { id: 'c1', number: '12가3456' }
     assert.equal(isPersistedCar({ ...base, driverIncomeType: 'business', withholdingOn: false, expenseRate: '30.5', insuranceRate: 1.8 }), true)
     assert.equal(isPersistedCar({ ...base, driverIncomeType: 'x' }), false)
@@ -408,11 +408,11 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   })
 
   test('hydrate 비용 임베드와 expenses는 initialize 뒤 유실·중복 0건이다', async () => {
-    const { mergeWorkDataFromRows } = await import('../hydrate/hydrateMerge.js')
+    const { mergeWorkDataFromRows } = await import('../hydrate/hydrateMerge.ts')
     const { expenseFromFuelRecord, replaceFuelExpenses } = await import('../../domain/fuelRecords.ts')
-    const { readPersistDomain } = await import('./persistDomainRead.js')
-    const { readLogWorkData } = await import('./persist.js')
-    const { commitBatch } = await import('./app-store.js')
+    const { readPersistDomain } = await import('./persistDomainRead.ts')
+    const { readLogWorkData } = await import('./persist.ts')
+    const { commitBatch } = await import('./app-store.ts')
     const owner = 'hydrate-exp-roundtrip'
     resetStubSupabaseCallCounts()
     const fuelRaw = { type: '주유', cost: '80,000', subsidy: '5,000', liter: 40 }

@@ -4,7 +4,7 @@ import { assetPath } from '../../../shared/utils/assetPath.js'
 import { tonnageDigits, tonnageValue } from '../../../domain/formatPhone.ts'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 
-/** @typedef {import('../../../data/sync/onboardingFinish.js').OnboardingWizard} OnboardingWizard */
+/** @typedef {import('../../../data/sync/onboardingFinish.ts').OnboardingWizard} OnboardingWizard */
 
 const BANNER = assetPath('/images/banner_image.png')
 const STEP_SEQUENCE = [1, 2, 3, 4]

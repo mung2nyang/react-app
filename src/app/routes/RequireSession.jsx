@@ -5,9 +5,9 @@ import { Navigate } from 'react-router-dom'
 import { resolveSessionGate } from './sessionGate.js'
 import { isGuestModePersisted } from '../guestSessionPersist.js'
 import LoadingScreen from '../shell/LoadingScreen.jsx'
-import { useSession } from '../../data/cloud/sessionContext.js'
+import { useSession } from '../../data/cloud/sessionContext.ts'
 
-/** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
 
 /**
  * @param {Object} props

@@ -14,7 +14,7 @@ let hasAny = false
 let monthRecords = {}
 /** @type {Promise<typeof monthRecords>|null} */
 let pendingFetch = null
-mock.module('../../../data/sync/dailyInspections.js', {
+mock.module('../../../data/sync/dailyInspections.ts', {
   namedExports: {
     hasAnyDailyInspection: async () => hasAny,
     fetchMonthDailyInspections: async () => (pendingFetch ? pendingFetch : monthRecords),
@@ -29,9 +29,9 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
 const { default: DocumentIssuePage } = await import('./DocumentIssuePage.jsx')
-const { commitCars, commitInvoices, commitLogWorkData, commitProfile, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.js')
+const { commitCars, commitInvoices, commitLogWorkData, commitProfile, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
-const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.js')
+const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.ts')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')
 const { todayKey } = await import('../../../domain/expenses.ts')
 

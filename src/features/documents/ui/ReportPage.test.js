@@ -31,7 +31,7 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { MemoryRouter } = await import('react-router-dom')
 const { default: ReportPage } = await import('./ReportPage.jsx')
-const { commitClients, commitWorkData } = await import('../../../data/store/commitHelpers.js')
+const { commitClients, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 
 /**
  * @param {string} ownerKey

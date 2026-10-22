@@ -1,8 +1,8 @@
 // @ts-check
 // 새 홈 할 일 "오늘 일상점검 안 함": 일지 화면 안내 줄(DailyInspectionNotice)과 같은 조건·같은 서버 읽기. 확인 중·실패면 false(안 보임).
 import { useEffect, useState } from 'react'
-import { fetchDailyInspection } from '../../../data/sync/dailyInspections.js'
-import { vehicleSupabaseIdForLog } from '../../../data/sync/mainDayLogRouting.js'
+import { fetchDailyInspection } from '../../../data/sync/dailyInspections.ts'
+import { vehicleSupabaseIdForLog } from '../../../data/sync/mainDayLogRouting.ts'
 
 /**
  * @param {{ ownerKey: string, dateKey: string, enabled: boolean, isOff: boolean }} input

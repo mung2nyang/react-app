@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import {
   isPersistedFuelItem, isPersistedFuelList, isPersistedMaintItem, isPersistedMaintList, isPersistedMiscItem, isPersistedMiscList,
-} from './persistDayRecordLegacy.js'
+} from './persistDayRecordLegacy.ts'
 
 /** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 /** @typedef {Record<string, JsonValue>} Rec */

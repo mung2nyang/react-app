@@ -8,7 +8,7 @@ import { buildReportExportFile } from '../api/reportExport.js'
 import useFileDownload from '../hooks/useFileDownload.js'
 import { buildDetailReport, detailReportClientOptions } from '../api/reportDetail.js'
 import { buildMonthReport } from '../api/reportSummary.js'
-import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
+import { useOwnerCars, useOwnerClients, useOwnerExpenses, useOwnerProfile, useOwnerSettings, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.ts'
 import MonthNavigator from '../../../shared/ui/MonthNavigator.jsx'
 import ReportDetailContent, { ReportClientPickerModal } from './ReportDetailView.jsx'
 import { ReportSummaryContent } from './ReportSummaryContent.jsx'
@@ -17,7 +17,7 @@ import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './report.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {Object} props

@@ -5,13 +5,13 @@ import { beforeEach, mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, countOf } = createFakeSupabase()
-mock.module('./supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('./supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { syncExpenseItemsForVehicle } = await import('../sync/syncExpenseItems.js')
-const { fetchVehiclesDailyInspections } = await import('../sync/dailyInspections.js')
+const { syncExpenseItemsForVehicle } = await import('../sync/syncExpenseItems.ts')
+const { fetchVehiclesDailyInspections } = await import('../sync/dailyInspections.ts')
 
 /** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
-/** @typedef {import('../store/atomicPersist.js').JsonValue} JsonValue */
+/** @typedef {import('../store/atomicPersist.ts').JsonValue} JsonValue */
 
 /**
  * @param {Array<JsonValue>} rows

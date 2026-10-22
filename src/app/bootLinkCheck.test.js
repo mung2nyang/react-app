@@ -11,11 +11,11 @@ import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers } = createFakeSupabase()
 fakeSupabase.auth.getSession = async () => ({ data: { session: { user: { id: 'driver-1', user_metadata: { name: '기사' }, phone: null } } }, error: null })
-mock.module('../data/cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../data/cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
 /** @type {Array<{ userId: string, ownerKey: string, employedDriver: boolean }>} */
 const hydrated = []
-mock.module('../data/hydrate/hydrate.js', {
+mock.module('../data/hydrate/hydrate.ts', {
   namedExports: {
     hydrateFromSupabase: async (/** @type {string} */ userId, /** @type {string} */ ownerKey, /** @type {{ employedDriver?: boolean }} */ options = {}) => {
       hydrated.push({ userId, ownerKey, employedDriver: !!options.employedDriver })

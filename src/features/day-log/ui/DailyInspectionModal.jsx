@@ -7,7 +7,7 @@ import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/dailyInspectionItems.ts').InspectionItems} InspectionItems */
-/** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
+/** @typedef {import('../../../data/sync/dailyInspections.ts').DailyInspection} DailyInspection */
 
 const INCOMPLETE_TOAST = '모든 항목을 선택해 주세요.'
 

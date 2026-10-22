@@ -11,7 +11,7 @@ import { createFakeSupabase } from '../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
 fakeSupabase.auth.getSession = async () => ({ data: { session: null }, error: null })
-mock.module('../data/cloud/supabaseClient.js', {
+mock.module('../data/cloud/supabaseClient.ts', {
   namedExports: {
     supabase: fakeSupabase,
     getSupabaseAuthErrorMessage: (/** @type {{ message?: string }} */ error) => error?.message || '',
@@ -29,8 +29,8 @@ const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { BrowserRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
-const { storageKeyFor } = await import('../data/store/persist.js')
-const { initializeOwnerFromPersist } = await import('../data/store/owner-state.js')
+const { storageKeyFor } = await import('../data/store/persist.ts')
+const { initializeOwnerFromPersist } = await import('../data/store/owner-state.ts')
 
 const CARS = JSON.stringify([{ id: 'c-main', type: 'main', number: '12가3456' }])
 const BROKEN_EXPENSES = JSON.stringify([{ id: 'e-1', kind: 'maint', date: '2026-10-09', cost: 1000, notAllowed: 'x' }])

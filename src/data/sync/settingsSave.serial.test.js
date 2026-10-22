@@ -6,12 +6,12 @@ import { mock, test } from 'node:test'
 import { createFakeSupabase } from '../../testSupport/fakeSupabaseClient.js'
 
 const { fakeSupabase, handlers, resetHandlers, emptyOkHandlers } = createFakeSupabase()
-mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
+mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupabase } })
 
-const { savePracticeSettings } = await import('./settingsSave.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { setHydration } = await import('../store/app-store.js')
-const { readOwnerSettings } = await import('../store/ownerDataHooks.js')
+const { savePracticeSettings } = await import('./settingsSave.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { setHydration } = await import('../store/app-store.ts')
+const { readOwnerSettings } = await import('../store/ownerDataHooks.ts')
 
 /** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 

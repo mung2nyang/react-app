@@ -4,7 +4,7 @@ import {
   markMonthlyReceivablesPaid,
   patchWorkLog,
   persistReceivableWorkDataChange,
-} from '../../../data/sync/ownerFinance.js'
+} from '../../../data/sync/ownerFinance.ts'
 import {
   addPartialPayment, markReceivableItemPaid, undoLastPayment,
 } from '../../../domain/payments.ts'

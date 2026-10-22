@@ -17,7 +17,7 @@ const calls = []
 /** @type {{ renamedFrom: string|null, savedNumber: string }} */
 const vehicleSaveResult = { renamedFrom: null, savedNumber: '' }
 
-mock.module('../../../data/sync/vehicleMutations.js', {
+mock.module('../../../data/sync/vehicleMutations.ts', {
   namedExports: {
     requestVehicleSave: async (/** @type {{ draft: { number: string } }} */ { draft }) => {
       calls.push('vehicleSave')
@@ -31,13 +31,13 @@ mock.module('../api/carInviteFromDraft.js', {
     saveInviteAfterVehicle: async () => { calls.push('inviteAfterVehicle'); return null },
   },
 })
-mock.module('../../../data/sync/driverUnlink.js', {
+mock.module('../../../data/sync/driverUnlink.ts', {
   namedExports: {
     requestDriverUnlinkAction: async () => { calls.push('unlinkRequest'); return { toast: '해제 요청을 보냈습니다.', failed: false } },
   },
 })
-const { commitCars } = await import('../../../data/store/commitHelpers.js')
-mock.module('../../../data/sync/directMutationActions.js', {
+const { commitCars } = await import('../../../data/store/commitHelpers.ts')
+mock.module('../../../data/sync/directMutationActions.ts', {
   namedExports: {
     requestDriverDeletion: async (/** @type {{ drivers: Array<{ id: string }>, driverId: string }} */ { drivers, driverId }) => {
       calls.push('driverDeletion')
@@ -58,8 +58,8 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { MemoryRouter, useLocation } = await import('react-router-dom')
 const { default: CarListPage } = await import('./CarListPage.jsx')
-const { commitDrivers } = await import('../../../data/store/commitHelpers.js')
-const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.js')
+const { commitDrivers } = await import('../../../data/store/commitHelpers.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.ts')
 
 /** @type {{ pathname: string }} */
 const seen = { pathname: '' }

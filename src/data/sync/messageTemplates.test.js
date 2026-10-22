@@ -34,7 +34,7 @@ const {
   getReportShareMessagePattern,
   resetMessageTemplateSettings,
   saveMessageTemplateSettings,
-} = await import('./messageTemplates.js')
+} = await import('./messageTemplates.ts')
 
 describe('messageTemplates — 문자 문구 localStorage 읽기/쓰기', () => {
   beforeEach(() => {

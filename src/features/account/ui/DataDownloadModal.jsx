@@ -8,7 +8,7 @@ import { addInspectionPicks, applyMemberRestore, planMemberRestore } from '../ap
 import { describeRestoreCounts } from '../api/memberRestoreRecords.js'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../api/memberRestore.js').RestorePlan} RestorePlan */
 

@@ -1,9 +1,9 @@
 // @ts-check
 /** @typedef {import('../../../domain/driverTypes.ts').DriverRecord} DriverRecord */
-/** @typedef {import('../../../data/sync/syncTypes.js').CarRecord} CarRecord */
+/** @typedef {import('../../../data/sync/syncTypes.ts').CarRecord} CarRecord */
 /** @typedef {import('../../../domain/financeTypes.ts').CarLike} CarLike */
 import { normalizeInviteCode, upsertDriver } from '../../../domain/drivers.ts'
-import { requestDriverInviteSave } from '../../../data/sync/requestDriverInviteSave.js'
+import { requestDriverInviteSave } from '../../../data/sync/requestDriverInviteSave.ts'
 
 /**
  * @typedef {Object} CarInviteDraft

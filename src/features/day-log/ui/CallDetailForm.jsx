@@ -14,7 +14,7 @@ import TemporalInput from '../../../shared/ui/TemporalInput.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 import CallDetailPaymentFields, { CallInsuranceFeeField, CallVatExemptRow } from './CallDetailPaymentFields.jsx'
 import './call-detail-form.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전국화물콜', '카카오T트럭커']
 

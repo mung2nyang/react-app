@@ -2,8 +2,8 @@
 /** @typedef {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
 /** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 
-import { requestClientTaxInfo } from '../../../data/sync/clientMutations.js'
-import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
+import { requestClientTaxInfo } from '../../../data/sync/clientMutations.ts'
+import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
 import { getTaxInvoiceFlowMeta } from '../../../domain/finance.ts'
 import { invoiceCanIssue, persistInvoiceRecord } from '../../../domain/invoices.ts'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'

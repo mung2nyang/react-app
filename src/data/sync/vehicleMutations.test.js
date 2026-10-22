@@ -3,21 +3,21 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
 
-const { commitCars, commitClients, commitDrivers, commitLogWorkData } = await import('../store/commitHelpers.js')
-const { getState, setHydration, subscribe } = await import('../store/app-store.js')
-const { requestVehicleSave } = await import('./vehicleMutations.js')
-const { requestClientSave, requestClientReorder, requestClientTaxInfo } = await import('./clientMutations.js')
-const { requestVehicleDeletion } = await import('./directMutationActions.js')
-const { readJsonKey, readLogWorkData, storageKeyFor, storageKeyForLog } = await import('../store/persist.js')
-const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { pendingOwnerForLog } = await import('./pendingLogOwner.js')
-const { registerPendingDayWrite, retryPendingDayWrites, getPendingDayWrite, pendingDayWriteCount } = await import('./pendingWorkDataWrites.js')
-const { durableKey } = await import('./durableStorage.js')
+const { commitCars, commitClients, commitDrivers, commitLogWorkData } = await import('../store/commitHelpers.ts')
+const { getState, setHydration, subscribe } = await import('../store/app-store.ts')
+const { requestVehicleSave } = await import('./vehicleMutations.ts')
+const { requestClientSave, requestClientReorder, requestClientTaxInfo } = await import('./clientMutations.ts')
+const { requestVehicleDeletion } = await import('./directMutationActions.ts')
+const { readJsonKey, readLogWorkData, storageKeyFor, storageKeyForLog } = await import('../store/persist.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
+const { pendingOwnerForLog } = await import('./pendingLogOwner.ts')
+const { registerPendingDayWrite, retryPendingDayWrites, getPendingDayWrite, pendingDayWriteCount } = await import('./pendingWorkDataWrites.ts')
+const { durableKey } = await import('./durableStorage.ts')
 const {
   getUnsafeRegistrationPatch,
   hasUnsafeRegistration,
   markUnsafeRegistrationFailure,
-} = await import('./durableWriteGuard.js')
+} = await import('./durableWriteGuard.ts')
 
 function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)

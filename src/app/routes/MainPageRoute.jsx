@@ -7,12 +7,12 @@ import CalendarPage from '../../features/calendar/ui/CalendarPage.jsx'
 import DayLogPage from '../../features/day-log/ui/DayLogPage.jsx'
 import { resolveLogSettings } from '../../domain/carSettingsScope.ts'
 import { parseDateKeySelection } from '../../domain/calendar.ts'
-import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../../data/store/ownerDataHooks.js'
-import { confirmLeaveIfUnsafe } from '../../data/sync/durableWriteGuard.js'
+import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../../data/store/ownerDataHooks.ts'
+import { confirmLeaveIfUnsafe } from '../../data/sync/durableWriteGuard.ts'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
-import { useSession } from '../../data/cloud/sessionContext.js'
+import { useSession } from '../../data/cloud/sessionContext.ts'
 
-/** @typedef {import('../../data/sync/syncTypes.js').AppSession} AppSession */
+/** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
 
 /**
  * @param {Object} props

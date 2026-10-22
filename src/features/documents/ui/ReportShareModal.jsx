@@ -4,7 +4,7 @@ import {
   getReportShareCompanyName,
   reportBaseFileName,
 } from '../api/report.js'
-import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../../../data/sync/messageTemplates.js'
+import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../../../data/sync/messageTemplates.ts'
 import { buildReportExportFile } from '../api/reportExport.js'
 import ShareFileModal from './ShareFileModal.jsx'
 

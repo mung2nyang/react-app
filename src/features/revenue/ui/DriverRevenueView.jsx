@@ -2,12 +2,12 @@
 // 소속기사 매출 화면(D-2): 차주와 같은 카드 UI, 본인 정산 기준. scope 탭 없음.
 import { useMemo } from 'react'
 import { getDriverSelfMonthlyDetail } from '../../../domain/driverSelfRevenue.ts'
-import { useOwnerExpenses, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
+import { useOwnerExpenses, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.ts'
 import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { RevenuePeriodBar, RevenueYearList } from './RevenuePeriodParts.jsx'
 import { buildYearlyRows, useRevenueFinanceSettings, useRevenuePeriod } from './revenuePeriod.js'
 import { monthKeyOf } from './revenueFormat.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 export default function DriverRevenueView() {
   const { ownerKey } = useSession()

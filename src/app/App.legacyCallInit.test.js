@@ -18,9 +18,9 @@ const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { default: DayLogPage } = await import('../features/day-log/ui/DayLogPage.jsx')
 const { MemoryRouter } = await import('react-router-dom')
-const { commitBatch, getState, subscribe } = await import('../data/store/app-store.js')
-const { initializeOwnerFromPersist } = await import('../data/store/owner-state.js')
-const { storageKeyFor, readJsonKey } = await import('../data/store/persist.js')
+const { commitBatch, getState, subscribe } = await import('../data/store/app-store.ts')
+const { initializeOwnerFromPersist } = await import('../data/store/owner-state.ts')
+const { storageKeyFor, readJsonKey } = await import('../data/store/persist.ts')
 const { normalizeSettings } = await import('../domain/practiceSettings.ts')
 
 /** @typedef {import('../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */

@@ -5,13 +5,13 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import ClientFormModal from './ClientFormModal.jsx'
 import ClientListItem from './ClientListItem.jsx'
 import { useClientReorder } from '../hooks/useClientReorder.js'
-import { requestClientSave } from '../../../data/sync/clientMutations.js'
-import { requestClientDeletion } from '../../../data/sync/directMutationActions.js'
-import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
-import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
+import { requestClientSave } from '../../../data/sync/clientMutations.ts'
+import { requestClientDeletion } from '../../../data/sync/directMutationActions.ts'
+import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
+import { useOwnerClients } from '../../../data/store/ownerDataHooks.ts'
 import './client-management.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/clientTypes.ts').ClientDraft} ClientDraft */
 /** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */

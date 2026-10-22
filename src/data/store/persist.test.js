@@ -1,8 +1,8 @@
 import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { PERSIST_KEYS, readJsonKey, readLogWorkData, storageKeyFor, storageKeyForLog, writeJsonKey } from './persist.js'
-import { readPersistDomain } from './persistDomainRead.js'
+import { PERSIST_KEYS, readJsonKey, readLogWorkData, storageKeyFor, storageKeyForLog, writeJsonKey } from './persist.ts'
+import { readPersistDomain } from './persistDomainRead.ts'
 
 const OWNER = 'persist-roundtrip-owner'
 

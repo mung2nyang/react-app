@@ -5,11 +5,11 @@ import { carToBusinessForm } from '../../../domain/carBusinessInfo.ts'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../../domain/formatPhone.ts'
 import BizNumberHint from '../../../shared/ui/BizNumberHint.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
-import { requestCarBusinessInfoSave } from '../../../data/sync/vehicleMutations.js'
-import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
+import { requestCarBusinessInfoSave } from '../../../data/sync/vehicleMutations.ts'
+import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
 import './car-business-info.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/carBusinessInfo.ts').CarBusinessForm} CarBusinessForm */
 

@@ -6,7 +6,7 @@ import DriverRevenueView from './DriverRevenueView.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './revenue.css'
 import './revenue-controls.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {Object} props

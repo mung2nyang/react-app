@@ -17,7 +17,7 @@ import {
   readOwnerProfile,
   readOwnerSettings,
   readOwnerWorkData,
-} from '../../../data/store/ownerDataHooks.js'
+} from '../../../data/store/ownerDataHooks.ts'
 
 /** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 /** @typedef {import('../../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */

@@ -1,10 +1,10 @@
 // @ts-check
 // 한 차량 거래처(scopedToVehicleNumber) 목록의 추가·수정·삭제 — 연동 기사 앱 거래처·차주의 기사 거래처가 같이 쓴다.
 import { useState } from 'react'
-import { requestClientSave } from '../../../data/sync/clientMutations.js'
-import { requestClientDeletion } from '../../../data/sync/directMutationActions.js'
-import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
-import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
+import { requestClientSave } from '../../../data/sync/clientMutations.ts'
+import { requestClientDeletion } from '../../../data/sync/directMutationActions.ts'
+import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
+import { useOwnerClients } from '../../../data/store/ownerDataHooks.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/clientTypes.ts').ClientDraft} ClientDraft */

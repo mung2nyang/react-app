@@ -1,7 +1,7 @@
 // 하루 운행 기록 검사(14칸)와 날짜별 읽기의 통과/거부를 칸마다 못 박는다 — 검사 코드를 라이브러리로 바꿔도 결과가 같아야 한다.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { DAY_RECORD_KEYS, isPersistedDayRecord, isPersistedWorkDataMap, parsePersistedWorkDataMap } from './persistDayRecord.js'
+import { DAY_RECORD_KEYS, isPersistedDayRecord, isPersistedWorkDataMap, parsePersistedWorkDataMap } from './persistDayRecord.ts'
 
 /** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 

@@ -1,4 +1,4 @@
-// 기사 순수 계산부. 저장은 data/sync/driversSave.js.
+// 기사 순수 계산부. 저장은 data/sync/driversSave.ts.
 // 겹침 규칙은 "같은 차량번호는 한 기사에게만" 하나뿐(기간 무관, 연결 해제된 기사는 제외).
 import { generateLocalId } from './localId.ts'
 import type { JsonValue } from './jsonTypes.ts'

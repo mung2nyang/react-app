@@ -9,10 +9,10 @@ import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, mock, test } from 'node:test'
 
-/** @type {import('../../../data/sync/dailyInspections.js').DailyInspection|null} */
+/** @type {import('../../../data/sync/dailyInspections.ts').DailyInspection|null} */
 let serverInspection = null
 let inspectionFetches = 0
-mock.module('../../../data/sync/dailyInspections.js', {
+mock.module('../../../data/sync/dailyInspections.ts', {
   namedExports: {
     fetchDailyInspection: async () => { inspectionFetches += 1; return serverInspection },
   },
@@ -28,7 +28,7 @@ const { MemoryRouter } = await import('react-router-dom')
 const { act } = React
 const { default: HomePage } = await import('./HomePage.jsx')
 const { default: CalendarPage } = await import('../../calendar/ui/CalendarPage.jsx')
-const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.js')
+const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')

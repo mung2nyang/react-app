@@ -4,11 +4,11 @@ import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-const { registerPendingDayWrite, retryPendingDayWrites, pendingDayWriteCount } = await import('./pendingWorkDataWrites.js')
-const { isDurableWriteBroken } = await import('./durableWriteGuard.js')
-const { getState, subscribe } = await import('../store/app-store.js')
-const { commitWorkData } = await import('../store/commitHelpers.js')
-const { readJsonKey } = await import('../store/persist.js')
+const { registerPendingDayWrite, retryPendingDayWrites, pendingDayWriteCount } = await import('./pendingWorkDataWrites.ts')
+const { isDurableWriteBroken } = await import('./durableWriteGuard.ts')
+const { getState, subscribe } = await import('../store/app-store.ts')
+const { commitWorkData } = await import('../store/commitHelpers.ts')
+const { readJsonKey } = await import('../store/persist.ts')
 
 /** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 

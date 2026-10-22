@@ -3,8 +3,8 @@
 import { resolveLogSettings } from '../../../domain/carSettingsScope.ts'
 import { todayWorkLogSelection } from '../../../domain/calendar.ts'
 import { isOffDay } from '../../../domain/day-record.ts'
-import { useOwnerCars } from '../../../data/store/ownerDataHooks.js'
-import useMonthSettlement from '../../../data/store/useMonthSettlement.js'
+import { useOwnerCars } from '../../../data/store/ownerDataHooks.ts'
+import useMonthSettlement from '../../../data/store/useMonthSettlement.ts'
 import AppTopBar from '../../../shared/ui/AppTopBar.jsx'
 import { useReceivablesData } from '../../receivables/hooks/useReceivablesData.js'
 import HomeAssistantBar from './HomeAssistantBar.jsx'
@@ -13,7 +13,7 @@ import HomeTodayCard from './HomeTodayCard.jsx'
 import HomeTodoCard from './HomeTodoCard.jsx'
 import useTodayInspectionMissing from '../hooks/useTodayInspectionMissing.js'
 import './home.css'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
  * @param {Object} props

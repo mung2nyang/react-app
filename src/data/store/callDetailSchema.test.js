@@ -1,10 +1,10 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { isPersistedCallDetail, isValidCallDetail, isValidCurrencyAmount } from './callDetailSchema.js'
+import { isPersistedCallDetail, isValidCallDetail, isValidCurrencyAmount } from './callDetailSchema.ts'
 
 /** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
+/** @typedef {import('../sync/pendingWorkDataWritesTypes.ts').EffectiveCallDetail} EffectiveCallDetail */
 
 /** @param {string|number} amount @returns {EffectiveCallDetail} */
 function detailWithAmount(amount) {

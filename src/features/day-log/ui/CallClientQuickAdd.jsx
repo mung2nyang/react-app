@@ -2,11 +2,11 @@
 // 콜상세 거래처 입력란 옆 "+ 추가" — ClientFormModal·requestClientSave 재사용.
 import { useState } from 'react'
 import ClientFormModal from '../../clients/ui/ClientFormModal.jsx'
-import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
-import { requestClientSave } from '../../../data/sync/clientMutations.js'
+import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
+import { requestClientSave } from '../../../data/sync/clientMutations.ts'
 import './call-client-quick-add.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
-import { useSession } from '../../../data/cloud/sessionContext.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/clientTypes.ts').ClientDraft} ClientDraft */
 /** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */

@@ -1,7 +1,7 @@
 // 저장 자료 검사(차량·거래처·지출·기사)의 통과/거부를 칸마다 못 박는다 — 검사 코드를 라이브러리로 바꿔도 결과가 같아야 한다.
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { isPersistedCar, isPersistedClient, isPersistedDriver, isPersistedExpense } from './persistDomainRecords.js'
+import { isPersistedCar, isPersistedClient, isPersistedDriver, isPersistedExpense } from './persistDomainRecords.ts'
 
 /** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 /** @typedef {Record<string, JsonValue>} Rec */

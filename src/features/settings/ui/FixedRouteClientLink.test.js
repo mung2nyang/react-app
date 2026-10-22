@@ -18,8 +18,8 @@ const { createRoot } = await import('react-dom/client')
 const { MemoryRouter, Route, Routes } = await import('react-router-dom')
 const { act } = React
 const { default: AppSettingsPage } = await import('./AppSettingsPage.jsx')
-const { commitCars, commitClients, commitSettings } = await import('../../../data/store/commitHelpers.js')
-const { getState } = await import('../../../data/store/app-store.js')
+const { commitCars, commitClients, commitSettings } = await import('../../../data/store/commitHelpers.ts')
+const { getState } = await import('../../../data/store/app-store.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { clientToDraft } = await import('../../../domain/clientDraft.ts')
 
