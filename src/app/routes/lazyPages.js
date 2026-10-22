@@ -17,6 +17,6 @@ export const RevenuePage = lazy(() => import('../../features/revenue/ui/RevenueP
 export const MyPage = lazy(() => import('../../features/account/ui/MyPage.jsx'))
 export const CustomerCenterPage = lazy(() => import('../../features/support/ui/CustomerCenterPage.jsx'))
 export const AdminInquiriesPage = lazy(() => import('../../features/support/ui/AdminInquiriesPage.tsx'))
-export const NoticePage =lazy(() => import('../../features/support/ui/NoticePage.jsx'))
+export const NoticePage = lazy(() => import('../../features/support/ui/NoticePage.jsx'))
 export const MessageSettingsPage = lazy(() => import('../../features/settings/ui/MessageSettingsPage.jsx'))
 export const NotificationsPage = lazy(() => import('../../features/notifications/ui/NotificationsPage.jsx'))

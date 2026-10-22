@@ -113,7 +113,7 @@ test('관리자면 답변 대기 건수·카드·이름(없으면 "이름 없음
     assert.ok(cards[0].textContent?.includes('답변하기'))
     assert.ok(cards[1].textContent?.includes('이름 없음'))
     assert.ok(cards[1].textContent?.includes('이미 답함'))
-    assert.ok(cards[1].textContent?.includes('답변 고치기'))
+    assert.ok(cards[1].textContent?.includes('답변 수정'))
   } finally { await cleanup() }
 })
 
@@ -164,7 +164,7 @@ test('한 번에 한 카드만 열린다, 고치기는 지금 답변이 채워�
   try {
     const [first, second] = container.querySelectorAll('.admin-inquiry-card')
     await act(async () => { button(first, '답변하기').click() })
-    await act(async () => { button(second, '답변 고치기').click() })
+    await act(async () => { button(second, '답변 수정').click() })
     assert.equal(container.querySelectorAll('textarea').length, 1)
     const area = second.querySelector('textarea')
     assert.ok(area instanceof window.HTMLTextAreaElement)

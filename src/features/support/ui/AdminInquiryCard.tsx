@@ -95,7 +95,7 @@ export default function AdminInquiryCard({ inquiry, open, onOpen, onClose, onSav
       ) : (
         <div className="admin-inquiry-actions">
           <button type="button" className="admin-inquiry-btn primary" onClick={onOpen}>
-            {answered ? '답변 고치기' : '답변하기'}
+            {answered ? '답변 수정' : '답변하기'}
           </button>
         </div>
       )}
