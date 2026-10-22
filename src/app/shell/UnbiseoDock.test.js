@@ -30,6 +30,17 @@ Reflect.set(supabase, 'functions', { invoke: async () => ({ data: replies.shift(
 const callReply = (/** @type {string} */ loadLoc, /** @type {string} */ unloadLoc) => ({ data: { kind: 'call', call: { date: DATE, loadLoc, unloadLoc, fare: 150000, client: '' } } })
 beforeEach(() => { replies = [] })
 
+// 화면을 옮기면 새 화면 파일을 받는 동안 앞 화면이 남는다(주소 바뀜은 startTransition) — 정해진 시간 대신 될 때까지 기다린다.
+/** @param {() => boolean} predicate */
+async function waitUntil(predicate, { timeoutMs = 3000, stepMs = 20 } = {}) {
+  // 한 번 기다릴 때마다 act를 끝내야 React가 그 사이 바뀐 화면을 그린다.
+  const deadline = Date.now() + timeoutMs
+  while (!predicate() && Date.now() < deadline) {
+    await act(async () => { await new Promise((resolve) => { setTimeout(resolve, stepMs) }) })
+  }
+  if (!predicate()) throw new Error('waitUntil timeout')
+}
+
 /** @param {string} ownerKey @param {string} path @param {boolean} [loggedIn] */
 async function renderShell(ownerKey, path, loggedIn = true) {
   commitSettings(ownerKey, normalizeSettings({ callDetail: true }))
@@ -62,13 +73,16 @@ async function renderShell(ownerKey, path, loggedIn = true) {
   const dock = () => container.querySelector('.unbiseo-dock')
   /** 떠 있는 줄을 펼쳐 말을 보낸다 */
   const askDock = async (/** @type {string} */ text) => {
+    await waitUntil(() => !!dock())
     if (dock()?.querySelector('.home-assistant-toggle')?.getAttribute('aria-expanded') !== 'true') await click(dock()?.querySelector('.home-assistant-toggle'))
     await type('.unbiseo-dock .home-assistant-input', text)
     await click(dock()?.querySelector('.home-assistant-send'))
   }
   await settle()
+  /** 일지 입력 칸이 그 값으로 채워질 때까지 */
+  const waitForLoad = (/** @type {string} */ loadLoc) => waitUntil(() => /** @type {HTMLInputElement|null} */ (container.querySelector('#callLoadLoc'))?.value === loadLoc)
   return {
-    container, button, click, type, dock, askDock, settle,
+    container, button, click, type, dock, askDock, settle, waitForLoad,
     value: (/** @type {string} */ id) => /** @type {HTMLInputElement|null} */ (container.querySelector(`#${id}`))?.value,
     async cleanup() { await act(async () => { root.unmount() }); container.remove() },
   }
@@ -80,6 +94,7 @@ test('홈에는 줄이 없고, 다른 화면에는 줄인 채로 떠 있다', as
     assert.equal(view.dock(), null, '홈은 카드가 같은 대화')
     await view.click(view.button('매출', view.container.querySelector('.bottom-nav-bar') || undefined))
     assert.equal(window.location.pathname, '/app/revenue')
+    await waitUntil(() => !!view.dock())
     assert.ok(view.dock())
     assert.equal(view.dock()?.querySelector('.home-assistant-toggle')?.getAttribute('aria-expanded'), 'false')
     assert.equal(view.dock()?.querySelector('.home-assistant-panel'), null)
@@ -105,6 +120,7 @@ test('같은 대화: 홈 카드에서 받은 결과가 다른 화면의 줄에�
     await view.type('.home-assistant .home-assistant-input', '어제 수원 화성 15만')
     await view.click(view.button('보내기'))
     await view.click(view.button('달력', view.container.querySelector('.bottom-nav-bar') || undefined))
+    await waitUntil(() => !!view.dock())
     await view.click(view.dock()?.querySelector('.home-assistant-toggle'))
     assert.equal(view.dock()?.querySelector('.home-assistant-said')?.textContent, '내가 한 말: 어제 수원 화성 15만')
     assert.equal(view.dock()?.querySelector('.home-assistant-result')?.textContent, '10월 21일 수원 → 화성, 150,000원으로 기록할게요.')
@@ -117,7 +133,7 @@ test('줄에서 [기록하기] → 그 날짜 일지에 채운 입력 창, 줄�
   try {
     await view.askDock('어제 수원 화성 15만')
     await view.click(view.button('기록하기', view.dock() || undefined))
-    await view.settle()
+    await view.waitForLoad('수원')
     assert.equal(window.location.pathname, `/app/day/${DATE}`)
     assert.equal(view.dock()?.querySelector('.home-assistant-panel'), null, '줄임')
     assert.equal(view.value('callLoadLoc'), '수원')
@@ -131,21 +147,21 @@ test('이미 그 날짜 일지: 입력 창이 열려 있으면 확인 창 먼저
   try {
     await view.askDock('어제 수원 화성 15만')
     await view.click(view.button('기록하기', view.dock() || undefined))
-    await view.settle()
+    await view.waitForLoad('수원')
     assert.equal(view.value('callLoadLoc'), '수원')
 
     await view.askDock('어제 평택 용인 15만')
     await view.click(view.button('기록하기', view.dock() || undefined))
-    await view.settle()
+    await waitUntil(() => !!view.container.textContent?.includes('저장하지 않은 입력이 있습니다'))
     assert.ok(view.container.textContent?.includes('저장하지 않은 입력이 있습니다'))
     await view.click(view.button('계속 입력'))
     assert.equal(view.value('callLoadLoc'), '수원', '[계속 입력]이면 채우지 않음')
 
     await view.askDock('어제 평택 용인 15만')
     await view.click(view.button('기록하기', view.dock() || undefined))
-    await view.settle()
+    await waitUntil(() => !!view.button('나가기'))
     await view.click(view.button('나가기'))
-    await view.settle()
+    await view.waitForLoad('평택')
     assert.equal(window.location.pathname, `/app/day/${DATE}`, '일지에 그대로')
     assert.equal(view.value('callLoadLoc'), '평택')
     assert.equal(view.value('callUnloadLoc'), '용인')
@@ -159,7 +175,7 @@ test('이미 그 날짜 일지, 열린 입력 칸 없음: 확인 없이 바로 �
     assert.equal(view.container.querySelector('#callLoadLoc'), null)
     await view.askDock('어제 평택 용인 15만')
     await view.click(view.button('기록하기', view.dock() || undefined))
-    await view.settle()
+    await view.waitForLoad('평택')
     assert.ok(!view.container.textContent?.includes('저장하지 않은 입력이 있습니다'))
     assert.equal(view.value('callLoadLoc'), '평택')
   } finally { await view.cleanup() }
