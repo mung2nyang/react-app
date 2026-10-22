@@ -1,15 +1,15 @@
 // @ts-check
 // 리포트 요약 — 일자별 표 행·월간 요약 집계.
-import { getFixedRouteClient, resolveFixedUnitPrice } from '../../../domain/clients.js'
+import { getFixedRouteClient, resolveFixedUnitPrice } from '../../../domain/clients.ts'
 import {
   callFareTotal,
   dayTripCount,
   getFixedCount,
   getPalletCount,
   isOffDay,
-} from '../../../domain/day-record.js'
-import { monthSettlementSummary } from '../../../domain/monthSettlement.js'
-import { parseCurrencyValue } from '../../../domain/money.js'
+} from '../../../domain/day-record.ts'
+import { monthSettlementSummary } from '../../../domain/monthSettlement.ts'
+import { parseCurrencyValue } from '../../../domain/money.ts'
 import {
   readOwnerCars,
   readOwnerClients,
@@ -19,9 +19,9 @@ import {
   readOwnerWorkData,
 } from '../../../data/store/ownerDataHooks.js'
 
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
-/** @typedef {import('../../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../../domain/financeTypes.ts').CarLike} CarLike */
 /** @typedef {ReturnType<typeof readOwnerProfile>} ProfileLike */
 
 /**

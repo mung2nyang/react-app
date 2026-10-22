@@ -8,7 +8,7 @@
 // 안에서 실패해도 보여줄 곳이 없다 — 토스트는 부작용이라 리듀서에 넣을 수 없다).
 // 비용(정비/주유/기타)은 이 draft에 없다 — day record가 아니라 별도 expenses
 // 스토어에서 즉시 저장으로 관리한다.
-import { getCallDetails } from '../../../domain/day-record.js'
+import { getCallDetails } from '../../../domain/day-record.ts'
 
 /**
  * @typedef {Object} DayDraft
@@ -31,7 +31,7 @@ import { getCallDetails } from '../../../domain/day-record.js'
  * 마운트 시 domain/day-record.js의 backfillCallDetailIds로 레거시 항목을 미리
  * 영구 id로 채운 뒤에만 이 함수를 부른다(여기서 id를 만들지 않는다).
  * structuredClone으로 깊게 복제해 store 원본과 draft가 중첩 값(payments 등)까지 참조를 공유하지 않게 한다.
- * @param {{ isOff?: boolean, fixedCount?: number|string, palletCount?: number|string, callDetails?: Array<import('../../../domain/callDetail.js').CallDetailLike>, fixedRouteCounts?: Record<string, number> }} [record]
+ * @param {{ isOff?: boolean, fixedCount?: number|string, palletCount?: number|string, callDetails?: Array<import('../../../domain/callDetail.ts').CallDetailLike>, fixedRouteCounts?: Record<string, number> }} [record]
  * @returns {DayLogState}
  */
 export function initDayLogState(record) {

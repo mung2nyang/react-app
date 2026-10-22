@@ -7,10 +7,10 @@
 // 는 sub 차량을 번호판 키로 넣으므로, 여기서 main 으로 재매핑한다.
 // TODO(multi-vehicle): 배정 차량 2대+ 이면 현재는 cars[0]만 main·expenses 에 쓰고
 // 나머지는 버린다(다중 배정 화면·집계를 만들 때 함께 처리).
-import { expenseFromFuelRecord, replaceFuelExpenses } from '../../domain/fuelRecords.js'
-import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../../domain/maintenanceRecords.js'
-import { expenseFromMiscRecord, replaceMiscExpenses } from '../../domain/miscExpenseRecords.js'
-import { normalizeSettings } from '../../domain/practiceSettings.js'
+import { expenseFromFuelRecord, replaceFuelExpenses } from '../../domain/fuelRecords.ts'
+import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../../domain/maintenanceRecords.ts'
+import { expenseFromMiscRecord, replaceMiscExpenses } from '../../domain/miscExpenseRecords.ts'
+import { normalizeSettings } from '../../domain/practiceSettings.ts'
 import {
   fetchAssignedVehicleSummary,
   fetchLinkedOwnerBusinessInfo,
@@ -22,10 +22,10 @@ import { supabase } from '../cloud/supabaseClient.js'
 import { fetchAllRows } from '../cloud/fetchAllRows.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
-/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/driverTypes.ts').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
 
 export { carFromAssignedSummary }
 
@@ -162,7 +162,7 @@ export async function buildEmployedDriverSnapshot({
     ? await fetchExpensesForAssignedVehicle(assignedVehicleId, throwIfAnyHydrateError)
     : []
 
-  /** @type {Array<import('../../domain/clientTypes.js').ClientLike>} */
+  /** @type {Array<import('../../domain/clientTypes.ts').ClientLike>} */
   const nextClients = mergeClientsFromRows([], clientRows)
 
   return {

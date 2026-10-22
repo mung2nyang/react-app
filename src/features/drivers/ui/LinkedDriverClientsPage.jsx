@@ -2,8 +2,8 @@
 // 차주가 보는 연동·미연동 기사 차량 거래처 화면 — 주소의 기사·차량으로 어느 차량 거래처인지 찾는다.
 import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getShortCarNum } from '../../../domain/cars.js'
-import { resolveDriverManagementContext } from '../../../domain/driverManagementContext.js'
+import { getShortCarNum } from '../../../domain/cars.ts'
+import { resolveDriverManagementContext } from '../../../domain/driverManagementContext.ts'
 import { useOwnerCars, useOwnerDrivers } from '../../../data/store/ownerDataHooks.js'
 import { toLinkedDriverLink } from './linkedDriverLink.js'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'

@@ -1,8 +1,8 @@
 // @ts-check
 import { useMemo } from 'react'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { formatWon } from '../../../domain/money.js'
-import { formatWorkMonth, groupItems, receivableItemKey } from '../../../domain/receivables.js'
+import { formatWon } from '../../../domain/money.ts'
+import { formatWorkMonth, groupItems, receivableItemKey } from '../../../domain/receivables.ts'
 import { parseClientParam, parseMonthParam, receivablesListPath } from './receivablesPaths.js'
 import { useReceivablesData } from '../hooks/useReceivablesData.js'
 import { useReceivablesActions } from '../hooks/useReceivablesActions.js'
@@ -12,7 +12,7 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import './receivables.css'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
+/** @typedef {import('../../../domain/financeReceivables.ts').ReceivableItemLike} ReceivableItemLike */
 
 /**
  * @param {Object} props

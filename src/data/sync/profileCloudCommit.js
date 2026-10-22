@@ -3,7 +3,7 @@
 import { supabase } from '../cloud/supabaseClient.js'
 
 /** @typedef {import('../hydrate/hydrateMergeTypes.js').LocalProfile} LocalProfile */
-/** @typedef {import('../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 
 /**
  * @param {string} userId

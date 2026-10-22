@@ -1,5 +1,5 @@
 // @ts-check
-import { dedupeCarsById } from '../../domain/cars.js'
+import { dedupeCarsById } from '../../domain/cars.ts'
 import { COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, isAllowedEnum } from '../store/persistDomainEnums.js'
 import {
   BUSINESS_INFO_KEYS, PERSONAL_INFO_KEYS, isPlainObject, isStringOrFiniteNumber, isStringRecord,

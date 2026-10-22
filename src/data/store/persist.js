@@ -44,8 +44,8 @@ export function storageKeyForLog(ownerKey, logId) {
 }
 
 /**
- * @typedef {{ ok: true, kind: 'missing', value: Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike> }
- *   | { ok: true, kind: 'value', value: Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike> }
+ * @typedef {{ ok: true, kind: 'missing', value: Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike> }
+ *   | { ok: true, kind: 'value', value: Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike> }
  *   | { ok: false, kind: 'getItem' | 'parse' | 'schema' }} LogWorkDataRead
  */
 

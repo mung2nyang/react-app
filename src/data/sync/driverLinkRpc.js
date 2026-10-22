@@ -4,7 +4,7 @@
 /** @typedef {import('./syncTypes.js').DriverLinkRow} DriverLinkRow */
 import { supabase } from '../cloud/supabaseClient.js'
 import { assertCloudWriteReady } from '../cloud/cloudSession.js'
-import { normalizeInviteCode } from '../../domain/drivers.js'
+import { normalizeInviteCode } from '../../domain/drivers.ts'
 
 /**
  * upsert_driver_link_idempotent RPC 1회. 같은 p_idempotency_key면 서버가 기존 행을

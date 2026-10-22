@@ -9,7 +9,7 @@ mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupaba
 
 const { syncExpenseItemsForVehicle } = await import('./syncExpenseItems.js')
 
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
 
 /** @param {unknown} value @param {string} key */
 function field(value, key) {

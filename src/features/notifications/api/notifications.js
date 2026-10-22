@@ -1,18 +1,18 @@
 // @ts-check
-/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
-import { todayKey } from '../../../domain/expenses.js'
-import { todayWorkLogSelection } from '../../../domain/calendar.js'
-import { formatWon } from '../../../domain/money.js'
-import { getDdayLabel, overdueItems } from '../../../domain/receivables.js'
+/** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
+import { todayKey } from '../../../domain/expenses.ts'
+import { todayWorkLogSelection } from '../../../domain/calendar.ts'
+import { formatWon } from '../../../domain/money.ts'
+import { getDdayLabel, overdueItems } from '../../../domain/receivables.ts'
 import { buildFinanceSettings, loadWorkDataByLogId } from '../../../data/sync/ownerFinance.js'
-import { getReceivableItems } from '../../../domain/finance.js'
+import { getReceivableItems } from '../../../domain/finance.ts'
 import { readJsonKey } from '../../../data/store/persist.js'
 import { commitDismissedNotifications } from '../../../data/store/commitHelpers.js'
 import { readOwnerDrivers, readOwnerSettings } from '../../../data/store/ownerDataHooks.js'
 import { getLastBackupAt } from '../../../data/sync/guestBackup.js'
 import { isCloudSession } from '../../../data/cloud/cloudSession.js'
 
-/** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
+/** @typedef {import('../../../domain/financeReceivables.ts').ReceivableItemLike} ReceivableItemLike */
 
 export const DAILY_INSPECTION_NOTICE_ID = 'daily-inspection-required'
 

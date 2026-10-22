@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { isLargeFare, roundCurrencyText } from './money.js'
+import { isLargeFare, roundCurrencyText } from './money.ts'
 
 test('소수점은 반올림한 쉼표 정수 글자로(로드맵 43)', () => {
   assert.equal(roundCurrencyText('12345.6'), '12,346')

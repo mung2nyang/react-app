@@ -2,10 +2,10 @@
 // 앱 설정의 운행 횟수 버튼 편집.
 import { useEffect, useRef, useState } from 'react'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
-import { addRunCountPreset, removeRunCountPreset, replaceRunCountPreset, RUN_COUNT_PRESET_MAX } from '../../../domain/practiceSettings.js'
+import { addRunCountPreset, removeRunCountPreset, replaceRunCountPreset, RUN_COUNT_PRESET_MAX } from '../../../domain/practiceSettings.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
-/** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 
 // 길게 누르기 판정 시간·손가락 이동 허용 거리(넘으면 취소).
 const LONG_PRESS_MS = 600

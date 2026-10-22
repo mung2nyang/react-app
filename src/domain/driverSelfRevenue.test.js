@@ -1,14 +1,14 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { getDriverSelfMonthlyDetail } from './driverSelfRevenue.js'
-import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.js'
-import { getMonthlyDriverTotals } from './financeCore.js'
-import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
+import { getDriverSelfMonthlyDetail } from './driverSelfRevenue.ts'
+import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.ts'
+import { getMonthlyDriverTotals } from './financeCore.ts'
+import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.ts'
 
-/** @typedef {import('./financeTypes.js').CarLike} CarLike */
-/** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
-/** @typedef {import('./financeTypes.js').DriverLinkLike} DriverLinkLike */
+/** @typedef {import('./financeTypes.ts').CarLike} CarLike */
+/** @typedef {import('./financeTypes.ts').FinanceSettings} FinanceSettings */
+/** @typedef {import('./financeTypes.ts').DriverLinkLike} DriverLinkLike */
 
 const REVENUE_CAR = /** @type {CarLike} */ (FIXTURE_SETTINGS.cars.find((c) => c.number === '서울12가3456'))
 const SALARY_CAR = /** @type {CarLike} */ (FIXTURE_SETTINGS.cars.find((c) => c.number === '부산33나1111'))
@@ -119,7 +119,7 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
   })
 
   test('지출이 있어도 netProfit은 정산액 유지(Q1)', () => {
-    /** @type {Array<import('./expenseTypes.js').ExpenseItem>} */
+    /** @type {Array<import('./expenseTypes.ts').ExpenseItem>} */
     const expenses = [
       { id: 'maint-1', kind: 'maint', date: '2026-05-12', name: '오일', cost: 50000 },
       { id: 'fuel-1', kind: 'fuel', date: '2026-05-12', fuelType: '주유', cost: 80000, subsidy: 0, liters: 40 },
@@ -136,7 +136,7 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
 
   test('① 배정기간 밖 트립은 정산액에서 제외된다', () => {
     const car = /** @type {CarLike} */ ({ ...REVENUE_CAR, insuranceOn: false })
-    /** @type {import('./financeTypes.js').WorkDataByLogId} */
+    /** @type {import('./financeTypes.ts').WorkDataByLogId} */
     const work = {
       main: {
         '2026-05-10': {
@@ -206,7 +206,7 @@ describe('getDriverSelfMonthlyDetail — main 키 전제 (§6)', () => {
 describe('getDriverSelfMonthlyDetail — 배정 차량 스코프 고정노선', () => {
   const scopedClient = { id: 'c-sub', companyName: '기사고정', fixedRouteLinked: true, fixedUnitPrice: '100,000', scopedToVehicleNumber: '서울12가3456' }
   const realisticFixedOnly = { main: { '2026-05-12': { isOff: false, fixedCount: 1 } } }
-  /** @param {Array<import('./clientTypes.js').ClientLike>} clients */
+  /** @param {Array<import('./clientTypes.ts').ClientLike>} clients */
   const settingsWithClients = (clients) => ({ ...settingsWithCars([REVENUE_CAR]), clients })
 
   test('스코프 거래처만 있어도(기사 세션 모양) 운송료가 본인 단가 100,000이고 정산 계산의 총매출과 같다', () => {

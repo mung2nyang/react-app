@@ -1,8 +1,8 @@
 // @ts-check
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { formatWon } from '../../../domain/money.js'
-import { formatWorkMonth, receivableItemKey } from '../../../domain/receivables.js'
+import { formatWon } from '../../../domain/money.ts'
+import { formatWorkMonth, receivableItemKey } from '../../../domain/receivables.ts'
 import { receivablesDetailPath } from './receivablesPaths.js'
 import { useReceivablesData } from '../hooks/useReceivablesData.js'
 import { useReceivablesActions } from '../hooks/useReceivablesActions.js'
@@ -13,7 +13,7 @@ import './receivables.css'
 import './receivablesGroupHead.css'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
+/** @typedef {import('../../../domain/financeReceivables.ts').ReceivableItemLike} ReceivableItemLike */
 
 /**
  * @param {Object} props

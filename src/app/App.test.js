@@ -86,10 +86,10 @@ test.afterEach(async () => {
 })
 const { getState, subscribe } = await import('../data/store/app-store.js')
 const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
-const { todayWorkLogSelection } = await import('../domain/calendar.js')
-const { normalizeSettings } = await import('../domain/practiceSettings.js')
+const { todayWorkLogSelection } = await import('../domain/calendar.ts')
+const { normalizeSettings } = await import('../domain/practiceSettings.ts')
 
-/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 // 재감사 6차(FAIL 지적 3번) — readJsonKey('workData', ownerKey, {})와
 // getState().workLogs[ownerKey]?.main?.[dateKey]는 각각 fallback 인자/app-store.js의
@@ -698,7 +698,7 @@ test('재감사 5차 FAIL 지적 1번 — useDayDraft 직접 커밋 성공 후 c
  */
 function seedPalletClient(ownerKey) {
   const clients = [
-    /** @type {import('../domain/clientTypes.js').ClientLike} */ ({
+    /** @type {import('../domain/clientTypes.ts').ClientLike} */ ({
       id: 'c1', companyName: '한진', fixedRouteLinked: true, palletOn: true,
       palletPrice: '10,000', fixedUnitPrice: '250,000', supabaseId: 601,
     }),
@@ -712,7 +712,7 @@ function seedPalletClient(ownerKey) {
 /** @param {string} ownerKey */
 function seedMainCar(ownerKey) {
   const cars = [
-    /** @type {import('../domain/financeTypes.js').CarLike} */ ({ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 501 }),
+    /** @type {import('../domain/financeTypes.ts').CarLike} */ ({ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 501 }),
   ]
   commitCars(ownerKey, cars)
   // 슬라이스 C: hydrate가 빈 배열을 "삭제됨"으로 보므로, 시드한 supabaseId 차량을

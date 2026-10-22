@@ -2,7 +2,7 @@
 // 차량 저장·연동 해제·삭제 흐름 — 서버 요청 순서와 알림 문구는 화면에서 옮긴 그대로.
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { validateDriverLinkFields } from '../../../domain/cars.js'
+import { validateDriverLinkFields } from '../../../domain/cars.ts'
 import { requestVehicleSave } from '../../../data/sync/vehicleMutations.js'
 import { requestDriverDeletion, requestVehicleDeletion } from '../../../data/sync/directMutationActions.js'
 import { requestDriverUnlinkAction } from '../../../data/sync/driverUnlink.js'
@@ -11,8 +11,8 @@ import { saveInviteAfterVehicle } from '../api/carInviteFromDraft.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../ui/CarFormModal.jsx').CarFormDraft} CarFormDraft */
-/** @typedef {import('../../../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../../domain/financeTypes.ts').CarLike} CarLike */
+/** @typedef {import('../../../domain/driverTypes.ts').DriverRecord} DriverRecord */
 
 /**
  * @param {{ ownerKey: string, cars: Array<CarLike>, drivers: Array<DriverRecord>, cloud: boolean, draft: CarFormDraft, editingId: string|null, closeModal: () => void }} params

@@ -46,7 +46,7 @@ const DRIVER = 'driver-1'
 const SESSION = { userId: DRIVER, name: '기사', phone: '', accountType: 'employed_driver', linkedOwnerId: OWNER, guestMode: false }
 const REQUESTED_AT = '2026-10-01T03:00:00.000Z'
 
-/** @param {Partial<import('../../../domain/driverTypes.js').DriverRecord>} extra */
+/** @param {Partial<import('../../../domain/driverTypes.ts').DriverRecord>} extra */
 function seedLink(extra = {}) {
   commitDrivers(OWNER, [{ id: 'd1', name: '기사', status: 'linked', vehicleNumber: '11가1111', supabaseId: 'link-1', ...extra }])
 }

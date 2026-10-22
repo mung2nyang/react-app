@@ -2,13 +2,13 @@
 // 로드맵 75 — 휴무일 콜은 모든 화면에서 제외(보리 결정 2026-10-15, F-03 변경).
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { monthCallUnpaidTotal } from './day-record.js'
-import { dayHasUnpaid } from './calendarBadges.js'
-import { getMonthlyDriverTotals } from './financeCore.js'
+import { monthCallUnpaidTotal } from './day-record.ts'
+import { dayHasUnpaid } from './calendarBadges.ts'
+import { getMonthlyDriverTotals } from './financeCore.ts'
 
-/** @type {import('./dayRecordTypes.js').DayRecordLike} */
+/** @type {import('./dayRecordTypes.ts').DayRecordLike} */
 const OFF_DAY = { isOff: true, callDetails: [{ id: 'c-off', fare: '10,000', client: '거래처' }] }
-/** @type {import('./dayRecordTypes.js').DayRecordLike} */
+/** @type {import('./dayRecordTypes.ts').DayRecordLike} */
 const WORK_DAY = { callDetails: [{ id: 'c-work', fare: '20,000', client: '거래처' }] }
 
 test('75-1: 달력 이번 달 미수 합계에서 휴무일 콜은 빠지고, 휴무 아닌 날은 그대로', () => {

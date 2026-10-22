@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { formatBizNumber, isBizNumberChecksumOk, tonnageDigits, tonnageValue } from './formatPhone.js'
+import { formatBizNumber, isBizNumberChecksumOk, tonnageDigits, tonnageValue } from './formatPhone.ts'
 
 test('사업자번호 입력: 숫자만 받아 000-00-00000 모양으로 - 자동 삽입, 10자리까지', () => {
   assert.equal(formatBizNumber('123'), '123')

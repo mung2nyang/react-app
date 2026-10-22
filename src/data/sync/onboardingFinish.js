@@ -40,7 +40,7 @@ export function buildOnboardingSettingsPatch(wizard) {
  * @param {Object} args
  * @param {string} args.ownerKey
  * @param {string|null|undefined} args.userId
- * @param {Array<import('../../domain/financeTypes.js').CarLike>} [args.cars]
+ * @param {Array<import('../../domain/financeTypes.ts').CarLike>} [args.cars]
  * @param {OnboardingWizard} args.wizard
  * @returns {Promise<{ toast?: string }>}
  */

@@ -1,15 +1,15 @@
 // @ts-check
 // 달력 "월간 운송료 정산" 카드와 새 홈 "이번 달 정산 합계"가 같은 입력으로 같은 합계를 내도록 모은 훅(CalendarPage에서 옮김).
 import { useMemo } from 'react'
-import { resolveLogSettings } from '../../domain/carSettingsScope.js'
-import { getFixedRouteClient, resolveFixedUnitPrice } from '../../domain/clients.js'
-import { monthSettlementSummary } from '../../domain/monthSettlement.js'
+import { resolveLogSettings } from '../../domain/carSettingsScope.ts'
+import { getFixedRouteClient, resolveFixedUnitPrice } from '../../domain/clients.ts'
+import { monthSettlementSummary } from '../../domain/monthSettlement.ts'
 import {
   useOwnerCars, useOwnerClients, useOwnerExpenses,
   useOwnerSettings, useOwnerWorkData, useOwnerWorkDataByLogId,
 } from './ownerDataHooks.js'
 
-const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */ ({})
+const EMPTY_WORK = /** @type {Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike>} */ ({})
 
 /**
  * @param {{ ownerKey: string, logId?: string, clientScopeKey?: string, year: number, month: number }} input month는 0-based

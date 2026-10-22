@@ -1,15 +1,15 @@
 // @ts-check
 // 차주(오너) 손익 화면. 기사 탭에서 개별 기사(차량) 드롭다운 필터.
 import { useEffect, useMemo, useState } from 'react'
-import { isVehicleRevenueSharedWithOwner } from '../../../domain/cars.js'
-import { getOwnerMonthlyFinanceDetail } from '../../../domain/finance.js'
+import { isVehicleRevenueSharedWithOwner } from '../../../domain/cars.ts'
+import { getOwnerMonthlyFinanceDetail } from '../../../domain/finance.ts'
 import { useOwnerCars, useOwnerDriverExpenses, useOwnerExpenses, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
 import OwnerMonthlyCards from './OwnerMonthlyCards.jsx'
 import { RevenuePeriodBar, RevenueYearList } from './RevenuePeriodParts.jsx'
 import { buildYearlyRows, useRevenueFinanceSettings, useRevenuePeriod } from './revenuePeriod.js'
 import { monthKeyOf } from './revenueFormat.js'
 import { scopeSettingsToVehicle, scopeWorkDataToVehicle } from './driverRevenueScope.js'
-import { filterDriverExpensesByVehicle } from '../../../domain/financeOwnerExpenseSweep.js'
+import { filterDriverExpensesByVehicle } from '../../../domain/financeOwnerExpenseSweep.ts'
 import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 const SCOPES = [

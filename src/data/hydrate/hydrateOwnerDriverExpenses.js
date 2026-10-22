@@ -3,15 +3,15 @@
 // hydrateEmployedDriver는 이 모듈을 쓰지 않는다.
 import { supabase } from '../cloud/supabaseClient.js'
 import { mergeExpenseKind } from './hydrateMerge.js'
-import { expenseFromFuelRecord, replaceFuelExpenses } from '../../domain/fuelRecords.js'
-import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../../domain/maintenanceRecords.js'
-import { expenseFromMiscRecord, replaceMiscExpenses } from '../../domain/miscExpenseRecords.js'
-import { dedupeExpensesById } from '../../domain/expenses.js'
+import { expenseFromFuelRecord, replaceFuelExpenses } from '../../domain/fuelRecords.ts'
+import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../../domain/maintenanceRecords.ts'
+import { expenseFromMiscRecord, replaceMiscExpenses } from '../../domain/miscExpenseRecords.ts'
+import { dedupeExpensesById } from '../../domain/expenses.ts'
 import { fetchAllRows } from '../cloud/fetchAllRows.js'
 
-/** @typedef {import('../../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
-/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../../domain/expenseTypes.ts').DriverExpenseItem} DriverExpenseItem */
+/** @typedef {import('../../domain/driverTypes.ts').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
 /** @typedef {import('./hydrateMergeTypes.js').SupabaseQueryError} SupabaseQueryError */
 /** @typedef {import('./hydrateMergeTypes.js').JsonRecord} JsonRecord */
 

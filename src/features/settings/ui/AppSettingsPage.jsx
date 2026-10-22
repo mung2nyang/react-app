@@ -2,8 +2,8 @@
 import { useParams } from 'react-router-dom'
 import { useOwnerCars, useOwnerDrivers, useOwnerSettings } from '../../../data/store/ownerDataHooks.js'
 import { applyTheme, savePracticeSettings } from '../../../data/sync/settingsSave.js'
-import { defaultCarSettings } from '../../../domain/practiceSettings.js'
-import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
+import { defaultCarSettings } from '../../../domain/practiceSettings.ts'
+import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.ts'
 import { useHydrationLock } from '../../../data/store/useHydrationLock.js'
 import SwitchRow from '../../../shared/ui/SwitchRow.tsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
@@ -15,8 +15,8 @@ import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
-/** @typedef {import('../../../domain/financeTypes.js').SubCarPracticeSettings} SubCarPracticeSettings */
+/** @typedef {import('../../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../../domain/financeTypes.ts').SubCarPracticeSettings} SubCarPracticeSettings */
 
 /**
  * @param {Object} props

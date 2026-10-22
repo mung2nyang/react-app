@@ -1,12 +1,12 @@
 // @ts-check
-import { formatWon, formatCurrencyInput, parseCurrencyValue } from '../../../domain/money.js'
-import { formatWorkMonth, getDdayLabel, receivableItemKey } from '../../../domain/receivables.js'
+import { formatWon, formatCurrencyInput, parseCurrencyValue } from '../../../domain/money.ts'
+import { formatWorkMonth, getDdayLabel, receivableItemKey } from '../../../domain/receivables.ts'
 import CurrencyInput from '../../../shared/ui/CurrencyInput.jsx'
 import FieldError, { invalidProps } from '../../../shared/ui/FieldError.jsx'
 import { partialInputId } from '../hooks/useReceivablesActions.js'
 
-/** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
-/** @typedef {import('../../../domain/callDetail.js').PaymentLike} PaymentLike */
+/** @typedef {import('../../../domain/financeReceivables.ts').ReceivableItemLike} ReceivableItemLike */
+/** @typedef {import('../../../domain/callDetail.ts').PaymentLike} PaymentLike */
 
 /**
  * @param {Object} props

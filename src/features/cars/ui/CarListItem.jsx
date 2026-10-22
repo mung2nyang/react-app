@@ -1,11 +1,11 @@
 // @ts-check
-import { formatCurrencyInput } from '../../../domain/money.js'
+import { formatCurrencyInput } from '../../../domain/money.ts'
 import CardActionButtons from '../../../shared/ui/CardActionButtons.jsx'
 
 /**
  * @param {Object} props
- * @param {import('../../../domain/financeTypes.js').CarLike} props.car
- * @param {Array<import('../../../domain/driverTypes.js').DriverRecord>} [props.drivers]
+ * @param {import('../../../domain/financeTypes.ts').CarLike} props.car
+ * @param {Array<import('../../../domain/driverTypes.ts').DriverRecord>} [props.drivers]
  * @param {boolean} [props.assignedView]
  * @param {boolean} [props.readOnly]
  * @param {() => void} [props.onEdit]

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { findCallDetailIndex, resolveCallDetailId } from './callDetailIds.js'
-import { getReceivableItems } from './finance.js'
-import { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK } from './finance.fixtures.js'
-import { addPartialPayment } from './payments.js'
-import { receivableItemKey } from './receivables.js'
+import { findCallDetailIndex, resolveCallDetailId } from './callDetailIds.ts'
+import { getReceivableItems } from './finance.ts'
+import { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK } from './finance.fixtures.ts'
+import { addPartialPayment } from './payments.ts'
+import { receivableItemKey } from './receivables.ts'
 
 describe('callDetailIds — detailId 조회', () => {
   test('resolveCallDetailId는 문자열 id를 그대로 돌려준다', () => {

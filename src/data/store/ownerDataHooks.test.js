@@ -3,10 +3,10 @@
 import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from '../../domain/finance.fixtures.js'
+import { FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from '../../domain/finance.fixtures.ts'
 
-const { getOwnerMonthlyFinanceDetail } = await import('../../domain/financeOwnerDetail.js')
-const { getReceivableItems } = await import('../../domain/financeReceivables.js')
+const { getOwnerMonthlyFinanceDetail } = await import('../../domain/financeOwnerDetail.ts')
+const { getReceivableItems } = await import('../../domain/financeReceivables.ts')
 const { commitLogWorkData, commitWorkData } = await import('./commitHelpers.js')
 const { readOwnerWorkDataByLogId } = await import('./ownerDataHooks.js')
 

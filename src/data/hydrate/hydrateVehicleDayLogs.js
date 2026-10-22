@@ -2,8 +2,8 @@
 // hydrate가 차량별 daily_logs를 logId 맵으로 합친다.
 import { findMainCar, mergeWorkDataFromRows } from './hydrateMerge.js'
 
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
 /** @typedef {import('./hydrateMergeTypes.js').DailyLogRow} DailyLogRow */
 /** @typedef {import('./hydrateMergeTypes.js').DetailRow} DetailRow */
 /** @typedef {import('./hydrateMergeTypes.js').SupabaseQueryError} SupabaseQueryError */

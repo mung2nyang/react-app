@@ -4,13 +4,13 @@
 // 점검자 이름·조치 기록은 파일 그대로(그날 점검한 사람 기록), 점검 항목은 기존 정리 규칙으로 거른다.
 import { readOwnerCars } from '../../../data/store/ownerDataHooks.js'
 import { isPlainObject } from '../../../data/store/persistDomainRecords.js'
-import { isValidCalendarDateKey } from '../../../domain/dateKey.js'
-import { sanitizeInspectionItems } from '../../../domain/dailyInspectionItems.js'
+import { isValidCalendarDateKey } from '../../../domain/dateKey.ts'
+import { sanitizeInspectionItems } from '../../../domain/dailyInspectionItems.ts'
 import { fetchVehiclesDailyInspections, saveDailyInspection } from '../../../data/sync/dailyInspections.js'
 import { isOwnUnlinkedCar } from './memberRestoreRecords.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
-/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
 /** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
 /** @typedef {DailyInspection & { vehicleId: string|number, workDate: string }} InspectionPick */
 

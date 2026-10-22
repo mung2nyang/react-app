@@ -27,7 +27,7 @@ const { withToast } = await import('../../../testSupport/withToast.js')
 const { act } = React
 const { createRoot } = await import('react-dom/client')
 const { BrowserRouter } = await import('react-router-dom')
-const { normalizeSettings } = await import('../../../domain/practiceSettings.js')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { commitWorkData } = await import('../../../data/store/commitHelpers.js')
 const { default: DayLogPage } = await import('./DayLogPage.jsx')
 

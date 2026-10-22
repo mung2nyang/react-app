@@ -4,7 +4,7 @@ import { unlinkAutoDateLabel } from '../../../data/sync/driverUnlink.js'
 
 /**
  * @param {{
- *   driver: import('../../../domain/driverTypes.js').DriverRecord,
+ *   driver: import('../../../domain/driverTypes.ts').DriverRecord,
  *   meId: string,
  *   counterpartLabel: string,
  *   onAction: (action: import('../../../data/sync/driverUnlink.js').UnlinkAction) => void,

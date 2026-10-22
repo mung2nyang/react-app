@@ -24,11 +24,11 @@ const { act } = React
 const { default: CalendarPage } = await import('./CalendarPage.jsx')
 const { commitCars, commitClients, commitLogWorkData, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.js')
 const { getState } = await import('../../../data/store/app-store.js')
-const { normalizeSettings } = await import('../../../domain/practiceSettings.js')
-const { getMonthlyFareRevenue, getOwnerMonthlyFinanceDetail } = await import('../../../domain/finance.js')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
+const { getMonthlyFareRevenue, getOwnerMonthlyFinanceDetail } = await import('../../../domain/finance.ts')
 const { buildFinanceSettings } = await import('../../../data/sync/ownerFinance.js')
-const { monthSettlementSummary } = await import('../../../domain/monthSettlement.js')
-const { getFixedRouteClient, resolveFixedUnitPrice } = await import('../../../domain/clients.js')
+const { monthSettlementSummary } = await import('../../../domain/monthSettlement.ts')
+const { getFixedRouteClient, resolveFixedUnitPrice } = await import('../../../domain/clients.ts')
 
 test('연결 거래처 단가로 달력 기본 운송료가 계산되고 1회 단가 입력은 없다', async () => {
   const ownerKey = 'test-calendar-unitprice-owner'
@@ -411,7 +411,7 @@ test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님
 
 // 미연동 고정노선 슬라이스(2026-09-19) — 서브차량 달력이 그 차량 스코프 고정노선을 먼저 쓰고,
 // 없으면 차주 고정노선으로 fallback한다.
-/** @param {string} ownerKey @param {Array<import('../../../domain/clientTypes.js').ClientLike>} clients */
+/** @param {string} ownerKey @param {Array<import('../../../domain/clientTypes.ts').ClientLike>} clients */
 async function renderSubLogCalendar(ownerKey, clients) {
   const plate = '서울99가9999'
   commitCars(ownerKey, [

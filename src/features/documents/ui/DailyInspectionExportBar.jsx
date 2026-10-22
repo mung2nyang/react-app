@@ -2,7 +2,7 @@
 // 일상점검표 탭 아래 버튼 카드(9-D, 피그마 "서류 발급" 1번): [PDF 다운로드][이미지 저장][공유] + 안내 문구.
 // 내보내기는 화면 밖에 그린 법정 서식 한 장(그 달 전체)을 A4 가로 PDF·PNG로.
 import { useRef, useState } from 'react'
-import { inspectionFileBaseName } from '../../../domain/dailyInspectionMonth.js'
+import { inspectionFileBaseName } from '../../../domain/dailyInspectionMonth.ts'
 import { createReportImageFile, createReportPdfFile } from '../api/reportExport.js'
 import DailyInspectionLegalForm from './DailyInspectionLegalForm.jsx'
 import DailyInspectionShareModal from './DailyInspectionShareModal.jsx'

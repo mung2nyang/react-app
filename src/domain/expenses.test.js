@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { dedupeExpensesById, groupExpensesByDate } from './expenses.js'
+import { dedupeExpensesById, groupExpensesByDate } from './expenses.ts'
 
 describe('정비/기타 저장 조건', () => {
   test('날짜별로 묶어 하루 합계를 낸다', () => {

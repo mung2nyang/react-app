@@ -53,7 +53,7 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
     beginSessionEpoch('driver-user-1', 'owner-user-99')
     const captured = captureSession()
 
-    /** @type {Array<import('../../domain/clientTypes.js').ClientLike>} */
+    /** @type {Array<import('../../domain/clientTypes.ts').ClientLike>} */
     const clients = [
       {
         id: 'client-local-1',
@@ -156,8 +156,8 @@ describe('Step 9 ① 슬라이스 C (개정): 기사↔차주 거래처 상호 �
     const merged = mergeClientsFromRows(localClients, serverRows)
 
     assert.equal(merged.length, 2)
-    assert.ok(merged.some((/** @type {import('../../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '기존거래처'))
-    assert.ok(merged.some((/** @type {import('../../domain/clientTypes.js').ClientLike} */ c) => c.companyName === '방금추가한거래처'))
+    assert.ok(merged.some((/** @type {import('../../domain/clientTypes.ts').ClientLike} */ c) => c.companyName === '기존거래처'))
+    assert.ok(merged.some((/** @type {import('../../domain/clientTypes.ts').ClientLike} */ c) => c.companyName === '방금추가한거래처'))
   })
 
   test('buildEmployedDriverSnapshot: 배정 차량 스코프로 clients를 좁혀 조회하고 에러 시 throw한다', async () => {

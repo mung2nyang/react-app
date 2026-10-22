@@ -1,7 +1,7 @@
 // @ts-check
 // 원본 driver-link.js sendDriverInviteSms() 이관 — 서버 SMS API가 아니라 기기 문자
 // 앱을 sms: 스킴으로 열어주는 방식이라 별도 발송 인프라가 필요 없다.
-import { formatInviteCode, INVITE_CODE_PATTERN, normalizeInviteCode } from '../../../domain/drivers.js'
+import { formatInviteCode, INVITE_CODE_PATTERN, normalizeInviteCode } from '../../../domain/drivers.ts'
 import { buildSmsHref } from '../../../domain/smsHref.ts'
 
 /**

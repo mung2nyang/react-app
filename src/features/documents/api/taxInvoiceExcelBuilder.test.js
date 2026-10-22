@@ -5,7 +5,7 @@ import ExcelJS from 'exceljs'
 import { buildTaxInvoiceExcelFileName } from './taxInvoiceExcel.js'
 import { buildTaxInvoiceWorkbook } from './taxInvoiceExcelBuilder.js'
 
-/** @type {import('../../../domain/financeTypes.js').FinanceSettings} */
+/** @type {import('../../../domain/financeTypes.ts').FinanceSettings} */
 const settings = {
   bizName: '차주회사',
   bizNumber: '123-45-67890',
@@ -19,7 +19,7 @@ const settings = {
 
 const profile = { bankName: '국민', accountNumber: '123-456', name: '홍길동' }
 
-/** @type {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} */
+/** @type {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} */
 const salesItem = {
   id: 'sales|2026-05|c1',
   flow: 'sales',

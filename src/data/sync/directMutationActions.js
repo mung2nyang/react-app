@@ -8,8 +8,8 @@
 // 지정 토스트만 띄운다. 차량 삭제는 vehicleDeletion.js.
 //
 // 공용 커밋 프리미티브는 data/sync/localCommit.js, 기사 초대는 requestDriverInviteSave.js에 있다.
-import { removeClient } from '../../domain/clients.js'
-import { removeDriver, setDriverStatus } from '../../domain/drivers.js'
+import { removeClient } from '../../domain/clients.ts'
+import { removeDriver, setDriverStatus } from '../../domain/drivers.ts'
 import {
   assertSessionStillCurrent,
   blockedReasonForCloudWrite,
@@ -35,8 +35,8 @@ const SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL
 
 /**
  * 로그인 사용자의 거래처 삭제. outbox/tombstone 없이 clients.delete 직접 1회.
- * @param {{ ownerKey: string, userId: string|null, clients: Array<import('../../domain/clientTypes.js').ClientLike>, clientId: string }} params
- * @returns {Promise<{ clients: Array<import('../../domain/clientTypes.js').ClientLike>, blocked: string|null, toast: string|null, failed: boolean, closeModal: boolean }>}
+ * @param {{ ownerKey: string, userId: string|null, clients: Array<import('../../domain/clientTypes.ts').ClientLike>, clientId: string }} params
+ * @returns {Promise<{ clients: Array<import('../../domain/clientTypes.ts').ClientLike>, blocked: string|null, toast: string|null, failed: boolean, closeModal: boolean }>}
  */
 export async function requestClientDeletion({ ownerKey, userId, clients, clientId }) {
   const ownerBlocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })
@@ -69,8 +69,8 @@ export async function requestClientDeletion({ ownerKey, userId, clients, clientI
 /**
  * 로그인 사용자의 기사 연동 상태변경. outbox 없이 driver_links.update 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록만 바꾼다.
- * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('../../domain/driverTypes.js').DriverRecord>, driverId: string, status: 'pending'|'linked', cloud: boolean }} params
- * @returns {Promise<{ drivers: Array<import('../../domain/driverTypes.js').DriverRecord>, blocked: string|null, toast: string }>}
+ * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('../../domain/driverTypes.ts').DriverRecord>, driverId: string, status: 'pending'|'linked', cloud: boolean }} params
+ * @returns {Promise<{ drivers: Array<import('../../domain/driverTypes.ts').DriverRecord>, blocked: string|null, toast: string }>}
  */
 export async function requestDriverStatusChange({ ownerKey, drivers, driverId, status, cloud }) {
   const driver = drivers.find((item) => item.id === driverId)
@@ -99,8 +99,8 @@ export async function requestDriverStatusChange({ ownerKey, drivers, driverId, s
 /**
  * 로그인 사용자의 기사 초대 삭제. outbox 없이 driver_links.delete 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록에서만 제거한다.
- * @param {{ ownerKey: string, userId?: string|null, drivers: Array<import('../../domain/driverTypes.js').DriverRecord>, driverId: string, cloud: boolean }} params
- * @returns {Promise<{ drivers: Array<import('../../domain/driverTypes.js').DriverRecord>, blocked: string|null, toast: string|null|undefined }>}
+ * @param {{ ownerKey: string, userId?: string|null, drivers: Array<import('../../domain/driverTypes.ts').DriverRecord>, driverId: string, cloud: boolean }} params
+ * @returns {Promise<{ drivers: Array<import('../../domain/driverTypes.ts').DriverRecord>, blocked: string|null, toast: string|null|undefined }>}
  */
 export async function requestDriverDeletion({ ownerKey, drivers, driverId, cloud }) {
   const driver = drivers.find((item) => item.id === driverId)

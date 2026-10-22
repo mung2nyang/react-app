@@ -11,8 +11,8 @@ import {
   normalizeSettings,
   removeFixedRoutePreset,
   RUN_COUNT_PRESET_MAX,
-} from './practiceSettings.js'
-import { applyFixedRouteRun, getCallDetails, saveDayRecord } from './day-record.js'
+} from './practiceSettings.ts'
+import { applyFixedRouteRun, getCallDetails, saveDayRecord } from './day-record.ts'
 
 describe('횟수 버튼 프리셋', () => {
   test('비어 있으면 1~5가 기본값이다', () => {

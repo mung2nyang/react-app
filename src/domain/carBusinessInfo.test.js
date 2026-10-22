@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { applyBusinessForm, carToBusinessForm } from './carBusinessInfo.js'
+import { applyBusinessForm, carToBusinessForm } from './carBusinessInfo.ts'
 
-/** @typedef {import('./financeTypes.js').CarLike} CarLike */
+/** @typedef {import('./financeTypes.ts').CarLike} CarLike */
 
-/** @type {import('./carBusinessInfo.js').CarBusinessForm} */
+/** @type {import('./carBusinessInfo.ts').CarBusinessForm} */
 const FORM = {
   sameAsOwner: false,
   name: '  한빛운수 ',

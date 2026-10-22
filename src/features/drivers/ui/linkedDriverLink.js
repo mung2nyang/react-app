@@ -1,6 +1,6 @@
 // @ts-check
-/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
-/** @typedef {import('../../../domain/financeTypes.js').DriverLinkLike} DriverLinkLike */
+/** @typedef {import('../../../domain/driverTypes.ts').DriverRecord} DriverRecord */
+/** @typedef {import('../../../domain/financeTypes.ts').DriverLinkLike} DriverLinkLike */
 
 /**
  * Store DriverRecord → 도메인 link shape(정산·배정기간 계산용).

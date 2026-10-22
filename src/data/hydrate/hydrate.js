@@ -6,7 +6,7 @@ import { replaceOwnerState } from '../store/owner-state.js'
 import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
 import { singleFlight } from '../cloud/singleFlight.js'
 import { beginSessionEpoch, getCloudOwnerKey, getCloudUserId, isSessionStillCurrent } from '../cloud/cloudSession.js'
-import { normalizeSettings } from '../../domain/practiceSettings.js'
+import { normalizeSettings } from '../../domain/practiceSettings.ts'
 import { readPersistDomain } from '../store/persistDomainRead.js'
 import {
   throwIfAnyHydrateError,
@@ -17,10 +17,10 @@ import {
   mergeExpenseKind,
 } from './hydrateMerge.js'
 import { mergeVehicleDayLogsFromServer } from './hydrateVehicleDayLogs.js'
-import { expenseFromFuelRecord, replaceFuelExpenses } from '../../domain/fuelRecords.js'
-import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../../domain/maintenanceRecords.js'
-import { expenseFromMiscRecord, replaceMiscExpenses } from '../../domain/miscExpenseRecords.js'
-import { mergeTaxInvoiceRecords } from '../../domain/taxInvoices.js'
+import { expenseFromFuelRecord, replaceFuelExpenses } from '../../domain/fuelRecords.ts'
+import { expenseFromMaintenanceRecord, replaceMaintExpenses } from '../../domain/maintenanceRecords.ts'
+import { expenseFromMiscRecord, replaceMiscExpenses } from '../../domain/miscExpenseRecords.ts'
+import { mergeTaxInvoiceRecords } from '../../domain/taxInvoices.ts'
 import { buildEmployedDriverSnapshot } from './hydrateEmployedDriver.js'
 import { fetchOwnerDriverExpenses } from './hydrateOwnerDriverExpenses.js'
 import { fetchOwnerDriverLinks } from '../sync/driverUnlink.js'
@@ -93,15 +93,15 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     const lsTheme = localThemeIfReadable(ownerKey)
     const serverSettings = (settingsJson && typeof settingsJson === 'object') ? settingsJson : {}
 
-    /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */
+    /** @type {Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike>} */
     let nextWorkData = {}
-    /** @type {Record<string, Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>>} */
+    /** @type {Record<string, Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike>>} */
     let nextWorkLogs = { main: {} }
-    /** @type {Array<import('../../domain/financeTypes.js').CarLike>} */
+    /** @type {Array<import('../../domain/financeTypes.ts').CarLike>} */
     let nextCars = []
-    /** @type {Array<import('../../domain/clientTypes.js').ClientLike>} */
+    /** @type {Array<import('../../domain/clientTypes.ts').ClientLike>} */
     let nextClients = []
-    let nextDrivers = /** @type {Array<import('../../domain/driverTypes.js').DriverRecord>} */ ([])
+    let nextDrivers = /** @type {Array<import('../../domain/driverTypes.ts').DriverRecord>} */ ([])
     const restSettings = { ...serverSettings }
     delete restSettings.practiceSnapshot
     const nextSettings = normalizeSettings({
@@ -109,7 +109,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
       theme: (restSettings.theme === 'dark' || restSettings.theme === 'light') ? restSettings.theme : (lsTheme || 'light'),
     })
     let nextExpenses = /** @type {Array<import('./hydrateMergeTypes.js').JsonRecord>} */ ([])
-    let nextInvoices = /** @type {Array<import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike>} */ ([])
+    let nextInvoices = /** @type {Array<import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike>} */ ([])
 
     const nextProfile = mergeProfileRow({}, profileRes.data)
     nextCars = mergeCarsFromRows(nextCars, vehiclesRes.data || [])
@@ -155,7 +155,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     const nextSnapshot = {
       workData: nextWorkData, workLogs: nextWorkLogs, cars: nextCars, clients: nextClients, drivers: nextDrivers,
       profile: nextProfile, settings: nextSettings,
-      expenses: /** @type {import('../../domain/expenseTypes.js').ExpenseItem[]} */ (ownerExpenses),
+      expenses: /** @type {import('../../domain/expenseTypes.ts').ExpenseItem[]} */ (ownerExpenses),
       driverExpenses: nextDriverExpenses,
       invoices: nextInvoices,
     }

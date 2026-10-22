@@ -8,7 +8,7 @@ import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../
 import { buildReportExportFile } from '../api/reportExport.js'
 import ShareFileModal from './ShareFileModal.jsx'
 
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 const NO_CONTACT = '문자로 보내려면 [세부 내역]에서 거래처를 하나 고르고, 그 거래처에 연락처가 있는지 확인해 주세요.'
 

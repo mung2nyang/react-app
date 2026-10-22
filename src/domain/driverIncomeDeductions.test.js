@@ -5,10 +5,10 @@ import {
   DEFAULT_EXPENSE_RATE, DEFAULT_INSURANCE_RATE, NEW_DRIVER_INCOME_DRAFT,
   driverIncomeDraftFromCar, driverIncomeFieldsFromDraft, getDriverIncomeDeductions,
   getDriverSettlementAmount, getDriverSettlementBreakdown,
-} from './driverIncomeDeductions.js'
-import { upsertCar } from './cars.js'
+} from './driverIncomeDeductions.ts'
+import { upsertCar } from './cars.ts'
 
-/** @typedef {import('./financeTypes.js').CarLike} CarLike */
+/** @typedef {import('./financeTypes.ts').CarLike} CarLike */
 
 /** 사업소득자(3.3%): 산재·원천징수 둘 다 켬 */
 const BUSINESS_CAR = /** @type {CarLike} */ ({ number: '12가3456', driverIncomeType: 'business', insuranceOn: true, withholdingOn: true })

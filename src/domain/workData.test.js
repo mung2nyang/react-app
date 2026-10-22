@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { dueDateForClient } from './clients.js'
-import { getMonthlyFareRevenue } from './finance.js'
+import { dueDateForClient } from './clients.ts'
+import { getMonthlyFareRevenue } from './finance.ts'
 import {
   backfillCallDetailIds,
   callFareTotal,
@@ -9,9 +9,9 @@ import {
   monthCallUnpaidTotal,
   monthWorkFareSummary,
   saveDayRecord,
-} from './day-record.js'
-import { checkCallDetailDraft, upsertCallDetail } from './call-details.js'
-import { addPartialPayment, checkPartialAmount, toggleCallPaymentStatus } from './payments.js'
+} from './day-record.ts'
+import { checkCallDetailDraft, upsertCallDetail } from './call-details.ts'
+import { addPartialPayment, checkPartialAmount, toggleCallPaymentStatus } from './payments.ts'
 
 const dateKey = '2026-05-10'
 const clients = [

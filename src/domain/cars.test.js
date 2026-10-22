@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { checkCarDraft, dedupeCarsById, upsertCar, validateDriverLinkFields } from './cars.js'
+import { checkCarDraft, dedupeCarsById, upsertCar, validateDriverLinkFields } from './cars.ts'
 
 describe('차량 저장 — 기사명·정산·수수료', () => {
   test('차량번호 중복은 거절한다', () => {

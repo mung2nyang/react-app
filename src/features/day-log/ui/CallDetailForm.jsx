@@ -1,9 +1,9 @@
 // @ts-check
 // 순서: 경로·톤수 → 거래처 → 운송료·부가세 → 계산서·입금일 → 시간·계기판·플랫폼 → 산재보험료·비고.
 import { useState } from 'react'
-import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../../domain/clients.js'
-import { parseCurrencyValue, vatOf } from '../../../domain/money.js'
-import { checkCallDetailDraft } from '../../../domain/call-details.js'
+import { dueDateForClient, getClientsForLog, getPaymentTermLabel, pinnedClients } from '../../../domain/clients.ts'
+import { parseCurrencyValue, vatOf } from '../../../domain/money.ts'
+import { checkCallDetailDraft } from '../../../domain/call-details.ts'
 import { confirmLargeFareSave, draftFromDetail, emptyDraft } from './callDetailFormHelpers.js'
 import LocationShortcuts from './LocationShortcuts.jsx'
 import CallClientQuickAdd from './CallClientQuickAdd.jsx'
@@ -21,7 +21,7 @@ const PLATFORM_PRESETS = ['24시콜', '화물맨', '더운반', '원콜', '전�
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 /** @typedef {import('./dayLogTypes.js').Settings} Settings */
-/** @typedef {import('../../../domain/call-details.js').CallDetailDraft} CallDetailDraft */
+/** @typedef {import('../../../domain/call-details.ts').CallDetailDraft} CallDetailDraft */
 
 /**
  * @param {Object} props

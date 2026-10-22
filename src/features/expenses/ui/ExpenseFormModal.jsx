@@ -1,8 +1,8 @@
 // @ts-check
 import { useState } from 'react'
-import { FUEL_TYPES, MAINT_CATEGORIES, MISC_CATEGORIES } from '../../../domain/expenses.js'
-import { checkExpenseDraft } from '../../../domain/expenseDraft.js'
-import { formatCurrencyInput, parseCurrencyValue } from '../../../domain/money.js'
+import { FUEL_TYPES, MAINT_CATEGORIES, MISC_CATEGORIES } from '../../../domain/expenses.ts'
+import { checkExpenseDraft } from '../../../domain/expenseDraft.ts'
+import { formatCurrencyInput, parseCurrencyValue } from '../../../domain/money.ts'
 import TemporalInput from '../../../shared/ui/TemporalInput.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import CurrencyInput from '../../../shared/ui/CurrencyInput.jsx'
@@ -10,7 +10,7 @@ import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldEr
 import './expense-form.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 
-/** @typedef {import('../../../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
+/** @typedef {import('../../../domain/expenseTypes.ts').ExpenseDraft} ExpenseDraft */
 /** @typedef {NonNullable<ReturnType<typeof checkExpenseDraft>>} ExpenseProblem */
 
 // 날짜는 창에서 비울 수 없어(기본값 오늘·일지에선 잠김) 표시하지 않고 저장 함수 알림으로.

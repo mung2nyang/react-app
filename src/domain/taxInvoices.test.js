@@ -1,8 +1,8 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { getTaxInvoiceRecordId } from './finance.js'
-import { MONTH_KEY } from './finance.fixtures.js'
+import { getTaxInvoiceRecordId } from './finance.ts'
+import { MONTH_KEY } from './finance.fixtures.ts'
 import {
   applyInsertedTaxInvoiceId,
   buildTaxInvoiceRow,
@@ -10,10 +10,10 @@ import {
   parseEntityNumber,
   resolveTaxInvoiceVehicleId,
   matchTaxInvoiceClientId,
-} from './taxInvoices.js'
+} from './taxInvoices.ts'
 
-/** @typedef {import('./financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('./financeTypes.js').CarLike} CarLike */
+/** @typedef {import('./financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
+/** @typedef {import('./financeTypes.ts').CarLike} CarLike */
 
 const ORIGINAL_COLUMNS = ['user_id', 'vehicle_id', 'client_id', 'flow', 'month_key', 'supply_amount', 'tax_amount', 'total_amount', 'status', 'raw']
 

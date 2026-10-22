@@ -1,7 +1,7 @@
 // @ts-check
 // 앱 설정 저장(savePracticeSettings)과 화면 테마 적용(applyTheme) — 계산 규칙은 domain/practiceSettings.js.
 import { commitSettings } from '../store/commitHelpers.js'
-import { normalizeSettings } from '../../domain/practiceSettings.js'
+import { normalizeSettings } from '../../domain/practiceSettings.ts'
 import { readOwnerProfile, readOwnerSettings } from '../store/ownerDataHooks.js'
 import {
   assertSessionStillCurrent,
@@ -12,7 +12,7 @@ import {
 } from '../cloud/cloudSession.js'
 import { upsertProfileOnSupabase } from './profileCloudCommit.js'
 
-/** @typedef {import('../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 /** @typedef {FinanceSettings | ((current: FinanceSettings) => FinanceSettings)} SettingsPatch 목록·묶음 설정은 최신 설정을 받아 바꿀 값을 돌려주는 함수로 */
 
 // 계정별로 한 번에 하나씩, 앞 저장이 끝난 최신 설정 위에 얹는다 — 연달아 눌러도 앞 변경이 되돌아가지 않게.

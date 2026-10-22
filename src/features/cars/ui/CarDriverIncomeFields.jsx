@@ -1,8 +1,8 @@
 // @ts-check
 // 기사차량 폼의 "기사 유형·산재보험·원천징수(3.3%)·필요경비율·산재보험료율" 블록(CarFormModal에서 분리).
 // 계산 규칙은 domain/driverIncomeDeductions.js, 값은 draft에만 두고 저장은 차량 저장 경로가 한다.
-import { formatPercentInput } from '../../../domain/money.js'
-import { DEFAULT_EXPENSE_RATE, DEFAULT_INSURANCE_RATE } from '../../../domain/driverIncomeDeductions.js'
+import { formatPercentInput } from '../../../domain/money.ts'
+import { DEFAULT_EXPENSE_RATE, DEFAULT_INSURANCE_RATE } from '../../../domain/driverIncomeDeductions.ts'
 import InfoTip from '../../../shared/ui/InfoTip.jsx'
 
 const INSURANCE_RATE_INFO = `매년 1월 1일 변경되는 법정 요율(${DEFAULT_INSURANCE_RATE}%)입니다. 직접 수정할 수 있으며, '0' 입력 시 계산에서 제외됩니다.`

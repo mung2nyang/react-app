@@ -5,7 +5,7 @@ import assert from 'node:assert/strict'
 import { beforeEach, test } from 'node:test'
 import { collectNotifications, dismissNotification, DAILY_INSPECTION_NOTICE_ID } from './notifications.js'
 import { commitSettings } from '../../../data/store/commitHelpers.js'
-import { normalizeCarSettings, normalizeSettings } from '../../../domain/practiceSettings.js'
+import { normalizeCarSettings, normalizeSettings } from '../../../domain/practiceSettings.ts'
 
 /** @param {string} ownerKey */
 const notice = (ownerKey) => collectNotifications(ownerKey).find((item) => item.id === DAILY_INSPECTION_NOTICE_ID)

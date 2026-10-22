@@ -1,10 +1,10 @@
 // @ts-check
 // 차량 유지비 날짜별 내역 목록 — 그리기만 하고 저장은 화면(MaintFuelPage)이 한다.
 import CardActionButtons from '../../../shared/ui/CardActionButtons.jsx'
-import { expenseTitle } from '../../../domain/expenses.js'
-import { formatWon } from '../../../domain/money.js'
+import { expenseTitle } from '../../../domain/expenses.ts'
+import { formatWon } from '../../../domain/money.ts'
 
-/** @typedef {import('../../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
 
 /** @param {{ kind: ExpenseItem['kind'] }} props */
 function KindRecordIcon({ kind }) {
@@ -34,7 +34,7 @@ function KindRecordIcon({ kind }) {
 
 /**
  * @param {Object} props
- * @param {ReturnType<typeof import('../../../domain/expenses.js').groupExpensesByDate>} props.groups
+ * @param {ReturnType<typeof import('../../../domain/expenses.ts').groupExpensesByDate>} props.groups
  * @param {ExpenseItem['kind']} props.kind
  * @param {string} props.kindLabel
  * @param {(item: ExpenseItem) => void} props.onEdit

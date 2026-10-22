@@ -3,7 +3,7 @@
 // 재시도 큐 없이 deleteVehicleFromSupabase 직접 1회로 끝낸다(Fail-Fast). 성공했을
 // 때만 Store(cars + 서브 일지 키)를 원자적으로 반영하고, 실패하면 로컬을 건드리지
 // 않고 지정 토스트만 띄운다. supabaseId 없는 로컬 전용 차량은 예전처럼 commitLocalOnly.
-import { removeCar } from '../../domain/cars.js'
+import { removeCar } from '../../domain/cars.ts'
 import {
   assertSessionStillCurrent,
   blockedReasonForCloudWrite,
@@ -18,7 +18,7 @@ import { deleteVehicleFromSupabase } from './directMutations.js'
 import { StaleSessionError } from './saveErrors.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 const SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL

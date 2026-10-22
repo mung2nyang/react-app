@@ -15,7 +15,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act, useState } = React
 const { default: ClearableInput } = await import('./ClearableInput.jsx')
-const { formatPhoneNumber } = await import('../../domain/formatPhone.js')
+const { formatPhoneNumber } = await import('../../domain/formatPhone.ts')
 
 /** @param {{ initial: string, format?: (value: string) => string, seen: Array<string> }} props */
 function Harness({ initial, format, seen }) {

@@ -10,7 +10,7 @@ const { getState, subscribe } = await import('./app-store.js')
 const { initializeOwnerFromPersist, replaceOwnerState } = await import('./owner-state.js')
 const { commitCars, commitLogWorkData, commitSettings } = await import('./commitHelpers.js')
 const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
-const { normalizeSettings } = await import('../../domain/practiceSettings.js')
+const { normalizeSettings } = await import('../../domain/practiceSettings.ts')
 
 function totalStubCalls() {
   return Object.values(stubSupabaseCallCounts).reduce((sum, n) => sum + n, 0)
@@ -261,7 +261,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     // JsonRecord로 별도 선언한다 — ClientRow.raw의 선언 타입(RawClientBackup =
     // Partial<ClientLike>)에 정본 밖 키를 인라인 리터럴로 바로 넣으면 TS의 신선한
     // 객체 리터럴 초과 프로퍼티 검사에 걸린다(런타임 안전성과는 무관한 검사다).
-    /** @type {import('../../domain/jsonTypes.js').JsonRecord} */
+    /** @type {import('../../domain/jsonTypes.ts').JsonRecord} */
     const rawWithExtraKey = { managerName: '박담당', phone: '010-9999-8888', extraFromVanilla: '레거시전용필드' }
     const merged = mergeClientsFromRows([], [{
       id: 801,
@@ -294,7 +294,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { commitBatch } = await import('./app-store.js')
-    const { isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.js')
+    const { isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.ts')
     const owner = 'hydrate-share-default'
     resetStubSupabaseCallCounts()
     const merged = mergeCarsFromRows([], [{ id: 901, number: '44라4444', type: 'sub', raw: {} }])
@@ -315,7 +315,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   test('raw.shareRevenueWithOwner:false는 정규화·왕복 후에도 false로 남는다', async () => {
     const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { commitBatch } = await import('./app-store.js')
-    const { isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.js')
+    const { isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.ts')
     const owner = 'hydrate-share-false'
     resetStubSupabaseCallCounts()
     const merged = mergeCarsFromRows([], [{ id: 902, number: '55마5555', type: 'sub', raw: { shareRevenueWithOwner: false } }])
@@ -332,7 +332,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
   test('React upsertCar가 실제로 저장하는 모양(불리언 필드 없음)도 hydrate 왕복 후 공유가 true로 유지된다', async () => {
     const { mergeCarsFromRows } = await import('../hydrate/hydrateMerge.js')
     const { commitBatch } = await import('./app-store.js')
-    const { upsertCar, isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.js')
+    const { upsertCar, isVehicleRevenueSharedWithOwner } = await import('../../domain/cars.ts')
     const owner = 'hydrate-share-upsertcar-shape'
     resetStubSupabaseCallCounts()
     const { cars, error } = upsertCar([], { number: '66바6666', type: 'sub', driverName: '이기사', driverPhone: '010-2222-3333' })
@@ -356,7 +356,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     const { commitBatch } = await import('./app-store.js')
     const owner = 'hydrate-income-fields'
     resetStubSupabaseCallCounts()
-    const raw = /** @type {Partial<import('../../domain/financeTypes.js').CarLike>} */ ({ driverIncomeType: 'employee', insuranceOn: false, withholdingOn: true, expenseRate: '43.1', insuranceRate: 2 })
+    const raw = /** @type {Partial<import('../../domain/financeTypes.ts').CarLike>} */ ({ driverIncomeType: 'employee', insuranceOn: false, withholdingOn: true, expenseRate: '43.1', insuranceRate: 2 })
     const merged = mergeCarsFromRows([], [{ id: 911, number: '77사7777', type: 'sub', raw }])
     assert.equal(merged[0].driverIncomeType, 'employee')
     assert.equal(merged[0].withholdingOn, true)
@@ -409,7 +409,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
 
   test('hydrate 비용 임베드와 expenses는 initialize 뒤 유실·중복 0건이다', async () => {
     const { mergeWorkDataFromRows } = await import('../hydrate/hydrateMerge.js')
-    const { expenseFromFuelRecord, replaceFuelExpenses } = await import('../../domain/fuelRecords.js')
+    const { expenseFromFuelRecord, replaceFuelExpenses } = await import('../../domain/fuelRecords.ts')
     const { readPersistDomain } = await import('./persistDomainRead.js')
     const { readLogWorkData } = await import('./persist.js')
     const { commitBatch } = await import('./app-store.js')

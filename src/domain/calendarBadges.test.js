@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { upsertCallDetail } from './call-details.js'
-import { dayExpenseBadgeLabel, dayFareTotal, dayHasUnpaid, dayWorkBadgeLabel, expensesForVehicleDay, formatFareShort } from './calendarBadges.js'
-import { addPartialPayment } from './payments.js'
-import { saveDayRecord } from './day-record.js'
+import { upsertCallDetail } from './call-details.ts'
+import { dayExpenseBadgeLabel, dayFareTotal, dayHasUnpaid, dayWorkBadgeLabel, expensesForVehicleDay, formatFareShort } from './calendarBadges.ts'
+import { addPartialPayment } from './payments.ts'
+import { saveDayRecord } from './day-record.ts'
 
 const dateKey = '2026-05-10'
 const clients = [{ id: 'c1', companyName: '한진' }]

@@ -20,8 +20,8 @@ const { act } = React
 const { default: AppSettingsPage } = await import('./AppSettingsPage.jsx')
 const { commitCars, commitClients, commitSettings } = await import('../../../data/store/commitHelpers.js')
 const { getState } = await import('../../../data/store/app-store.js')
-const { normalizeSettings } = await import('../../../domain/practiceSettings.js')
-const { clientToDraft } = await import('../../../domain/clientDraft.js')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
+const { clientToDraft } = await import('../../../domain/clientDraft.ts')
 
 const BASE = { managerName: '김담당', phone: '010-1111-2222', bizNumber: '123-45-67891', paymentTerm: 'next_month_end', taxEmail: 'a@b.kr', isPinned: true }
 

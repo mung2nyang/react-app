@@ -12,7 +12,7 @@ mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupaba
 
 const {
   formatInviteCode, generateInviteCode, INVITE_CODE_PATTERN, normalizeInviteCode, upsertDriver,
-} = await import('../../domain/drivers.js')
+} = await import('../../domain/drivers.ts')
 const { buildDriverInviteSmsHref } = await import('../../features/drivers/api/driverInviteSms.js')
 const { redeemDriverInviteCode } = await import('./driverLinkRpc.js')
 
@@ -46,7 +46,7 @@ describe('초대 저장 검사', () => {
   })
 
   test('예전 6자리 코드는 바꾸지 않고 수정할 때만 통과, 다른 6자리로 바꾸면 거절', () => {
-    /** @type {Array<import('../../domain/driverTypes.js').DriverRecord>} */
+    /** @type {Array<import('../../domain/driverTypes.ts').DriverRecord>} */
     const items = [{ id: 'd1', ...draft, inviteCode: '123456', status: 'linked' }]
     assert.equal(upsertDriver(items, { ...draft, name: '새이름', inviteCode: '123456' }, 'd1').error, undefined)
     assert.equal(upsertDriver(items, { ...draft, inviteCode: '654321' }, 'd1').error, '[코드 생성]으로 초대 코드를 만들어 주세요.')

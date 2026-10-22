@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { upsertDriver } from './drivers.js'
+import { upsertDriver } from './drivers.ts'
 import { buildClientRow, buildVehicleRow } from '../data/cloud/cloudStorage.js'
 import { deleteClientFromSupabase, deleteVehicleFromSupabase } from '../data/sync/directMutations.js'
 

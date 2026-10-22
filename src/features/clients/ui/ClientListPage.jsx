@@ -13,8 +13,8 @@ import './client-management.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @typedef {import('../../../domain/clientTypes.js').ClientDraft} ClientDraft */
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientDraft} ClientDraft */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 /** @type {ClientDraft} */
 const emptyDraft = {
@@ -37,7 +37,7 @@ export default function ClientListPage({ onBack, onOpenMenu }) {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(emptyDraft)
-  const [pendingDelete, setPendingDelete] = useState(/** @type {import('../../../domain/clientTypes.js').ClientLike|null} */ (null))
+  const [pendingDelete, setPendingDelete] = useState(/** @type {import('../../../domain/clientTypes.ts').ClientLike|null} */ (null))
   const reorder = useClientReorder(ownerKey, clients)
   const visibleClients = clients.filter((client) => !client.scopedToVehicleNumber)
 

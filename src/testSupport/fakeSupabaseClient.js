@@ -117,7 +117,7 @@ export function wait(ms) {
 // 로컬 객체를 통째로 담는다(mergeCars/ClientsFromRows가 raw.* 를 읽는다).
 
 /**
- * @param {Array<import('../domain/financeTypes.js').CarLike>} cars
+ * @param {Array<import('../domain/financeTypes.ts').CarLike>} cars
  * @returns {Array<import('../data/store/atomicPersist.js').JsonValue>}
  */
 export function vehicleRowsFor(cars) {
@@ -138,7 +138,7 @@ export function vehicleRowsFor(cars) {
 }
 
 /**
- * @param {Array<import('../domain/clientTypes.js').ClientLike>} clients
+ * @param {Array<import('../domain/clientTypes.ts').ClientLike>} clients
  * @returns {Array<import('../data/store/atomicPersist.js').JsonValue>}
  */
 export function clientRowsFor(clients) {

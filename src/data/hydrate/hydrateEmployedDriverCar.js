@@ -1,7 +1,7 @@
 // @ts-check
 // hydrateEmployedDriver.js에서 분리.
 // 서버 RPC 행 → 화면용 차량 정보로 바꾸는 순수 변환만 담는다(네트워크 호출 없음).
-import { driverIncomeFieldsFromDraft } from '../../domain/driverIncomeDeductions.js'
+import { driverIncomeFieldsFromDraft } from '../../domain/driverIncomeDeductions.ts'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
 

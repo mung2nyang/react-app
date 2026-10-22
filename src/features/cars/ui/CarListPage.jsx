@@ -6,11 +6,11 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import CarFormModal from './CarFormModal.jsx'
 import CarListItem from './CarListItem.jsx'
 import useCarListActions from '../hooks/useCarListActions.js'
-import { hasMainCar } from '../../../domain/cars.js'
-import { NEW_DRIVER_INCOME_DRAFT, driverIncomeDraftFromCar } from '../../../domain/driverIncomeDeductions.js'
-import { resolveDriverShareBase } from '../../../domain/driverShareBase.js'
+import { hasMainCar } from '../../../domain/cars.ts'
+import { NEW_DRIVER_INCOME_DRAFT, driverIncomeDraftFromCar } from '../../../domain/driverIncomeDeductions.ts'
+import { resolveDriverShareBase } from '../../../domain/driverShareBase.ts'
 import { getCloudUserId, isCloudSession } from '../../../data/cloud/cloudSession.js'
-import { generateInviteCode } from '../../../domain/drivers.js'
+import { generateInviteCode } from '../../../domain/drivers.ts'
 import { todayIsoDate } from '../api/carInviteFromDraft.js'
 import { useOwnerCars, useOwnerDrivers } from '../../../data/store/ownerDataHooks.js'
 import './car-management.css'
@@ -56,7 +56,7 @@ export default function CarListPage({ onBack, onOpenMenu }) {
     setModalOpen(true)
   }
 
-  function openEdit(/** @type {import('../../../domain/financeTypes.js').CarLike} */ car) {
+  function openEdit(/** @type {import('../../../domain/financeTypes.ts').CarLike} */ car) {
     setEditingId(car.id || null)
     const linked = drivers.find((d) => d.vehicleNumber === car.number)
     setDraft({

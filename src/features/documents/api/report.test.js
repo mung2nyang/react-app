@@ -176,7 +176,7 @@ describe('getDetailReportClientContact', () => {
 describe('buildMonthReport', () => {
   /** @type {any} */
   const profile = { name: '차주' }
-  /** @type {Array<import('../../../domain/financeTypes.js').CarLike>} */
+  /** @type {Array<import('../../../domain/financeTypes.ts').CarLike>} */
   const cars = [{ id: 'm1', type: 'main', number: '12가3456' }]
   const settings = { fixedOn: true }
 
@@ -261,7 +261,7 @@ describe('buildMonthReport', () => {
   // 스코프 수정 묶음 2(2026-09-21) — 서브차량 내역서(차주 계정)·연동기사 본인 내역서는 그 차량 스코프 고정노선을 쓴다.
   describe('고정노선 스코프 — 내역서 대상 차량', () => {
     const plate = '서울99가9999'
-    const subCars = /** @type {Array<import('../../../domain/financeTypes.js').CarLike>} */ ([{ id: 's1', type: 'sub', number: plate }])
+    const subCars = /** @type {Array<import('../../../domain/financeTypes.ts').CarLike>} */ ([{ id: 's1', type: 'sub', number: plate }])
     const ownerClient = { id: 'c-owner', companyName: '차주고정', fixedRouteLinked: true, fixedUnitPrice: 250000 }
     const scopedClient = { id: 'c-sub', companyName: '서브고정', fixedRouteLinked: true, fixedUnitPrice: 100000, scopedToVehicleNumber: plate }
     const oneFixedRun = { '2026-09-01': { fixedCount: 1, callDetails: [] } }
@@ -289,7 +289,7 @@ describe('buildMonthReport', () => {
     })
 
     test('운송내역서는 회사 제출용이라 기사차량 수수료를 차감하지 않는다(F-06 — 운송료+부가세)', () => {
-      const commissionCar = /** @type {Array<import('../../../domain/financeTypes.js').CarLike>} */ ([
+      const commissionCar = /** @type {Array<import('../../../domain/financeTypes.ts').CarLike>} */ ([
         { id: 's2', type: 'sub', number: plate, commEnabled: true, commType: 'percent', commission: '10' },
       ])
       const report = buildMonthReport(

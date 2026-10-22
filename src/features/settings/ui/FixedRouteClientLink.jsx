@@ -2,9 +2,9 @@
 // 앱 설정 고정 노선 카드의 "거래처 연결" 줄 — 연결 요약 + "+ 추가"/"수정" 버튼, 입력·저장은 FixedRouteClientModal 팝업.
 import { useState } from 'react'
 import FixedRouteClientModal from './FixedRouteClientModal.jsx'
-import { fixedRouteCandidates } from '../../../domain/clientDraft.js'
-import { getFixedRouteClient } from '../../../domain/clients.js'
-import { formatCurrencyInput } from '../../../domain/money.js'
+import { fixedRouteCandidates } from '../../../domain/clientDraft.ts'
+import { getFixedRouteClient } from '../../../domain/clients.ts'
+import { formatCurrencyInput } from '../../../domain/money.ts'
 import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 

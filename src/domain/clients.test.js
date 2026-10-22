@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { checkClientDraft, computeFixedRouteFare, getFixedRouteClient, reorderClients, resolveFixedUnitPrice, sortClientsPinnedFirst, upsertClient } from './clients.js'
-import { monthWorkFareSummary } from './day-record.js'
-import { getMonthlyFareRevenue } from './finance.js'
+import { checkClientDraft, computeFixedRouteFare, getFixedRouteClient, reorderClients, resolveFixedUnitPrice, sortClientsPinnedFirst, upsertClient } from './clients.ts'
+import { monthWorkFareSummary } from './day-record.ts'
+import { getMonthlyFareRevenue } from './finance.ts'
 
 describe('거래처 저장 — 세금계산서 필드', () => {
   test('대표자·이메일·주소·업태·종목을 저장한다', () => {

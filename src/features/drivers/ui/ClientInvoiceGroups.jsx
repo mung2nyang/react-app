@@ -1,5 +1,5 @@
 // @ts-check
-import { formatWon } from '../../../domain/money.js'
+import { formatWon } from '../../../domain/money.ts'
 
 /**
  * @typedef {{ dateKey: string, loadLoc?: string, unloadLoc?: string, fare: number }} InvoiceTrip

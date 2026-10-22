@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { getFixedRouteCommissionAmount } from './fixedRouteCommission.js'
-import { monthSettlementSummary } from './monthSettlement.js'
-import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.js'
+import { getFixedRouteCommissionAmount } from './fixedRouteCommission.ts'
+import { monthSettlementSummary } from './monthSettlement.ts'
+import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.ts'
 
 describe('getFixedRouteCommissionAmount — 고정노선 거래처 수수료(로드맵 39)', () => {
   test('비율: 그날 금액에서 내림', () => {

@@ -3,9 +3,9 @@
 // useSyncExternalStore를 쓴다.
 import { useMemo, useSyncExternalStore } from 'react'
 import { getState, subscribe } from './app-store.js'
-import { normalizeSettings } from '../../domain/practiceSettings.js'
+import { normalizeSettings } from '../../domain/practiceSettings.ts'
 
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
 
 // 쓰기 직전에는 readOwner*로 최신값을 다시 읽는다 — 옛 스냅샷으로 저장하면 그 사이 바뀐 항목을 덮어쓴다.
 const EMPTY_EXPENSES = /** @type {Array<ExpenseItem>} */ ([])
@@ -31,7 +31,7 @@ export function useOwnerExpenses(ownerKey) {
   return useSyncExternalStore(subscribe, () => readOwnerExpenses(ownerKey))
 }
 
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 const EMPTY_CLIENTS = /** @type {Array<ClientLike>} */ ([])
 
@@ -52,7 +52,7 @@ export function useOwnerClients(ownerKey) {
   return useSyncExternalStore(subscribe, () => readOwnerClients(ownerKey))
 }
 
-/** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
 const EMPTY_INVOICES = /** @type {Array<InvoiceLike>} */ ([])
 
 /** @param {string} ownerKey */
@@ -65,7 +65,7 @@ export function useOwnerInvoices(ownerKey) {
   return useSyncExternalStore(subscribe, () => readOwnerInvoices(ownerKey))
 }
 
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
 const EMPTY_CARS = /** @type {Array<CarLike>} */ ([])
 
 /** @param {string} ownerKey */

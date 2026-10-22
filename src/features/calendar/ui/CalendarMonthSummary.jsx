@@ -1,10 +1,10 @@
 // @ts-check
 // 미수금 미니 카드 + 월간 운송료 정산 카드. monthSettlementSummary 결과로 거래처별·파렛트·서브수수료·지출 행을 그린다.
-import { formatWon } from '../../../domain/money.js'
+import { formatWon } from '../../../domain/money.ts'
 import SummaryInfoToggle from '../../../shared/ui/SummaryInfoToggle.jsx'
 
 /**
- * @typedef {ReturnType<typeof import('../../../domain/monthSettlement.js').monthSettlementSummary>} MonthSettlementSummary
+ * @typedef {ReturnType<typeof import('../../../domain/monthSettlement.ts').monthSettlementSummary>} MonthSettlementSummary
  */
 
 const TOTAL_INFO = '운송료 + 파렛트 회수 청구액 − 수수료 + 부가세입니다. 아래 정비비, 주유비, 통행료는 합계에서 빼지 않은 이번 달 차량 지출 기록입니다.'

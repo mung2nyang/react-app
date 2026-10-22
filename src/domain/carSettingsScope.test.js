@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { resolveLogSettings } from './carSettingsScope.js'
-import { normalizeCarSettings, normalizeSettings } from './practiceSettings.js'
+import { resolveLogSettings } from './carSettingsScope.ts'
+import { normalizeCarSettings, normalizeSettings } from './practiceSettings.ts'
 
 const base = normalizeSettings({
   timeOn: true,

@@ -5,7 +5,7 @@ import {
   isPersistedFuelItem, isPersistedFuelList, isPersistedMaintItem, isPersistedMaintList, isPersistedMiscItem, isPersistedMiscList,
 } from './persistDayRecordLegacy.js'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 /** @typedef {Record<string, JsonValue>} Rec */
 
 const FUEL = { type: 'diesel', cost: 50000, subsidy: '1,000', liter: '40', liters: 40.5, mileage: '12345' }

@@ -1,6 +1,6 @@
 // @ts-check
 // 일지 한 날짜의 저장 담당 — 타이머·저장 대기·판 번호·서버 저장 중을 한곳에 두고 기기/서버 저장과 결과 처리를 한다.
-import { saveDayRecord } from '../../../domain/day-record.js'
+import { saveDayRecord } from '../../../domain/day-record.ts'
 import { pendingOwnerForLog } from '../../../data/sync/pendingLogOwner.js'
 import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '../../../data/sync/durableWriteGuard.js'
 import { clearPendingDayWrite, registerPendingDayWrite } from '../../../data/sync/pendingWorkDataWrites.js'
@@ -12,7 +12,7 @@ import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../../data/
 import { DEVICE_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
-/** @typedef {Record<string, import('../../../domain/dayRecordTypes.js').DayRecordLike>} WorkMap */
+/** @typedef {Record<string, import('../../../domain/dayRecordTypes.ts').DayRecordLike>} WorkMap */
 /** @typedef {import('./day-log-reducer.js').DayDraft} DayDraft */
 /** @typedef {'idle'|'pending'|'saved'|'failed'} AutoSaveState */
 /** @typedef {(status: AutoSaveState) => void} SetAutoSaveState */

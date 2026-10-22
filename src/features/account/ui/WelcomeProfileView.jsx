@@ -2,7 +2,7 @@
 // 구글 첫 로그인 기본 정보(구글 로그인 G-2): 이름·휴대전화 번호를 받아 profiles 행을 만든 뒤 첫 설정 화면으로.
 import { useState } from 'react'
 import { assetPath } from '../../../shared/utils/assetPath.js'
-import { formatPhoneNumber } from '../../../domain/formatPhone.js'
+import { formatPhoneNumber } from '../../../domain/formatPhone.ts'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import './welcome-profile.css'
 

@@ -12,7 +12,7 @@ import { mock, test } from 'node:test'
 
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
-/** @typedef {import('../../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
 
 const save = { fail: false }
 const { commitExpenses } = await import('../../../data/store/commitHelpers.js')

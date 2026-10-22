@@ -1,8 +1,8 @@
 // @ts-check
 // 콜상세 폼 순수 헬퍼(초기값 구성·포맷팅).
-import { dueDateForClient } from '../../../domain/clients.js'
-import { getCallDetailDurationMinutes } from '../../../domain/finance.js'
-import { formatCurrencyInput, formatWon, isLargeFare, parseCurrencyValue } from '../../../domain/money.js'
+import { dueDateForClient } from '../../../domain/clients.ts'
+import { getCallDetailDurationMinutes } from '../../../domain/finance.ts'
+import { formatCurrencyInput, formatWon, isLargeFare, parseCurrencyValue } from '../../../domain/money.ts'
 import { confirmDialog } from '../../../shared/ui/confirmDialog.jsx'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */

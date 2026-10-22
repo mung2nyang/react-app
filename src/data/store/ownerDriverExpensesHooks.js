@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react'
 import { getState, subscribe } from './app-store.js'
 
-/** @typedef {import('../../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.ts').DriverExpenseItem} DriverExpenseItem */
 
 const EMPTY_DRIVER_EXPENSES = /** @type {Array<DriverExpenseItem>} */ ([])
 

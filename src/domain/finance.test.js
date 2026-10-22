@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { calculatePaymentDueDate } from './clients.js'
-import { isDateWithinAssignment } from './drivers.js'
+import { calculatePaymentDueDate } from './clients.ts'
+import { isDateWithinAssignment } from './drivers.ts'
 import {
   calculateDriverVehicleCommission,
   getCallDetailCommissionAmount,
@@ -14,10 +14,10 @@ import {
   getOverdueReceivableItems,
   getReceivableItems,
   getTaxInvoiceSourceGroups,
-} from './finance.js'
-import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
-import { parseCurrencyValue } from './money.js'
-import { monthSettlementSummary } from './monthSettlement.js'
+} from './finance.ts'
+import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.ts'
+import { parseCurrencyValue } from './money.ts'
+import { monthSettlementSummary } from './monthSettlement.ts'
 
 /** @template T @param {T} a @param {T} b */
 function same(a, b) {

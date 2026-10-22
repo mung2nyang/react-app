@@ -9,7 +9,7 @@ mock.module('../cloud/supabaseClient.js', { namedExports: { supabase: fakeSupaba
 
 const { isPersistedDayRecord, parsePersistedWorkDataMap } = await import('../store/persistDayRecord.js')
 const { mergeWorkDataFromRows } = await import('../hydrate/hydrateMergeWork.js')
-const { saveDayRecord } = await import('../../domain/day-record.js')
+const { saveDayRecord } = await import('../../domain/day-record.ts')
 const { commitMainDayLogToCloud } = await import('./dayLogCloudCommit.js')
 const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
 const { setHydration, getState } = await import('../store/app-store.js')
@@ -64,7 +64,7 @@ describe('하루 저장(saveDayRecord)', () => {
 })
 
 describe('서버 쓰기(commitMainDayLogToCloud)', () => {
-  /** @param {string} ownerKey @param {import('../../domain/dayRecordTypes.js').DayRecordLike} record */
+  /** @param {string} ownerKey @param {import('../../domain/dayRecordTypes.ts').DayRecordLike} record */
   function begin(ownerKey, record) {
     resetHandlers()
     Object.assign(handlers, emptyOkHandlers())

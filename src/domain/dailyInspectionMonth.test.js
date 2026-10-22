@@ -2,7 +2,7 @@
 // 서류 발급 일상점검표 한 달 표(9-C-1): 8일 구간, 처음 구간, 칸 표기(오늘 이후 빈칸·휴무 미·없음 미·양호 O·불량 X).
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { actionNoteLines, initialRangeIndex, inspectionFileBaseName, inspectorCell, inspectionMark, legalFormMark, monthDays, rangeDays } from './dailyInspectionMonth.js'
+import { actionNoteLines, initialRangeIndex, inspectionFileBaseName, inspectorCell, inspectionMark, legalFormMark, monthDays, rangeDays } from './dailyInspectionMonth.ts'
 
 test('구간: 1~8·9~16·17~24·25~끝날(2월 28일, 10월 31일)', () => {
   assert.deepEqual(rangeDays(2026, 9, 0), [1, 2, 3, 4, 5, 6, 7, 8])

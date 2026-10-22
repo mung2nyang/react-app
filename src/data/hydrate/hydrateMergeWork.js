@@ -1,5 +1,5 @@
 // @ts-check
-import { dedupeCallDetailsById, withCoercedCallDetailId } from '../../domain/callDetailIds.js'
+import { dedupeCallDetailsById, withCoercedCallDetailId } from '../../domain/callDetailIds.ts'
 import { ALLOWED_CALL_DETAIL_KEYS, isPersistedCallDetail } from '../store/callDetailSchema.js'
 import { DAY_RECORD_KEYS } from '../store/persistDayRecord.js'
 import { isPlainObject } from '../store/persistDomainRecords.js'
@@ -7,9 +7,9 @@ import { isPlainObject } from '../store/persistDomainRecords.js'
 /** @typedef {import('./hydrateMergeTypes.js').DailyLogRow} DailyLogRow */
 /** @typedef {import('./hydrateMergeTypes.js').DetailRow} DetailRow */
 /** @typedef {import('./hydrateMergeTypes.js').MergedDayRecord} MergedDayRecord */
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
-/** @typedef {import('../../domain/jsonTypes.js').JsonRecord} JsonRecord */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonRecord} JsonRecord */
 
 /** @param {JsonValue|null|undefined} raw @param {ReadonlyArray<string>} allowed */
 function pickKnownKeys(raw, allowed) {

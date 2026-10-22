@@ -4,17 +4,17 @@
 import { readOwnerCars, readOwnerClients, readOwnerDrivers, readOwnerExpenses, readOwnerInvoices } from '../../../data/store/ownerDataHooks.js'
 import { isPersistedClient, isPersistedExpense, isPlainObject } from '../../../data/store/persistDomainRecords.js'
 import { isPersistedInvoice } from '../../../data/store/persistDomainInvoice.js'
-import { isValidCalendarDateKey } from '../../../domain/dateKey.js'
+import { isValidCalendarDateKey } from '../../../domain/dateKey.ts'
 import { saveClientsToCloud } from '../../../data/sync/clientCloudSave.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import { saveExpenses } from '../../../data/sync/expensesSave.js'
 import { saveInvoices } from '../../../data/sync/invoicesSave.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
-/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
-/** @typedef {import('../../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
-/** @typedef {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
 /** @typedef {{ clients: ClientLike[], expenses: ExpenseItem[], invoices: InvoiceLike[], skippedItems: number }} RecordPicks */
 
 /**

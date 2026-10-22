@@ -7,17 +7,17 @@ import {
 } from '../../../data/sync/ownerFinance.js'
 import {
   addPartialPayment, markReceivableItemPaid, undoLastPayment,
-} from '../../../domain/payments.js'
-import { getReceivableItems } from '../../../domain/finance.js'
-import { groupItems } from '../../../domain/receivables.js'
-import { formatWon } from '../../../domain/money.js'
-import { checkPartialAmount } from '../../../domain/payments.js'
+} from '../../../domain/payments.ts'
+import { getReceivableItems } from '../../../domain/finance.ts'
+import { groupItems } from '../../../domain/receivables.ts'
+import { formatWon } from '../../../domain/money.ts'
+import { checkPartialAmount } from '../../../domain/payments.ts'
 import { focusField } from '../../../shared/ui/FieldError.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
-/** @typedef {import('../../../domain/financeReceivables.js').ReceivableItemLike} ReceivableItemLike */
-/** @typedef {import('../../../domain/financeTypes.js').WorkDataByLogId} WorkDataByLogId */
-/** @typedef {import('../../../domain/day-record.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../../domain/financeReceivables.ts').ReceivableItemLike} ReceivableItemLike */
+/** @typedef {import('../../../domain/financeTypes.ts').WorkDataByLogId} WorkDataByLogId */
+/** @typedef {import('../../../domain/day-record.ts').DayRecordLike} DayRecordLike */
 
 /** @param {string} key */
 export const partialInputId = (key) => `receivablePartial-${key}`
@@ -25,8 +25,8 @@ export const partialInputId = (key) => `receivablePartial-${key}`
 /**
  * @param {Object} params
  * @param {string} params.ownerKey
- * @param {import('../../../domain/financeTypes.js').WorkDataByLogId} params.workDataByLogId
- * @param {import('../../../domain/financeTypes.js').FinanceSettings} params.settings
+ * @param {import('../../../domain/financeTypes.ts').WorkDataByLogId} params.workDataByLogId
+ * @param {import('../../../domain/financeTypes.ts').FinanceSettings} params.settings
  * @param {(message: string, options?: { confirmLabel?: string, danger?: boolean, message?: string }) => Promise<boolean>} params.confirm
  */
 export function useReceivablesActions({

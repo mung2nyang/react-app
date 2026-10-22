@@ -1,9 +1,9 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { getMonthlyDriverInsuranceOwnerShare, getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.js'
-import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.js'
-import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
+import { getMonthlyDriverInsuranceOwnerShare, getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.ts'
+import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.ts'
+import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.ts'
 
 // 산재 규칙 재설계(로드맵 4-2): 매출제 정산액은 산재를 빼지 않은 기사 몫 전체이고, 산재보험료는 기사 정산액 기준
 // 월 단위로 따로 계산한다(건별 산재 합계는 더 쓰지 않는다).
@@ -122,7 +122,7 @@ describe('getOwnerMonthlyFinanceDetail — C-3 월급제+매출제 합산', () =
 })
 
 describe('기사 급여 계약 기간 — 연동 중 계약만, 기간·계약 밖 운송료를 이름에(로드맵 41-A)', () => {
-  /** @type {import('./financeTypes.js').CarLike} */
+  /** @type {import('./financeTypes.ts').CarLike} */
   const car = { type: 'sub', number: '22가2222', driverName: '테스트2', driverPayMode: 'revenue', commEnabled: true, commType: 'percent', commission: '20', shareRevenueWithOwner: true }
   const work = {
     '22가2222': {
@@ -130,7 +130,7 @@ describe('기사 급여 계약 기간 — 연동 중 계약만, 기간·계약 �
       '2026-10-12': { callDetails: [{ id: 'b', client: 'A', fare: 300000 }] },
     },
   }
-  /** @param {Array<import('./financeTypes.js').DriverLinkLike>} driverLinks */
+  /** @param {Array<import('./financeTypes.ts').DriverLinkLike>} driverLinks */
   const run = (driverLinks) => getMonthlyDriverRevenueShareExpense('2026-10', { cars: [car], driverLinks }, [car], work)
 
   test('연동 중 계약(10/12~)이면 기간 안 30만원분만, 이름에 기간과 계약 밖 운송료', () => {

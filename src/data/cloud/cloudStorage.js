@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 서버 저장 행 만들기와 번호 읽기 도우미(차량·거래처·일지 서버 저장이 공유).
 /**
  * @param {JsonValue|undefined} value
@@ -14,7 +14,7 @@ export function parseEntityNumber(value) {
 
 /**
  * @param {string} userId
- * @param {import('../../domain/financeTypes.js').CarLike} car
+ * @param {import('../../domain/financeTypes.ts').CarLike} car
  * @param {number} index
  */
 export function buildVehicleRow(userId, car, index) {
@@ -43,7 +43,7 @@ export function buildVehicleRow(userId, car, index) {
  * 행 소유자 = ownerKey, 로그인한 사람의 auth id 아님.
  * 소속기사 세션에서도 거래처는 연동된 차주(ownerKey)의 소유로 저장된다.
  * @param {string} ownerId
- * @param {import('../../domain/clientTypes.js').ClientLike} client
+ * @param {import('../../domain/clientTypes.ts').ClientLike} client
  * @param {number} index
  */
 export function buildClientRow(ownerId, client, index) {

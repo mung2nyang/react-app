@@ -5,7 +5,7 @@ import {
   filterDriverExpensesByVehicle,
   selectExpensesForScope,
   sweepExpenseItems,
-} from './financeOwnerExpenseSweep.js'
+} from './financeOwnerExpenseSweep.ts'
 
 const OWNER = [
   { id: 'o-m', kind: 'maint', date: '2026-05-10', name: '차주정비', cost: 10000 },

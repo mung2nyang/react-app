@@ -1,7 +1,7 @@
 // @ts-check
 // 새 홈 "이번 달 정산 합계": 달력 탭 "월간 운송료 정산" 카드의 "합계"와 같은 값(같은 훅 useMonthSettlement).
 // 지출이 있으면 맨 위에 "이번 달 지출 합계"(달력 카드의 정비비·주유비·통행료/기타 줄을 더한 값).
-import { formatWon } from '../../../domain/money.js'
+import { formatWon } from '../../../domain/money.ts'
 
 /**
  * @param {Object} props

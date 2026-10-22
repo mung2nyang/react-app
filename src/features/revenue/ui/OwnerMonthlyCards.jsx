@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import { dateLabel, driverSelfNetProfitLabel, won } from './revenueFormat.js'
 
-/** @typedef {ReturnType<typeof import('../../../domain/finance.js').getOwnerMonthlyFinanceDetail>} OwnerMonthlyDetail */
+/** @typedef {ReturnType<typeof import('../../../domain/finance.ts').getOwnerMonthlyFinanceDetail>} OwnerMonthlyDetail */
 /** @typedef {{ label: string, amount: number, date?: string }} DetailLine */
 /** @typedef {{ amount: number, insurance: number, withholding: number, showInsurance: boolean, showWithholding: boolean }} SettlementBreakdown */
 /** @typedef {{ total: number, items: Array<DetailLine>, label?: string, payMode?: string|null, breakdown?: SettlementBreakdown }} SettlementBucket */

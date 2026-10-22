@@ -1,8 +1,8 @@
 // @ts-check
 import CalendarDateSelect from '../../../shared/ui/CalendarDateSelect.jsx'
-import { getYearOptions } from '../../../domain/calendar.js'
-import { formatWon } from '../../../domain/money.js'
-import { getDriverSettlementBreakdown } from '../../../domain/driverIncomeDeductions.js'
+import { getYearOptions } from '../../../domain/calendar.ts'
+import { formatWon } from '../../../domain/money.ts'
+import { getDriverSettlementBreakdown } from '../../../domain/driverIncomeDeductions.ts'
 
 const YEAR_OPTIONS = getYearOptions()
 
@@ -16,7 +16,7 @@ function deductionWon(amount) {
 
 /**
  * detail은 getLinkedDriverSettlementDetail 결과에 그 기사차량(car)을 실은 것 — 카드는 car의 산재·원천징수 설정으로 계산한다.
- * @typedef {{ tripCount?: number, totalFare?: number, commissionAmount?: number, car?: import('../../../domain/financeTypes.js').CarLike }} SettlementDetail
+ * @typedef {{ tripCount?: number, totalFare?: number, commissionAmount?: number, car?: import('../../../domain/financeTypes.ts').CarLike }} SettlementDetail
  */
 
 /**

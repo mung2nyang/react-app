@@ -1,8 +1,8 @@
 // @ts-check
 // 정비·주유·기타는 구조가 같고 라벨·클래스만 달라 kind로 나누는 한 컴포넌트로 둔다(3벌로 쪼개면 중복).
 // 종류별 합계는 카드 목록 아래 요약 상자 하나에 모은다(운행 일지 세부 내역 합계와 같은 모양).
-import { KINDS, expenseTitle } from '../../../domain/expenses.js'
-import { formatWon, parseCurrencyValue } from '../../../domain/money.js'
+import { KINDS, expenseTitle } from '../../../domain/expenses.ts'
+import { formatWon, parseCurrencyValue } from '../../../domain/money.ts'
 import { ExpenseIcon, EditIcon, DeleteIcon } from '../../../shared/ui/icons.jsx'
 
 /** @type {Record<string, string>} */

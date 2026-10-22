@@ -10,7 +10,7 @@ const { getState, subscribe } = await import('../store/app-store.js')
 const { commitWorkData } = await import('../store/commitHelpers.js')
 const { readJsonKey } = await import('../store/persist.js')
 
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 /** @param {string} ownerKey @param {string} dateKey */
 function committedFixedCount(ownerKey, dateKey) {

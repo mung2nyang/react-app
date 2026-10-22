@@ -3,11 +3,11 @@
 import { useSyncExternalStore } from 'react'
 import { getState, subscribe } from './app-store.js'
 
-/** @typedef {import('../../domain/calendarBadges.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/calendarBadges.ts').DayRecordLike} DayRecordLike */
 
 const EMPTY_WORK_DATA = /** @type {Record<string, DayRecordLike>} */ ({})
 /** 손익·미수·계산서용 — owner에 workLogs가 없을 때 고정 참조(useSyncExternalStore). */
-const EMPTY_WORK_DATA_BY_LOG_ID = /** @type {import('../../domain/financeTypes.js').WorkDataByLogId} */ ({
+const EMPTY_WORK_DATA_BY_LOG_ID = /** @type {import('../../domain/financeTypes.ts').WorkDataByLogId} */ ({
   main: EMPTY_WORK_DATA,
 })
 
@@ -51,7 +51,7 @@ export function useOwnerWorkData(ownerKey) {
  * 이미 logId별 소스를 순회하므로, 여기만 main에 묶여 있으면 매출/미수에 기사가 안 잡힌다.
  * store 참조를 유지해 useSyncExternalStore 스냅샷이 안정적이다.
  * @param {string} ownerKey
- * @returns {import('../../domain/financeTypes.js').WorkDataByLogId}
+ * @returns {import('../../domain/financeTypes.ts').WorkDataByLogId}
  */
 export function readOwnerWorkDataByLogId(ownerKey) {
   const logs = getState().workLogs[ownerKey]
@@ -64,14 +64,14 @@ export function useOwnerWorkDataByLogId(ownerKey) {
   return useSyncExternalStore(subscribe, () => readOwnerWorkDataByLogId(ownerKey))
 }
 
-const EMPTY_TOMBSTONES = /** @type {import('../../domain/workDataTombstones.js').WorkDataTombstones} */ ({})
+const EMPTY_TOMBSTONES = /** @type {import('../../domain/workDataTombstones.ts').WorkDataTombstones} */ ({})
 
 /**
  * 빈 날 삭제 목록을 읽는다(구독 불필요 — 화면에서 쓰지 않음).
  * @param {string} ownerKey
- * @returns {import('../../domain/workDataTombstones.js').WorkDataTombstones}
+ * @returns {import('../../domain/workDataTombstones.ts').WorkDataTombstones}
  */
 export function readOwnerWorkDataTombstones(ownerKey) {
-  const raw = /** @type {import('../../domain/workDataTombstones.js').WorkDataTombstones|undefined} */ (getState().workDataDeletedDates[ownerKey])
+  const raw = /** @type {import('../../domain/workDataTombstones.ts').WorkDataTombstones|undefined} */ (getState().workDataDeletedDates[ownerKey])
   return raw || EMPTY_TOMBSTONES
 }

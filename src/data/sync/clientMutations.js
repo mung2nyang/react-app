@@ -7,14 +7,14 @@ import {
   reorderClients,
   updateClientTaxInfo,
   upsertClient,
-} from '../../domain/clients.js'
+} from '../../domain/clients.ts'
 import { blockedReasonForOwnerDataWrite } from '../cloud/cloudSession.js'
 import { isCloudClientOwner, reorderedClientIds, saveClientsToCloud } from './clientCloudSave.js'
 import { commitClients } from '../store/commitHelpers.js'
 import { STORAGE_FAIL_TOAST } from './localCommit.js'
 
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
-/** @typedef {import('../../domain/clientTypes.js').ClientDraft} ClientDraft */
+/** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
+/** @typedef {import('../../domain/clientTypes.ts').ClientDraft} ClientDraft */
 
 /**
  * @param {string} ownerKey

@@ -7,7 +7,7 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { formatWon } from '../../../domain/money.js'
+import { formatWon } from '../../../domain/money.ts'
 import { dash } from '../api/report.js'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true

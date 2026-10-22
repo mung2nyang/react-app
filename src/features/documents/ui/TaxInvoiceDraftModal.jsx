@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
-import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../../domain/formatPhone.js'
-import { formatWon } from '../../../domain/money.js'
+import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../../domain/formatPhone.ts'
+import { formatWon } from '../../../domain/money.ts'
 import { checkTaxInvoiceDraft } from '../api/taxInvoiceActions.js'
 import BizNumberHint from '../../../shared/ui/BizNumberHint.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
@@ -10,7 +10,7 @@ import './tax-invoice.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 
-/** @typedef {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
 
 const INPUT_IDS = { clientBizNumber: 'invBiz', issueDate: 'invDate' }
 

@@ -1,8 +1,8 @@
 // @ts-check
 // 기사 관리 화면 하단 카드 — 기사차량별 사업자정보(세금계산서 공급자)·정산 계좌 입력.
 import { useState } from 'react'
-import { carToBusinessForm } from '../../../domain/carBusinessInfo.js'
-import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../../domain/formatPhone.js'
+import { carToBusinessForm } from '../../../domain/carBusinessInfo.ts'
+import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber } from '../../../domain/formatPhone.ts'
 import BizNumberHint from '../../../shared/ui/BizNumberHint.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import { requestCarBusinessInfoSave } from '../../../data/sync/vehicleMutations.js'
@@ -11,7 +11,7 @@ import './car-business-info.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @typedef {import('../../../domain/carBusinessInfo.js').CarBusinessForm} CarBusinessForm */
+/** @typedef {import('../../../domain/carBusinessInfo.ts').CarBusinessForm} CarBusinessForm */
 
 /**
  * @param {Object} props
@@ -42,8 +42,8 @@ function Field({ id, label, value, onChange, inputMode, placeholder, hint }) {
 
 /**
  * @param {Object} props
- * @param {import('../../../domain/financeTypes.js').CarLike} props.car 서브(기사) 차량
- * @param {Array<import('../../../domain/financeTypes.js').CarLike>} props.cars
+ * @param {import('../../../domain/financeTypes.ts').CarLike} props.car 서브(기사) 차량
+ * @param {Array<import('../../../domain/financeTypes.ts').CarLike>} props.cars
  * @param {{ bizName?: string, bizNumber?: string, bankName?: string, accountNumber?: string, accountHolder?: string }} props.profile 차주 사업자·계좌(동일 스위치 켜짐 때 표시용)
  */
 export default function CarBusinessInfoSection({ car, cars, profile }) {

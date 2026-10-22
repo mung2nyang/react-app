@@ -1,5 +1,5 @@
 // @ts-check
-import { dedupeExpensesById } from '../../domain/expenses.js'
+import { dedupeExpensesById } from '../../domain/expenses.ts'
 // hydrateFromSupabase의 순수 병합 함수(조회 → 검증 → 병합 → 커밋 중 병합만). localStorage/store는 쓰지 않는다. 타입 정본은 hydrateMergeTypes.js.
 /**
  * @typedef {import('./hydrateMergeTypes.js').SupabaseQueryError} SupabaseQueryError
@@ -17,7 +17,7 @@ import { dedupeExpensesById } from '../../domain/expenses.js'
  * @typedef {import('./hydrateMergeTypes.js').DetailRow} DetailRow
  * @typedef {import('./hydrateMergeTypes.js').MergedDayRecord} MergedDayRecord
  * @typedef {import('./hydrateMergeTypes.js').JsonRecord} JsonRecord
- * @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike
+ * @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike
  */
 
 /**
@@ -63,10 +63,10 @@ export { mergeWorkDataFromRows } from './hydrateMergeWork.js'
  * row.id(숫자일 수 있음)는 String으로 바꾼다(isPersistedDriver는 문자열 id 요구).
  * @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars
  * @param {Array<DriverLinkRow>|null|undefined} linkRows 조회 실패 시 배열이 아닐 수 있다
- * @returns {Array<import('../../domain/driverTypes.js').DriverRecord>} 조회 실패 시엔 이미 정규화된 로컬 목록을 그대로 통과시킨다
+ * @returns {Array<import('../../domain/driverTypes.ts').DriverRecord>} 조회 실패 시엔 이미 정규화된 로컬 목록을 그대로 통과시킨다
  */
 export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
-  if (!Array.isArray(linkRows)) return /** @type {Array<import('../../domain/driverTypes.js').DriverRecord>} */ (localDrivers)
+  if (!Array.isArray(linkRows)) return /** @type {Array<import('../../domain/driverTypes.ts').DriverRecord>} */ (localDrivers)
   const byCode = new Map((localDrivers || []).map((item) => [item.inviteCode, item]))
   const merged = linkRows.filter((row) => row.status !== 'disconnected').map((row) => {
     const car = (mergedCars || []).find((item) => item.supabaseId === row.vehicle_id)

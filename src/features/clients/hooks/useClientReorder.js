@@ -6,7 +6,7 @@ import { useToast } from '../../../shared/hooks/useToast.js'
 
 /**
  * @param {string} ownerKey
- * @param {Array<import('../../../domain/clientTypes.js').ClientLike>} clients
+ * @param {Array<import('../../../domain/clientTypes.ts').ClientLike>} clients
  */
 export function useClientReorder(ownerKey, clients) {
   const showToast = useToast()

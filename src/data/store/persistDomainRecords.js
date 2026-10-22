@@ -1,11 +1,11 @@
 // @ts-check
 import * as v from 'valibot'
-import { bool, by, finiteNumber, isPlainObject, opt, str, stringOrNumber } from '../../domain/schemaParts.js'
+import { bool, by, finiteNumber, isPlainObject, opt, str, stringOrNumber } from '../../domain/schemaParts.ts'
 import {
   CAR_SETTLEMENT_MODES, COMM_TYPES, DRIVER_PAY_MODES, INFO_TYPES, PAYMENT_TERM_VALUES,
 } from './persistDomainEnums.js'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 
 // isPlainObject는 공용 조각(domain/schemaParts.js) 것 — 이 파일에서 가져다 쓰던 곳이 많아 그대로 내보낸다.
 export { isPlainObject }

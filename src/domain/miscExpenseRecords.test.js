@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { FIXTURE_WORK } from './finance.fixtures.js'
+import { FIXTURE_WORK } from './finance.fixtures.ts'
 import {
   buildMiscExpenseRecordRow,
   expenseFromMiscRecord,
   miscItemFromExpense,
   parseEntityNumber,
   replaceMiscExpenses,
-} from './miscExpenseRecords.js'
+} from './miscExpenseRecords.ts'
 
 const ORIGINAL_COLUMNS = ['daily_log_id', 'user_id', 'vehicle_id', 'work_date', 'sequence', 'cost_amount', 'raw']
 

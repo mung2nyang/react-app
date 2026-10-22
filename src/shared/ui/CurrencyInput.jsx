@@ -1,7 +1,7 @@
 // @ts-check
 // 금액 칸: 친 글자(소수점 포함)는 칸 안에만 두고, 폼에는 반올림한 쉼표 정수만 넘긴다(로드맵 43, 저장 값에 점이 들어가면 불러오기가 깨짐).
 import { useState } from 'react'
-import { roundCurrencyText } from '../../domain/money.js'
+import { roundCurrencyText } from '../../domain/money.ts'
 import ClearableInput from './ClearableInput.jsx'
 
 /** 친 글자 → 칸에 보일 글자: 정수 부분은 쉼표, 첫 점 뒤 숫자는 그대로. @param {string} text */

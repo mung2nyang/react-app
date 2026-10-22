@@ -3,8 +3,8 @@
 // durable엔 안 넣고 메모리 전용 Map에 둔다. 저수준 읽기/쓰기는 durableStorage.js,
 // 타입은 pendingWorkDataWritesTypes.js가 정본. owner/date 스캔은
 // pendingWorkDataWritesState.js.
-import { isValidCalendarDateKey } from '../../domain/dateKey.js'
-import { saveDayRecord } from '../../domain/day-record.js'
+import { isValidCalendarDateKey } from '../../domain/dateKey.ts'
+import { saveDayRecord } from '../../domain/day-record.ts'
 import { readOwnerLogWorkData } from '../store/ownerDataHooks.js'
 import { commitLogWorkData } from '../store/commitHelpers.js'
 import { readDurable, writeDurable } from './durableStorage.js'

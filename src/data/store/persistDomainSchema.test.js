@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { isPersistedProfile, isPersistedSettings, isPersistedWorkDataDeletedDates, matchesDomainSchema } from './persistDomainSchema.js'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 /** @typedef {Record<string, JsonValue>} Rec */
 
 const CAR = { id: 'car-1', number: '12가3456', type: 'main' }

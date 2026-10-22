@@ -1,8 +1,8 @@
 // @ts-check
 import { useState } from 'react'
-import { checkCarDraft } from '../../../domain/cars.js'
-import { formatPhoneNumber, tonnageDigits, tonnageValue } from '../../../domain/formatPhone.js'
-import { formatCurrencyInput, formatPercentInput } from '../../../domain/money.js'
+import { checkCarDraft } from '../../../domain/cars.ts'
+import { formatPhoneNumber, tonnageDigits, tonnageValue } from '../../../domain/formatPhone.ts'
+import { formatCurrencyInput, formatPercentInput } from '../../../domain/money.ts'
 import CarDriverConnectPanel from './CarDriverConnectPanel.jsx'
 import CarDriverIncomeFields from './CarDriverIncomeFields.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
@@ -46,7 +46,7 @@ const INPUT_IDS = { number: 'newCarNumber', driverName: 'newDriverName', driverP
  * @param {() => void} props.onCancel
  * @param {() => void} props.onSave
  * @param {boolean} [props.cloud]
- * @param {Array<import('../../../domain/driverTypes.js').DriverRecord>} [props.drivers]
+ * @param {Array<import('../../../domain/driverTypes.ts').DriverRecord>} [props.drivers]
  */
 export default function CarFormModal({
   draft, setDraft, editingId, onCancel, onSave,

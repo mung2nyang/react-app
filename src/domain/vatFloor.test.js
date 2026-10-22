@@ -1,10 +1,10 @@
 // 로드맵 102 — 부가세는 공급가의 10%, 원 미만 버림(sot §4-14). 화면마다 같은 값인지 15,555원으로 본다.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { vatOf } from './money.js'
-import { callVatTotal } from './day-record.js'
-import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.js'
-import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.js'
+import { vatOf } from './money.ts'
+import { callVatTotal } from './day-record.ts'
+import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.ts'
+import { getTaxInvoiceSourceGroups } from './financeTaxInvoiceGroups.ts'
 
 test('vatOf: 원 미만 버림, 10원 단위는 그대로', () => {
   assert.equal(vatOf(15555), 1555)

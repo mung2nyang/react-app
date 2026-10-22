@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
-import { clientToDraft } from '../../../domain/clientDraft.js'
-import { formatCurrencyInput } from '../../../domain/money.js'
+import { clientToDraft } from '../../../domain/clientDraft.ts'
+import { formatCurrencyInput } from '../../../domain/money.ts'
 import CurrencyInput from '../../../shared/ui/CurrencyInput.jsx'
 import { requestClientSave } from '../../../data/sync/clientMutations.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
@@ -14,7 +14,7 @@ import FieldError, { focusField } from '../../../shared/ui/FieldError.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 /**
  * @param {Object} props
@@ -47,7 +47,7 @@ export default function FixedRouteClientModal({ clients, candidates, linked, onC
     setPalletPrice(formatCurrencyInput(client?.palletPrice ?? ''))
   }
 
-  /** @param {ClientLike} target @param {import('../../../domain/clientTypes.js').ClientDraft} draft */
+  /** @param {ClientLike} target @param {import('../../../domain/clientTypes.ts').ClientDraft} draft */
   async function submit(target, draft) {
     if (saving) return
     setSaving(true)

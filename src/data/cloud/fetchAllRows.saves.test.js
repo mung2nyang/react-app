@@ -10,7 +10,7 @@ mock.module('./supabaseClient.js', { namedExports: { supabase: fakeSupabase } })
 const { syncExpenseItemsForVehicle } = await import('../sync/syncExpenseItems.js')
 const { fetchVehiclesDailyInspections } = await import('../sync/dailyInspections.js')
 
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
 /** @typedef {import('../store/atomicPersist.js').JsonValue} JsonValue */
 
 /**

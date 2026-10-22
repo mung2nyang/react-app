@@ -2,9 +2,9 @@
 // 운행일지 화면 조합 — 임시 편집·저장은 useDayDraft, 콜 상세·수금·고정 노선 처리는 useCallDetailActions,
 // 비용(정비/주유/기타)은 useExpenseForm(일지 기록이 아닌 비용 저장소에 바로 저장).
 import { useMemo, useState } from 'react'
-import { expensesForVehicleDay } from '../../../domain/calendarBadges.js'
-import { getFixedRouteClient } from '../../../domain/clients.js'
-import { locationShortcutList } from '../../../domain/locationShortcuts.js'
+import { expensesForVehicleDay } from '../../../domain/calendarBadges.ts'
+import { getFixedRouteClient } from '../../../domain/clients.ts'
+import { locationShortcutList } from '../../../domain/locationShortcuts.ts'
 import { confirmLeaveIfUnsafe } from '../../../data/sync/durableWriteGuard.js'
 import { useOwnerDrivers, useOwnerWorkData, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.js'
 import { useDayDraft } from '../hooks/useDayDraft.js'

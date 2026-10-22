@@ -1,8 +1,8 @@
 // @ts-check
 // 차주 사이드 메뉴 "[번호] 일지" = 연동 안 된 sub만.
-import { getShortCarNum } from '../../domain/cars.js'
+import { getShortCarNum } from '../../domain/cars.ts'
 
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
 /** @typedef {{ number: string, label: string, driverName: string }} SubLogMenuItem */
 
 /**

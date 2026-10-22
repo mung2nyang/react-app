@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { checkDriverDraft, getAssignmentState } from './drivers.js'
+import { checkDriverDraft, getAssignmentState } from './drivers.ts'
 
 describe('getAssignmentState', () => {
   test('시작일이 미래면 할당 예정', () => {

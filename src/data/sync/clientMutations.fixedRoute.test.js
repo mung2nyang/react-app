@@ -12,7 +12,7 @@ const { requestClientSave } = await import('./clientMutations.js')
 const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
 const { setHydration } = await import('../store/app-store.js')
 
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 /** @param {unknown} value @param {string} key */
 function field(value, key) {

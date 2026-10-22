@@ -1,7 +1,7 @@
 // @ts-check
 import { useState } from 'react'
 import { assetPath } from '../../../shared/utils/assetPath.js'
-import { tonnageDigits, tonnageValue } from '../../../domain/formatPhone.js'
+import { tonnageDigits, tonnageValue } from '../../../domain/formatPhone.ts'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 
 /** @typedef {import('../../../data/sync/onboardingFinish.js').OnboardingWizard} OnboardingWizard */

@@ -1,8 +1,8 @@
 // @ts-check
-import { getReceivableItems } from '../../domain/finance.js'
+import { getReceivableItems } from '../../domain/finance.ts'
 import { saveWorkData } from './workDataSave.js'
-import { markReceivableItemPaid } from '../../domain/payments.js'
-import { resolveFixedUnitPrice } from '../../domain/clients.js'
+import { markReceivableItemPaid } from '../../domain/payments.ts'
+import { resolveFixedUnitPrice } from '../../domain/clients.ts'
 import { commitLogWorkData } from '../store/commitHelpers.js'
 import {
   readOwnerCars,
@@ -22,9 +22,9 @@ import {
 import { shouldCommitDayLogToCloud } from './mainDayLogRouting.js'
 import { SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
-/** @typedef {import('../../domain/day-record.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/day-record.ts').DayRecordLike} DayRecordLike */
 // WorkDataByLogId의 정본은 domain/financeTypes.js다 — alias만 한다(중복 선언 금지).
-/** @typedef {import('../../domain/financeTypes.js').WorkDataByLogId} WorkDataByLogId */
+/** @typedef {import('../../domain/financeTypes.ts').WorkDataByLogId} WorkDataByLogId */
 
 /**
  * @param {string} [ownerKey]
@@ -136,7 +136,7 @@ export function patchWorkLog(workDataByLogId, logId, dateKey, detailId, apply) {
 
 /**
  * @param {WorkDataByLogId} workDataByLogId
- * @param {import('../../domain/financeTypes.js').FinanceSettings} settings
+ * @param {import('../../domain/financeTypes.ts').FinanceSettings} settings
  * @param {string} clientName
  * @param {string} monthKey
  * @param {Date} [paidAt]

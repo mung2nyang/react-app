@@ -29,7 +29,7 @@ function beginLoggedIn(userId, ownerKey, ready = true) {
   commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 }])
 }
 
-/** @param {string} ownerKey @param {import('../../domain/dayRecordTypes.js').DayRecordLike} record */
+/** @param {string} ownerKey @param {import('../../domain/dayRecordTypes.ts').DayRecordLike} record */
 function withDay(ownerKey, record) {
   commitWorkData(ownerKey, { [DK]: record })
 }

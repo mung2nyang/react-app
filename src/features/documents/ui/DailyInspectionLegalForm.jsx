@@ -1,10 +1,10 @@
 // @ts-check
 // 일상점검표 법정 서식(9-D, 별지 제14호의5서식) 한 장 — 내보내기 전용(화면 밖에 그림). 흰 바탕·검은 글씨 고정, 날짜는 1~그 달 끝날(21일 포함).
-import { DAILY_INSPECTION_SECTIONS } from '../../../domain/dailyInspectionItems.js'
-import { actionNoteLines, dateKeyOf, inspectionMark, inspectorCell, legalFormMark, monthDays } from '../../../domain/dailyInspectionMonth.js'
+import { DAILY_INSPECTION_SECTIONS } from '../../../domain/dailyInspectionItems.ts'
+import { actionNoteLines, dateKeyOf, inspectionMark, inspectorCell, legalFormMark, monthDays } from '../../../domain/dailyInspectionMonth.ts'
 import './legal-form.css'
 
-/** @typedef {import('../../../domain/dailyInspectionMonth.js').MonthInspection} MonthInspection */
+/** @typedef {import('../../../domain/dailyInspectionMonth.ts').MonthInspection} MonthInspection */
 
 /**
  * @param {Object} props

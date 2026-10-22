@@ -16,7 +16,7 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: RunCountChips } = await import('./RunCountChips.jsx')
 
-/** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 
 /** @param {number} ms */
 const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms) })

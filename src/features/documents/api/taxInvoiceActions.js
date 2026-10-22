@@ -1,11 +1,11 @@
 // @ts-check
-/** @typedef {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 import { requestClientTaxInfo } from '../../../data/sync/clientMutations.js'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
-import { getTaxInvoiceFlowMeta } from '../../../domain/finance.js'
-import { invoiceCanIssue, persistInvoiceRecord } from '../../../domain/invoices.js'
+import { getTaxInvoiceFlowMeta } from '../../../domain/finance.ts'
+import { invoiceCanIssue, persistInvoiceRecord } from '../../../domain/invoices.ts'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
@@ -82,7 +82,7 @@ export async function saveTaxInvoiceDraft({ ownerKey, clients, records, modalIte
  * @param {Object} params
  * @param {InvoiceLike} params.item
  * @param {'draft'|'issued'} params.status
- * @param {import('../../../domain/financeTypes.js').FinanceSettings} params.settings
+ * @param {import('../../../domain/financeTypes.ts').FinanceSettings} params.settings
  * @param {Array<InvoiceLike>} params.records
  * @param {(next: Array<InvoiceLike>) => Promise<void>} params.persist
  * @param {(item: InvoiceLike) => void} params.openDraft

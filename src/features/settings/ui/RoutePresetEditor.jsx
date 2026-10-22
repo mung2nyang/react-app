@@ -1,11 +1,11 @@
 // @ts-check
 // 앱 설정의 노선 이름표(프리셋) 편집.
 import { useState } from 'react'
-import { addFixedRoutePreset, checkRoutePreset, FIXED_ROUTE_PRESET_MAX, removeFixedRoutePreset } from '../../../domain/practiceSettings.js'
+import { addFixedRoutePreset, checkRoutePreset, FIXED_ROUTE_PRESET_MAX, removeFixedRoutePreset } from '../../../domain/practiceSettings.ts'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
-/** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 
 /**
  * @param {Object} props

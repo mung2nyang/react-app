@@ -8,8 +8,8 @@ import './call-client-quick-add.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @typedef {import('../../../domain/clientTypes.js').ClientDraft} ClientDraft */
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientDraft} ClientDraft */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 /** @type {ClientDraft} */
 const emptyDraft = {

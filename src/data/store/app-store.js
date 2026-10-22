@@ -5,14 +5,14 @@
 import { writeAllOrNothing } from './atomicPersist.js'
 import { buildBatchWrites } from './batchWrites.js'
 
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
-/** @typedef {import('../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
-/** @typedef {import('../../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
-/** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
+/** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
+/** @typedef {import('../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.ts').DriverExpenseItem} DriverExpenseItem */
+/** @typedef {import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../domain/driverTypes.ts').DriverRecord} DriverRecord */
 /** @typedef {import('../hydrate/hydrateMergeTypes.js').LocalProfile} ProfileLike */
 
 /**
@@ -42,7 +42,7 @@ import { buildBatchWrites } from './batchWrites.js'
  * @property {Record<string, Array<DriverRecord>>} drivers
  * @property {Record<string, ProfileLike>} profile
  * @property {Record<string, Array<string>>} dismissedNotifications
- * @property {Record<string, import('../../domain/workDataTombstones.js').WorkDataTombstones>} workDataDeletedDates
+ * @property {Record<string, import('../../domain/workDataTombstones.ts').WorkDataTombstones>} workDataDeletedDates
  */
 
 /** @type {AppStoreState} */
@@ -84,7 +84,7 @@ export function getState() {
 
 /**
  * @typedef {Record<string, DayRecordLike>|FinanceSettings|ProfileLike|
- *   import('../../domain/workDataTombstones.js').WorkDataTombstones|Array<CarLike>|
+ *   import('../../domain/workDataTombstones.ts').WorkDataTombstones|Array<CarLike>|
  *   Array<ClientLike>|Array<DriverRecord>|Array<ExpenseItem>|Array<DriverExpenseItem>|
  *   Array<InvoiceLike>|Array<string>} DomainValue
  */

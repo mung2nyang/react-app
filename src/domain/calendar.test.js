@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { parseDateKeySelection } from './calendar.js'
+import { parseDateKeySelection } from './calendar.ts'
 
 // MainPageRoute.jsx는 `/app`(index)에서 selected가 null이면 CalendarPage를, 아니면
 // WorkLogPage를 그린다(Step 5). 이 함수가 index 라우트에서 정확히 null을 돌려주는 데

@@ -1,10 +1,10 @@
 // @ts-check
 import * as v from 'valibot'
-import { bool, finiteNumber, opt, plain, str, stringOrNumber } from '../../domain/schemaParts.js'
+import { bool, finiteNumber, opt, plain, str, stringOrNumber } from '../../domain/schemaParts.ts'
 import { INVOICE_FLOWS, INVOICE_STATUSES, PARTY_TYPES } from './persistDomainEnums.js'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
-/** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
+/** @typedef {import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
 
 // 세금계산서의 칸 → 모양(Valibot, 공용 조각은 domain/schemaParts.js). 목록 밖 칸·값이 비어 있는 칸은 거부.
 

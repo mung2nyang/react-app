@@ -1,15 +1,15 @@
 // @ts-check
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { isLinkedPlate, planExpenseVehicleTargets } from './expenseVehicleRouting.js'
+import { isLinkedPlate, planExpenseVehicleTargets } from './expenseVehicleRouting.ts'
 
-/** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('./expenseTypes.ts').ExpenseItem} ExpenseItem */
 
-/** @type {import('./financeTypes.js').CarLike} */
+/** @type {import('./financeTypes.ts').CarLike} */
 const MAIN = { id: 'c-main', type: 'main', number: '11가1111', supabaseId: 501 }
-/** @type {import('./financeTypes.js').CarLike} */
+/** @type {import('./financeTypes.ts').CarLike} */
 const SUB = { id: 'c-sub', type: 'sub', number: '22나2222', supabaseId: 802 }
-/** @type {import('./financeTypes.js').CarLike} */
+/** @type {import('./financeTypes.ts').CarLike} */
 const SUB_LOCAL_ONLY = { id: 'c-sub2', type: 'sub', number: '33다3333' }
 
 /** @param {string} id @param {string} date @param {string} [vehicleNumber] @returns {ExpenseItem} */

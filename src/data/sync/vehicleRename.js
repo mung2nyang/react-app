@@ -7,7 +7,7 @@ import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
 import { assertSessionStillCurrent } from '../cloud/cloudSession.js'
 import { planPendingLogMove } from './logPendingLifecycle.js'
 
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 /** @typedef {import('../store/app-store.js').BatchEntry} BatchEntry */
 
 /** @param {Record<string, DayRecordLike>|undefined} data */

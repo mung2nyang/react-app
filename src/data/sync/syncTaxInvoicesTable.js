@@ -7,10 +7,10 @@ import {
   matchTaxInvoiceClientId,
   resolveTaxInvoiceVehicleId,
   TAX_INVOICE_VEHICLE_RETRY_ERROR,
-} from '../../domain/taxInvoices.js'
+} from '../../domain/taxInvoices.ts'
 import { getState } from '../store/app-store.js'
 
-/** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
 
 /** @param {number} ms */
 function wait(ms) {
@@ -29,8 +29,8 @@ async function resolveTaxInvoiceVehicleIdWithRetry(item, ownerKey) {
 
 /**
  * @param {string} userId @param {string} ownerKey
- * @param {Array<import('../../domain/financeTypes.js').CarLike>} cars
- * @param {Array<import('../../domain/clientTypes.js').ClientLike>} clients
+ * @param {Array<import('../../domain/financeTypes.ts').CarLike>} cars
+ * @param {Array<import('../../domain/clientTypes.ts').ClientLike>} clients
  * @param {Array<InvoiceLike>} [invoices]
  * @returns {Promise<Array<InvoiceLike>|undefined>}
  */

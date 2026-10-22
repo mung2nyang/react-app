@@ -4,7 +4,7 @@
 // vehicleSupabaseIdForLog로 main·기사 차량을 고르고, Store는 commitLogWorkData로 logId별 반영.
 // 게스트·미동기화(supabaseId 없음)는 { cloud: false } → 호출부가 로컬 경로를 탄다.
 // §6: 단건/복수건 커밋이 헬퍼 4개(writeDayKeyToServer 등)를 공유하는 응집 단위. 빈 날 서버 삭제 규칙은 dailyLogRemoval.js.
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 /** @typedef {import('./syncTypes.js').SessionCapture} SessionCapture */
 import { supabase } from '../cloud/supabaseClient.js'
 import { getState } from '../store/app-store.js'

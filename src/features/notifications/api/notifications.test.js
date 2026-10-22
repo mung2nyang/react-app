@@ -6,7 +6,7 @@ import { collectNotifications, dismissNotification } from './notifications.js'
 import { markBackupDone } from '../../../data/sync/guestBackup.js'
 import { commitWorkData } from '../../../data/store/commitHelpers.js'
 import { commitBatch } from '../../../data/store/app-store.js'
-import { todayKey } from '../../../domain/expenses.js'
+import { todayKey } from '../../../domain/expenses.ts'
 
 describe('notifications — 데이터 백업 권장 알림 및 게스트/로그인 분기', () => {
   beforeEach(() => {

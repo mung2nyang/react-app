@@ -1,5 +1,5 @@
 // @ts-check
-import { KINDS } from '../../../domain/expenses.js'
+import { KINDS } from '../../../domain/expenses.ts'
 import ExpenseFormModal from '../../expenses/ui/ExpenseFormModal.jsx'
 import ExpenseGroups from './ExpenseGroups.jsx'
 import ExpenseSelectPanel from './ExpenseSelectPanel.jsx'

@@ -325,13 +325,13 @@ describe('mergeClientsFromRows — 슬라이스 C: 서버 빈 배열은 삭제 �
 
 describe('findMainCar', () => {
   test('type이 main이고 supabaseId가 있는 차량을 우선한다', () => {
-    /** @type {import('../../domain/financeTypes.js').CarLike[]} */
+    /** @type {import('../../domain/financeTypes.ts').CarLike[]} */
     const cars = [{ type: 'sub', supabaseId: 1, number: '99하9999' }, { type: 'main', supabaseId: 2, number: '11가1111' }]
     assert.equal(findMainCar(cars).supabaseId, 2)
   })
 
   test('main이 없으면 supabaseId가 있는 아무 차량이나 돌려준다', () => {
-    /** @type {import('../../domain/financeTypes.js').CarLike[]} */
+    /** @type {import('../../domain/financeTypes.ts').CarLike[]} */
     const cars = [{ type: 'sub', supabaseId: 7, number: '99하9999' }]
     assert.equal(findMainCar(cars).supabaseId, 7)
   })

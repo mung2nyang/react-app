@@ -21,12 +21,12 @@ const { default: DayLogPage } = await import('../features/day-log/ui/DayLogPage.
 const { MemoryRouter } = await import('react-router-dom')
 const { commitClients, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.js')
 const { hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../data/sync/durableWriteGuard.js')
-const { normalizeSettings } = await import('../domain/practiceSettings.js')
+const { normalizeSettings } = await import('../domain/practiceSettings.ts')
 const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
 const { getState } = await import('../data/store/app-store.js')
 
-/** @typedef {import('../domain/clientTypes.js').ClientLike} ClientLike */
-/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/clientTypes.ts').ClientLike} ClientLike */
+/** @typedef {import('../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 /** @type {Array<ClientLike>} */
 const spyClients = [{ id: 'c1', companyName: '한진', fixedRouteLinked: true, palletOn: true }]

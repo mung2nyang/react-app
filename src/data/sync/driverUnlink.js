@@ -6,7 +6,7 @@ import { StaleSessionError } from './saveErrors.js'
 import { commitDrivers } from '../store/commitHelpers.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
-/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/driverTypes.ts').DriverRecord} DriverRecord */
 /** @typedef {'request'|'consent'|'cancel'} UnlinkAction */
 
 export const UNLINK_WAIT_DAYS = 3

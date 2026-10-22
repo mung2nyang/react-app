@@ -1,10 +1,10 @@
 // @ts-check
 // 운행일지의 콜 상세 저장·삭제·수금 바꾸기, 고정 노선 횟수, 고정 장소 저장 — 화면(DayLogPage)은 그리기만.
-import { applyFixedRouteRun, getFixedRouteCounts } from '../../../domain/day-record.js'
-import { removeCallDetail, upsertCallDetail } from '../../../domain/call-details.js'
-import { getDetailPaymentSummary } from '../../../domain/finance.js'
-import { togglePinnedLocation as togglePinnedLocationIn } from '../../../domain/locationShortcuts.js'
-import { toggleCallPaymentStatus } from '../../../domain/payments.js'
+import { applyFixedRouteRun, getFixedRouteCounts } from '../../../domain/day-record.ts'
+import { removeCallDetail, upsertCallDetail } from '../../../domain/call-details.ts'
+import { getDetailPaymentSummary } from '../../../domain/finance.ts'
+import { togglePinnedLocation as togglePinnedLocationIn } from '../../../domain/locationShortcuts.ts'
+import { toggleCallPaymentStatus } from '../../../domain/payments.ts'
 import { savePracticeSettings } from '../../../data/sync/settingsSave.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
@@ -12,7 +12,7 @@ import { useSession } from '../../../data/cloud/sessionContext.js'
 /** @typedef {import('../ui/dayLogTypes.js').ClientLike} ClientLike */
 /** @typedef {import('../ui/dayLogTypes.js').Settings} Settings */
 /** @typedef {import('./day-log-reducer.js').DayDraft} DayDraft */
-/** @typedef {import('../../../domain/call-details.js').CallDetailDraft} CallDetailDraft */
+/** @typedef {import('../../../domain/call-details.ts').CallDetailDraft} CallDetailDraft */
 
 /**
  * @param {DayDraft} draft

@@ -5,7 +5,7 @@ import RoutePresetEditor from './RoutePresetEditor.jsx'
 import RunCountChips from './RunCountChips.jsx'
 import FixedRouteClientLink from './FixedRouteClientLink.jsx'
 
-/** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 
 /**
  * @param {Object} props

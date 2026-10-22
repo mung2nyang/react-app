@@ -22,7 +22,7 @@ const { default: NotificationsPage } = await import('./NotificationsPage.jsx')
 const { collectNotifications, DAILY_INSPECTION_NOTICE_ID } = await import('../api/notifications.js')
 const { commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.js')
 const { readOwnerSettings } = await import('../../../data/store/ownerDataHooks.js')
-const { normalizeSettings } = await import('../../../domain/practiceSettings.js')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 
 /**
  * @param {string} ownerKey

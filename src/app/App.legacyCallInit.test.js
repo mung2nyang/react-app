@@ -21,9 +21,9 @@ const { MemoryRouter } = await import('react-router-dom')
 const { commitBatch, getState, subscribe } = await import('../data/store/app-store.js')
 const { initializeOwnerFromPersist } = await import('../data/store/owner-state.js')
 const { storageKeyFor, readJsonKey } = await import('../data/store/persist.js')
-const { normalizeSettings } = await import('../domain/practiceSettings.js')
+const { normalizeSettings } = await import('../domain/practiceSettings.ts')
 
-/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 /** @param {string} ownerKey @returns {Record<string, DayRecordLike>} */
 function readWorkData(ownerKey) {

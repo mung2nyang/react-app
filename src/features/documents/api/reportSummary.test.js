@@ -7,7 +7,7 @@ const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.js')
 
 const OWNER_PROFILE = { ...EMPTY_PROFILE, name: '차주', bankName: '차주은행', accountNumber: '000-000', accountHolder: '차주명의' }
 
-/** @param {Array<import('../../../domain/financeTypes.js').CarLike>} cars */
+/** @param {Array<import('../../../domain/financeTypes.ts').CarLike>} cars */
 function report(cars) {
   return buildMonthReport('rs-test', 2026, 8, [], cars, { fixedOn: false }, {}, [], OWNER_PROFILE)
 }

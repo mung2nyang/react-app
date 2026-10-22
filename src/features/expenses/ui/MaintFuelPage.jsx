@@ -6,19 +6,19 @@ import MonthNavigator from '../../../shared/ui/MonthNavigator.jsx'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
 import MaintFuelDayList from './MaintFuelDayList.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
-import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
-import { getExpensesForLog } from '../../../domain/expenseScope.js'
+import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.ts'
+import { getExpensesForLog } from '../../../domain/expenseScope.ts'
 import { deleteExpense, saveExpenseDraft } from '../../../data/sync/expensesSave.js'
-import { filterMonth, groupExpensesByDate, KINDS, monthTotal } from '../../../domain/expenses.js'
-import { emptyExpenseDraft, expenseToDraft } from '../../../domain/expenseDraft.js'
-import { formatWon } from '../../../domain/money.js'
+import { filterMonth, groupExpensesByDate, KINDS, monthTotal } from '../../../domain/expenses.ts'
+import { emptyExpenseDraft, expenseToDraft } from '../../../domain/expenseDraft.ts'
+import { formatWon } from '../../../domain/money.ts'
 import { useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import './maint-fuel.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
 
-/** @typedef {import('../../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
-/** @typedef {import('../../../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
+/** @typedef {import('../../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../../domain/expenseTypes.ts').ExpenseDraft} ExpenseDraft */
 
 /**
  * @param {Object} props

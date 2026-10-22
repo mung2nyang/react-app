@@ -1,15 +1,15 @@
 // @ts-check
 // 새 홈 "오늘" 카드: 날짜·상태 제목·운행 줄(고정 노선 횟수 + 콜 최대 3줄)·오늘 일지 열기 버튼. 숫자는 달력 칸과 같은 함수.
-import { dayFareTotal, dayWorkBadgeLabel } from '../../../domain/calendarBadges.js'
-import { getCallDetails, getFixedCount, isOffDay } from '../../../domain/day-record.js'
-import { formatWon, parseCurrencyValue } from '../../../domain/money.js'
+import { dayFareTotal, dayWorkBadgeLabel } from '../../../domain/calendarBadges.ts'
+import { getCallDetails, getFixedCount, isOffDay } from '../../../domain/day-record.ts'
+import { formatWon, parseCurrencyValue } from '../../../domain/money.ts'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 const MAX_CALL_ROWS = 3
 
 /**
  * @param {Object} props
- * @param {import('../../../domain/dayRecordTypes.js').DayRecordLike|undefined} props.record
+ * @param {import('../../../domain/dayRecordTypes.ts').DayRecordLike|undefined} props.record
  * @param {{ dateKey: string, month: number, day: number }} props.today
  * @param {number} props.weekday 0 = 일요일
  * @param {'count'|'fare'} props.inputMode

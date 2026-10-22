@@ -1,12 +1,12 @@
 // @ts-check
 // 리포트 세부 내역서 — 거래처 옵션·콜상세 집계.
-import { getCallDetails, isOffDay } from '../../../domain/day-record.js'
-import { getCallDetailCommissionAmount, resolveCallDetailCommission } from '../../../domain/financeCore.js'
-import { parseCurrencyValue, vatOf } from '../../../domain/money.js'
+import { getCallDetails, isOffDay } from '../../../domain/day-record.ts'
+import { getCallDetailCommissionAmount, resolveCallDetailCommission } from '../../../domain/financeCore.ts'
+import { parseCurrencyValue, vatOf } from '../../../domain/money.ts'
 
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
-/** @typedef {import('../../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../../domain/callDetail.js').CallDetailLike} CallDetailLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../../domain/callDetail.ts').CallDetailLike} CallDetailLike */
 
 /**
  * 세부 내역서 거래처 선택 옵션 — 등록 거래처 ∪ 해당 월 콜상세 거래처 ∪ 미지정, ALL 선행.

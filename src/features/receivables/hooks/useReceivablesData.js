@@ -1,8 +1,8 @@
 // @ts-check
 import { useMemo } from 'react'
-import { getReceivableItems } from '../../../domain/finance.js'
+import { getReceivableItems } from '../../../domain/finance.ts'
 import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
-import { dueSoonItems, groupByClientMonth } from '../../../domain/receivables.js'
+import { dueSoonItems, groupByClientMonth } from '../../../domain/receivables.ts'
 import {
   useOwnerCars,
   useOwnerDrivers,

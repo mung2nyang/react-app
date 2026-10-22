@@ -13,7 +13,7 @@ import { syncTaxInvoices } from './syncTaxInvoicesTable.js'
 
 /**
  * @param {string} ownerKey
- * @param {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike[]} items
+ * @param {import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike[]} items
  */
 export async function saveInvoices(ownerKey, items) {
   if (getCloudOwnerKey() !== ownerKey) {

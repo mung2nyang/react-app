@@ -1,10 +1,10 @@
 // @ts-check
 // 콜 상세 한 건의 모양 검사(Valibot). 저장 기록은 id 선택(옛 콜), 저장 대기 기록은 id 필수. 목록 밖 칸은 거부 — 칸을 늘리면 domain/callDetail.js와 함께.
 import * as v from 'valibot'
-import { parseCurrencyValue } from '../../domain/money.js'
-import { bool, by, isPlainObject, nonEmptyString, opt, plain, str } from '../../domain/schemaParts.js'
+import { parseCurrencyValue } from '../../domain/money.ts'
+import { bool, by, isPlainObject, nonEmptyString, opt, plain, str } from '../../domain/schemaParts.ts'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 /** @typedef {import('../sync/pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
 
 /**

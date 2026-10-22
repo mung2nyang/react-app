@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 일지 한 줄(daily_logs) 저장 — 로그인 일지·지출 저장이 같이 쓴다.
 import { supabase } from '../cloud/supabaseClient.js'
 import { parseEntityNumber } from '../cloud/cloudStorage.js'

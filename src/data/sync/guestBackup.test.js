@@ -11,7 +11,7 @@ import {
 import { initializeOwnerFromPersist, replaceOwnerState } from '../store/owner-state.js'
 import { commitBatch, getState } from '../store/app-store.js'
 import { commitDismissedNotifications } from '../store/commitHelpers.js'
-import { normalizeSettings } from '../../domain/practiceSettings.js'
+import { normalizeSettings } from '../../domain/practiceSettings.ts'
 
 describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => {
   beforeEach(() => {
@@ -99,7 +99,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
     const backupCars = /** @type {Array<unknown>} */ (backup.cars)
     const backupClients = /** @type {Array<unknown>} */ (backup.clients)
     const backupExpenses = /** @type {Array<unknown>} */ (backup.expenses)
-    const backupWorkLogs = /** @type {Record<string, Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>>} */ (backup.workLogs)
+    const backupWorkLogs = /** @type {Record<string, Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike>>} */ (backup.workLogs)
 
     assert.equal(backupCars.length, 2)
     assert.equal(backupClients.length, 1)
@@ -182,7 +182,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
     return out
   }
 
-  /** @param {import('../../domain/jsonTypes.js').JsonValue} file */
+  /** @param {import('../../domain/jsonTypes.ts').JsonValue} file */
   function assertRejectedUnchanged(file) {
     replaceOwnerState('guest', { cars: [{ id: 'car-1', number: '11가1111', type: 'main' }], workLogs: { main: { '2026-09-01': { count: 1 } } } })
     const before = storageSnapshot()

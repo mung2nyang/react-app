@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { searchParamsForViewDate, viewDateFromSearchParams } from './calendarViewDate.js'
+import { searchParamsForViewDate, viewDateFromSearchParams } from './calendarViewDate.ts'
 
 // Step 5(달력 홈 재작성) 완료 조건 "새로고침 후 같은 달" — viewDate를 URL 쿼리에 둬서
 // 새로고침에도 남게 하는 왕복 계약. CalendarPage.jsx는 이 두 함수만으로 쿼리 ↔ Date를

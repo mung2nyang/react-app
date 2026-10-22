@@ -1,6 +1,6 @@
 // @ts-check
 // 콜 상세 출발·마감 계기판 칸과 운행거리. 마감이 출발보다 작으면 마감 칸에 표시만 하고 저장은 막지 않는다.
-import { computeDistanceKm } from '../../../domain/call-details.js'
+import { computeDistanceKm } from '../../../domain/call-details.ts'
 import CurrencyInput from '../../../shared/ui/CurrencyInput.jsx'
 import FieldError, { invalidProps } from '../../../shared/ui/FieldError.jsx'
 

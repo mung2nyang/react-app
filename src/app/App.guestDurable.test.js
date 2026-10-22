@@ -54,10 +54,10 @@ const { durableKey } = await import('../data/sync/durableStorage.js')
 const { clearGuestModePersisted } = await import('./guestSessionPersist.js')
 const { getState, subscribe } = await import('../data/store/app-store.js')
 const { readJsonKey, storageKeyFor } = await import('../data/store/persist.js')
-const { normalizeSettings } = await import('../domain/practiceSettings.js')
+const { normalizeSettings } = await import('../domain/practiceSettings.ts')
 const { DEVICE_SAVE_FAIL } = await import('../shared/utils/failureMessages.js')
 
-/** @typedef {import('../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 /** @param {string} ownerKey @returns {Record<string, DayRecordLike>} */
 function readWorkData(ownerKey) {
@@ -201,7 +201,7 @@ function forceDurableWriteBroken(ownerKey) {
  */
 function seedPalletClient(ownerKey) {
   const clients = [
-    /** @type {import('../domain/clientTypes.js').ClientLike} */ ({
+    /** @type {import('../domain/clientTypes.ts').ClientLike} */ ({
       id: 'c1', companyName: '한진', fixedRouteLinked: true, palletOn: true,
       palletPrice: '10,000', fixedUnitPrice: '250,000', supabaseId: 601,
     }),

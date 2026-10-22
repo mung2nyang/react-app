@@ -1,0 +1,110 @@
+// 앱 설정 순수 계산부. 저장과 화면 테마 적용(applyTheme)은 data/sync/settingsSave.js.
+// 프리셋(운행 횟수 버튼·노선 이름표) 함수는 practicePresets.ts — 여기서 다시 내보낸다.
+import { normalizePinnedLocations } from './locationShortcuts.ts'
+import { normalizeFixedRoutePresets, normalizeRunCountPresets } from './practicePresets.ts'
+import type { JsonValue } from './jsonTypes.ts'
+import type { FinanceSettings, SubCarPracticeSettings } from './financeTypes.ts'
+
+export * from './practicePresets.ts'
+
+/** 알림 화면에서 끌 수 있는 종류(features/notifications/api/notifications.js kind와 같은 이름). */
+export const NOTIF_KINDS = ['overdue', 'today', 'driverInvite', 'backup']
+
+/** 끈 알림 종류 — 아는 이름만, 겹침 없이. */
+function normalizeNotifOff(raw: JsonValue | undefined): Array<string> {
+  if (!Array.isArray(raw)) return []
+  return NOTIF_KINDS.filter((kind) => raw.includes(kind))
+}
+
+const defaults = {
+  unitPrice: 0,
+  theme: 'light',
+  inputMode: 'count',
+  callDetail: false,
+  paymentOn: false,
+  timeOn: false,
+  platformOn: false,
+  distanceOn: false,
+  cargoTonnageOn: false,
+  dailyInspectionOn: false,
+  fixedOn: true,
+  fixedRouteOn: false,
+  fixedRoutePresets: [],
+  runCountToggle: false,
+  runCountPresets: [1, 2, 3, 4, 5],
+  subFixedOn: true,
+  subFixedRouteOn: false,
+  subFixedRoutePresets: [],
+  subRunCountToggle: false,
+  subRunCountPresets: [1, 2, 3, 4, 5],
+  pinnedLocations: [],
+}
+
+function asBool(value: JsonValue | undefined, fallback: boolean): boolean {
+  if (typeof value === 'boolean') return value
+  return fallback
+}
+
+
+export function normalizeSettings(raw: FinanceSettings = {}): FinanceSettings {
+  const inputMode = raw.inputMode === 'fare' ? 'fare' : 'count'
+  const theme = raw.theme === 'dark' ? 'dark' : 'light'
+  const fixedOn = asBool(raw.fixedOn, defaults.fixedOn)
+  const callDetail = fixedOn ? asBool(raw.callDetail, defaults.callDetail) : true
+  return {
+    unitPrice: Math.max(0, parseInt(String(raw.unitPrice ?? ''), 10) || 0),
+    theme,
+    inputMode,
+    callDetail,
+    paymentOn: asBool(raw.paymentOn, defaults.paymentOn),
+    timeOn: asBool(raw.timeOn, defaults.timeOn),
+    platformOn: asBool(raw.platformOn, defaults.platformOn),
+    distanceOn: asBool(raw.distanceOn, defaults.distanceOn),
+    cargoTonnageOn: asBool(raw.cargoTonnageOn, defaults.cargoTonnageOn),
+    dailyInspectionOn: asBool(raw.dailyInspectionOn, defaults.dailyInspectionOn),
+    fixedOn,
+    fixedRouteOn: asBool(raw.fixedRouteOn, defaults.fixedRouteOn),
+    fixedRoutePresets: normalizeFixedRoutePresets(raw.fixedRoutePresets),
+    runCountToggle: asBool(raw.runCountToggle, defaults.runCountToggle),
+    runCountPresets: normalizeRunCountPresets(raw.runCountPresets),
+    subFixedOn: asBool(raw.subFixedOn, fixedOn),
+    subFixedRouteOn: asBool(raw.subFixedRouteOn, defaults.subFixedRouteOn),
+    subFixedRoutePresets: normalizeFixedRoutePresets(raw.subFixedRoutePresets),
+    subRunCountToggle: asBool(raw.subRunCountToggle, defaults.subRunCountToggle),
+    subRunCountPresets: normalizeRunCountPresets(raw.subRunCountPresets),
+    pinnedLocations: normalizePinnedLocations(raw.pinnedLocations),
+    subCarSettings: normalizeSubCarSettingsMap(raw.subCarSettings, asBool(raw.subFixedOn, fixedOn)),
+    notifOff: normalizeNotifOff(raw.notifOff),
+  }
+}
+
+/**
+ * 서브차량 전용 설정(세부입력 5종+달력 표시방식만). `subFixedOn`
+ * 꺼지면 메인과 동일 규칙으로 `callDetail` 강제 켬(고정노선은 여전히 공용).
+ */
+export function normalizeCarSettings(raw: Partial<SubCarPracticeSettings> = {}, subFixedOn = true): SubCarPracticeSettings {
+  return {
+    inputMode: raw.inputMode === 'fare' ? 'fare' : 'count',
+    callDetail: subFixedOn ? asBool(raw.callDetail, defaults.callDetail) : true,
+    timeOn: asBool(raw.timeOn, defaults.timeOn),
+    platformOn: asBool(raw.platformOn, defaults.platformOn),
+    distanceOn: asBool(raw.distanceOn, defaults.distanceOn),
+    cargoTonnageOn: asBool(raw.cargoTonnageOn, defaults.cargoTonnageOn),
+    dailyInspectionOn: asBool(raw.dailyInspectionOn, defaults.dailyInspectionOn),
+  }
+}
+
+export function defaultCarSettings(): SubCarPracticeSettings {
+  return normalizeCarSettings()
+}
+
+function normalizeSubCarSettingsMap(raw: JsonValue | undefined, subFixedOn: boolean): Record<string, SubCarPracticeSettings> {
+  const map: Record<string, SubCarPracticeSettings> = {}
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return map
+  Object.entries(raw).forEach(([carNumber, value]) => {
+    const key = String(carNumber || '').trim()
+    if (!key || !value || typeof value !== 'object' || Array.isArray(value)) return
+    map[key] = normalizeCarSettings(value as Partial<SubCarPracticeSettings>, subFixedOn)
+  })
+  return map
+}

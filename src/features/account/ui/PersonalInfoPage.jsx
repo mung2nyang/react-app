@@ -1,6 +1,6 @@
 // @ts-check
 import { useState } from 'react'
-import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../../domain/formatPhone.js'
+import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../../domain/formatPhone.ts'
 import { requestAccountWithdrawal } from '../api/accountWithdrawal.js'
 import { useHydrationLock } from '../../../data/store/useHydrationLock.js'
 import { useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.js'

@@ -1,9 +1,9 @@
 // @ts-check
-import { getTaxInvoiceFlowMeta } from '../../../domain/financeTaxInvoiceEntries.js'
+import { getTaxInvoiceFlowMeta } from '../../../domain/financeTaxInvoiceEntries.ts'
 import { buildTaxInvoiceWorkbook } from './taxInvoiceExcelBuilder.js'
 
-/** @typedef {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 
 /**
  * @param {string} monthKey

@@ -3,9 +3,9 @@
 // logId가 있으면 서브 차량 달력(workData·paymentOn·수수료 게이트).
 import { useMemo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { buildCalendarCells, getYearOptions } from '../../../domain/calendar.js'
-import { searchParamsForViewDate, viewDateFromSearchParams } from '../../../domain/calendarViewDate.js'
-import { monthCallUnpaidTotal } from '../../../domain/day-record.js'
+import { buildCalendarCells, getYearOptions } from '../../../domain/calendar.ts'
+import { searchParamsForViewDate, viewDateFromSearchParams } from '../../../domain/calendarViewDate.ts'
+import { monthCallUnpaidTotal } from '../../../domain/day-record.ts'
 import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'

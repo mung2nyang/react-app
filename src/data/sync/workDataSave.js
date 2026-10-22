@@ -3,9 +3,9 @@
 import { commitBatch } from '../store/app-store.js'
 import { commitLogWorkData, commitWorkData } from '../store/commitHelpers.js'
 import { readOwnerWorkDataTombstones } from '../store/ownerDataHooks.js'
-import { addWorkDataTombstone, removeWorkDataTombstone } from '../../domain/workDataTombstones.js'
+import { addWorkDataTombstone, removeWorkDataTombstone } from '../../domain/workDataTombstones.ts'
 
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 /**
  * @param {string} ownerKey
@@ -28,7 +28,7 @@ export function saveWorkDataWithTombstoneCheck(ownerKey, dateKey, previousData, 
   const existingTombstones = readOwnerWorkDataTombstones(ownerKey)
   const hadTombstone = dateKey in existingTombstones
 
-  /** @type {import('../../domain/workDataTombstones.js').WorkDataTombstones|null} */
+  /** @type {import('../../domain/workDataTombstones.ts').WorkDataTombstones|null} */
   let nextTombstones = null
   if (!hasRecordNow && hadRecordBefore) nextTombstones = addWorkDataTombstone(existingTombstones, dateKey)
   else if (hasRecordNow && hadTombstone) nextTombstones = removeWorkDataTombstone(existingTombstones, dateKey)

@@ -1,7 +1,7 @@
 // @ts-check
 // 일지 임시 편집 — Store 값을 복제해 들고, 고치면 0.6초 뒤 저장 담당(dayDraftLifecycle.js)이 저장한다. 닫을 때 남은 것을 저장한다.
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
-import { backfillCallDetailIds } from '../../../domain/day-record.js'
+import { backfillCallDetailIds } from '../../../domain/day-record.ts'
 import { pendingOwnerForLog } from '../../../data/sync/pendingLogOwner.js'
 import { getUnsafeRegistrationPatch } from '../../../data/sync/durableWriteGuard.js'
 import { getPendingDayWrite } from '../../../data/sync/pendingWorkDataWrites.js'

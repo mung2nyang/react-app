@@ -9,14 +9,14 @@ const { changeTaxInvoiceStatus, checkTaxInvoiceDraft, saveTaxInvoiceDraft } = aw
 
 const SAVE_FAIL = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 
-/** @type {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} */
+/** @type {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} */
 const ITEM = { id: 'inv-74', partyType: 'driver', clientName: '시험기사', clientBizNumber: '123-45-67890', issueDate: '2026-10-31', status: 'issued' }
 
 /** @param {boolean} fail */
 function persistSpy(fail) {
-  /** @type {Array<Array<import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike>>} */
+  /** @type {Array<Array<import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike>>} */
   const calls = []
-  /** @param {Array<import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike>} next */
+  /** @param {Array<import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike>} next */
   const persist = async (next) => {
     calls.push(next)
     if (fail) throw new Error('network down')

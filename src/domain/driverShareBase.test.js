@@ -1,14 +1,14 @@
 // 로드맵 61 — 매출제 기사 몫 기준(운송료 전체 / 거래처 수수료 뗀 뒤): 달력·매출·기사 관리·연동 기사 본인 매출이 같은 값.
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { driverShareBaseAmount, getMonthlyDriverClientCommission, resolveDriverShareBase } from './driverShareBase.js'
-import { monthSettlementSummary } from './monthSettlement.js'
-import { getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.js'
-import { getLinkedDriverSettlementDetail } from './financeTaxInvoiceGroups.js'
-import { getDriverSelfMonthlyDetail } from './driverSelfRevenue.js'
+import { driverShareBaseAmount, getMonthlyDriverClientCommission, resolveDriverShareBase } from './driverShareBase.ts'
+import { monthSettlementSummary } from './monthSettlement.ts'
+import { getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.ts'
+import { getLinkedDriverSettlementDetail } from './financeTaxInvoiceGroups.ts'
+import { getDriverSelfMonthlyDetail } from './driverSelfRevenue.ts'
 
-/** @typedef {import('./financeTypes.js').CarLike} CarLike */
-/** @typedef {import('./financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('./financeTypes.ts').CarLike} CarLike */
+/** @typedef {import('./financeTypes.ts').FinanceSettings} FinanceSettings */
 
 const PLATE = '22나2222'
 const MONTH = '2026-10'
@@ -79,7 +79,7 @@ describe('기준 금액·거래처 수수료 합', () => {
 })
 
 describe('기준 값 저장(차량 창 → 차량)', async () => {
-  const { upsertCar } = await import('./cars.js')
+  const { upsertCar } = await import('./cars.ts')
   test('고른 기준이 저장되고, 월급제로 바꿔도 남으며, 모르는 값은 운송료 전체', () => {
     const draft = { number: PLATE, type: /** @type {'sub'} */ ('sub'), driverName: '박기사', driverPayMode: 'revenue', commission: '30', driverShareBase: 'afterClientCommission' }
     const saved = upsertCar([], draft, null)

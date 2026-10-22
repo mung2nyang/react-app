@@ -8,7 +8,7 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { normalizeSettings } from '../../../domain/practiceSettings.js'
+import { normalizeSettings } from '../../../domain/practiceSettings.ts'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 

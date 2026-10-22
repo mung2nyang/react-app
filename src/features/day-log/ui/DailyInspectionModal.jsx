@@ -2,11 +2,11 @@
 // 일상점검표 모달 — 입력·보기 한 창(피그마 2·3번). 입력 모드는 바깥 클릭으로 안 닫힘(8번 규칙), 보기 모드는 닫힘.
 // 연필로 들어온 수정 중 [취소]는 보기로 돌아가고, 처음 입력 중 [취소]는 창을 닫는다.
 import { useState } from 'react'
-import { DAILY_INSPECTION_SECTIONS, INSPECTION_RESULT_LABEL, allGoodItems, isInspectionComplete } from '../../../domain/dailyInspectionItems.js'
+import { DAILY_INSPECTION_SECTIONS, INSPECTION_RESULT_LABEL, allGoodItems, isInspectionComplete } from '../../../domain/dailyInspectionItems.ts'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
-/** @typedef {import('../../../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
+/** @typedef {import('../../../domain/dailyInspectionItems.ts').InspectionItems} InspectionItems */
 /** @typedef {import('../../../data/sync/dailyInspections.js').DailyInspection} DailyInspection */
 
 const INCOMPLETE_TOAST = '모든 항목을 선택해 주세요.'

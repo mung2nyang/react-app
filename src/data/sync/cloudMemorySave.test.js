@@ -153,7 +153,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     handlers.fuel_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
     handlers.maintenance_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
     handlers.misc_expense_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
-    /** @type {Array<import('../../domain/expenseTypes.js').ExpenseItem>} */
+    /** @type {Array<import('../../domain/expenseTypes.ts').ExpenseItem>} */
     const next = [{ id: 'fuel-new', kind: 'fuel', date: '2026-08-01', name: '주유', cost: 1000 }]
 
     const hits = await withBusinessSetItemCount(ownerKey, async () => {
@@ -180,7 +180,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     handlers.fuel_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
     handlers.maintenance_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
     handlers.misc_expense_records = { delete: () => ({ data: null, error: null }), insert: () => ({ data: null, error: null }) }
-    /** @type {Array<import('../../domain/expenseTypes.js').ExpenseItem>} */
+    /** @type {Array<import('../../domain/expenseTypes.ts').ExpenseItem>} */
     const next = [{ id: 'fuel-driver-1', kind: 'fuel', date: '2026-09-04', name: '주유', cost: 5000 }]
     await saveExpenses(ownerKey, next)
     assert.ok(countOf('fuel_records', 'insert') >= 1, '소속기사도 fuel_records insert까지 도달해야 한다')
@@ -197,7 +197,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   /**
    * 로드맵 5-A: 메인 501·서브 802. 70번부터 항목 단위 — fuelRows는 차량 칸별 서버 주유 줄.
    * @param {string} ownerKey
-   * @param {Array<import('../../domain/driverTypes.js').DriverRecord>} drivers
+   * @param {Array<import('../../domain/driverTypes.ts').DriverRecord>} drivers
    * @param {Record<string, Array<import('../store/atomicPersist.js').JsonValue>>} [fuelRows]
    */
   function seedSubVehicleSave(ownerKey, drivers, fuelRows = {}) {
@@ -239,7 +239,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   test('5-A·70 미연동 서브 표시 항목: 서브차량 칸에 먼저 넣고, 메인 칸에 남은 그 항목 줄은 그다음 지운다', async () => {
     const ownerKey = 'cms-exp-sub-unlinked'
     const events = seedSubVehicleSave(ownerKey, [], { 501: [{ id: 'srv-main-1', work_date: '2026-08-03', sequence: 0, raw: { id: 'fuel-sub-1' } }] })
-    /** @type {Array<import('../../domain/expenseTypes.js').ExpenseItem>} */
+    /** @type {Array<import('../../domain/expenseTypes.ts').ExpenseItem>} */
     const next = [{ id: 'fuel-sub-1', kind: 'fuel', date: '2026-08-03', name: '주유', cost: 3000, vehicleNumber: '22나2222' }]
     await saveExpenses(ownerKey, next)
     assert.deepEqual(events, [
@@ -254,7 +254,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   test('5-B-2·70 연동 서브 표시 항목: 그 서브 칸에 항목 단위로 넣고 메인 칸의 옛 줄은 지운다', async () => {
     const ownerKey = 'cms-exp-sub-linked'
     const events = seedSubVehicleSave(ownerKey, [{ id: 'drv-1', status: 'linked', vehicleNumber: '22나2222' }], { 501: [{ id: 'srv-main-2', work_date: '2026-08-03', sequence: 0, raw: { id: 'fuel-sub-2' } }] })
-    /** @type {Array<import('../../domain/expenseTypes.js').ExpenseItem>} */
+    /** @type {Array<import('../../domain/expenseTypes.ts').ExpenseItem>} */
     const next = [{ id: 'fuel-sub-2', kind: 'fuel', date: '2026-08-03', name: '주유', cost: 3000, vehicleNumber: '22나2222' }]
     await saveExpenses(ownerKey, next)
     assert.deepEqual(events, ['daily_logs.upsert:802', 'fuel.insert:802:20', 'fuel.delete:srv-main-2'])
@@ -270,12 +270,12 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     endCloudSession()
   })
 
-  /** @param {string} id @param {string} date @param {number} cost @param {string} [vehicleNumber] @returns {import('../../domain/expenseTypes.js').ExpenseItem} */
+  /** @param {string} id @param {string} date @param {number} cost @param {string} [vehicleNumber] @returns {import('../../domain/expenseTypes.ts').ExpenseItem} */
   function fuelItem(id, date, cost, vehicleNumber) {
     return vehicleNumber ? { id, kind: 'fuel', date, name: '주유', cost, vehicleNumber } : { id, kind: 'fuel', date, name: '주유', cost }
   }
 
-  /** @param {import('../../domain/expenseTypes.js').ExpenseItem} item @param {string} srvId */
+  /** @param {import('../../domain/expenseTypes.ts').ExpenseItem} item @param {string} srvId */
   function fuelRow(item, srvId) {
     return { id: srvId, work_date: item.date, sequence: 0, raw: { ...item } }
   }
@@ -283,7 +283,7 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
   test('70-1: 운행 30일·주유 3건 중 1건을 고치면 고치기 1번, 운행 날짜 지우기·넣기 0번', async () => {
     const ownerKey = 'cms-70-edit'
     const events = seedSubVehicleSave(ownerKey, [])
-    /** @type {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} */
+    /** @type {Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike>} */
     const days = {}
     for (let d = 1; d <= 30; d += 1) days[`2026-09-${String(d).padStart(2, '0')}`] = { fixedCount: 1 }
     commitWorkData(ownerKey, days)
@@ -344,11 +344,11 @@ describe('슬라이스 E — 로그인 프로필·설정·비용·계산서는 �
     const ownerKey = 'cms-exp-fail'
     beginReady(ownerKey, ownerKey)
     commitCars(ownerKey, [{ id: 'car-1', type: 'main', number: '11가1111', supabaseId: 501 }])
-    /** @type {Array<import('../../domain/expenseTypes.js').ExpenseItem>} */
+    /** @type {Array<import('../../domain/expenseTypes.ts').ExpenseItem>} */
     const previous = [{ id: 'keep', kind: 'fuel', date: '2026-08-01', name: '주유', cost: 1 }]
     commitExpenses(ownerKey, previous)
     handlers.daily_logs = { select: () => ({ data: null, error: { message: 'daily down' } }) }
-    /** @type {Array<import('../../domain/expenseTypes.js').ExpenseItem>} */
+    /** @type {Array<import('../../domain/expenseTypes.ts').ExpenseItem>} */
     const attempted = [{ id: 'new', kind: 'fuel', date: '2026-08-01', name: '주유', cost: 2 }]
     await assert.rejects(() => saveExpenses(ownerKey, attempted))
     assert.equal(firstItemId(getState().expenses[ownerKey]), 'keep')

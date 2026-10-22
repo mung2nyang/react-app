@@ -1,7 +1,7 @@
 // @ts-check
 // 기사 연동 화면. 저장·상태 변경·삭제는 data/sync/directMutationActions.js, 초대 폼은 DriverFormModal.jsx.
 /** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
-/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../../domain/driverTypes.ts').DriverRecord} DriverRecord */
 import { useState } from 'react'
 import { getCloudUserId, isCloudSession } from '../../../data/cloud/cloudSession.js'
 import {
@@ -10,7 +10,7 @@ import {
   requestDriverStatusChange,
 } from '../../../data/sync/directMutationActions.js'
 import { saveDrivers } from '../../../data/sync/driversSave.js'
-import { countByStatus, formatInviteCode, generateInviteCode, upsertDriver } from '../../../domain/drivers.js'
+import { countByStatus, formatInviteCode, generateInviteCode, upsertDriver } from '../../../domain/drivers.ts'
 import { requestDriverUnlinkAction } from '../../../data/sync/driverUnlink.js'
 import { useOwnerCars, useOwnerDrivers, useOwnerProfile } from '../../../data/store/ownerDataHooks.js'
 import DriverUnlinkControls from './DriverUnlinkControls.jsx'

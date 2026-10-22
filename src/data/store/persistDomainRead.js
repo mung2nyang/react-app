@@ -37,7 +37,7 @@ export function readPersistDomain(domain, ownerKey) {
     return { ok: false, kind: 'getItem' }
   }
   if (raw === null) return { ok: true, kind: 'missing', value: emptyValue(domain) }
-  /** @type {import('../../domain/jsonTypes.js').JsonValue} */
+  /** @type {import('../../domain/jsonTypes.ts').JsonValue} */
   let parsed
   try {
     parsed = JSON.parse(raw)

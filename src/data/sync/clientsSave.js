@@ -4,7 +4,7 @@ import { commitClients } from '../store/commitHelpers.js'
 
 /**
  * @param {string} ownerKey
- * @param {import('../../domain/clientTypes.js').ClientLike[]} clients
+ * @param {import('../../domain/clientTypes.ts').ClientLike[]} clients
  */
 export function saveClients(ownerKey, clients) {
   commitClients(ownerKey, clients)

@@ -1,7 +1,7 @@
 // @ts-check
-/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 리포트 공용 — 파일명·표시용 짧은 헬퍼(공유 모달도 여기만 씀).
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 /** @param {JsonValue|undefined} value */
 export function dash(value) {

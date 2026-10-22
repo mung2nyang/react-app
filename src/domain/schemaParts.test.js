@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import * as v from 'valibot'
-import { finiteNumber, isPlainObject, nonEmptyString, opt, plain, str, stringOrNumber } from './schemaParts.js'
+import { finiteNumber, isPlainObject, nonEmptyString, opt, plain, str, stringOrNumber } from './schemaParts.ts'
 
 const ALL_OPTIONAL = v.strictObject({ a: opt(str) })
 

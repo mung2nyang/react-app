@@ -3,7 +3,7 @@
 // 화면은 useOwnerExpenses로 구독하고, 저장·삭제는 saveExpenseDraft·deleteExpense(최신 목록을 다시 읽어 고침).
 import { useState } from 'react'
 import { deleteExpense, saveExpenseDraft } from '../../../data/sync/expensesSave.js'
-import { emptyExpenseDraft, expenseToDraft } from '../../../domain/expenseDraft.js'
+import { emptyExpenseDraft, expenseToDraft } from '../../../domain/expenseDraft.ts'
 import { useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 

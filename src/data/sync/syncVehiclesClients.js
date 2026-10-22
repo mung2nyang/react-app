@@ -5,8 +5,8 @@ import { supabase } from '../cloud/supabaseClient.js'
 import { buildClientRow, buildVehicleRow } from '../cloud/cloudStorage.js'
 import { assertSessionStillCurrent } from '../cloud/cloudSession.js'
 
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
+/** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
 /** @typedef {import('./syncTypes.js').SessionCapture} SessionCapture */
 
 /**

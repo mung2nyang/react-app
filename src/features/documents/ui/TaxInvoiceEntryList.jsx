@@ -1,10 +1,10 @@
 // @ts-check
 import { useState } from 'react'
-import { formatWon } from '../../../domain/money.js'
+import { formatWon } from '../../../domain/money.ts'
 import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 import './tax-invoice.css'
 
-/** @typedef {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
 
 /** 홈택스 전자세금계산서 발급 화면. */
 const HOMETAX_ISSUE_URL = 'https://hometax.go.kr/websquare/websquare.html?w2xPath=/ui/pp/index_pp.xml&tmIdx=46&tm2lIdx=4601010000&tm3lIdx=4601010500'

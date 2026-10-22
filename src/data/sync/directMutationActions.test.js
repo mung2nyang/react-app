@@ -77,7 +77,7 @@ async function withFailingSetItem(shouldFail, fn) {
   }
 }
 
-/** 리터럴을 DriverRecord[]로 좁혀 strict-inventory 진단(status 리터럴 widening 등)을 안 늘린다. @param {Array<import('../../domain/driverTypes.js').DriverRecord>} items */
+/** 리터럴을 DriverRecord[]로 좁혀 strict-inventory 진단(status 리터럴 widening 등)을 안 늘린다. @param {Array<import('../../domain/driverTypes.ts').DriverRecord>} items */
 const asDrivers = (items) => items
 
 describe('requestVehicleDeletion — 사용자 지시 10번 필수 시나리오', () => {
@@ -701,7 +701,7 @@ describe('requestDriverInviteSave — 슬라이스 A: outbox 없이 RPC 직접 1
     endCloudSession()
   })
 
-  /** @param {string} ownerKey @param {Array<import('../../domain/driverTypes.js').DriverRecord>} items @param {Array<import('./syncTypes.js').CarRecord>} cars @param {string} message */
+  /** @param {string} ownerKey @param {Array<import('../../domain/driverTypes.ts').DriverRecord>} items @param {Array<import('./syncTypes.js').CarRecord>} cars @param {string} message */
   async function expectInviteRejected(ownerKey, items, cars, message) {
     const before = getState().drivers[ownerKey]
     const result = await requestDriverInviteSave({ ownerKey, userId: 'user-1', items, editingId: null, cars })

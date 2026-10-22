@@ -1,10 +1,10 @@
 // @ts-check
-/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 세금계산서 엑셀 양식 — 셀 주소·병합이 한 덩어리라 §6 응집도 우선(~250+ 허용).
-import { getTaxInvoiceFlowMeta, getTaxInvoiceSupplierBiz } from '../../../domain/financeTaxInvoiceEntries.js'
+import { getTaxInvoiceFlowMeta, getTaxInvoiceSupplierBiz } from '../../../domain/financeTaxInvoiceEntries.ts'
 
-/** @typedef {import('../../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
 
 /**
  * @param {typeof import('exceljs')} ExcelJS

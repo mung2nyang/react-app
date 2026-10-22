@@ -1,5 +1,5 @@
 // @ts-check
-import { formatWon, parseCurrencyValue } from '../../../domain/money.js'
+import { formatWon, parseCurrencyValue } from '../../../domain/money.ts'
 
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
 

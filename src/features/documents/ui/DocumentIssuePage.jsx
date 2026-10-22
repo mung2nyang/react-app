@@ -6,7 +6,7 @@
 // [일상점검표] 탭은 그 차량 "일상점검표 사용"이 켜져 있거나 서버에 점검표가 있을 때만 — 없으면 탭 줄 없이 운송비 내역서만.
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { resolveLogSettings } from '../../../domain/carSettingsScope.js'
+import { resolveLogSettings } from '../../../domain/carSettingsScope.ts'
 import { hasAnyDailyInspection } from '../../../data/sync/dailyInspections.js'
 import { vehicleSupabaseIdForLog } from '../../../data/sync/mainDayLogRouting.js'
 import { useOwnerSettings } from '../../../data/store/ownerDataHooks.js'

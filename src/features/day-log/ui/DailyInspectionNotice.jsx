@@ -64,7 +64,7 @@ export default function DailyInspectionNotice({ logId, dateKey, month, day, enab
   const inspectorName = String(car?.driverName || profile.name || '').trim()
   const title = `${month}월 ${day}일 일상점검표`
 
-  /** @param {{ items: import('../../../domain/dailyInspectionItems.js').InspectionItems, actionNote: string }} next */
+  /** @param {{ items: import('../../../domain/dailyInspectionItems.ts').InspectionItems, actionNote: string }} next */
   async function save(next) {
     if (vehicleId == null) return false
     try {

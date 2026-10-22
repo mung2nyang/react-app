@@ -90,7 +90,7 @@ test('로드맵 82-C — 부분 입금액이 남은 금액보다 크면 저장 �
   const container = document.createElement('div')
   const root = createRoot(container)
   await act(async () => { root.render(React.createElement(Harness)) })
-  const item = /** @type {import('../../../domain/financeReceivables.js').ReceivableItemLike} */ ({ logId: 'main', dateKey: '2026-10-01', detailId: 'a', remainingAmount: 300000 })
+  const item = /** @type {import('../../../domain/financeReceivables.ts').ReceivableItemLike} */ ({ logId: 'main', dateKey: '2026-10-01', detailId: 'a', remainingAmount: 300000 })
   await act(async () => { captured.actions?.setPartialKey('main|a'); captured.actions?.setPartialAmount('400,000') })
   await act(async () => { captured.actions?.confirmPartial(item) })
   assert.equal(persistCalls, 0)

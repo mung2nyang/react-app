@@ -1,9 +1,9 @@
 // @ts-check
 // 지출 저장(saveExpenses)과 두 화면이 같이 쓰는 입력값 저장·삭제. 화면 읽기는 useOwnerExpenses, 계산 규칙은 domain/expenses.js.
 import { commitExpenses } from '../store/commitHelpers.js'
-import { dedupeExpensesById } from '../../domain/expenses.js'
-import { removeExpense, upsertExpense } from '../../domain/expenseDraft.js'
-import { planExpenseVehicleTargets } from '../../domain/expenseVehicleRouting.js'
+import { dedupeExpensesById } from '../../domain/expenses.ts'
+import { removeExpense, upsertExpense } from '../../domain/expenseDraft.ts'
+import { planExpenseVehicleTargets } from '../../domain/expenseVehicleRouting.ts'
 import { getState } from '../store/app-store.js'
 import {
   assertSessionStillCurrent,
@@ -15,8 +15,8 @@ import {
 import { syncExpenseItemsForVehicle } from './syncExpenseItems.js'
 import { saveFailMessage } from '../../shared/utils/failureMessages.js'
 
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseDraft} ExpenseDraft */
 
 /** @param {string} ownerKey @param {Array<ExpenseItem>} items */
 export async function saveExpenses(ownerKey, items) {

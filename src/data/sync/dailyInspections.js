@@ -1,12 +1,12 @@
 // @ts-check
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 일상점검표 서버 읽기·저장(daily_inspections 표, 차량+날짜 1장). 로컬 보관·재시도 큐 없음 — 일지를 열 때 읽고 저장은 바로 서버.
 import { supabase } from '../cloud/supabaseClient.js'
-import { sanitizeInspectionItems } from '../../domain/dailyInspectionItems.js'
+import { sanitizeInspectionItems } from '../../domain/dailyInspectionItems.ts'
 import { fetchAllRows } from '../cloud/fetchAllRows.js'
 import { assertSessionStillCurrent, blockedReasonForCloudWrite, captureSession, getCloudUserId } from '../cloud/cloudSession.js'
 
-/** @typedef {import('../../domain/dailyInspectionItems.js').InspectionItems} InspectionItems */
+/** @typedef {import('../../domain/dailyInspectionItems.ts').InspectionItems} InspectionItems */
 /** @typedef {{ items: InspectionItems, actionNote: string, inspectorName: string }} DailyInspection */
 
 /**

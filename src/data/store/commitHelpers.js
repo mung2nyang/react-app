@@ -2,16 +2,16 @@
 // commitBatch를 감싸는 단일 도메인 편의 함수들(로직 없는 얇은 래퍼).
 import { commitBatch } from './app-store.js'
 import { storageKeyForLog } from './persist.js'
-import { dedupeCarsById } from '../../domain/cars.js'
+import { dedupeCarsById } from '../../domain/cars.ts'
 import { getCloudOwnerKey } from '../cloud/cloudSession.js'
 
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
-/** @typedef {import('../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
-/** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
+/** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
+/** @typedef {import('../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../domain/driverTypes.ts').DriverRecord} DriverRecord */
 /** @typedef {import('../hydrate/hydrateMergeTypes.js').LocalProfile} ProfileLike */
 
 /**

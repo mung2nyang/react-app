@@ -5,13 +5,13 @@ import { readPersistDomain } from './persistDomainRead.js'
 import { commitBatch, getState } from './app-store.js'
 import { CLOUD_MEMORY_ONLY_DOMAINS } from './batchWrites.js'
 import { getCloudOwnerKey } from '../cloud/cloudSession.js'
-import { dedupeCarsById } from '../../domain/cars.js'
+import { dedupeCarsById } from '../../domain/cars.ts'
 
 /** @typedef {import('./persist.js').PersistDomain} PersistDomain */
 /** @typedef {import('./app-store.js').DomainValue} DomainValue */
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
+/** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 // workData는 readLogWorkData로 따로 읽는다.
 /** @type {Array<PersistDomain>} */
@@ -70,11 +70,11 @@ export function initializeOwnerFromPersist(ownerKey) {
   })
   return true
 }
-/** @typedef {import('../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
-/** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
-/** @typedef {import('../../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
-/** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/financeTypes.ts').FinanceSettings} FinanceSettings */
+/** @typedef {import('../../domain/expenseTypes.ts').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.ts').DriverExpenseItem} DriverExpenseItem */
+/** @typedef {import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
+/** @typedef {import('../../domain/driverTypes.ts').DriverRecord} DriverRecord */
 /** @typedef {import('../hydrate/hydrateMergeTypes.js').LocalProfile} ProfileLike */
 
 /**
@@ -90,7 +90,7 @@ export function initializeOwnerFromPersist(ownerKey) {
  * @property {Array<DriverExpenseItem>} [driverExpenses] 메모리 전용 — 있으면 통째 replace
  * @property {Array<InvoiceLike>} [invoices]
  * @property {Array<string>} [dismissedNotifications] 닫은 알림 id
- * @property {import('../../domain/workDataTombstones.js').WorkDataTombstones} [workDataDeletedDates] 빈 날 삭제 목록
+ * @property {import('../../domain/workDataTombstones.ts').WorkDataTombstones} [workDataDeletedDates] 빈 날 삭제 목록
  */
 
 /**

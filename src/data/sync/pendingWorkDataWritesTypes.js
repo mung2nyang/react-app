@@ -5,7 +5,7 @@
  * data/는 features/를 참조하지 않는 방향을 지키려고 여기서 직접 좁혀서 정의한다
  * (durable에 저장되는 콜상세는 useDayDraft.js 진입 전에
  * backfillCallDetailIds가 이미 돌아 id가 항상 있다).
- * @typedef {import('../../domain/callDetail.js').CallDetailLike & { id: string }} EffectiveCallDetail
+ * @typedef {import('../../domain/callDetail.ts').CallDetailLike & { id: string }} EffectiveCallDetail
  */
 
 /**

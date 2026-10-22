@@ -2,7 +2,7 @@
 // 운송비 내역서 화면(요약·세부 보기) — 내려받기는 useFileDownload, 공유는 ReportShareModal, 보는 달은 서류 발급이 줌.
 import { useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { formatWon } from '../../../domain/money.js'
+import { formatWon } from '../../../domain/money.ts'
 import { dash, reportBaseFileName } from '../api/report.js'
 import { buildReportExportFile } from '../api/reportExport.js'
 import useFileDownload from '../hooks/useFileDownload.js'

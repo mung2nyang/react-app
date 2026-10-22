@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { ALLOWED_CALL_DETAIL_KEYS, isPersistedCallDetail, isValidCallDetail } from './callDetailSchema.js'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 
 const CALL = {
   id: 'call-1', loadLoc: '부산', unloadLoc: '대구', fare: '300,000', client: '한진', clientId: 'c-1',

@@ -1,8 +1,8 @@
 // @ts-check
 import { useState } from 'react'
-import { checkClientDraft } from '../../../domain/clients.js'
-import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../../domain/formatPhone.js'
-import { needsPaymentTermValue, PAYMENT_TERMS } from '../../../domain/clients.js'
+import { checkClientDraft } from '../../../domain/clients.ts'
+import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../../domain/formatPhone.ts'
+import { needsPaymentTermValue, PAYMENT_TERMS } from '../../../domain/clients.ts'
 import AppDropdown from '../../../shared/ui/AppDropdown.jsx'
 import BizNumberHint from '../../../shared/ui/BizNumberHint.jsx'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
@@ -12,7 +12,7 @@ import { StarIcon } from '../../../shared/ui/icons.jsx'
 import './client-management.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 
-/** @typedef {import('../../../domain/clientTypes.js').ClientDraft} ClientDraft */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientDraft} ClientDraft */
 /** @typedef {NonNullable<ReturnType<typeof checkClientDraft>>} ClientProblem */
 
 // 이 창에 있는 칸만 표시 — 창에 없는 칸(고정 노선·파렛트 단가) 문제는 저장 함수가 지금처럼 알림으로.

@@ -18,7 +18,7 @@ const { getState, subscribe } = await import('../store/app-store.js')
 const { readJsonKey } = await import('../store/persist.js')
 const { commitWorkData } = await import('../store/commitHelpers.js')
 
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 /** @param {string} ownerKey */
 function durableRaw(ownerKey) {

@@ -14,7 +14,7 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { default: RoutePresetEditor } = await import('./RoutePresetEditor.jsx')
-const { normalizeSettings } = await import('../../../domain/practiceSettings.js')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 
 /** @param {import('react').ReactElement} element */
 async function render(element) {

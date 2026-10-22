@@ -1,14 +1,14 @@
 // @ts-check
 import * as v from 'valibot'
-import { isValidCalendarDateKey } from '../../domain/dateKey.js'
-import { bool, by, finiteNumber, opt, plain, str, stringOrNumber } from '../../domain/schemaParts.js'
+import { isValidCalendarDateKey } from '../../domain/dateKey.ts'
+import { bool, by, finiteNumber, opt, plain, str, stringOrNumber } from '../../domain/schemaParts.ts'
 import { isPersistedWorkDataMap } from './persistDayRecord.js'
 import { isPersistedInvoice } from './persistDomainInvoice.js'
 import { isPersistedCar, isPersistedClient, isPersistedDriver, isPersistedExpense } from './persistDomainRecords.js'
 import { DRIVER_INVOICE_BASES, DRIVER_SETTLEMENT_MODES } from './persistDomainEnums.js'
 
 /** @typedef {import('./persist.js').PersistDomain} PersistDomain */
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 
 /**
  * @typedef {{

@@ -7,8 +7,8 @@ import { getCloudUserId } from '../../../data/cloud/cloudSession.js'
 import { useOwnerClients } from '../../../data/store/ownerDataHooks.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
-/** @typedef {import('../../../domain/clientTypes.js').ClientDraft} ClientDraft */
-/** @typedef {import('../../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientDraft} ClientDraft */
+/** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 /** @type {ClientDraft} */
 const emptyDraft = {

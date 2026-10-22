@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 리포트 "요약" 화면 — 정보표·일자표·월간 정산 카드.
 import './report.css'
 /**

@@ -4,7 +4,7 @@ import { commitDrivers } from '../store/commitHelpers.js'
 
 /**
  * @param {string} ownerKey
- * @param {import('../../domain/driverTypes.js').DriverRecord[]} items
+ * @param {import('../../domain/driverTypes.ts').DriverRecord[]} items
  */
 export function saveDrivers(ownerKey, items) {
   commitDrivers(ownerKey, items)

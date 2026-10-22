@@ -4,13 +4,13 @@
 // 정산 요약·거래처 세금계산서 JSX는 SettlementSummaryCard·ClientInvoiceGroups로 분리.
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { resolveDriverManagementContext } from '../../../domain/driverManagementContext.js'
-import { getShortCarNum } from '../../../domain/cars.js'
-import { getAssignmentState } from '../../../domain/drivers.js'
+import { resolveDriverManagementContext } from '../../../domain/driverManagementContext.ts'
+import { getShortCarNum } from '../../../domain/cars.ts'
+import { getAssignmentState } from '../../../domain/drivers.ts'
 import {
   getLinkedDriverClientInvoiceGroups, getLinkedDriverSettlementDetail,
-} from '../../../domain/finance.js'
-import { setYearMonth, shiftMonth } from '../../../domain/calendar.js'
+} from '../../../domain/finance.ts'
+import { setYearMonth, shiftMonth } from '../../../domain/calendar.ts'
 import { buildFinanceSettings } from '../../../data/sync/ownerFinance.js'
 import {
   useOwnerCars,
@@ -75,7 +75,7 @@ export default function LinkedDriverManagementPage({ onBack, onOpenMenu }) {
   const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
   const dayData = (plate && workByLogId?.[plate]) || {}
 
-  /** @type {import('../../../domain/financeTypes.js').CarLike} */
+  /** @type {import('../../../domain/financeTypes.ts').CarLike} */
   const carOrEmpty = ctx.car || { number: '' }
 
   const detail = useMemo(() => {
@@ -86,7 +86,7 @@ export default function LinkedDriverManagementPage({ onBack, onOpenMenu }) {
     }
     if (ctx.mode === 'unlinked' && ctx.car) {
       // 미연동은 할당기간 없음 — assignmentStart 빈 값은 isDateWithinAssignment가 전부 포함(link=null과 동일).
-      const openLink = /** @type {import('../../../domain/financeTypes.js').DriverLinkLike} */ ({
+      const openLink = /** @type {import('../../../domain/financeTypes.ts').DriverLinkLike} */ ({
         id: '',
         vehicleNumber: plate,
         assignmentStart: '',

@@ -9,7 +9,7 @@ const { requestCarBusinessInfoSave } = await import('./vehicleMutations.js')
 const { readJsonKey } = await import('../store/persist.js')
 const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.js')
 
-/** @type {import('../../domain/carBusinessInfo.js').CarBusinessForm} */
+/** @type {import('../../domain/carBusinessInfo.ts').CarBusinessForm} */
 const FORM = {
   sameAsOwner: false,
   name: '한빛운수',
@@ -24,9 +24,9 @@ const FORM = {
   accountHolder: '김기사',
 }
 
-/** @type {import('../../domain/financeTypes.js').CarLike} */
+/** @type {import('../../domain/financeTypes.ts').CarLike} */
 const SUB = { id: 'sub-1', type: 'sub', number: '11가1111', driverName: '김기사', supabaseId: 7, personalInfo: { driverName: '김기사', phone: '010-1111-2222' } }
-/** @type {import('../../domain/financeTypes.js').CarLike} */
+/** @type {import('../../domain/financeTypes.ts').CarLike} */
 const MAIN = { id: 'main-1', type: 'main', number: '22나2222', supabaseId: 8 }
 
 /** @param {string} owner @param {string} id */

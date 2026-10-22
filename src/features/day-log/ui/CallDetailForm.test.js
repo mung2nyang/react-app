@@ -7,7 +7,7 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { normalizeSettings } from '../../../domain/practiceSettings.js'
+import { normalizeSettings } from '../../../domain/practiceSettings.ts'
 
 /** DOM 노드가 없는지 boolean으로만 비교한다 — assert.equal(node, null)은 실패 시 노드 전체를 직렬화하려다 OOM이 난다. */
 function assertMissing(/** @type {Element|null} */ el, /** @type {string} */ message) {

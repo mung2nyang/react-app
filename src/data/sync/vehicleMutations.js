@@ -1,7 +1,7 @@
 // @ts-check
 // 차량 추가/수정. 서브 번호 변경 때 묶인 것 옮기기는 vehicleRename.js.
-import { upsertCar } from '../../domain/cars.js'
-import { applyBusinessForm } from '../../domain/carBusinessInfo.js'
+import { upsertCar } from '../../domain/cars.ts'
+import { applyBusinessForm } from '../../domain/carBusinessInfo.ts'
 import {
   assertSessionStillCurrent,
   blockedReasonForOwnerDataWrite,
@@ -21,7 +21,7 @@ const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 const SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL
 const SAVED_TOAST = '저장했습니다.'
 
-/** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../../domain/financeTypes.ts').CarLike} CarLike */
 
 /**
  * @typedef {Object} CarSaveDraft
@@ -113,7 +113,7 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
 
 /**
  * 기사 관리 화면의 사업자·정산 계좌 저장 — requestVehicleSave와 같은 순서(차단 확인 → 로그인이면 서버 먼저 → 성공 후 commitBatch).
- * @param {{ ownerKey: string, cars: Array<CarLike>, carId: string, form: import('../../domain/carBusinessInfo.js').CarBusinessForm, userId?: string|null }} params
+ * @param {{ ownerKey: string, cars: Array<CarLike>, carId: string, form: import('../../domain/carBusinessInfo.ts').CarBusinessForm, userId?: string|null }} params
  */
 export async function requestCarBusinessInfoSave({ ownerKey, cars, carId, form, userId }) {
   const blocked = blockedReasonForOwnerDataWrite({ ownerKey, userId })

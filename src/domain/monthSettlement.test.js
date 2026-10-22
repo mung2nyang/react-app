@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { monthSettlementSummary } from './monthSettlement.js'
-import { callVatTotal } from './day-record.js'
+import { monthSettlementSummary } from './monthSettlement.ts'
+import { callVatTotal } from './day-record.ts'
 
 const YEAR = 2026
 const MONTH = 8 // September (0-based)

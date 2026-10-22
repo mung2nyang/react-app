@@ -1,12 +1,12 @@
 // @ts-check
 import * as v from 'valibot'
-import { isValidCalendarDateKey } from '../../domain/dateKey.js'
+import { isValidCalendarDateKey } from '../../domain/dateKey.ts'
 import { isPersistedCallDetail, isValidCurrencyAmount } from './callDetailSchema.js'
-import { bool, by, finiteNumber, isPlainObject, opt, plain, str } from '../../domain/schemaParts.js'
+import { bool, by, finiteNumber, isPlainObject, opt, plain, str } from '../../domain/schemaParts.ts'
 import { isPersistedFuelList, isPersistedMaintList, isPersistedMiscList } from './persistDayRecordLegacy.js'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 // 하루 기록의 칸 → 모양(Valibot, 공용 조각은 domain/schemaParts.js). 목록 밖 칸·값이 비어 있는 칸은 거부.
 const count = v.pipe(v.number(), v.integer(), v.minValue(0))

@@ -15,9 +15,9 @@ const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSessi
 const { setHydration, getState } = await import('../store/app-store.js')
 const { commitCars, commitLogWorkData, commitWorkData } = await import('../store/commitHelpers.js')
 const { readOwnerLogWorkData, readOwnerWorkData } = await import('../store/ownerDataHooks.js')
-const { getReceivableItems, getDetailPaymentSummary } = await import('../../domain/finance.js')
-const { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK } = await import('../../domain/finance.fixtures.js')
-const { markReceivableItemPaid, addPartialPayment, toggleCallPaymentStatus } = await import('../../domain/payments.js')
+const { getReceivableItems, getDetailPaymentSummary } = await import('../../domain/finance.ts')
+const { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK } = await import('../../domain/finance.fixtures.ts')
+const { markReceivableItemPaid, addPartialPayment, toggleCallPaymentStatus } = await import('../../domain/payments.ts')
 
 const FAIL_FAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 const SESSION_CHANGED = '로그인 정보가 바뀌어 저장하지 못했습니다. 화면을 새로고침한 뒤 다시 시도해 주세요.' // 로드맵 56-B-1 ③
@@ -37,7 +37,7 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value))
 }
 
-/** @param {Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>} main */
+/** @param {Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike>} main */
 function seedMain(ownerKey, main) {
   commitWorkData(ownerKey, main)
 }
@@ -320,7 +320,7 @@ describe('64 receivables cloud commit — 기사 차량', () => {
     const main = { [DK]: { callDetails: [{ id: 'h3-m1', client: '한진', fare: '50000', payments: [] }] } }
     seedMain('rc-h3', main)
     commitLogWorkData('rc-h3', PLATE, subLog('h3-s1'))
-    /** @type {import('../../domain/financeTypes.js').FinanceSettings} */
+    /** @type {import('../../domain/financeTypes.ts').FinanceSettings} */
     const settings = { paymentOn: true, subPaymentOn: true, clients: [], cars: [{ type: 'sub', number: PLATE }] }
     const next = markMonthlyReceivablesPaid({ main, [PLATE]: readOwnerLogWorkData('rc-h3', PLATE) }, settings, '한진', '2026-05')
 

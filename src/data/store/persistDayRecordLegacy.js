@@ -1,9 +1,9 @@
 // @ts-check
 import * as v from 'valibot'
 import { isValidCurrencyAmount } from './callDetailSchema.js'
-import { by, finiteNumber, nonEmptyString, opt, plain, str, stringOrNumber } from '../../domain/schemaParts.js'
+import { by, finiteNumber, nonEmptyString, opt, plain, str, stringOrNumber } from '../../domain/schemaParts.ts'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 
 // 옛 하루 기록 안 주유·정비·기타 항목의 칸 → 모양(Valibot, 공용 조각은 domain/schemaParts.js). 목록 밖 칸·값이 비어 있는 칸은 거부.
 // 돈: 유한 숫자면 음수·소수도 받고, 글자면 금액 규칙("1,000원"·빈 글자).

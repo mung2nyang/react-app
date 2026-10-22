@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { checkExpenseDraft, emptyExpenseDraft, expenseToDraft, upsertExpense } from './expenseDraft.js'
-import { dedupeExpensesById } from './expenses.js'
+import { checkExpenseDraft, emptyExpenseDraft, expenseToDraft, upsertExpense } from './expenseDraft.ts'
+import { dedupeExpensesById } from './expenses.ts'
 
 describe('정비/기타 저장 조건', () => {
   test('항목명만 있어도 저장된다', () => {

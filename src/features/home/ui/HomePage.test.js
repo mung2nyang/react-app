@@ -29,9 +29,9 @@ const { act } = React
 const { default: HomePage } = await import('./HomePage.jsx')
 const { default: CalendarPage } = await import('../../calendar/ui/CalendarPage.jsx')
 const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.js')
-const { todayWorkLogSelection } = await import('../../../domain/calendar.js')
-const { normalizeSettings } = await import('../../../domain/practiceSettings.js')
-const { allGoodItems } = await import('../../../domain/dailyInspectionItems.js')
+const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
+const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')
 
 /**
  * @param {string} ownerKey

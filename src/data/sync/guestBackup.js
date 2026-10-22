@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 import { readLogWorkData, storageKeyForLog } from '../store/persist.js'
 import { readPersistDomain } from '../store/persistDomainRead.js'
 import { matchesDomainSchema } from '../store/persistDomainSchema.js'
@@ -9,7 +9,7 @@ import { replaceOwnerState } from '../store/owner-state.js'
 import { getState } from '../store/app-store.js'
 
 /** @typedef {import('../store/persist.js').PersistDomain} PersistDomain */
-/** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
+/** @typedef {import('../../domain/dayRecordTypes.ts').DayRecordLike} DayRecordLike */
 
 /** @type {Array<PersistDomain>} */
 const SLICE_DOMAINS = [
@@ -67,7 +67,7 @@ export function buildGuestBackupData() {
   backup.workData = mainData
 
   const cars = Array.isArray(backup.cars) ? backup.cars : []
-  /** @type {Record<string, Record<string, import('../../domain/dayRecordTypes.js').DayRecordLike>>} */
+  /** @type {Record<string, Record<string, import('../../domain/dayRecordTypes.ts').DayRecordLike>>} */
   const workLogs = { main: mainData }
   for (const car of cars) {
     if (car && typeof car === 'object' && !Array.isArray(car) && car.type === 'sub' && typeof car.number === 'string' && car.number && car.number !== 'main') {
@@ -129,15 +129,15 @@ export function applyGuestBackupData(parsed) {
   if (workLogs) snapshot.workLogs = workLogs
   else if (subWorkData) snapshot.workLogs = { main: workData || {}, ...subWorkData }
   else if (workData) snapshot.workData = workData
-  if (Array.isArray(record.cars)) snapshot.cars = /** @type {Array<import('../../domain/financeTypes.js').CarLike>} */ (record.cars)
-  if (Array.isArray(record.clients)) snapshot.clients = /** @type {Array<import('../../domain/clientTypes.js').ClientLike>} */ (record.clients)
-  if (Array.isArray(record.drivers)) snapshot.drivers = /** @type {Array<import('../../domain/driverTypes.js').DriverRecord>} */ (record.drivers)
+  if (Array.isArray(record.cars)) snapshot.cars = /** @type {Array<import('../../domain/financeTypes.ts').CarLike>} */ (record.cars)
+  if (Array.isArray(record.clients)) snapshot.clients = /** @type {Array<import('../../domain/clientTypes.ts').ClientLike>} */ (record.clients)
+  if (Array.isArray(record.drivers)) snapshot.drivers = /** @type {Array<import('../../domain/driverTypes.ts').DriverRecord>} */ (record.drivers)
   if (isPlainObject(record.profile)) snapshot.profile = /** @type {import('../hydrate/hydrateMergeTypes.js').LocalProfile} */ (record.profile)
-  if (isPlainObject(record.settings)) snapshot.settings = /** @type {import('../../domain/financeTypes.js').FinanceSettings} */ (record.settings)
-  if (Array.isArray(record.expenses)) snapshot.expenses = /** @type {Array<import('../../domain/expenseTypes.js').ExpenseItem>} */ (record.expenses)
-  if (Array.isArray(record.invoices)) snapshot.invoices = /** @type {Array<import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike>} */ (record.invoices)
+  if (isPlainObject(record.settings)) snapshot.settings = /** @type {import('../../domain/financeTypes.ts').FinanceSettings} */ (record.settings)
+  if (Array.isArray(record.expenses)) snapshot.expenses = /** @type {Array<import('../../domain/expenseTypes.ts').ExpenseItem>} */ (record.expenses)
+  if (Array.isArray(record.invoices)) snapshot.invoices = /** @type {Array<import('../../domain/financeTaxInvoiceEntries.ts').InvoiceLike>} */ (record.invoices)
   if (Array.isArray(record.dismissedNotifications)) snapshot.dismissedNotifications = /** @type {Array<string>} */ (record.dismissedNotifications)
-  if (isPlainObject(record.workDataDeletedDates)) snapshot.workDataDeletedDates = /** @type {import('../../domain/workDataTombstones.js').WorkDataTombstones} */ (record.workDataDeletedDates)
+  if (isPlainObject(record.workDataDeletedDates)) snapshot.workDataDeletedDates = /** @type {import('../../domain/workDataTombstones.ts').WorkDataTombstones} */ (record.workDataDeletedDates)
 
   /** @type {Array<import('../store/atomicPersist.js').KeyedWrite>} */
   const extraWrites = []

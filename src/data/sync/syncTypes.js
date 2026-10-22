@@ -13,7 +13,7 @@
  * @property {string} [startDate]
  * @property {string} [endDate]
  * @property {string} [inviteCode]
- * @property {import('../../domain/driverTypes.js').DriverRecord|null} [previousDriverSnapshot]
+ * @property {import('../../domain/driverTypes.ts').DriverRecord|null} [previousDriverSnapshot]
  * @property {'pending'|'linked'} [status]
  */
 

@@ -7,7 +7,7 @@ import { runOwnerSaveSerialized } from './ownerSaveQueue.js'
 import { upsertClientFromList } from './syncVehiclesClients.js'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
-/** @typedef {import('../../domain/clientTypes.js').ClientLike} ClientLike */
+/** @typedef {import('../../domain/clientTypes.ts').ClientLike} ClientLike */
 
 export const CLIENT_SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
 export const CLIENT_SESSION_CHANGED_TOAST = SESSION_CHANGED_FAIL

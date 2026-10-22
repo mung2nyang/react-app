@@ -1,10 +1,10 @@
 // @ts-check
 // durable(localStorage) 저수준 읽기·쓰기. "읽기 실패"와 "정상적으로 비어 있음"을 구분해 돌려주는 게 핵심이다 —
 // 섞으면 빈 객체 위에 다시 써서 다른 날짜 원문을 지운다. 내부 값은 durablePatchSchema.js, dateKey는 domain/dateKey.js로 검증한다.
-import { isValidCalendarDateKey } from '../../domain/dateKey.js'
+import { isValidCalendarDateKey } from '../../domain/dateKey.ts'
 import { isValidPatch } from './durablePatchSchema.js'
 
-/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.ts').JsonValue} JsonValue */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').DurableReadResult} DurableReadResult */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').OwnerEnumerationResult} OwnerEnumerationResult */

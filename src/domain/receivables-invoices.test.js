@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { calculatePaymentDueDate } from './clients.js'
+import { calculatePaymentDueDate } from './clients.ts'
 import {
   buildTaxInvoiceEntry,
   getDetailPaymentSummary,
@@ -10,10 +10,10 @@ import {
   getTaxInvoiceRecordId,
   getTaxInvoiceSourceGroups,
   listTaxInvoiceEntries,
-} from './finance.js'
-import { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.js'
-import { dueSoonItems, groupByClientMonth, groupItems } from './receivables.js'
-import { addPartialPayment, markReceivableItemPaid } from './payments.js'
+} from './finance.ts'
+import { FIXTURE_DETAIL_ID_MAY10_MAIN, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.ts'
+import { dueSoonItems, groupByClientMonth, groupItems } from './receivables.ts'
+import { addPartialPayment, markReceivableItemPaid } from './payments.ts'
 import { markMonthlyReceivablesPaid } from '../data/sync/ownerFinance.js'
 
 /** @template T @param {T} a @param {T} b */

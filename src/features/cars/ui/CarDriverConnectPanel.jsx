@@ -1,6 +1,6 @@
 // @ts-check
-/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
-import { formatInviteCode, generateInviteCode } from '../../../domain/drivers.js'
+/** @typedef {import('../../../domain/driverTypes.ts').DriverRecord} DriverRecord */
+import { formatInviteCode, generateInviteCode } from '../../../domain/drivers.ts'
 import '../../drivers/ui/driver-connection.css'
 
 /**

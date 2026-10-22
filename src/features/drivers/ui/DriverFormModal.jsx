@@ -1,10 +1,10 @@
 // @ts-check
 // 기사 초대 폼 모달.
 import { useState } from 'react'
-import { checkDriverDraft } from '../../../domain/drivers.js'
+import { checkDriverDraft } from '../../../domain/drivers.ts'
 import { buildDriverInviteSmsHref } from '../api/driverInviteSms.js'
-import { formatInviteCode, generateInviteCode } from '../../../domain/drivers.js'
-import { formatPhoneNumber } from '../../../domain/formatPhone.js'
+import { formatInviteCode, generateInviteCode } from '../../../domain/drivers.ts'
+import { formatPhoneNumber } from '../../../domain/formatPhone.ts'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
 import TemporalInput from '../../../shared/ui/TemporalInput.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
@@ -12,9 +12,9 @@ import './driver-connection.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
-/** @typedef {import('../../../domain/drivers.js').DriverDraft} DriverDraft */
-/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
-/** @typedef {import('../../../domain/financeTypes.js').CarLike} CarLike */
+/** @typedef {import('../../../domain/drivers.ts').DriverDraft} DriverDraft */
+/** @typedef {import('../../../domain/driverTypes.ts').DriverRecord} DriverRecord */
+/** @typedef {import('../../../domain/financeTypes.ts').CarLike} CarLike */
 /** @typedef {NonNullable<ReturnType<typeof checkDriverDraft>>} DriverProblem */
 
 const INPUT_IDS = { name: 'drvName', phone: 'drvPhone', inviteCode: 'drvCode', vehicleNumber: 'drvCar', startDate: 'drvStart', endDate: 'drvEnd' }

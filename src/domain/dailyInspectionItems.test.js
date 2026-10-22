@@ -2,7 +2,7 @@
 // 로드맵 9-B-2 — 일상점검표 항목: 법정 서식 순서 3묶음 11항목, [모두 양호]·저장 조건·서버 값 좁히기.
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { DAILY_INSPECTION_KEYS, DAILY_INSPECTION_SECTIONS, allGoodItems, isInspectionComplete, sanitizeInspectionItems } from './dailyInspectionItems.js'
+import { DAILY_INSPECTION_KEYS, DAILY_INSPECTION_SECTIONS, allGoodItems, isInspectionComplete, sanitizeInspectionItems } from './dailyInspectionItems.ts'
 
 test('3묶음(외관 4·상태 3·기타 4) 11항목, 서식 첫·끝 항목 문구', () => {
   assert.deepEqual(DAILY_INSPECTION_SECTIONS.map((s) => [s.no, s.title, s.items.length]), [['01', '외관 점검', 4], ['02', '상태 점검', 3], ['03', '기타', 4]])

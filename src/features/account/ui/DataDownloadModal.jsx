@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 마이페이지 "데이터 다운로드 / 불러오기": 내 기록 전체를 비회원 백업과 같은 파일로 기기에 저장(B-1),
 // 받아 둔 파일에서 지금 없는 일지·거래처·지출·세금계산서만 더하기(22-A·B, 덮어쓰기·삭제 없음).
 import { useRef, useState } from 'react'

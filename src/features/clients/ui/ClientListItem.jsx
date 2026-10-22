@@ -1,11 +1,11 @@
 // @ts-check
-import { getPaymentTermLabel } from '../../../domain/clients.js'
+import { getPaymentTermLabel } from '../../../domain/clients.ts'
 import CardActionButtons from '../../../shared/ui/CardActionButtons.jsx'
 import { StarIcon } from '../../../shared/ui/icons.jsx'
 
 /**
  * @param {Object} props
- * @param {import('../../../domain/clientTypes.js').ClientLike} props.client
+ * @param {import('../../../domain/clientTypes.ts').ClientLike} props.client
  * @param {boolean} [props.dragging]
  * @param {() => void} [props.onDragStart] 없으면 끌어서 순서 바꾸기 꺼짐(기사 거래처)
  * @param {(event: { preventDefault: () => void }) => void} [props.onDragOver]
