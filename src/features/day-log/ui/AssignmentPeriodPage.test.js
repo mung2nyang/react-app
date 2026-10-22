@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 
 register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)
 
+import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { test } from 'node:test'

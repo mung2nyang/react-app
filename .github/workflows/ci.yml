@@ -36,6 +36,7 @@ jobs:
       # 아래 4개는 하나가 실패해도 나머지를 계속 돌려서 전체 그림을 보여준다.
       - name: 테스트 (npm test)
         if: ${{ !cancelled() }}
+        timeout-minutes: 15
         run: npm test
 
       - name: 타입 검사 (npm run typecheck)

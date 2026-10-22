@@ -1,12 +1,14 @@
 // @ts-check
 // 알림 화면 — 알림마다 날짜 줄(dateLabel)과 끈 종류(notifOff) 빼기.
+import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, mock, test } from 'node:test'
-import { collectNotifications } from './notifications.js'
-import { markBackupDone } from '../../../data/sync/guestBackup.ts'
-import { commitSettings } from '../../../data/store/commitHelpers.ts'
 import { normalizeSettings } from '../../../domain/practiceSettings.ts'
+
+const { collectNotifications } = await import('./notifications.js')
+const { markBackupDone } = await import('../../../data/sync/guestBackup.ts')
+const { commitSettings } = await import('../../../data/store/commitHelpers.ts')
 
 describe('notifications — 날짜 줄·끈 종류', () => {
   beforeEach(() => { localStorage.clear() })

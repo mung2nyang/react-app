@@ -1,11 +1,13 @@
 // @ts-check
+import '../../testSupport/stubSupabaseClient.js'
 import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, describe, test } from 'node:test'
-import { applyOnboardingWizard, buildOnboardingSettingsPatch } from './onboardingFinish.ts'
-import { getState } from '../store/app-store.ts'
-import { readOwnerSettings } from '../store/ownerDataHooks.ts'
-import { replaceOwnerState } from '../store/owner-state.ts'
+
+const { applyOnboardingWizard, buildOnboardingSettingsPatch } = await import('./onboardingFinish.ts')
+const { getState } = await import('../store/app-store.ts')
+const { readOwnerSettings } = await import('../store/ownerDataHooks.ts')
+const { replaceOwnerState } = await import('../store/owner-state.ts')
 
 describe('buildOnboardingSettingsPatch', () => {
   test('workStyle fixed: fixedOn true, callDetail false', () => {

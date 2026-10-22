@@ -1,12 +1,14 @@
 // @ts-check
+import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, mock, test } from 'node:test'
-import { collectNotifications, dismissNotification } from './notifications.js'
-import { markBackupDone } from '../../../data/sync/guestBackup.ts'
-import { commitWorkData } from '../../../data/store/commitHelpers.ts'
-import { commitBatch } from '../../../data/store/app-store.ts'
 import { todayKey } from '../../../domain/expenses.ts'
+
+const { collectNotifications, dismissNotification } = await import('./notifications.js')
+const { markBackupDone } = await import('../../../data/sync/guestBackup.ts')
+const { commitWorkData } = await import('../../../data/store/commitHelpers.ts')
+const { commitBatch } = await import('../../../data/store/app-store.ts')
 
 describe('notifications — 데이터 백업 권장 알림 및 게스트/로그인 분기', () => {
   beforeEach(() => {

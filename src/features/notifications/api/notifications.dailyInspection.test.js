@@ -1,11 +1,13 @@
 // @ts-check
 // 로드맵 9-B-1 — 일상점검표 의무화 알림: 로그인 계정 + 내 메인 차량 스위치 꺼짐 + 다시 보지 않기 안 누름일 때만.
+import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, test } from 'node:test'
-import { collectNotifications, dismissNotification, DAILY_INSPECTION_NOTICE_ID } from './notifications.js'
-import { commitSettings } from '../../../data/store/commitHelpers.ts'
 import { normalizeCarSettings, normalizeSettings } from '../../../domain/practiceSettings.ts'
+
+const { collectNotifications, dismissNotification, DAILY_INSPECTION_NOTICE_ID } = await import('./notifications.js')
+const { commitSettings } = await import('../../../data/store/commitHelpers.ts')
 
 /** @param {string} ownerKey */
 const notice = (ownerKey) => collectNotifications(ownerKey).find((item) => item.id === DAILY_INSPECTION_NOTICE_ID)
