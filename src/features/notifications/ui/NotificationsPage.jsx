@@ -10,6 +10,7 @@ import './notifications-page.css'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
+import { useIsAdmin } from '../../../data/cloud/adminRole.ts'
 
 /** @typedef {ReturnType<typeof useNotifications>[number]} NotificationItem */
 
@@ -28,11 +29,14 @@ export default function NotificationsPage({ onBack, onOpenMenu, onOpenPage }) {
   const items = useNotifications(ownerKey, session)
   const off = settings.notifOff || []
   const isGuest = ownerKey === 'guest' && !isCloudSession(session)
+  const adminRole = useIsAdmin()
   const kinds = [
     { kind: 'overdue', label: '연체 미수금' },
     { kind: 'today', label: '오늘 운행일지 비어 있음', hint: '오후 6시 이후' },
     ...(!isGuest && !session?.linkedOwnerId ? [{ kind: 'driverInvite', label: '기사 초대 대기' }] : []),
     ...(isGuest ? [{ kind: 'backup', label: '백업 권장' }] : []),
+    ...(!isGuest ? [{ kind: 'inquiryAnswer', label: '문의 답변 도착' }] : []),
+    ...(adminRole === 'admin' ? [{ kind: 'adminInquiry', label: '새 문의' }] : []),
   ]
 
   /** @param {string} kind @param {boolean} on */

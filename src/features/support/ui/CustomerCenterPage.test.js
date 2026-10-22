@@ -256,3 +256,19 @@ describe('CustomerCenterPage — 문의 접수·목록 실패 알림', () => {
     }
   })
 })
+
+test('로드맵 23-C — initialTab myInquiries(주소 ?tab=my)면 "나의 문의/건의 확인" 탭이 처음부터 선택된다', async () => {
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(withSession(React.createElement(CustomerCenterPage, { onBack: () => {}, initialTab: 'myInquiries' }), { session: { guestMode: true, name: '비회원' } }))
+    })
+    const active = container.querySelector('.support-tab.active')
+    assert.equal(active?.textContent, '나의 문의/건의 확인')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})

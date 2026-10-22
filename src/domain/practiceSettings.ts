@@ -8,7 +8,7 @@ import type { FinanceSettings, SubCarPracticeSettings } from './financeTypes.ts'
 export * from './practicePresets.ts'
 
 /** 알림 화면에서 끌 수 있는 종류(features/notifications/api/notifications.js kind와 같은 이름). */
-export const NOTIF_KINDS = ['overdue', 'today', 'driverInvite', 'backup']
+export const NOTIF_KINDS = ['overdue', 'today', 'driverInvite', 'backup', 'inquiryAnswer', 'adminInquiry']
 
 /** 끈 알림 종류 — 아는 이름만, 겹침 없이. */
 function normalizeNotifOff(raw: JsonValue | undefined): Array<string> {

@@ -33,3 +33,10 @@ test('notifOff가 글자 목록이 아니면 지금처럼 형식 오류로 걸�
     assert.deepEqual(read, { ok: false, kind: 'schema' }, `잘못된 모양 ${JSON.stringify(bad)}`)
   }
 })
+
+test('로드맵 23-C — 문의 알림 두 종류(inquiryAnswer·adminInquiry)도 저장 뒤 남는다', async () => {
+  const owner = 'notif-off-inquiry'
+  await savePracticeSettings(owner, { notifOff: ['inquiryAnswer', 'adminInquiry'] })
+  const read = readPersistDomain('settings', owner)
+  assert.deepEqual(read.ok && read.kind === 'value' ? Reflect.get(Object(read.value), 'notifOff') : null, ['inquiryAnswer', 'adminInquiry'])
+})

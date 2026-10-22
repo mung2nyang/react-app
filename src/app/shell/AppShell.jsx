@@ -40,6 +40,7 @@ const PAGE_PATH = {
   settings: 'me/settings',
   mypage: 'me',
   admin: 'admin/inquiries',
+  'my-inquiries': 'support?tab=my',
 }
 
 /** @param {string} page */
