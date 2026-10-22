@@ -37,7 +37,7 @@ export function readPersistDomain(domain, ownerKey) {
     return { ok: false, kind: 'getItem' }
   }
   if (raw === null) return { ok: true, kind: 'missing', value: emptyValue(domain) }
-  /** @type {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} */
+  /** @type {import('../../domain/jsonTypes.js').JsonValue} */
   let parsed
   try {
     parsed = JSON.parse(raw)

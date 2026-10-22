@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
 // 고객센터 문의 — 로컬 캐시 없이 support_inquiries insert·조회(Fail-Fast).
 import { supabase } from '../../../data/cloud/supabaseClient.js'
 import {

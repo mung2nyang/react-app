@@ -10,7 +10,7 @@ import { dedupeExpensesById } from '../../domain/expenses.js'
 import { fetchAllRows } from '../cloud/fetchAllRows.js'
 
 /** @typedef {import('../../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
-/** @typedef {import('../sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./hydrateMergeTypes.js').SupabaseQueryError} SupabaseQueryError */
 /** @typedef {import('./hydrateMergeTypes.js').JsonRecord} JsonRecord */

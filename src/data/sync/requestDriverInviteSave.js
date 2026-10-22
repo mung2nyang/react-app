@@ -2,7 +2,7 @@
 // 로그인 사용자의 기사 초대 생성·수정을 outbox·재시도 큐 없이 upsert_driver_link_idempotent RPC 1회로 저장한다 — 성공하면 Store 갱신,
 // 실패하면 토스트만 띄우고 중단. 차량·시작일이 없으면 저장하지 않는다(원본과 같음). 같은 차량번호 1명 규칙은 upsertDriver가 저장 전에 본다.
 // 세션은 RPC 전에 캡처하고 각 await 직후·Store 반영 직전에 재검증한다 — 바뀌었으면 부작용 없이 조용히 중단.
-/** @typedef {import('./syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('./syncTypes.js').CarRecord} CarRecord */
 /** @typedef {import('./syncTypes.js').DriverLinkRow} DriverLinkRow */
 import { assertCloudWriteReady, assertSessionStillCurrent, captureSession, getCloudUserId } from '../cloud/cloudSession.js'

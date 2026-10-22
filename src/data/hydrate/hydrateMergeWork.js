@@ -8,8 +8,8 @@ import { isPlainObject } from '../store/persistDomainRecords.js'
 /** @typedef {import('./hydrateMergeTypes.js').DetailRow} DetailRow */
 /** @typedef {import('./hydrateMergeTypes.js').MergedDayRecord} MergedDayRecord */
 /** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonRecord} JsonRecord */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonRecord} JsonRecord */
 
 /** @param {JsonValue|null|undefined} raw @param {ReadonlyArray<string>} allowed */
 function pickKnownKeys(raw, allowed) {

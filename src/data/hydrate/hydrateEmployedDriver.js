@@ -22,7 +22,7 @@ import { supabase } from '../cloud/supabaseClient.js'
 import { fetchAllRows } from '../cloud/fetchAllRows.js'
 
 /** @typedef {import('./hydrateMergeTypes.js').LocalCar} LocalCar */
-/** @typedef {import('../sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
 /** @typedef {import('../../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */

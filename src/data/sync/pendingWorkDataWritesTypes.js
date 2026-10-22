@@ -20,17 +20,6 @@
  */
 
 /**
- * JSON.parse가 실제로 돌려줄 수 있는 모든 값의 모양을
- * 정확히 표현하는 재귀 타입. `object`/`{}`(아무 모양이나 통과)로 뭉뚱그리지 않고,
- * 이 타입으로 받은 값은 `typeof`/`Array.isArray`/`!== null`로 실제 좁혀야만 필드에
- * 접근할 수 있다 — durablePatchSchema.js가 이 타입으로 durable JSON의 내부 값
- * (dateKey별 patch, callDetails 각 항목)까지 전부 런타임 검증한다.
- * @typedef {string|number|boolean|null|JsonArray|JsonRecord} JsonValue
- */
-/** @typedef {Array<JsonValue>} JsonArray */
-/** @typedef {{ [key: string]: JsonValue }} JsonRecord */
-
-/**
  * durable(localStorage) 읽기의 결과를 "정상적으로 비어
  * 있음"과 "읽기 자체가 실패함"으로 명시적으로 구분하는 타입. `{ ok: true, value: {} }`는
  * 그 owner가 한 번도 durable에 등록한 적 없는(또는 이미 전부 정리된) 정상적인 빈

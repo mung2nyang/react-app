@@ -101,7 +101,7 @@ async function performHydrate(userId, ownerKey, myEpoch, options = {}) {
     let nextCars = []
     /** @type {Array<import('../../domain/clientTypes.js').ClientLike>} */
     let nextClients = []
-    let nextDrivers = /** @type {Array<import('../sync/syncTypes.js').DriverRecord>} */ ([])
+    let nextDrivers = /** @type {Array<import('../../domain/driverTypes.js').DriverRecord>} */ ([])
     const restSettings = { ...serverSettings }
     delete restSettings.practiceSnapshot
     const nextSettings = normalizeSettings({

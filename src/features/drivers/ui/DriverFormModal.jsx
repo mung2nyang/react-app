@@ -13,7 +13,7 @@ import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../../../domain/drivers.js').DriverDraft} DriverDraft */
-/** @typedef {import('../../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../../../domain/financeTypes.js').CarLike} CarLike */
 /** @typedef {NonNullable<ReturnType<typeof checkDriverDraft>>} DriverProblem */
 

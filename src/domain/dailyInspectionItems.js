@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('./jsonTypes.js').JsonValue} JsonValue */
 // 운수종사자 일상점검표(화물자동차 운수사업법 시행규칙 별지 제14호의5서식) 점검 항목 — 서식 순서·문구 그대로 3묶음 11항목.
 
 /** @typedef {'good'|'bad'} InspectionResult */

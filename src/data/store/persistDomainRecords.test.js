@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 import { isPersistedCar, isPersistedClient, isPersistedDriver, isPersistedExpense } from './persistDomainRecords.js'
 
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
 /** @typedef {Record<string, JsonValue>} Rec */
 
 const CAR = {

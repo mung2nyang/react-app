@@ -8,7 +8,7 @@ import { isPersistedCar, isPersistedClient, isPersistedDriver, isPersistedExpens
 import { DRIVER_INVOICE_BASES, DRIVER_SETTLEMENT_MODES } from './persistDomainEnums.js'
 
 /** @typedef {import('./persist.js').PersistDomain} PersistDomain */
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
 
 /**
  * @typedef {{

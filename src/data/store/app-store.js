@@ -12,7 +12,7 @@ import { buildBatchWrites } from './batchWrites.js'
 /** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../../domain/expenseTypes.js').DriverExpenseItem} DriverExpenseItem */
 /** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../hydrate/hydrateMergeTypes.js').LocalProfile} ProfileLike */
 
 /**

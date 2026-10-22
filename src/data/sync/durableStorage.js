@@ -4,7 +4,7 @@
 import { isValidCalendarDateKey } from '../../domain/dateKey.js'
 import { isValidPatch } from './durablePatchSchema.js'
 
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').DurableReadResult} DurableReadResult */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').OwnerEnumerationResult} OwnerEnumerationResult */

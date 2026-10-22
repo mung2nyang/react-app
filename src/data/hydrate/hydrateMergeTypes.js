@@ -1,7 +1,7 @@
 // @ts-check
 // hydrateMerge*.js가 실제로 읽고 쓰는 upstream(Supabase 행·로컬 값) 모양(타입 전용 모듈).
 // raw(JSONB) 자리는 모양을 미리 알 수 없어 JsonRecord를 쓴다.
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonRecord} JsonRecord */
+/** @typedef {import('../../domain/jsonTypes.js').JsonRecord} JsonRecord */
 
 /** @typedef {{ message: string, code?: string }|Error|null} SupabaseQueryError */
 /** @typedef {Error & { failedTables?: Array<string>, cause?: Record<string, SupabaseQueryError> }} HydrateError */
@@ -20,7 +20,7 @@
 // 쪼개 프로퍼티 접근마다 타입 에러가 난다). driverName은 레거시 로컬 값 중엔 name
 // 대신 여기 저장된 것도 있어 폴백 읽기용으로만 허용한다(DRIVER_KEYS엔 없다 — 정규화
 // 결과에는 절대 쓰지 않는다).
-/** @typedef {Partial<import('../sync/syncTypes.js').DriverRecord> & { driverName?: string }} LocalDriver */
+/** @typedef {Partial<import('../../domain/driverTypes.js').DriverRecord> & { driverName?: string }} LocalDriver */
 
 /** @typedef {{ id: string|number, raw?: RawCarBackup|null, number?: string, type?: string, tonnage?: string, driver_name?: string, driver_pay_mode?: string|null, driver_salary_amount?: number|string|null, comm_enabled?: boolean, comm_type?: string|null, comm_value?: string|number }} VehicleRow */
 

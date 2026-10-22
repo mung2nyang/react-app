@@ -63,10 +63,10 @@ export { mergeWorkDataFromRows } from './hydrateMergeWork.js'
  * row.id(숫자일 수 있음)는 String으로 바꾼다(isPersistedDriver는 문자열 id 요구).
  * @param {Array<LocalDriver>} localDrivers @param {Array<LocalCar>} mergedCars
  * @param {Array<DriverLinkRow>|null|undefined} linkRows 조회 실패 시 배열이 아닐 수 있다
- * @returns {Array<import('../sync/syncTypes.js').DriverRecord>} 조회 실패 시엔 이미 정규화된 로컬 목록을 그대로 통과시킨다
+ * @returns {Array<import('../../domain/driverTypes.js').DriverRecord>} 조회 실패 시엔 이미 정규화된 로컬 목록을 그대로 통과시킨다
  */
 export function mergeDriversFromRows(localDrivers, mergedCars, linkRows) {
-  if (!Array.isArray(linkRows)) return /** @type {Array<import('../sync/syncTypes.js').DriverRecord>} */ (localDrivers)
+  if (!Array.isArray(linkRows)) return /** @type {Array<import('../../domain/driverTypes.js').DriverRecord>} */ (localDrivers)
   const byCode = new Map((localDrivers || []).map((item) => [item.inviteCode, item]))
   const merged = linkRows.filter((row) => row.status !== 'disconnected').map((row) => {
     const car = (mergedCars || []).find((item) => item.supabaseId === row.vehicle_id)

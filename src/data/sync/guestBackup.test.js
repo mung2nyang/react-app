@@ -182,7 +182,7 @@ describe('guestBackup — 게스트 데이터 내보내기/가져오기', () => 
     return out
   }
 
-  /** @param {import('./pendingWorkDataWritesTypes.js').JsonValue} file */
+  /** @param {import('../../domain/jsonTypes.js').JsonValue} file */
   function assertRejectedUnchanged(file) {
     replaceOwnerState('guest', { cars: [{ id: 'car-1', number: '11가1111', type: 'main' }], workLogs: { main: { '2026-09-01': { count: 1 } } } })
     const before = storageSnapshot()

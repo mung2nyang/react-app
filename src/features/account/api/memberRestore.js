@@ -12,7 +12,7 @@ import { isOwnUnlinkedCar, pickMemberRecords, restoreClients, restoreExpenses, r
 import { pickInspections, restoreInspections } from './memberRestoreInspections.js'
 
 /** @typedef {import('../../../domain/dayRecordTypes.js').DayRecordLike} DayRecordLike */
-/** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
 /** @typedef {{ logId: string, records: Record<string, DayRecordLike> }} RestoreTarget */
 /** @typedef {{ days: number, clients: number, expenses: number, invoices: number, inspections: number }} RestoreCounts */
 /** @typedef {{ ok: true, targets: RestoreTarget[], records: import('./memberRestoreRecords.js').RecordPicks,

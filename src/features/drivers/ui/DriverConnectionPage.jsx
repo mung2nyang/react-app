@@ -1,7 +1,7 @@
 // @ts-check
 // 기사 연동 화면. 저장·상태 변경·삭제는 data/sync/directMutationActions.js, 초대 폼은 DriverFormModal.jsx.
 /** @typedef {import('../../../data/sync/syncTypes.js').AppSession} AppSession */
-/** @typedef {import('../../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
 import { useState } from 'react'
 import { getCloudUserId, isCloudSession } from '../../../data/cloud/cloudSession.js'
 import {

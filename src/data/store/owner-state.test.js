@@ -261,7 +261,7 @@ describe('hydrate 산출물 → persist → fresh initialize 왕복', () => {
     // JsonRecord로 별도 선언한다 — ClientRow.raw의 선언 타입(RawClientBackup =
     // Partial<ClientLike>)에 정본 밖 키를 인라인 리터럴로 바로 넣으면 TS의 신선한
     // 객체 리터럴 초과 프로퍼티 검사에 걸린다(런타임 안전성과는 무관한 검사다).
-    /** @type {import('../sync/pendingWorkDataWritesTypes.js').JsonRecord} */
+    /** @type {import('../../domain/jsonTypes.js').JsonRecord} */
     const rawWithExtraKey = { managerName: '박담당', phone: '010-9999-8888', extraFromVanilla: '레거시전용필드' }
     const merged = mergeClientsFromRows([], [{
       id: 801,

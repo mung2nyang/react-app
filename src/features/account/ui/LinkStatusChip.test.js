@@ -24,7 +24,7 @@ const LINK = { id: 'link-1', name: '홍길동', phone: '010-1111-2222', inviteCo
 /** @param {{ accountType: string, drivers: Array<object> }} setup */
 async function mount({ accountType, drivers }) {
   replaceOwnerState(OWNER, {
-    drivers: /** @type {Array<import('../../../data/sync/syncTypes.js').DriverRecord>} */ (drivers),
+    drivers: /** @type {Array<import('../../../domain/driverTypes.js').DriverRecord>} */ (drivers),
     profile: { name: '홍길동', phone: '', bizName: '차주로지스' },
   }, { persist: false })
   /** @type {Array<string>} */

@@ -4,7 +4,7 @@ import * as v from 'valibot'
 import { parseCurrencyValue } from '../../domain/money.js'
 import { bool, by, isPlainObject, nonEmptyString, opt, plain, str } from '../../domain/schemaParts.js'
 
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
 /** @typedef {import('../sync/pendingWorkDataWritesTypes.js').EffectiveCallDetail} EffectiveCallDetail */
 
 /**

@@ -12,7 +12,7 @@ import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../ui/CarFormModal.jsx').CarFormDraft} CarFormDraft */
 /** @typedef {import('../../../domain/financeTypes.js').CarLike} CarLike */
-/** @typedef {import('../../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
 
 /**
  * @param {{ ownerKey: string, cars: Array<CarLike>, drivers: Array<DriverRecord>, cloud: boolean, draft: CarFormDraft, editingId: string|null, closeModal: () => void }} params

@@ -69,8 +69,8 @@ export async function requestClientDeletion({ ownerKey, userId, clients, clientI
 /**
  * 로그인 사용자의 기사 연동 상태변경. outbox 없이 driver_links.update 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록만 바꾼다.
- * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('./syncTypes.js').DriverRecord>, driverId: string, status: 'pending'|'linked', cloud: boolean }} params
- * @returns {Promise<{ drivers: Array<import('./syncTypes.js').DriverRecord>, blocked: string|null, toast: string }>}
+ * @param {{ ownerKey: string, userId: string|null, drivers: Array<import('../../domain/driverTypes.js').DriverRecord>, driverId: string, status: 'pending'|'linked', cloud: boolean }} params
+ * @returns {Promise<{ drivers: Array<import('../../domain/driverTypes.js').DriverRecord>, blocked: string|null, toast: string }>}
  */
 export async function requestDriverStatusChange({ ownerKey, drivers, driverId, status, cloud }) {
   const driver = drivers.find((item) => item.id === driverId)
@@ -99,8 +99,8 @@ export async function requestDriverStatusChange({ ownerKey, drivers, driverId, s
 /**
  * 로그인 사용자의 기사 초대 삭제. outbox 없이 driver_links.delete 직접 1회.
  * 게스트/로컬 전용(supabaseId 없음)은 로컬 목록에서만 제거한다.
- * @param {{ ownerKey: string, userId?: string|null, drivers: Array<import('./syncTypes.js').DriverRecord>, driverId: string, cloud: boolean }} params
- * @returns {Promise<{ drivers: Array<import('./syncTypes.js').DriverRecord>, blocked: string|null, toast: string|null|undefined }>}
+ * @param {{ ownerKey: string, userId?: string|null, drivers: Array<import('../../domain/driverTypes.js').DriverRecord>, driverId: string, cloud: boolean }} params
+ * @returns {Promise<{ drivers: Array<import('../../domain/driverTypes.js').DriverRecord>, blocked: string|null, toast: string|null|undefined }>}
  */
 export async function requestDriverDeletion({ ownerKey, drivers, driverId, cloud }) {
   const driver = drivers.find((item) => item.id === driverId)

@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('./jsonTypes.js').JsonValue} JsonValue */
 // 콜상세 한 건의 부분입금 원장(payments[])을 다루는 순수 함수.
 import { findCallDetailIndex } from './callDetailIds.js'
 import { getDetailPaymentSummary, syncDetailPaymentStatus } from './finance.js'

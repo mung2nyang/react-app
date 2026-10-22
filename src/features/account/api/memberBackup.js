@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
 // 회원 데이터 다운로드(B-1): 비회원 백업(guestBackup.js)과 같은 파일 모양을 Store(서버에서 불러온 정본)에서 만들고 일상점검표를 더한다.
 // 회원 업무 기록은 기기에 저장하지 않으므로(batchWrites.js CLOUD_MEMORY_ONLY_DOMAINS) localStorage가 아니라 Store에서 읽는다.
 import {

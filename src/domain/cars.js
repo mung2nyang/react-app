@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('./jsonTypes.js').JsonValue} JsonValue */
 // 차량 순수 계산부. 저장은 data/store/commitHelpers.js의 commitCars. 전부 순수 계산 함수(차량 CRUD + 정산/발행 신원 판정).
 import { driverFieldsFromDraft } from './carDriverFields.js'
 

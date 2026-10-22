@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../../domain/jsonTypes.js').JsonValue} JsonValue */
 import { todayKey } from '../../../domain/expenses.js'
 import { todayWorkLogSelection } from '../../../domain/calendar.js'
 import { formatWon } from '../../../domain/money.js'

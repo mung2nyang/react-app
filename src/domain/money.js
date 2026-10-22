@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../data/sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('./jsonTypes.js').JsonValue} JsonValue */
 
 /**
  * @param {JsonValue|undefined} str

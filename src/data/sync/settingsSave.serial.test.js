@@ -13,7 +13,7 @@ const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSessi
 const { setHydration } = await import('../store/app-store.js')
 const { readOwnerSettings } = await import('../store/ownerDataHooks.js')
 
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
 
 /** @param {string} ownerKey */
 function beginReady(ownerKey) {

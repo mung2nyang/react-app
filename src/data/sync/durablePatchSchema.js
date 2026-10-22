@@ -3,7 +3,7 @@
 // JsonValue로 받아 실제로 좁힌 뒤에만 필드를 읽는다. 콜상세 검증은 callDetailSchema.js.
 import { isValidCallDetail } from '../store/callDetailSchema.js'
 
-/** @typedef {import('./pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
 /** @typedef {import('./pendingWorkDataWritesTypes.js').EffectivePatch} EffectivePatch */
 
 /** @param {JsonValue} value @returns {value is Record<string, JsonValue>} */

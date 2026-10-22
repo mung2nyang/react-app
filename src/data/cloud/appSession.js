@@ -1,6 +1,6 @@
 // @ts-check
 // 로그인 세션 만들기 — 프로필·연동 기사 여부로 AppSession과 ownerKey를 정한다(앱 시작·초대 코드 입력·연동 해제가 같이 씀).
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
 import { supabase } from './supabaseClient.js'
 import { checkLinkedDriverLink, fetchLinkedDriverLink } from '../sync/driverLinkRpc.js'
 import { settleExpiredDriverUnlinks } from '../sync/driverUnlink.js'

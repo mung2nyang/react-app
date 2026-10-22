@@ -5,7 +5,7 @@ import { useMemo, useSyncExternalStore } from 'react'
 import { EMPTY_PROFILE } from '../sync/profileSave.js'
 import { getState, subscribe } from './app-store.js'
 
-/** @typedef {import('../sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
 
 const EMPTY_DRIVERS = /** @type {Array<DriverRecord>} */ ([])
 

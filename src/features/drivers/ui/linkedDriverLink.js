@@ -1,5 +1,5 @@
 // @ts-check
-/** @typedef {import('../../../data/sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../../domain/driverTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../../../domain/financeTypes.js').DriverLinkLike} DriverLinkLike */
 
 /**

@@ -3,7 +3,7 @@ import * as v from 'valibot'
 import { bool, finiteNumber, opt, plain, str, stringOrNumber } from '../../domain/schemaParts.js'
 import { INVOICE_FLOWS, INVOICE_STATUSES, PARTY_TYPES } from './persistDomainEnums.js'
 
-/** @typedef {import('../sync/pendingWorkDataWritesTypes.js').JsonValue} JsonValue */
+/** @typedef {import('../../domain/jsonTypes.js').JsonValue} JsonValue */
 /** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
 
 // 세금계산서의 칸 → 모양(Valibot, 공용 조각은 domain/schemaParts.js). 목록 밖 칸·값이 비어 있는 칸은 거부.

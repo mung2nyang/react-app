@@ -5,7 +5,7 @@ import CardActionButtons from '../../../shared/ui/CardActionButtons.jsx'
 /**
  * @param {Object} props
  * @param {import('../../../domain/financeTypes.js').CarLike} props.car
- * @param {Array<import('../../../data/sync/syncTypes.js').DriverRecord>} [props.drivers]
+ * @param {Array<import('../../../domain/driverTypes.js').DriverRecord>} [props.drivers]
  * @param {boolean} [props.assignedView]
  * @param {boolean} [props.readOnly]
  * @param {() => void} [props.onEdit]

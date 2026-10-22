@@ -3,7 +3,7 @@
 
 /** @typedef {import('./financeTypes.js').CarLike} CarLike */
 /** @typedef {import('./expenseTypes.js').ExpenseItem} ExpenseItem */
-/** @typedef {import('../data/sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('./driverTypes.js').DriverRecord} DriverRecord */
 
 /**
  * @typedef {Object} ExpenseVehicleTarget

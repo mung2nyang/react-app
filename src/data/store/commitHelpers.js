@@ -11,7 +11,7 @@ import { getCloudOwnerKey } from '../cloud/cloudSession.js'
 /** @typedef {import('../../domain/financeTypes.js').FinanceSettings} FinanceSettings */
 /** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
 /** @typedef {import('../../domain/financeTaxInvoiceEntries.js').InvoiceLike} InvoiceLike */
-/** @typedef {import('../sync/syncTypes.js').DriverRecord} DriverRecord */
+/** @typedef {import('../../domain/driverTypes.js').DriverRecord} DriverRecord */
 /** @typedef {import('../hydrate/hydrateMergeTypes.js').LocalProfile} ProfileLike */
 
 /**
