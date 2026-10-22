@@ -76,6 +76,14 @@ export function TruckIcon() {
   )
 }
 
+export function AdminIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+    </svg>
+  )
+}
+
 export function SupportIcon() {
   return (
     <svg viewBox="-1.8 -1.8 21.6 21.6" aria-hidden="true">

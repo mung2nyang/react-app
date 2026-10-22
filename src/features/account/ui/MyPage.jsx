@@ -6,6 +6,7 @@ import InviteRedeemModal from './InviteRedeemModal.jsx'
 import DataDownloadModal from './DataDownloadModal.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import LinkStatusChip from './LinkStatusChip.jsx'
+import AdminEntryLink from './AdminEntryLink.tsx'
 import './mypage.css'
 import './mypage-shortcuts.css'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
@@ -184,6 +185,7 @@ export default function MyPage({ onOpen, onOpenMenu, onLinked }) {
           </svg>
           <span>고객센터</span>
         </button>
+        <AdminEntryLink onOpen={onOpen} />
       </div>
       {inviteOpen && (
         <InviteRedeemModal

@@ -1,7 +1,7 @@
 // @ts-check
 // 사이드메뉴 구성·동작. 아이콘 그림은 side-menu/SideMenuIcons.jsx.
 import { assetPath } from '../../shared/utils/assetPath.js'
-import { CarIcon, PeopleIcon, PersonIcon, GearIcon, FuelIcon, ChartIcon, DocIcon, TruckIcon, SupportIcon } from './side-menu/SideMenuIcons.jsx'
+import { CarIcon, PeopleIcon, PersonIcon, GearIcon, FuelIcon, ChartIcon, DocIcon, TruckIcon, SupportIcon, AdminIcon } from './side-menu/SideMenuIcons.jsx'
 
 const BANNER_LIGHT = assetPath('/images/banner_image_Light.png')
 const BANNER_DARK = assetPath('/images/banner_image_dark.png')
@@ -29,11 +29,13 @@ export function preloadSideMenuBanner() {
  * @param {(linkId: string) => void} [props.onOpenLinkedDriver]
  * @param {Array<SubLogMenuItem>} [props.subLogItems]
  * @param {(vehicleNumber: string) => void} [props.onOpenSubLog]
+ * @param {boolean} [props.isAdmin] 관리자 계정이면 "설정" 칸에 "관리자"(로드맵 23-B)
  */
 export default function SideMenu({
   open, onClose, onSelect,
   linkedDriverItems = [], onOpenLinkedDriver,
   subLogItems = [], onOpenSubLog,
+  isAdmin = false,
 }) {
   if (!open) return null
   const banner = sideMenuBannerSrc()
@@ -130,6 +132,12 @@ export default function SideMenu({
               <SupportIcon />
               고객센터
             </button>
+            {isAdmin && (
+              <button type="button" className="dropdown-item" onClick={() => pick('admin')}>
+                <AdminIcon />
+                관리자
+              </button>
+            )}
           </section>
         </div>
       </aside>

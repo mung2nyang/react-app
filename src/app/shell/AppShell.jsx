@@ -20,6 +20,7 @@ import { withFromLogState } from './fromLogNavigation.js'
 import { chooseMove, historyIdx, markRewind, popPanelGuardThen } from '../../shared/utils/historyMoves.js'
 import { buildSubLogMenuItems } from './subLogMenuItems.js'
 import { useSession } from '../../data/cloud/sessionContext.ts'
+import { useIsAdmin } from '../../data/cloud/adminRole.ts'
 
 /** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
 
@@ -38,6 +39,7 @@ const PAGE_PATH = {
   profile: 'me/profile',
   settings: 'me/settings',
   mypage: 'me',
+  admin: 'admin/inquiries',
 }
 
 /** @param {string} page */
@@ -94,6 +96,7 @@ export default function AppShell({ onBackToAuth, onGoAuth, onSessionUpdate }) {
   const drivers = useOwnerDrivers(ownerKey)
   const cars = useOwnerCars(ownerKey)
   const isOwnerSession = !session?.linkedOwnerId
+  const isAdmin = useIsAdmin() === 'admin'
   const subLogItems = useMemo(
     () => buildSubLogMenuItems(cars, drivers, isOwnerSession),
     [cars, drivers, isOwnerSession],
@@ -178,6 +181,7 @@ export default function AppShell({ onBackToAuth, onGoAuth, onSessionUpdate }) {
           navigate(`/app/drivers/${encodeURIComponent(linkId)}`)
         }}
         subLogItems={subLogItems}
+        isAdmin={isAdmin}
         onOpenSubLog={(/** @type {string} */ vehicleNumber) => {
           navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}/manage`)
         }}

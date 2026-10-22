@@ -32,3 +32,14 @@
 .my-inquiry-answer { margin-top: 12px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent); }
 .my-inquiry-answer-label { display: block; margin-bottom: 4px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: 800; }
 .my-inquiry-answer p { margin: 0; font-size: var(--fs-3); line-height: 1.55; white-space: pre-wrap; }
+/* 관리자 문의 화면(AdminInquiriesPage.tsx) 전용 — 카드 모양은 위 my-inquiry-*를 그대로 쓴다. */
+.admin-inquiry-count { padding: 2px 4px; color: var(--sub-text-color); font-size: var(--fs-3); font-weight: 750; text-align: left; }
+.admin-inquiry-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; color: var(--sub-text-color); font-size: var(--fs-floor); }
+.admin-inquiry-name { font-weight: 750; color: var(--text-color); }
+.admin-inquiry-editor { display: grid; gap: 10px; margin-top: 12px; }
+.admin-inquiry-textarea { width: 100%; margin: 0; box-sizing: border-box; resize: vertical; line-height: 1.5; text-align: left; }
+.admin-inquiry-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+.admin-inquiry-editor .admin-inquiry-actions { margin-top: 0; }
+.admin-inquiry-btn { min-height: 44px; padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-bg); color: var(--text-color); font: inherit; font-size: var(--fs-3); font-weight: 750; cursor: pointer; }
+.admin-inquiry-btn.primary { border-color: transparent; color: #fff; background: var(--primary-fill); }
+.admin-inquiry-btn:disabled { opacity: 0.5; cursor: default; }
