@@ -1,9 +1,11 @@
 // AI 회사(Google Gemini) 부르기만 — 회사를 바꿀 땐 이 파일과 비밀값만 바꾼다(로드맵 24-A).
 import { ApiError, GoogleGenAI, ThinkingLevel } from 'npm:@google/genai@2.27.0'
 
-// 2026-10-22 무료 구간이 있는 Flash-Lite 최신 정식판.
-const MODEL = 'gemini-3.5-flash-lite'
+// 2026-10-22 3.5 Flash-Lite 무료 구간이 계속 시간 넘김이라 3.1 Flash-Lite로(보리 결정, 2.5는 API에 없음).
+const MODEL = 'gemini-3.1-flash-lite'
 const TIMEOUT_MS = 15000
+// 답이 끝없이 길어지는 걸 막는 상한 — 칸 다섯 개면 충분하다.
+const MAX_OUTPUT_TOKENS = 300
 
 /** 키 없음·AI 회사 장애 — 잠시 뒤 다시. */
 export class AiUnavailableError extends Error {}
@@ -64,6 +66,7 @@ export async function askAi(input: ParseInput): Promise<string | null> {
   if (!apiKey) throw new AiUnavailableError('no key')
   const ai = new GoogleGenAI({ apiKey })
   const prompt = `날짜 표:\n${dateTable(input.today)}\n거래처 목록: ${input.clientNames.join(', ') || '(없음)'}\n기사가 한 말: ${input.text}`
+  const startedAt = Date.now()
   try {
     const response = await ai.models.generateContent({
       model: MODEL,
@@ -74,13 +77,26 @@ export async function askAi(input: ParseInput): Promise<string | null> {
         responseJsonSchema: RESPONSE_SCHEMA,
         thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
         temperature: 0,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
         abortSignal: AbortSignal.timeout(TIMEOUT_MS),
       },
     })
+    const finish = String(response.candidates?.[0]?.finishReason ?? '')
+    // 원인 확인용 — 끝난 이유·쓴 양·걸린 시간만, 말한 문장과 답 내용은 남기지 않는다.
+    console.log('[unbiseo-parse] ai', JSON.stringify({
+      finish,
+      out: response.usageMetadata?.candidatesTokenCount ?? null,
+      think: response.usageMetadata?.thoughtsTokenCount ?? null,
+      ms: Date.now() - startedAt,
+    }))
+    if (finish === 'MAX_TOKENS') return null
     return response.text || null
   } catch (error) {
     if (error instanceof ApiError) throw new AiUnavailableError(`status ${error.status}`)
-    if (error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError')) return null
+    if (error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError')) {
+      console.log('[unbiseo-parse] ai', JSON.stringify({ finish: 'TIMEOUT', ms: Date.now() - startedAt }))
+      return null
+    }
     throw new AiUnavailableError('request failed')
   }
 }
