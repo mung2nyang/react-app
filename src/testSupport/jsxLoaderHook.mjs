@@ -12,11 +12,13 @@ export async function load(url, context, nextLoad) {
   // .css는 Vite가 번들 시에만 처리하는 스타일 부작용 import다 — 이 테스트는 렌더
   // 로직/라우팅만 검증하므로 빈 모듈로 대체한다(실제 스타일은 무관).
   if (url.endsWith('.css')) return { format: 'module', source: 'export default {}', shortCircuit: true }
-  if (!url.endsWith('.jsx')) return nextLoad(url, context)
+  // .jsx·.ts·.tsx를 esbuild로 바꿔 읽는다(.jsx·.tsx는 Node가 못 읽음).
+  const loader = url.endsWith('.jsx') ? 'jsx' : url.endsWith('.tsx') ? 'tsx' : url.endsWith('.ts') ? 'ts' : null
+  if (!loader) return nextLoad(url, context)
   const filePath = fileURLToPath(url)
   const source = await readFile(filePath, 'utf8')
   const { code } = esbuild.transformSync(source, {
-    loader: 'jsx',
+    loader,
     format: 'esm',
     jsx: 'automatic',
     sourcefile: filePath,

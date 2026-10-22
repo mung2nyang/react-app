@@ -1,7 +1,7 @@
 // 로드맵 95 — 문자 앱 주소: 기본 ?, 아이폰 계열 &(공유 창·문자 문구 시트에서 옮긴 같은 단언).
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { buildSmsHref } from './smsHref.js'
+import { buildSmsHref } from './smsHref.ts'
 
 const BODY = '안녕 테스트'
 

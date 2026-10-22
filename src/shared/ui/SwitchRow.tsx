@@ -1,14 +1,13 @@
-// @ts-check
 // 앱 설정의 켜기/끄기 줄 한 개.
-/**
- * @param {Object} props
- * @param {string} props.id
- * @param {string} props.label
- * @param {boolean} props.checked
- * @param {boolean} [props.disabled]
- * @param {(checked: boolean) => void} props.onChange
- */
-export default function SwitchRow({ id, label, checked, disabled, onChange }) {
+type SwitchRowProps = {
+  id: string
+  label: string
+  checked: boolean
+  disabled?: boolean
+  onChange: (checked: boolean) => void
+}
+
+export default function SwitchRow({ id, label, checked, disabled, onChange }: SwitchRowProps) {
   return (
     <div className="setting-item">
       <label htmlFor={id}>{label}</label>

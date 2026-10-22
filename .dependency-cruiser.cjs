@@ -69,5 +69,7 @@ module.exports = {
   options: {
     exclude: { path: ['\\.test\\.js$', '^src/testSupport/'] },
     doNotFollow: { path: 'node_modules' },
+    // .ts·.tsx를 읽으려면 swc가 필요하다(typescript 7은 이 도구가 못 씀).
+    parser: 'swc',
   },
 }

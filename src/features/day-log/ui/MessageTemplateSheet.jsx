@@ -3,7 +3,7 @@ import { parseCurrencyValue } from '../../../domain/money.js'
 import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../../data/sync/messageTemplates.js'
 import './message-template.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
-import { buildSmsHref } from '../../../domain/smsHref.js'
+import { buildSmsHref } from '../../../domain/smsHref.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */

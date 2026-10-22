@@ -1,6 +1,6 @@
 // @ts-check
 // 앱 설정의 고정노선 묶음.
-import SwitchRow from '../../../shared/ui/SwitchRow.jsx'
+import SwitchRow from '../../../shared/ui/SwitchRow.tsx'
 import RoutePresetEditor from './RoutePresetEditor.jsx'
 import RunCountChips from './RunCountChips.jsx'
 import FixedRouteClientLink from './FixedRouteClientLink.jsx'

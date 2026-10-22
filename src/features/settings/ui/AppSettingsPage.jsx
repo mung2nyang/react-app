@@ -5,7 +5,7 @@ import { applyTheme, savePracticeSettings } from '../../../data/sync/settingsSav
 import { defaultCarSettings } from '../../../domain/practiceSettings.js'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
 import { useHydrationLock } from '../../../data/store/useHydrationLock.js'
-import SwitchRow from '../../../shared/ui/SwitchRow.jsx'
+import SwitchRow from '../../../shared/ui/SwitchRow.tsx'
 import FixedRouteBlock from './FixedRouteBlock.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import AppSettingsBackupSection from './AppSettingsBackupSection.jsx'
