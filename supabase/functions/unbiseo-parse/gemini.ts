@@ -12,12 +12,38 @@ export type ParseInput = { text: string, today: string, clientNames: Array<strin
 
 const INSTRUCTION = [
   '너는 화물차 기사의 운행일지 앱 비서다. 기사가 말한 한국어 문장 하나를 받아 종류와 칸을 JSON으로만 돌려준다.',
-  'kind: 운행(상차지·하차지·운송료·거래처를 말함)은 call, 기름값·수리비 같은 돈 쓴 일은 expense, 매출·기록을 묻는 말은 question, 그 밖은 unknown.',
-  'call일 때만 나머지 칸을 채운다. date는 YYYY-MM-DD — "어제", "그제", "지난 금요일" 같은 말이 있으면 오늘 날짜로 계산하고, 없으면 오늘.',
-  'loadLoc은 상차지(출발), unloadLoc은 하차지(도착) — 들은 지명 그대로. "A에서 B"면 A가 상차지, B가 하차지.',
+  'kind: 운행은 call, 기름값·수리비·타이어 같은 돈 쓴 일은 expense, 매출·기록·일지를 묻는 말은 question, 그 밖(날씨·인사·잡담)은 unknown.',
+  '지명 두 개가 나오면 "에서"가 없어도 운행이다. 예: "어제 수원 화성 15만" → call, 수원→화성, 150000.',
+  '날씨·뉴스·잡담은 물음표가 있어도 question이 아니라 unknown이다. 예: "오늘 날씨 어때" → unknown.',
+  'call일 때만 나머지 칸을 채운다. date는 아래 "날짜 표"에서 그대로 골라 YYYY-MM-DD로 — 직접 계산하지 마라. 날짜 말이 없거나 내일·모레 같은 앞날이면 오늘.',
+  '"10월 15일"처럼 월·일만 말하면 올해 그 날짜. "지난주 금요일"은 지난주 줄, "지난 월요일"은 오늘 전에 가장 가까운 그 요일 줄, "이번 주 화요일"은 이번 주 줄.',
+  'loadLoc은 상차지(출발), unloadLoc은 하차지(도착) — 들은 지명 그대로. 먼저 말한 지명이 상차지, 다음이 하차지.',
   'fare는 원 단위 정수("30만원"은 300000, "15만"은 150000, "8만 5천"은 85000). 말하지 않았으면 빼라.',
-  'client는 거래처 목록에 같은 이름이 있으면 그 이름 그대로, 없으면 들은 그대로, 말하지 않았으면 빼라. 지어내지 마라.',
+  'client는 거래처 목록에서 가장 맞는 이름 그대로 — 줄임말·발음도 목록 이름으로(예: "씨제이"·"CJ" → 목록의 "CJ대한통운"). 목록에 없으면 들은 그대로, 말하지 않았으면 빼라. 지어내지 마라.',
 ].join('\n')
+
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
+const DAY_MS = 86400000
+
+function dateKeyOf(time: number): string {
+  return new Date(time).toISOString().slice(0, 10)
+}
+
+// 날짜 계산은 AI가 못 해서 여기서 미리 계산한 표를 같이 준다.
+export function dateTable(today: string): string {
+  const base = Date.parse(`${today}T00:00:00Z`)
+  const weekday = new Date(base).getUTCDay()
+  const label = (time: number) => `${dateKeyOf(time)}(${WEEKDAYS[new Date(time).getUTCDay()]})`
+  const lines = [`오늘: ${label(base)}`, `어제: ${label(base - DAY_MS)}`, `그제(그저께): ${label(base - 2 * DAY_MS)}`]
+  for (let n = 3; n <= 6; n += 1) lines.push(`${n}일 전: ${label(base - n * DAY_MS)}`)
+  // 한 주는 월요일부터 일요일까지.
+  const monday = base - ((weekday + 6) % 7) * DAY_MS
+  const week = (start: number) => WEEKDAYS.slice(1).concat(WEEKDAYS[0]).map((name, i) => `${name} ${dateKeyOf(start + i * DAY_MS)}`).join(', ')
+  lines.push(`이번 주: ${week(monday)}`, `지난주: ${week(monday - 7 * DAY_MS)}`)
+  const recent = WEEKDAYS.map((name, day) => `${name} ${dateKeyOf(base - (((weekday - day + 6) % 7) + 1) * DAY_MS)}`)
+  lines.push(`지난 ○요일(오늘 전에 가장 가까운): ${recent.join(', ')}`)
+  return lines.join('\n')
+}
 
 const RESPONSE_SCHEMA = {
   type: 'object',
@@ -37,7 +63,7 @@ export async function askAi(input: ParseInput): Promise<string | null> {
   const apiKey = Deno.env.get('GEMINI_API_KEY')
   if (!apiKey) throw new AiUnavailableError('no key')
   const ai = new GoogleGenAI({ apiKey })
-  const prompt = `오늘: ${input.today}\n거래처 목록: ${input.clientNames.join(', ') || '(없음)'}\n기사가 한 말: ${input.text}`
+  const prompt = `날짜 표:\n${dateTable(input.today)}\n거래처 목록: ${input.clientNames.join(', ') || '(없음)'}\n기사가 한 말: ${input.text}`
   try {
     const response = await ai.models.generateContent({
       model: MODEL,
