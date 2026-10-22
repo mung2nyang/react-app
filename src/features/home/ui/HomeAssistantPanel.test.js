@@ -1,4 +1,4 @@
-// 로드맵 24-B-1 — 운비서 카드: 누르면 늘어남, 글로 보내기 → 내가 한 말·결과 글, 비회원은 안 부름.
+// 로드맵 24-B-1 — 운비서 카드: 누르면 늘어남, 줄 마이크 한 번에 듣기, 글로 보내기 → 내가 한 말·결과 글, 비회원은 안 부름.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -27,13 +27,15 @@ beforeEach(() => { calls.length = 0; reply = async () => ({ data: null, error: n
 
 const CLOUD = { userId: 'u-assistant', name: '보리', accountType: 'owner' }
 
-async function mount(ownerKey, session) {
+async function mount(ownerKey, session, { open = true } = {}) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => { root.render(withSession(React.createElement(HomeAssistantBar), { ownerKey, session })) })
-  const toggle = container.querySelector('.home-assistant-toggle')
-  await act(async () => { toggle.click() })
+  if (open) {
+    const toggle = container.querySelector('.home-assistant-toggle')
+    await act(async () => { toggle.click() })
+  }
   return {
     container,
     async type(text) {
@@ -108,7 +110,7 @@ test('줄을 다시 누르면 접힌다', async () => {
   } finally { await view.cleanup() }
 })
 
-test('받아쓰기 되는 브라우저: 마이크 → 듣는 중 → 말이 끝나면 글 칸에 넣고 바로 보냄, 권한 거절 문구', async () => {
+test('받아쓰기 되는 브라우저: 줄의 마이크 하나 — 접힌 채 한 번 누르면 늘어나며 바로 듣기, 말이 끝나면 글 칸에 넣고 바로 보냄, 권한 거절 문구', async () => {
   let last = null
   class FakeRecognizer {
     constructor() { last = this; this.started = false }
@@ -118,11 +120,16 @@ test('받아쓰기 되는 브라우저: 마이크 → 듣는 중 → 말이 끝�
   }
   window.webkitSpeechRecognition = FakeRecognizer
   reply = async () => ({ data: { kind: 'expense' }, error: null })
-  const view = await mount('u-assistant', CLOUD)
+  const view = await mount('u-assistant', CLOUD, { open: false })
   try {
-    const mic = view.container.querySelector('.home-assistant-mic-btn')
-    assert.ok(mic, '마이크 버튼')
+    assert.equal(view.container.querySelectorAll('.home-assistant-mic-btn').length, 1, '마이크 버튼은 하나')
+    const mic = view.container.querySelector('.home-assistant-head .home-assistant-mic-btn')
+    assert.ok(mic, '마이크는 줄 오른쪽')
+    assert.equal(view.container.querySelector('.home-assistant-panel'), null, '처음엔 접힘')
     await act(async () => { mic.click() })
+    assert.equal(view.container.querySelector('.home-assistant-toggle').getAttribute('aria-expanded'), 'true', '한 번에 늘어남')
+    assert.ok(mic.classList.contains('listening'))
+    assert.equal(view.container.querySelectorAll('.home-assistant-mic-btn').length, 1, '늘어나도 마이크는 하나')
     assert.equal(last.lang, 'ko-KR')
     assert.ok(last.started)
     assert.equal(view.container.querySelector('.home-assistant-note')?.textContent, '듣는 중…')
@@ -139,6 +146,20 @@ test('받아쓰기 되는 브라우저: 마이크 → 듣는 중 → 말이 끝�
     await act(async () => { last.onerror({ error: 'not-allowed' }); last.onend() })
     assert.equal(view.container.querySelector('.home-assistant-note')?.textContent, '마이크 권한을 켜 주세요. 글로 써도 됩니다.')
     assert.equal(calls.length, 1, '받아쓴 말이 없으면 안 보냄')
+  } finally {
+    await view.cleanup()
+    delete window.webkitSpeechRecognition
+  }
+})
+
+test('비회원이 줄 마이크를 누르면 카드만 열려 로그인 안내, 듣지 않음', async () => {
+  let started = 0
+  window.webkitSpeechRecognition = class { start() { started += 1 } stop() {} abort() {} }
+  const view = await mount('guest', null, { open: false })
+  try {
+    await act(async () => { view.container.querySelector('.home-assistant-mic-btn').click() })
+    assert.equal(view.container.querySelector('.home-assistant-note')?.textContent, '로그인하면 쓸 수 있습니다.')
+    assert.equal(started, 0)
   } finally {
     await view.cleanup()
     delete window.webkitSpeechRecognition

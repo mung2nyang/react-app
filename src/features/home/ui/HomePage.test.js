@@ -291,7 +291,7 @@ test('바로 수정 — 이번 달 지출이 있으면 정산 합계 아래 "이
   }
 })
 
-test('AI 비서 — 오늘 카드와 할 일 사이에 운비서 줄(그림·이름·안내·마이크), 줄 전체가 버튼이고 누르면 카드가 늘어남(로드맵 24-B)', async () => {
+test('AI 비서 — 오늘 카드와 할 일 사이에 운비서 줄(그림·이름·안내), 누르면 카드가 늘어남, 받아쓰기 없는 브라우저면 마이크 없음(로드맵 24-B)', async () => {
   const view = await renderHome('test-home-assistant', () => {})
   try {
     const cards = Array.from(view.container.querySelectorAll('.home-card'))
@@ -304,17 +304,16 @@ test('AI 비서 — 오늘 카드와 할 일 사이에 운비서 줄(그림·이
     assert.deepEqual(order, ['today', 'assistant', 'todo', 'month'])
     const bar = view.container.querySelector('.home-assistant')
     assert.ok(bar?.querySelector('img[src$="assistant_unbiseo.png"]'), '비서 얼굴 그림')
-    assert.equal(bar?.querySelector('.home-assistant-name')?.textContent, '운비서')
-    assert.equal(bar?.querySelector('.home-assistant-hint')?.textContent, '말로 운행 기록하기')
-    assert.ok(bar?.querySelector('svg.home-assistant-mic'), '마이크는 선 그림 SVG')
+    assert.equal(bar?.querySelector('.home-assistant-name')?.textContent, 'AI 운비서')
+    assert.equal(bar?.querySelector('.home-assistant-hint')?.textContent, '운비서에게 무엇이든 물어보세요')
+    assert.equal(bar?.querySelector('.home-assistant-mic-btn'), null, '테스트 화면은 받아쓰기가 없어 마이크 버튼 없음(마이크는 HomeAssistantPanel.test.js)')
     assert.equal(bar?.tagName, 'SECTION')
     const toggle = bar?.querySelector('button.home-assistant-toggle')
-    assert.ok(toggle?.querySelector('.home-assistant-name') && toggle.querySelector('svg.home-assistant-mic'), '그림·이름·마이크가 한 버튼 안')
+    assert.ok(toggle?.querySelector('.home-assistant-name') && toggle.querySelector('.home-assistant-avatar img'), '그림·이름이 한 버튼 안')
     assert.equal(toggle?.getAttribute('aria-expanded'), 'false')
     assert.equal(bar?.querySelector('.home-assistant-panel, .home-assistant-note'), null, '처음엔 접혀 있음')
     await act(async () => { toggle?.click() })
     assert.equal(toggle?.getAttribute('aria-expanded'), 'true')
-    assert.equal(toggle?.querySelector('svg.home-assistant-mic'), null, '늘어나면 그림 마이크는 숨김(누르는 마이크는 아래 하나)')
     assert.equal(bar?.querySelector('.home-assistant-note')?.textContent, '로그인하면 쓸 수 있습니다.', '테스트 계정은 비회원')
   } finally {
     await view.cleanup()

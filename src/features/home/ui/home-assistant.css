@@ -4,11 +4,18 @@
   padding: 6px 16px;
 }
 
-.home-assistant-toggle {
+.home-assistant-head {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.home-assistant-toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
   gap: 12px;
-  width: 100%;
+  min-width: 0;
   min-height: 56px;
   padding: 0;
   border: 0;
@@ -54,17 +61,6 @@
   font-weight: 650;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.home-assistant-mic {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: var(--sub-text-color);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
 }
 
 .home-assistant-panel {
