@@ -43,3 +43,6 @@
 .admin-inquiry-btn { min-height: 44px; padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-bg); color: var(--text-color); font: inherit; font-size: var(--fs-3); font-weight: 750; cursor: pointer; }
 .admin-inquiry-btn.primary { border-color: transparent; color: #fff; background: var(--primary-fill); }
 .admin-inquiry-btn:disabled { opacity: 0.5; cursor: default; }
+.admin-answer-templates { display: flex; flex-wrap: wrap; gap: 6px; }
+.admin-answer-template { min-height: 36px; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 999px; background: var(--input-bg); color: var(--text-color); font: inherit; font-size: var(--fs-floor); font-weight: 750; cursor: pointer; }
+.admin-answer-template:disabled { opacity: 0.5; cursor: default; }

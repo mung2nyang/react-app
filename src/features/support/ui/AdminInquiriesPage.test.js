@@ -173,3 +173,64 @@ test('한 번에 한 카드만 열린다, 고치기는 지금 답변이 채워�
     assert.equal(container.querySelectorAll('textarea').length, 0)
   } finally { await cleanup() }
 })
+
+/** @param {Element} card */
+async function openEditor(card) {
+  await act(async () => { button(card, '답변하기').click() })
+  const area = card.querySelector('textarea')
+  assert.ok(area instanceof window.HTMLTextAreaElement)
+  return area
+}
+
+test('로드맵 23-D — 문구 버튼 4개, 빈 칸엔 문장만·이어서 누르면 줄바꿈 뒤, 커서는 글 칸 맨 끝', async () => {
+  serverSays(true)
+  const { container, cleanup } = await mount()
+  try {
+    const first = container.querySelectorAll('.admin-inquiry-card')[0]
+    const area = await openEditor(first)
+    assert.deepEqual([...first.querySelectorAll('.admin-answer-template')].map((el) => el.textContent), ['인사', '맺음', '건의 감사', '오류 사과'])
+    await act(async () => { button(first, '인사').click() })
+    assert.equal(area.value, '안녕하세요, 운행일지입니다.')
+    assert.equal(document.activeElement, area)
+    assert.equal(area.selectionStart, area.value.length)
+    assert.equal(button(first, '저장').disabled, false, '문구가 들어가면 저장할 수 있다')
+    await act(async () => { button(first, '맺음').click() })
+    assert.equal(area.value, '안녕하세요, 운행일지입니다.\n이용해 주셔서 감사합니다.')
+  } finally { await cleanup() }
+})
+
+test('로드맵 23-D — 넣으면 2000자를 넘을 때는 안 넣고 알림', async () => {
+  serverSays(true)
+  const { container, cleanup } = await mount()
+  try {
+    const first = container.querySelectorAll('.admin-inquiry-card')[0]
+    const area = await openEditor(first)
+    await type(area, 'a'.repeat(1990))
+    await act(async () => { button(first, '인사').click() })
+    assert.equal(area.value, 'a'.repeat(1990))
+    assert.deepEqual(toasts, ['답변은 2000자까지 쓸 수 있습니다.'])
+  } finally { await cleanup() }
+})
+
+test('로드맵 23-D — 문구만 넣고 저장하면 그 글로 서버 1번, 저장 중엔 문구 버튼 잠김', async () => {
+  serverSays(true)
+  /** @type {Array<import('../../../data/store/atomicPersist.ts').JsonValue|undefined>} */
+  const saved = []
+  /** @type {(value: { data: null, error: null }) => void} */
+  let finish = () => {}
+  handlers.rpc.admin_answer_support_inquiry = (args) => {
+    saved.push(args)
+    return new Promise((resolve) => { finish = resolve })
+  }
+  const { container, cleanup } = await mount()
+  try {
+    const first = container.querySelectorAll('.admin-inquiry-card')[0]
+    await openEditor(first)
+    await act(async () => { button(first, '건의 감사').click() })
+    await act(async () => { button(first, '저장').click() })
+    assert.equal(button(first, '인사').disabled, true, '저장 중엔 잠김')
+    await act(async () => { finish({ data: null, error: null }) })
+    await flush()
+    assert.deepEqual(saved, [{ inquiry_id: 'q-1', answer_text: '소중한 의견 감사합니다. 검토 후 반영하겠습니다.' }])
+  } finally { await cleanup() }
+})

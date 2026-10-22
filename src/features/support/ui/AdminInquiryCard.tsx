@@ -1,10 +1,18 @@
 // 문의 카드 한 장 + 답변 쓰기·고치기 칸.
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { requestAdminAnswerSave } from '../api/adminInquiries.ts'
 import type { AdminInquiry } from '../api/adminInquiries.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import AnswerTemplateButtons from './AnswerTemplateButtons.tsx'
 
 const ANSWER_MAX = 2000
+const TOO_LONG_TOAST = '답변은 2000자까지 쓸 수 있습니다.'
+
+// 문구는 글 끝에 붙인다(글이 있으면 줄바꿈). 2000자를 넘으면 넣지 않는다.
+function appendTemplate(draft: string, text: string): string | null {
+  const next = !draft ? text : draft.endsWith('\n') ? `${draft}${text}` : `${draft}\n${text}`
+  return next.length > ANSWER_MAX ? null : next
+}
 
 function dateTimeText(iso: string): string {
   if (!iso) return ''
@@ -26,6 +34,24 @@ function AnswerEditor({ inquiry, onClose, onSaved, onReload }: EditorProps) {
   const [draft, setDraft] = useState(inquiry.answer)
   const [busy, setBusy] = useState(false)
   const blank = !draft.trim()
+  const areaRef = useRef<HTMLTextAreaElement>(null)
+  const moveCursorRef = useRef(false)
+
+  // 문구를 넣은 뒤 글 칸에 커서를 맨 끝으로 둔다.
+  useLayoutEffect(() => {
+    const area = areaRef.current
+    if (!moveCursorRef.current || !area) return
+    moveCursorRef.current = false
+    area.focus()
+    area.setSelectionRange(area.value.length, area.value.length)
+  }, [draft])
+
+  function pickTemplate(text: string) {
+    const next = appendTemplate(draft, text)
+    if (next === null) { showToast(TOO_LONG_TOAST); return }
+    moveCursorRef.current = true
+    setDraft(next)
+  }
 
   async function save() {
     if (busy || blank) return
@@ -39,7 +65,9 @@ function AnswerEditor({ inquiry, onClose, onSaved, onReload }: EditorProps) {
 
   return (
     <div className="admin-inquiry-editor">
+      <AnswerTemplateButtons disabled={busy} onPick={pickTemplate} />
       <textarea
+        ref={areaRef}
         className="input-box admin-inquiry-textarea"
         rows={5}
         maxLength={ANSWER_MAX}
