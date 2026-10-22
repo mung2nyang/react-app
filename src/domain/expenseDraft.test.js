@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, mock, test } from 'node:test'
-import { checkExpenseDraft, emptyExpenseDraft, upsertExpense } from './expenseDraft.js'
+import { checkExpenseDraft, emptyExpenseDraft, expenseToDraft, upsertExpense } from './expenseDraft.js'
 import { dedupeExpensesById } from './expenses.js'
 
 describe('정비/기타 저장 조건', () => {
@@ -72,5 +72,26 @@ describe('checkExpenseDraft — 로드맵 82-B 어느 칸이 문제인지', () =
     assert.deepEqual(checkExpenseDraft({ kind: 'maint', date: '2026-10-17', name: '', cost: 0 }), { field: 'name', message: '항목명 또는 비용을 입력해 주세요.' })
     assert.equal(checkExpenseDraft({ kind: 'misc', date: '2026-10-17', name: '', cost: 3000 }), null)
     assert.equal(checkExpenseDraft({ kind: 'fuel', date: '', cost: 5000 })?.field, 'date')
+  })
+})
+
+describe('expenseToDraft — 로드맵 101-B 내역을 고치기 창 입력값으로', () => {
+  test('날짜를 안 주면 내역 날짜(차량 유지비), 주면 그 날짜(일지)', () => {
+    const item = { id: 'e1', kind: /** @type {'fuel'} */ ('fuel'), date: '2026-08-01', fuelType: '요소수', payment: '현금', cost: 50000, subsidy: 3000, mileage: 1200, liters: 40.5, vehicleNumber: '12가3456' }
+    assert.deepEqual(expenseToDraft(item), {
+      kind: 'fuel', date: '2026-08-01', name: '', category: '엔진/미션',
+      fuelType: '요소수', payment: '현금', cost: 50000, subsidy: 3000, mileage: 1200,
+      liters: '40.5', vehicleNumber: '12가3456',
+    })
+    assert.equal(expenseToDraft(item, '2026-08-05').date, '2026-08-05')
+  })
+
+  test('빈 칸은 기본값, 기타는 분류 기본이 통행료', () => {
+    const draft = expenseToDraft({ id: 'e2', kind: 'misc', date: '2026-08-01' })
+    assert.equal(draft.category, '통행료')
+    assert.equal(draft.fuelType, '주유')
+    assert.equal(draft.payment, '카드')
+    assert.equal(draft.cost, 0)
+    assert.equal(draft.liters, '')
   })
 })

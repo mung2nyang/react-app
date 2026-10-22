@@ -1,7 +1,8 @@
 // @ts-check
-// 지출 저장(saveExpenses). 화면 읽기는 useOwnerExpenses, 계산 규칙은 domain/expenses.js.
+// 지출 저장(saveExpenses)과 두 화면이 같이 쓰는 입력값 저장·삭제. 화면 읽기는 useOwnerExpenses, 계산 규칙은 domain/expenses.js.
 import { commitExpenses } from '../store/commitHelpers.js'
 import { dedupeExpensesById } from '../../domain/expenses.js'
+import { removeExpense, upsertExpense } from '../../domain/expenseDraft.js'
 import { planExpenseVehicleTargets } from '../../domain/expenseVehicleRouting.js'
 import { getState } from '../store/app-store.js'
 import {
@@ -12,8 +13,10 @@ import {
   getCloudUserId,
 } from '../cloud/cloudSession.js'
 import { syncExpenseItemsForVehicle } from './syncExpenseItems.js'
+import { saveFailMessage } from '../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../domain/expenseTypes.js').ExpenseItem} ExpenseItem */
+/** @typedef {import('../../domain/expenseTypes.js').ExpenseDraft} ExpenseDraft */
 
 /** @param {string} ownerKey @param {Array<ExpenseItem>} items */
 export async function saveExpenses(ownerKey, items) {
@@ -55,4 +58,44 @@ export async function saveExpenses(ownerKey, items) {
   }
   assertSessionStillCurrent(captured)
   commitExpenses(ownerKey, next)
+}
+
+/** @param {string} ownerKey @returns {Array<ExpenseItem>} */
+function latestExpenses(ownerKey) {
+  return /** @type {Array<ExpenseItem>} */ (getState().expenses[ownerKey] || [])
+}
+
+/**
+ * 입력값을 최신 목록에 반영해 저장. 알림 문구(검사·실패)를 돌려주고, 성공이면 null.
+ * @param {string} ownerKey
+ * @param {ExpenseDraft} draft
+ * @param {string|null} editingId
+ * @returns {Promise<string|null>}
+ */
+export async function saveExpenseDraft(ownerKey, draft, editingId) {
+  const result = upsertExpense(latestExpenses(ownerKey), draft, editingId)
+  if (result.error) return result.error
+  try {
+    await saveExpenses(ownerKey, result.items)
+    return null
+  } catch (error) {
+    console.error('비용 저장 실패:', error)
+    return saveFailMessage(getCloudOwnerKey() === ownerKey)
+  }
+}
+
+/**
+ * 최신 목록에서 빼고 저장. 실패 문구를 돌려주고, 성공이면 null.
+ * @param {string} ownerKey
+ * @param {string} id
+ * @returns {Promise<string|null>}
+ */
+export async function deleteExpense(ownerKey, id) {
+  try {
+    await saveExpenses(ownerKey, removeExpense(latestExpenses(ownerKey), id))
+    return null
+  } catch (error) {
+    console.error('비용 삭제 실패:', error)
+    return saveFailMessage(getCloudOwnerKey() === ownerKey)
+  }
 }

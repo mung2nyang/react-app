@@ -8,13 +8,11 @@ import MaintFuelDayList from './MaintFuelDayList.jsx'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import { resolveDriverOrPlateLabel } from '../../../domain/driverManagementContext.js'
 import { getExpensesForLog } from '../../../domain/expenseScope.js'
-import { saveExpenses } from '../../../data/sync/expensesSave.js'
+import { deleteExpense, saveExpenseDraft } from '../../../data/sync/expensesSave.js'
 import { filterMonth, groupExpensesByDate, KINDS, monthTotal } from '../../../domain/expenses.js'
-import { emptyExpenseDraft, removeExpense, upsertExpense } from '../../../domain/expenseDraft.js'
+import { emptyExpenseDraft, expenseToDraft } from '../../../domain/expenseDraft.js'
 import { formatWon } from '../../../domain/money.js'
-import { readOwnerExpenses, useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
-import { getCloudOwnerKey } from '../../../data/cloud/cloudSession.js'
-import { saveFailMessage } from '../../../shared/utils/failureMessages.js'
+import { useOwnerCars, useOwnerDrivers, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import './maint-fuel.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.js'
@@ -53,18 +51,6 @@ export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) 
     ? '차량 유지비'
     : `${resolveDriverOrPlateLabel(logId, drivers, cars)} 차량 유지비`
 
-  /** @param {Array<ExpenseItem>} next @returns {Promise<boolean>} */
-  async function persist(next) {
-    try {
-      await saveExpenses(ownerKey, next)
-      return true
-    } catch (error) {
-      console.error('비용 저장 실패:', error)
-      showToast?.(saveFailMessage(getCloudOwnerKey() === ownerKey))
-      return false
-    }
-  }
-
   function openAdd() {
     setEditingId(null)
     setDraft(emptyExpenseDraft(kind, undefined, logId && logId !== 'main' ? logId : undefined))
@@ -74,37 +60,24 @@ export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) 
   /** @param {ExpenseItem} item */
   function openEdit(item) {
     setEditingId(item.id)
-    setDraft({
-      kind: item.kind,
-      date: item.date,
-      name: item.name || '',
-      category: item.category || (item.kind === 'misc' ? '통행료' : '엔진/미션'),
-      fuelType: item.fuelType || '주유',
-      payment: item.payment || '카드',
-      cost: item.cost || 0,
-      subsidy: item.subsidy || 0,
-      mileage: item.mileage || 0,
-      liters: item.liters || '',
-      vehicleNumber: item.vehicleNumber,
-    })
+    setDraft(expenseToDraft(item))
     setModalOpen(true)
   }
 
   async function save() {
-    const result = upsertExpense(readOwnerExpenses(ownerKey), { ...draft, kind: draft.kind || kind }, editingId)
-    if (result.error) {
-      showToast?.(result.error)
+    const message = await saveExpenseDraft(ownerKey, { ...draft, kind: draft.kind || kind }, editingId)
+    if (message) {
+      showToast?.(message)
       return
     }
-    if (!await persist(result.items)) return
     setModalOpen(false)
     showToast?.(editingId ? '내역을 수정했습니다.' : '내역을 등록했습니다.')
   }
 
   /** @param {string} id */
   async function remove(id) {
-    if (!await persist(removeExpense(readOwnerExpenses(ownerKey), id))) return
-    showToast?.('내역을 삭제했습니다.')
+    const message = await deleteExpense(ownerKey, id)
+    showToast?.(message || '내역을 삭제했습니다.')
   }
 
   const monthLabelClass = kind === 'fuel' ? 'fuel-color' : kind === 'misc' ? 'misc-color' : undefined

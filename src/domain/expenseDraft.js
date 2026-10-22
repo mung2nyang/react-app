@@ -29,6 +29,23 @@ export function emptyExpenseDraft(kind, date = todayKey(), vehicleNumber) {
   return draft
 }
 
+/**
+ * 저장된 내역 → 고치기 창 입력값. 일지는 그날 날짜를, 차량 유지비는 내역 날짜를 쓴다.
+ * @param {ExpenseItem} item
+ * @param {string} [date]
+ * @returns {ExpenseDraft}
+ */
+export function expenseToDraft(item, date = item.date) {
+  return {
+    kind: item.kind, date, name: item.name || '',
+    category: item.category || (item.kind === 'misc' ? '통행료' : '엔진/미션'),
+    fuelType: item.fuelType || '주유', payment: item.payment || '카드',
+    cost: item.cost || 0, subsidy: item.subsidy || 0, mileage: item.mileage || 0,
+    liters: String(item.liters || ''),
+    vehicleNumber: item.vehicleNumber,
+  }
+}
+
 // editingId 타입 설명 필수 — 없으면 기본값 null 때문에 TS가 null만 되는 타입으로 좁힌다.
 // 저장 전 검사와 저장이 같은 문구를 쓰려고 한 파일에 둔다.
 /**

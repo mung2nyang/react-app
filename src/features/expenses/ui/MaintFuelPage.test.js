@@ -1,5 +1,5 @@
 // 로드맵 97 — 차량 유지비 화면의 보기·저장·수정·삭제 흐름(나누기 전 동작을 그대로 적음).
-// 저장 함수는 가짜로 바꿔 끼워 저장소에 넣거나, 실패를 흉내 낸다.
+// 저장은 실제 함수(비회원이라 기기 저장)를 쓰고, 실패는 기기 저장소의 지출 키 쓰기를 막아 흉내 낸다.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -16,13 +16,12 @@ Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 
 const save = { fail: false }
 const { commitExpenses } = await import('../../../data/store/commitHelpers.js')
-mock.module('../../../data/sync/expensesSave.js', {
-  namedExports: {
-    saveExpenses: async (/** @type {string} */ ownerKey, /** @type {Array<ExpenseItem>} */ items) => {
-      if (save.fail) throw new Error('저장 실패 흉내')
-      commitExpenses(ownerKey, items)
-    },
-  },
+const { storageKeyFor } = await import('../../../data/store/persist.js')
+const storageProto = Object.getPrototypeOf(localStorage)
+const originalSetItem = storageProto.setItem
+mock.method(storageProto, 'setItem', /** @this {Storage} @param {string} key @param {string} value */ function patchedSetItem(key, value) {
+  if (save.fail && key.startsWith(storageKeyFor('expenses', ''))) throw new Error('저장 실패 흉내')
+  return originalSetItem.call(this, key, value)
 })
 
 const React = await import('react')

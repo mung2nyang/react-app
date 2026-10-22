@@ -574,6 +574,47 @@ test('재감사 3차 FAIL 지적 5번 — 비용 저장 quota 초과: store/loca
   }
 })
 
+test('일지 비용 저장 성공: 그날 날짜로 저장소에 더해지고, 창이 닫히고, 등록 알림', async () => {
+  const ownerKey = 'guest'
+  const dateKey = '2026-08-21'
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createTrackedRoot(container)
+
+  const e1 = { id: 'e1-save-ok', kind: 'maint', date: dateKey, name: '오일', category: '엔진/미션', payment: '카드', cost: 10000 }
+
+  try {
+    await setupGuestDayLog(container, root, dateKey, () => {
+      commitExpenses(ownerKey, [e1])
+    })
+    await waitUntil(() => !!container.querySelector('.maint-section'))
+
+    const addMaintBtn = Array.from(container.querySelectorAll('button')).find((btn) => btn.textContent.includes('+ 정비 추가'))
+    assert.ok(addMaintBtn, '"+ 정비 추가" 버튼을 찾아야 한다')
+    await act(async () => { addMaintBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })) })
+    await act(async () => { setNativeInputValue(container.querySelector('#expenseName'), '타이어 교체') })
+    await act(async () => { setNativeInputValue(container.querySelector('#expenseCost'), '20000') })
+
+    const saveBtn = Array.from(container.querySelectorAll('.modal-btn.confirm')).find((btn) => btn.textContent === '저장')
+    assert.ok(saveBtn, '저장 버튼을 찾아야 한다')
+    await act(async () => { saveBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })) })
+
+    const saved = getState().expenses[ownerKey]
+    assert.equal(saved.length, 2, '기존 e1에 새 내역 1개가 더해져야 한다')
+    assert.deepEqual(saved[0], e1)
+    assert.equal(saved[1].name, '타이어 교체')
+    assert.equal(saved[1].cost, 20000)
+    assert.equal(saved[1].date, dateKey, '일지는 그날 날짜로 저장')
+    assert.deepEqual(readJsonKey('expenses', ownerKey, []), JSON.parse(JSON.stringify(saved)), '기기에도 같은 값')
+    assert.equal(container.querySelector('.toast-message')?.textContent || '', '내역을 등록했습니다.')
+    // 일지 칸은 닫히는 애니메이션이 끝날 때까지 내용을 남기므로 칸의 닫힘 표시로 본다.
+    assert.equal(container.querySelector('.maint-fuel-inline-host')?.getAttribute('aria-hidden'), 'true', '저장되면 칸이 닫혀야 한다')
+  } finally {
+    await unmountTracked(root)
+    container.remove()
+  }
+})
+
 test('재감사 3차 FAIL 지적 5번 — 비용 삭제 quota 초과: store/localStorage 불변, notify 0회, Supabase 0회, 실패 토스트, 기존 행 유지', async () => {
   const ownerKey = 'guest'
   const dateKey = '2026-08-23'

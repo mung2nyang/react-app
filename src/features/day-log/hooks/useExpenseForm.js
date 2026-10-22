@@ -1,12 +1,10 @@
 // @ts-check
 // 일지의 정비/주유/기타 관리 상태. 비용은 day record와 별도로 expenses 스토어에 즉시 저장한다(디바운스 없음).
-// 화면은 useOwnerExpenses로 구독하고, 저장·삭제 직전엔 readOwnerExpenses로 최신값을 다시 읽는다 — 옛 값으로 덮어쓰지 않게.
+// 화면은 useOwnerExpenses로 구독하고, 저장·삭제는 saveExpenseDraft·deleteExpense(최신 목록을 다시 읽어 고침).
 import { useState } from 'react'
-import { saveExpenses } from '../../../data/sync/expensesSave.js'
-import { emptyExpenseDraft, upsertExpense } from '../../../domain/expenseDraft.js'
-import { readOwnerExpenses, useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
-import { getCloudOwnerKey } from '../../../data/cloud/cloudSession.js'
-import { saveFailMessage } from '../../../shared/utils/failureMessages.js'
+import { deleteExpense, saveExpenseDraft } from '../../../data/sync/expensesSave.js'
+import { emptyExpenseDraft, expenseToDraft } from '../../../domain/expenseDraft.js'
+import { useOwnerExpenses } from '../../../data/store/ownerDataHooks.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('../ui/dayLogTypes.js').ExpenseItem} ExpenseItem */
@@ -23,14 +21,6 @@ export function useExpenseForm(ownerKey, dateKey, logId = 'main') {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(() => emptyExpenseDraft('maint', dateKey))
-
-  // saveExpenses(quota 초과 등으로 던질 수 있다)가 던지면 그대로 던진다 — 호출부
-  // (save/remove)가 잡아서 토스트로 알리고, 실패 시 store/localStorage 둘 다 그대로
-  // 남는다(commitExpenses→commitBatch→writeAllOrNothing이 이미 원자적). 여기서
-  // React state를 따로 안 바꾼다 — expenses는 이제 store 구독값이라 성공하면 store의
-  // notify를 통해 저절로 최신값으로 리렌더된다(거짓 "저장됨" 화면이 구조적으로 불가능).
-  /** @param {Array<ExpenseItem>} next */
-  async function persist(next) { await saveExpenses(ownerKey, next) }
 
   /** @param {string} kind */
   function openAdd(kind) {
@@ -53,37 +43,22 @@ export function useExpenseForm(ownerKey, dateKey, logId = 'main') {
   function openEdit(item) {
     setKindPick(false)
     setEditingId(item.id)
-    setDraft({
-      kind: item.kind, date: dateKey, name: item.name || '',
-      category: item.category || (item.kind === 'misc' ? '통행료' : '엔진/미션'),
-      fuelType: item.fuelType || '주유', payment: item.payment || '카드',
-      cost: item.cost || 0, subsidy: item.subsidy || 0, mileage: item.mileage || 0,
-      liters: String(item.liters || ''),
-      vehicleNumber: item.vehicleNumber,
-    })
+    setDraft(expenseToDraft(item, dateKey))
     setModalOpen(true)
   }
 
   /** @param {string} id */
   async function remove(id) {
-    try {
-      await persist(/** @type {Array<ExpenseItem>} */ (readOwnerExpenses(ownerKey)).filter((item) => item.id !== id))
-    } catch (error) {
-      console.error('비용 삭제 실패:', error)
-      showToast?.(saveFailMessage(getCloudOwnerKey() === ownerKey))
-    }
+    const message = await deleteExpense(ownerKey, id)
+    if (message) showToast?.(message)
   }
 
   async function save() {
-    const result = upsertExpense(/** @type {Array<ExpenseItem>} */ (readOwnerExpenses(ownerKey)), { ...draft, date: dateKey }, editingId)
-    if (result.error) { showToast?.(result.error); return }
-    try {
-      await persist(result.items)
-    } catch (error) {
+    const message = await saveExpenseDraft(ownerKey, { ...draft, date: dateKey }, editingId)
+    if (message) {
       // 모달을 안 닫는다 — draft가 그대로 남아 있어야 사용자가 다시 저장을 시도할 수
       // 있다.
-      console.error('비용 저장 실패:', error)
-      showToast?.(saveFailMessage(getCloudOwnerKey() === ownerKey))
+      showToast?.(message)
       return
     }
     setModalOpen(false)
