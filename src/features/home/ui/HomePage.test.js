@@ -29,7 +29,7 @@ const { act } = React
 const { default: HomePage } = await import('./HomePage.jsx')
 const { UnbiseoProvider } = await import('../hooks/unbiseoContext.ts')
 const { default: CalendarPage } = await import('../../calendar/ui/CalendarPage.jsx')
-const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
+const { commitCars, commitClients, commitExpenses, commitLogWorkData, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')
@@ -188,6 +188,35 @@ test('2단계 — 할 일: 미수 건수·남은 금액(입금 완료 제외), �
     assert.deepEqual(texts(view.container, '.home-todo-row'), ['미수금 2건 130,000원 ›'])
     await act(async () => {
       view.container.querySelector('.home-todo-row')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
+    })
+    assert.equal(opened, 1)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('할 일: 기사 차량이 있으면 미수금을 차량별 줄로(메인 먼저, 앞에 차량 칩), 누르면 미수금 열기', async () => {
+  const ownerKey = 'test-home-unpaid-cars'
+  commitCars(ownerKey, [
+    { id: 'c-main', type: 'main', number: '12가3456' },
+    { id: 'c-sub', type: 'sub', number: '34나5678' },
+  ])
+  commitSettings(ownerKey, normalizeSettings({ paymentOn: true, subPaymentOn: true }))
+  commitWorkData(ownerKey, {
+    '2026-09-03': { isOff: false, callDetails: [{ id: 'm1', client: 'A', fare: 100000, payments: [] }, { id: 'm2', client: 'B', fare: 30000, payments: [] }] },
+  })
+  commitLogWorkData(ownerKey, '34나5678', {
+    '2026-09-04': { isOff: false, callDetails: [{ id: 's1', client: 'A', fare: 70000, payments: [] }] },
+  })
+  let opened = 0
+  const view = await renderHome(ownerKey, () => {}, { onOpenReceivables: () => { opened += 1 } })
+  try {
+    const rows = Array.from(view.container.querySelectorAll('.home-todo-row'))
+    assert.deepEqual(rows.map((row) => row.querySelector('.management-badge')?.textContent), ['메인 차량', '5678'])
+    assert.deepEqual(rows.map((row) => row.querySelector('.management-badge')?.classList.contains('main')), [true, false])
+    assert.deepEqual(rows.map((row) => row.querySelector('.home-todo-text')?.textContent), ['메인 차량미수금 2건 130,000원', '5678미수금 1건 70,000원'])
+    await act(async () => {
+      rows[1]?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
     })
     assert.equal(opened, 1)
   } finally {

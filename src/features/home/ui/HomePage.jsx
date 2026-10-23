@@ -16,6 +16,25 @@ import './home.css'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /**
+ * 미수금 화면처럼 기사 차량이 있으면 차량별(메인 먼저) 한 줄씩, 없으면 한 줄.
+ * @param {Array<{ logId: string, logLabel: string, remainingAmount: number }>} items
+ * @param {boolean} byCar
+ * @returns {Array<import('./HomeTodoCard.jsx').UnpaidRow>}
+ */
+function unpaidRowsByCar(items, byCar) {
+  /** @type {Map<string, import('./HomeTodoCard.jsx').UnpaidRow>} */
+  const rows = new Map()
+  items.forEach((item) => {
+    const key = byCar ? item.logId : 'all'
+    const row = rows.get(key) || { key, label: byCar ? item.logLabel : '', main: item.logId === 'main', count: 0, total: 0 }
+    row.count += 1
+    row.total += item.remainingAmount
+    rows.set(key, row)
+  })
+  return [...rows.values()]
+}
+
+/**
  * @param {Object} props
  * @param {number} [props.notifCount]
  * @param {(() => void)} [props.onOpenMenu]
@@ -40,8 +59,7 @@ export default function HomePage({
   const inspectionMissing = useTodayInspectionMissing({
     ownerKey, dateKey: today.dateKey, enabled: !!resolveLogSettings(settings, 'main').dailyInspectionOn, isOff: isOffDay(record),
   })
-  const { items: unpaidItems } = useReceivablesData(ownerKey)
-  const unpaidTotal = unpaidItems.reduce((sum, item) => sum + item.remainingAmount, 0)
+  const { items: unpaidItems, hasSubCars } = useReceivablesData(ownerKey, session?.accountType === 'employed_driver')
 
   return (
     <div className="page home-page">
@@ -58,8 +76,7 @@ export default function HomePage({
       <HomeAssistantBar />
       <HomeTodoCard
         inspectionMissing={inspectionMissing}
-        unpaidCount={unpaidItems.length}
-        unpaidTotal={unpaidTotal}
+        unpaidRows={unpaidRowsByCar(unpaidItems, hasSubCars)}
         onOpenInspection={() => onOpenToday(today.dateKey)}
         onOpenReceivables={onOpenReceivables}
       />

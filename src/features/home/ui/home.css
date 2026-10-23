@@ -107,6 +107,12 @@
   cursor: pointer;
 }
 
+.home-todo-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .home-card-label + .home-todo-row {
   margin-top: 8px;
 }
