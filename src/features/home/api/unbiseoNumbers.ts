@@ -27,7 +27,8 @@ export function questionNumbers(ownerKey: string, question: UnbiseoQuestion, isD
   if (question.type === 'unpaid') {
     const items = getReceivableItems(settings, workDataByLogId)
       .filter((item) => (!question.client || item.client === question.client) && inPeriod(item.workDate, question.period))
-    return { amount: items.reduce((sum, item) => sum + item.remainingAmount, 0), count: items.length, supply: 0 }
+    const withSub = items.some((item) => item.logId !== 'main')
+    return { amount: items.reduce((sum, item) => sum + item.remainingAmount, 0), count: items.length, supply: 0, withSub }
   }
 
   // 거래처 매출: 서류 발급 [세금계산서] 탭(메인 서류)의 그 거래처 묶음.

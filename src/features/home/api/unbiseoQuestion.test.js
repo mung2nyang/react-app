@@ -53,10 +53,14 @@ test('답 문장 — 연동 기사는 기사 매출 화면 이름(운송 수입�
 
 test('답 문장 — 미수금: 전체·거래처·달·0원', () => {
   const unpaid = q({ type: 'unpaid', period: { unit: 'all' } })
-  assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 300000, count: 2 })), '남은 미수금은 300,000원입니다.(2건)')
-  assert.equal(describeQuestion({ ...unpaid, client: '한진' }, TODAY, false, numbers({ amount: 300000, count: 2 })), '한진 남은 미수금은 300,000원입니다.(2건)')
-  assert.equal(describeQuestion({ ...unpaid, period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1 })), '10월 운행분 남은 미수금은 100,000원입니다.(1건)')
-  assert.equal(describeQuestion({ ...unpaid, client: '한진', period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1 })), '한진 10월 운행분 남은 미수금은 100,000원입니다.(1건)')
+  assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 300000, count: 2 })), '남은 미수금은 300,000원입니다(2건).')
+  assert.equal(describeQuestion({ ...unpaid, client: '한진' }, TODAY, false, numbers({ amount: 300000, count: 2 })), '한진 남은 미수금은 300,000원입니다(2건).')
+  assert.equal(describeQuestion({ ...unpaid, period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1 })), '10월 운행분 남은 미수금은 100,000원입니다(1건).')
+  assert.equal(describeQuestion({ ...unpaid, client: '한진', period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1 })), '한진 10월 운행분 남은 미수금은 100,000원입니다(1건).')
+  // 기사 차량 운행분이 섞이면 범위를 밝힌다(매출 답은 차주 탭 = 메인만).
+  assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 3309258, count: 14, withSub: true })), '남은 미수금은 3,309,258원입니다(기사 차량 포함, 14건).')
+  assert.equal(describeQuestion({ ...unpaid, client: '한진', period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1, withSub: true })), '한진 10월 운행분 남은 미수금은 100,000원입니다(기사 차량 포함, 1건).')
+  assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 0, count: 0, withSub: false })), '남은 미수금이 없습니다.')
   assert.equal(describeQuestion(unpaid, TODAY, false, numbers()), '남은 미수금이 없습니다.')
   assert.equal(describeQuestion({ ...unpaid, client: '한진' }, TODAY, false, numbers()), '한진 남은 미수금이 없습니다.')
 })

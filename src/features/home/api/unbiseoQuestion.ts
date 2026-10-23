@@ -4,8 +4,8 @@ import type { JsonValue } from '../../../domain/jsonTypes.ts'
 export type QuestionType = 'revenue' | 'netProfit' | 'expense' | 'unpaid' | 'trips' | 'other'
 export type QuestionPeriod = { unit: 'month', value: string } | { unit: 'year', value: string } | { unit: 'all' } | { unit: 'unsupported' }
 export type UnbiseoQuestion = { type: QuestionType, period: QuestionPeriod, client: string, expenseType: 'maint' | 'fuel' | 'misc' | '' }
-/** amount = 금액(거래처 매출이면 부가세 포함 합계), count = 운행 횟수·미수 건수·거래처 운행 건수, supply = 거래처 매출 공급가액 */
-export type QuestionNumbers = { amount: number, count: number, supply: number }
+/** amount = 금액(거래처 매출이면 부가세 포함 합계), count = 운행 횟수·미수 건수·거래처 운행 건수, supply = 거래처 매출 공급가액, withSub = 미수금에 기사 차량 운행분이 섞였나 */
+export type QuestionNumbers = { amount: number, count: number, supply: number, withSub?: boolean }
 
 const TYPES: Array<QuestionType> = ['revenue', 'netProfit', 'expense', 'unpaid', 'trips', 'other']
 export const ASK_BY_MONTH = '달이나 연으로 물어봐 주세요. 예: 이번 달 매출 얼마야'
@@ -68,12 +68,13 @@ const EXPENSE_TOPIC = { '': '지출은', fuel: '주유비는', maint: '정비비
 export function describeQuestion(question: UnbiseoQuestion, today: string, isDriver: boolean, numbersFor: (question: UnbiseoQuestion) => QuestionNumbers): string {
   const notice = questionNotice(question)
   if (notice) return notice
-  const { amount, count, supply } = numbersFor(question)
+  const { amount, count, supply, withSub } = numbersFor(question)
   const label = periodLabel(question.period, today)
   if (question.type === 'unpaid') {
     const prefix = [question.client, label && `${label} 운행분`].filter(Boolean).join(' ')
     const head = prefix ? `${prefix} ` : ''
-    return amount > 0 ? `${head}남은 미수금은 ${formatWon(amount)}입니다.(${count}건)` : `${head}남은 미수금이 없습니다.`
+    // 매출 답(차주 탭 = 메인 차량만)과 범위가 달라 기사 차량분이 있으면 밝힌다.
+    return amount > 0 ? `${head}남은 미수금은 ${formatWon(amount)}입니다(${withSub ? '기사 차량 포함, ' : ''}${count}건).` : `${head}남은 미수금이 없습니다.`
   }
   if (question.type === 'revenue' && question.client) {
     if (count === 0) return `${question.client} ${label} 매출이 없습니다.`
