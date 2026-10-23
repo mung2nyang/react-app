@@ -27,6 +27,7 @@ const INPUT_IDS = { name: 'expenseName', cost: 'expenseCost' }
  * @param {(next: T) => void} props.onChange
  * @param {() => void} props.onClose
  * @param {() => void} props.onSave
+ * @param {boolean} [props.saving] 저장 중이면 [저장] 잠금
  */
 export default function ExpenseFormModal({
   draft,
@@ -36,7 +37,7 @@ export default function ExpenseFormModal({
   inline = false,
   onChange,
   onClose,
-  onSave,
+  onSave, saving = false,
 }) {
   const categories = draft.kind === 'misc' ? MISC_CATEGORIES : MAINT_CATEGORIES
   const [problem, setProblem] = useState(/** @type {(ExpenseProblem & { value: string })|null} */ (null))
@@ -184,7 +185,7 @@ export default function ExpenseFormModal({
 
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
-          <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
+          <button type="button" className="modal-btn confirm" disabled={saving} onClick={handleSave}>{saving ? '저장 중…' : '저장'}</button>
         </div>
       </>
   )

@@ -1,6 +1,6 @@
 // @ts-check
 // 메인·서브 스코프를 한 화면에서 처리. 날짜별 목록은 MaintFuelDayList, 달 이동은 공용 MonthNavigator.
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import MonthNavigator from '../../../shared/ui/MonthNavigator.jsx'
 import ExpenseFormModal from './ExpenseFormModal.jsx'
@@ -39,6 +39,16 @@ export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) 
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(/** @type {ExpenseDraft} */ (emptyExpenseDraft('maint')))
+  const [saving, setSaving] = useState(false)
+  // 저장 중엔 다시 눌러도 무시 — 두 번 저장돼 서버에 같은 지출이 두 줄 생기던 것(로드맵 111).
+  const busyRef = useRef(false)
+  /** @template R @param {() => Promise<R>} run @returns {Promise<R|undefined>} */
+  async function once(run) {
+    if (busyRef.current) return undefined
+    busyRef.current = true
+    setSaving(true)
+    try { return await run() } finally { busyRef.current = false; setSaving(false) }
+  }
 
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
@@ -65,7 +75,8 @@ export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) 
   }
 
   async function save() {
-    const message = await saveExpenseDraft(ownerKey, { ...draft, kind: draft.kind || kind }, editingId)
+    const message = await once(async () => (await saveExpenseDraft(ownerKey, { ...draft, kind: draft.kind || kind }, editingId)) ?? '')
+    if (message === undefined) return
     if (message) {
       showToast?.(message)
       return
@@ -76,7 +87,8 @@ export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) 
 
   /** @param {string} id */
   async function remove(id) {
-    const message = await deleteExpense(ownerKey, id)
+    const message = await once(async () => (await deleteExpense(ownerKey, id)) ?? '')
+    if (message === undefined) return
     showToast?.(message || '내역을 삭제했습니다.')
   }
 
@@ -119,6 +131,7 @@ export default function MaintFuelPage({ logId: logIdProp, onBack, onOpenMenu }) 
           onChange={setDraft}
           onClose={() => setModalOpen(false)}
           onSave={save}
+          saving={saving}
         />
       )}
     </div>

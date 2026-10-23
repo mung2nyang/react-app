@@ -52,6 +52,7 @@ export default function DayLogExpenses({ dayExpenses, expenseForm, callFormOpen,
             onChange={expenseForm.setDraft}
             onClose={expenseForm.closeModal}
             onSave={expenseForm.save}
+            saving={expenseForm.saving}
           />
         )}
       </InlineSheet>
