@@ -27,6 +27,7 @@ export default class PageLoadErrorBoundary extends Component {
 
   /** @param {BoundaryProps} prevProps */
   componentDidUpdate(prevProps) {
+    // oxlint-disable-next-line react/no-did-update-set-state -- 다른 화면으로 가면 안내를 풀어야 해서, 화면이 바뀐 때 한 번만 바꾼다.
     if (this.state.failed && prevProps.resetKey !== this.props.resetKey) this.setState({ failed: false })
   }
 

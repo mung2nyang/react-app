@@ -13,15 +13,7 @@ import assert from 'node:assert/strict'
 import { mock, test } from 'node:test'
 import { clientRowsFor, createFakeSupabase, vehicleRowsFor, wait } from '../testSupport/fakeSupabaseClient.js'
 
-const { fakeSupabase, handlers, resetHandlers, countOf, callCounts, emptyOkHandlers } = createFakeSupabase()
-
-// 재감사 2차(FAIL 지적) — "Supabase 호출 0회"를 말로만 보증하지 않고 직접 잰다.
-// callCounts는 { "테이블.메서드": 횟수 } 맵이라, 이 시점까지의 총 호출 수를 스냅샷
-// 떠 두면 이후 어떤 테이블·메서드가 불려도(어느 하나만 확인하는 게 아니라) 놓치지
-// 않는다.
-function totalSupabaseCalls() {
-  return Object.values(callCounts).reduce((sum, n) => sum + n, 0)
-}
+const { fakeSupabase, handlers, resetHandlers, countOf, emptyOkHandlers } = createFakeSupabase()
 fakeSupabase.auth.getSession = async () => ({
   data: { session: { user: { id: 'user-boot-nav', user_metadata: {}, phone: null } } },
   error: null,
@@ -68,10 +60,10 @@ const { BrowserRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
 const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.ts')
 const {
-  hasPendingDayWrites, pendingDayWriteCount, retryPendingDayWrites,
+  pendingDayWriteCount, retryPendingDayWrites,
   registerPendingDayWrite, getPendingDayWrite,
 } = await import('../data/sync/pendingWorkDataWrites.ts')
-const { isDurableWriteBroken, hasUnsafeRegistration, getUnsafeRegistrationPatch, clearUnsafeRegistrationFailure } = await import('../data/sync/durableWriteGuard.ts')
+const { isDurableWriteBroken, hasUnsafeRegistration } = await import('../data/sync/durableWriteGuard.ts')
 test.afterEach(async () => {
   const leftover = [...liveRoots]
   liveRoots.clear()
@@ -84,7 +76,7 @@ test.afterEach(async () => {
   handlers.vehicles.select = () => ({ data: [], error: null })
   handlers.clients.select = () => ({ data: [], error: null })
 })
-const { getState, subscribe } = await import('../data/store/app-store.ts')
+const { getState } = await import('../data/store/app-store.ts')
 const { readJsonKey, storageKeyFor } = await import('../data/store/persist.ts')
 const { todayWorkLogSelection } = await import('../domain/calendar.ts')
 const { normalizeSettings } = await import('../domain/practiceSettings.ts')

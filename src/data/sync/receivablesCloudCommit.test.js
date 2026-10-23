@@ -12,7 +12,7 @@ mock.module('../cloud/supabaseClient.ts', { namedExports: { supabase: fakeSupaba
 const { persistReceivableWorkDataChange, markMonthlyReceivablesPaid } = await import('./ownerFinance.ts')
 const { commitMainDayLogMapToCloud, commitMainDayLogToCloud } = await import('./dayLogCloudCommit.ts')
 const { beginSessionEpoch, endCloudSession } = await import('../cloud/cloudSession.ts')
-const { setHydration, getState } = await import('../store/app-store.ts')
+const { setHydration } = await import('../store/app-store.ts')
 const { commitCars, commitLogWorkData, commitWorkData } = await import('../store/commitHelpers.ts')
 const { readOwnerLogWorkData, readOwnerWorkData } = await import('../store/ownerDataHooks.ts')
 const { getReceivableItems, getDetailPaymentSummary } = await import('../../domain/finance.ts')

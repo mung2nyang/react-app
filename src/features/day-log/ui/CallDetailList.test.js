@@ -33,7 +33,7 @@ const baseProps = {
   onAdd: noop,
 }
 
-function mountList(props) {
+function mountList() {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)

@@ -70,7 +70,6 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
     document.body.appendChild(container)
     const root = createRoot(container)
 
-    let selectedPage = ''
     let openedLinkedDriverId = ''
 
     try {
@@ -79,7 +78,7 @@ describe('Step 9 ② 1차: 계정별 화면 권한 정리 UI 검증', () => {
           React.createElement(SideMenu, {
             open: true,
             onClose: () => {},
-            onSelect: (page) => { selectedPage = page },
+            onSelect: () => {},
             linkedDriverItems: [
               { linkId: 'link-123', driverName: '이소속' },
             ],
