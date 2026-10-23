@@ -2,7 +2,7 @@
 import type { JsonValue } from '../../../domain/jsonTypes.ts'
 
 export type QuestionType = 'revenue' | 'netProfit' | 'expense' | 'unpaid' | 'trips' | 'other'
-export type QuestionPeriod = { unit: 'month', value: string } | { unit: 'year', value: string } | { unit: 'all' } | { unit: 'unsupported' }
+export type QuestionPeriod = { unit: 'day', value: string } | { unit: 'month', value: string } | { unit: 'year', value: string } | { unit: 'all' } | { unit: 'unsupported' }
 export type UnbiseoQuestion = { type: QuestionType, period: QuestionPeriod, client: string, expenseType: 'maint' | 'fuel' | 'misc' | '' }
 /** amount = 금액(거래처 매출이면 부가세 포함 합계), count = 운행 횟수·미수 건수·거래처 운행 건수, supply = 거래처 매출 공급가액, withSub = 미수금에 기사 차량 운행분이 섞였나 */
 export type QuestionNumbers = { amount: number, count: number, supply: number, withSub?: boolean }
@@ -11,6 +11,8 @@ const TYPES: Array<QuestionType> = ['revenue', 'netProfit', 'expense', 'unpaid',
 export const ASK_BY_MONTH = '달이나 연으로 물어봐 주세요. 예: 이번 달 매출 얼마야'
 export const CANNOT_ANSWER = '아직 답할 수 없는 질문이에요. 매출·순이익·지출·미수금·운행 횟수를 물어봐 주세요.'
 export const CLIENT_ONLY_SALES = '거래처별로는 매출과 미수금만 답할 수 있어요.'
+export const NET_PROFIT_BY_MONTH = '순이익은 달이나 연으로 물어봐 주세요.'
+export const CLIENT_SALES_BY_MONTH = '거래처별 매출은 달이나 연으로 물어봐 주세요.'
 
 // 매출 화면(revenueFormat.js won)과 같은 표시 — 순이익·정산액은 음수도 그대로.
 function formatWon(amount: number): string {
@@ -27,6 +29,7 @@ function periodOf(value: JsonValue | undefined, type: QuestionType, today: strin
   const key = textOf(row?.value)
   if (unit === 'unsupported') return { unit: 'unsupported' }
   if (unit === 'all') return { unit: 'all' }
+  if (unit === 'day' && /^\d{4}-\d{2}-\d{2}$/.test(key)) return { unit: 'day', value: key }
   if (unit === 'year' && /^\d{4}$/.test(key)) return { unit: 'year', value: key }
   if (unit === 'month' && /^\d{4}-(0[1-9]|1[0-2])$/.test(key)) return { unit: 'month', value: key }
   // 모양이 틀리면 서버와 같은 기본 — 미수금은 지금 남은 것 전체, 그 밖은 이번 달.
@@ -45,9 +48,14 @@ export function readQuestion(row: { [key: string]: JsonValue }, today: string): 
   }
 }
 
-/** 이번 해 달은 "10월", 다른 해는 "2025년 9월", 연은 "2026년". */
+/** 이번 해 달은 "10월", 다른 해는 "2025년 9월", 연은 "2026년", 하루는 "오늘"·"10월 15일"·"2025년 9월 3일". */
 function periodLabel(period: QuestionPeriod, today: string): string {
   if (period.unit === 'year') return `${period.value}년`
+  if (period.unit === 'day') {
+    if (period.value === today) return '오늘'
+    const date = `${Number(period.value.slice(5, 7))}월 ${Number(period.value.slice(8, 10))}일`
+    return period.value.slice(0, 4) === today.slice(0, 4) ? date : `${period.value.slice(0, 4)}년 ${date}`
+  }
   if (period.unit !== 'month') return ''
   const month = `${Number(period.value.slice(5, 7))}월`
   return period.value.slice(0, 4) === today.slice(0, 4) ? month : `${period.value.slice(0, 4)}년 ${month}`
@@ -59,6 +67,9 @@ export function questionNotice(question: UnbiseoQuestion): string | null {
   if (question.period.unit === 'unsupported') return ASK_BY_MONTH
   if (question.period.unit === 'all' && question.type !== 'unpaid') return ASK_BY_MONTH
   if (question.client && question.type !== 'revenue' && question.type !== 'unpaid') return CLIENT_ONLY_SALES
+  // 하루 화면에 순이익·거래처 매출(세금계산서 숫자)이 없어서.
+  if (question.period.unit === 'day' && question.type === 'netProfit') return NET_PROFIT_BY_MONTH
+  if (question.period.unit === 'day' && question.type === 'revenue' && question.client) return CLIENT_SALES_BY_MONTH
   return null
 }
 
@@ -82,6 +93,7 @@ export function describeQuestion(question: UnbiseoQuestion, today: string, isDri
   }
   if (question.type === 'trips') return `${label} 운행은 ${count}회입니다.`
   if (question.type === 'expense') return `${label} ${EXPENSE_TOPIC[question.expenseType]} ${formatWon(amount)}입니다.`
+  if (question.type === 'revenue' && question.period.unit === 'day') return amount > 0 ? `${label} 운송료는 ${formatWon(amount)}입니다.` : `${label} 운송료가 없습니다.`
   if (question.type === 'netProfit') return `${label} ${isDriver ? '정산액은' : '순이익은'} ${formatWon(amount)}입니다.`
   return `${label} ${isDriver ? '운송 수입(정산 전)은' : '매출은'} ${formatWon(amount)}입니다.`
 }

@@ -86,3 +86,33 @@ test('숫자 없이 답하는 경우는 숫자를 내지 않는다: 그 밖·짧
   assert.equal(CANNOT_ANSWER, '아직 답할 수 없는 질문이에요. 매출·순이익·지출·미수금·운행 횟수를 물어봐 주세요.')
   assert.equal(CLIENT_ONLY_SALES, '거래처별로는 매출과 미수금만 답할 수 있어요.')
 })
+
+// 로드맵 24-D3 — 하루 질문: 기간 이름 "오늘"·"10월 15일"·"2025년 9월 3일", 운송료 문장, 순이익·거래처 매출은 안내.
+test('하루 기간 읽기: 날짜 모양이면 그대로, 틀리면 이번 달(미수금은 전체)', () => {
+  assert.deepEqual(readQuestion({ type: 'revenue', period: { unit: 'day', value: '2026-10-15' } }, TODAY).period, { unit: 'day', value: '2026-10-15' })
+  for (const value of ['2026-10', '오늘', 20261015]) {
+    assert.deepEqual(readQuestion({ type: 'revenue', period: { unit: 'day', value } }, TODAY).period, OCT, String(value))
+    assert.deepEqual(readQuestion({ type: 'unpaid', period: { unit: 'day', value } }, TODAY).period, { unit: 'all' }, String(value))
+  }
+})
+
+test('하루 답 문장: 운송료·운행·지출·미수금, 0원이면 운송료 없음', () => {
+  const day = (/** @type {string} */ value) => /** @type {const} */ ({ unit: 'day', value })
+  assert.equal(describeQuestion(q({ period: day(TODAY) }), TODAY, false, numbers({ amount: 450000 })), '오늘 운송료는 450,000원입니다.')
+  assert.equal(describeQuestion(q({ period: day(TODAY) }), TODAY, true, numbers({ amount: 450000 })), '오늘 운송료는 450,000원입니다.', '연동 기사도 같은 이름')
+  assert.equal(describeQuestion(q({ period: day('2026-10-22') }), TODAY, false, numbers()), '10월 22일 운송료가 없습니다.')
+  assert.equal(describeQuestion(q({ type: 'trips', period: day('2026-10-22') }), TODAY, false, numbers({ count: 3 })), '10월 22일 운행은 3회입니다.')
+  assert.equal(describeQuestion(q({ type: 'expense', expenseType: 'fuel', period: day('2026-10-15') }), TODAY, false, numbers({ amount: 80000 })), '10월 15일 주유비는 80,000원입니다.')
+  assert.equal(describeQuestion(q({ type: 'unpaid', period: day(TODAY) }), TODAY, false, numbers({ amount: 30000, count: 1 })), '오늘 운행분 남은 미수금은 30,000원입니다(1건).')
+  assert.equal(describeQuestion(q({ type: 'trips', period: day('2025-09-03') }), TODAY, false, numbers({ count: 1 })), '2025년 9월 3일 운행은 1회입니다.')
+})
+
+test('하루 순이익·거래처 매출은 숫자 없이 안내', () => {
+  let asked = 0
+  const counted = () => { asked += 1; return { amount: 1, count: 1, supply: 1 } }
+  const period = /** @type {const} */ ({ unit: 'day', value: TODAY })
+  assert.equal(describeQuestion(q({ type: 'netProfit', period }), TODAY, false, counted), '순이익은 달이나 연으로 물어봐 주세요.')
+  assert.equal(describeQuestion(q({ type: 'netProfit', period }), TODAY, true, counted), '순이익은 달이나 연으로 물어봐 주세요.')
+  assert.equal(describeQuestion(q({ client: '한진', period }), TODAY, false, counted), '거래처별 매출은 달이나 연으로 물어봐 주세요.')
+  assert.equal(asked, 0)
+})

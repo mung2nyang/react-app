@@ -1,7 +1,7 @@
 // 질문 칸 읽기 — 정해진 질문 목록·달/연 기간·거래처만, 숫자는 앱이 계산한다(로드맵 24-D-1).
 export type Json = string | number | boolean | null | Array<Json> | { [key: string]: Json }
 export type QuestionType = 'revenue' | 'netProfit' | 'expense' | 'unpaid' | 'trips' | 'other'
-export type Period = { unit: 'month', value: string } | { unit: 'year', value: string } | { unit: 'all' } | { unit: 'unsupported' }
+export type Period = { unit: 'day', value: string } | { unit: 'month', value: string } | { unit: 'year', value: string } | { unit: 'all' } | { unit: 'unsupported' }
 export type Question = { type: QuestionType, period: Period, client: string, expenseType: 'maint' | 'fuel' | 'misc' | '' }
 
 const TYPES: Array<QuestionType> = ['revenue', 'netProfit', 'expense', 'unpaid', 'trips', 'other']
@@ -10,12 +10,19 @@ function typeOf(value: Json | undefined): QuestionType {
   return TYPES.find((type) => type === value) ?? 'other'
 }
 
-// 앞날 달은 가장 가까운 지난 그 달(10월에 "12월" → 작년 12월), 앞날 연은 올해.
+function isDateKey(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const date = new Date(`${value}T00:00:00Z`)
+  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(value)
+}
+
+// 하루는 앞날이면 오늘(운행 날짜와 같은 규칙, 로드맵 24-D3). 앞날 달은 가장 가까운 지난 그 달(10월에 "12월" → 작년 12월), 앞날 연은 올해.
 function periodOf(unit: Json | undefined, value: Json | undefined, type: QuestionType, today: string): Period {
   const thisMonth = today.slice(0, 7)
   const thisYear = today.slice(0, 4)
   if (unit === 'unsupported') return { unit: 'unsupported' }
   if (unit === 'all') return { unit: 'all' }
+  if (unit === 'day' && typeof value === 'string' && isDateKey(value)) return { unit: 'day', value: value > today ? today : value }
   if (unit === 'year' && typeof value === 'string' && /^\d{4}$/.test(value)) {
     return { unit: 'year', value: value > thisYear ? thisYear : value }
   }

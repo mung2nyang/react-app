@@ -109,3 +109,56 @@ test('거래처 매출 = 서류 발급 [세금계산서] 탭(메인 서류)의 �
   assert.deepEqual(questionNumbers(OWNER, q({ client: '한진', period: { unit: 'month', value: '2026-06' } }), false), { amount: 0, count: 0, supply: 0 })
   assert.deepEqual(questionNumbers(OWNER, q({ client: '한진', period: YEAR }), false), want, '연은 12달 합(한진은 5월만)')
 })
+
+// 로드맵 24-D3 — 하루 숫자는 일지 "운송료 합계"·달력 칸이 쓰는 함수를 같은 자료로 부른 값(메인 차량, 휴무면 0).
+test('하루: 운송료 = dayFareTotal(일지와 같은 단가·파렛트), 운행 = dayTripCount, 휴무·빈 날은 0', async () => {
+  const { dayFareTotal } = await import('../../../domain/calendarBadges.ts')
+  const { dayTripCount } = await import('../../../domain/day-record.ts')
+  const owner = 'unbiseo-numbers-day'
+  const day = '2026-10-15'
+  const record = { fixedCount: 2, palletCount: 3, callDetails: [{ id: 'trp-d1', client: '롯데', fare: '50,000' }, { id: 'trp-d2', client: '한진', fare: '30,000' }] }
+  commitSettings(owner, normalizeSettings({ fixedOn: true }))
+  commitClients(owner, FIXTURE_SETTINGS.clients)
+  commitLogWorkData(owner, 'main', { [day]: record, '2026-10-16': { ...record, isOff: true } })
+  commitLogWorkData(owner, '서울12가3456', { [day]: { fixedCount: 9 } })
+  const at = (/** @type {string} */ value, /** @type {Partial<UnbiseoQuestion>} */ fields = {}) => questionNumbers(owner, q({ period: { unit: 'day', value }, ...fields }), false)
+  assert.equal(at(day).amount, dayFareTotal(record, '250,000', 10000))
+  assert.equal(at(day).amount, 2 * 250000 + 3 * 10000 + 80000, '고정 노선 + 파렛트 + 세부 운송료(기사 차량 빼고)')
+  assert.equal(at(day, { type: 'trips' }).count, dayTripCount(record))
+  assert.equal(at(day, { type: 'trips' }).count, 4)
+  assert.deepEqual(at('2026-10-16'), { amount: 0, count: 0, supply: 0 }, '휴무')
+  assert.deepEqual(at('2026-10-16', { type: 'trips' }), { amount: 0, count: 0, supply: 0 })
+  assert.deepEqual(at('2026-10-17'), { amount: 0, count: 0, supply: 0 }, '빈 날')
+  // 고정 노선이 꺼졌으면 일지처럼 파렛트 단가 없음.
+  commitSettings(owner, normalizeSettings({ fixedOn: false }))
+  assert.equal(at(day).amount, dayFareTotal(record, '250,000', 0))
+})
+
+test('하루 지출 = 그날 메인 차량 지출 합(종류를 말하면 그 종류만, 기사 차량 태그·다른 날 빼고)', () => {
+  const owner = 'unbiseo-numbers-day-expense'
+  const day = '2026-10-15'
+  commitExpenses(owner, [
+    { id: 'e1', kind: 'fuel', date: day, cost: 80000 },
+    { id: 'e2', kind: 'maint', date: day, cost: 20000 },
+    { id: 'e3', kind: 'fuel', date: day, cost: 5000, vehicleNumber: '서울12가3456' },
+    { id: 'e4', kind: 'fuel', date: '2026-10-14', cost: 7000 },
+  ])
+  const at = (/** @type {''|'fuel'|'maint'|'misc'} */ expenseType) => questionNumbers(owner, q({ type: 'expense', period: { unit: 'day', value: day }, expenseType }), false).amount
+  assert.equal(at(''), 100000)
+  assert.equal(at('fuel'), 80000)
+  assert.equal(at('maint'), 20000)
+  assert.equal(at('misc'), 0)
+})
+
+test('하루 미수금 = 미수금 화면 항목 중 그 날짜(거래처를 말하면 거래처도)', () => {
+  const s = screen()
+  const items = getReceivableItems(s.settings, s.work)
+  const day = items[0].workDate
+  const onDay = items.filter((item) => item.workDate === day)
+  assert.ok(onDay.length > 0 && onDay.length < items.length)
+  const want = { amount: onDay.reduce((sum, item) => sum + item.remainingAmount, 0), count: onDay.length, supply: 0, withSub: onDay.some((item) => item.logId !== 'main') }
+  assert.deepEqual(questionNumbers(OWNER, q({ type: 'unpaid', period: { unit: 'day', value: day } }), false), want)
+  const client = onDay[0].client
+  const onDayClient = onDay.filter((item) => item.client === client)
+  assert.equal(questionNumbers(OWNER, q({ type: 'unpaid', period: { unit: 'day', value: day }, client }), false).count, onDayClient.length)
+})
