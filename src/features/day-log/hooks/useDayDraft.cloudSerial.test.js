@@ -18,6 +18,7 @@ const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud
 const { setHydration } = await import('../../../data/store/app-store.ts')
 const { commitCars, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { readOwnerWorkData } = await import('../../../data/store/ownerDataHooks.ts')
+const { addFailedDayLogDate, listFailedDayLogDates } = await import('../../../data/sync/failedDayLogDates.ts')
 const { hasBusyDayDraft } = await import('../../../data/sync/dayDraftActivity.ts')
 
 const DK = '2026-10-21'
@@ -62,14 +63,14 @@ function beginLoggedIn(userId, ownerKey) {
   commitWorkData(ownerKey, {})
 }
 
-/** @param {string} ownerKey */
-async function mount(ownerKey) {
+/** @param {string} ownerKey @param {string} [dateKey] */
+async function mount(ownerKey, dateKey = DK) {
   /** @type {{ current: ReturnType<typeof useDayDraft>|null }} */
   const latest = { current: null }
   /** @type {Array<string>} */
   const toasts = []
   function Harness() {
-    latest.current = useDayDraft(ownerKey, DK)
+    latest.current = useDayDraft(ownerKey, dateKey)
     return null
   }
   const container = document.createElement('div')
@@ -189,4 +190,57 @@ test('72-7 로그인 저장 중에는 "저장 중", 화면을 닫아도 서버 �
   assert.equal(hasBusyDayDraft(), false)
   assert.equal(readOwnerWorkData('own-72')[DK]?.fixedCount, 5)
   endCloudSession()
+})
+
+// 로드맵 110-A — 서버 저장 실패 날짜는 휴대폰 목록에, 다음 저장 성공이나 그 날짜 일지를 열면 지운다.
+test('F-1 서버 저장 실패 → 날짜가 목록에, 다음 저장 성공 → 지움', async () => {
+  beginLoggedIn('u-f1', 'own-f1')
+  holdUpserts({ gated: 0, failFirst: true })
+  const originalError = console.error
+  console.error = () => {}
+  const view = await mount('own-f1')
+  try {
+    await view.edit(1)
+    await act(async () => { await wait(700) })
+    assert.deepEqual(listFailedDayLogDates('own-f1'), [{ logId: 'main', dateKey: DK }])
+    await view.edit(2)
+    await act(async () => { await wait(700) })
+    assert.equal(view.latest.current?.autoSaveStatus, 'saved')
+    assert.deepEqual(listFailedDayLogDates('own-f1'), [])
+  } finally {
+    console.error = originalError
+    await view.unmount()
+    endCloudSession()
+  }
+})
+
+test('F-2 화면을 닫는 것만으로는 지우지 않는다(닫을 때 다시 저장도 실패)', async () => {
+  beginLoggedIn('u-f2', 'own-f2')
+  handlers.daily_logs = { upsert: () => { throw new Error('network down') } }
+  const originalError = console.error
+  console.error = () => {}
+  try {
+    const view = await mount('own-f2')
+    await view.edit(1)
+    await act(async () => { await wait(700) })
+    await view.unmount()
+    await wait(50)
+    assert.deepEqual(listFailedDayLogDates('own-f2'), [{ logId: 'main', dateKey: DK }])
+  } finally {
+    console.error = originalError
+    endCloudSession()
+  }
+})
+
+test('F-3 그 날짜 일지를 열면 그 날짜만 지운다', async () => {
+  beginLoggedIn('u-f3', 'own-f3')
+  addFailedDayLogDate('own-f3', 'main', DK)
+  addFailedDayLogDate('own-f3', 'main', '2026-10-20')
+  const view = await mount('own-f3')
+  try {
+    assert.deepEqual(listFailedDayLogDates('own-f3'), [{ logId: 'main', dateKey: '2026-10-20' }])
+  } finally {
+    await view.unmount()
+    endCloudSession()
+  }
 })

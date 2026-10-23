@@ -9,6 +9,7 @@ import { commitMainDayLogToCloud } from '../../../data/sync/dayLogCloudCommit.ts
 import { shouldCommitDayLogToCloud } from '../../../data/sync/mainDayLogRouting.ts'
 import { readOwnerLogWorkData } from '../../../data/store/ownerDataHooks.ts'
 import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../../data/sync/dayDraftActivity.ts'
+import { addFailedDayLogDate, removeFailedDayLogDate } from '../../../data/sync/failedDayLogDates.ts'
 import { DEVICE_SAVE_FAIL, SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.ts').EffectivePatch} EffectivePatch */
@@ -64,6 +65,8 @@ export function createDayDraftSaver({ ownerKey, logId, dateKey, draft: initialDr
   let latestDraft = initialDraft
   // 저장 실패 알림 앞에 붙는 날짜 — 어느 날 일지가 실패했는지 보이게.
   const failHead = `${Number(dateKey.slice(5, 7))}월 ${Number(dateKey.slice(8, 10))}일 운행일지 `
+  // 그 날짜 일지를 열면 실패 기록을 지운다 — 다른 기기에서 다시 저장했어도 알림이 남지 않게.
+  removeFailedDayLogDate(ownerKey, logId, dateKey)
 
   /** @param {EffectivePatch} patch */
   function markSaved(patch) {
@@ -93,9 +96,12 @@ export function createDayDraftSaver({ ownerKey, logId, dateKey, draft: initialDr
   /** @param {{ ok: boolean, toast: string|null }} result @param {number} attemptRev @param {EffectivePatch} patch */
   function settleCloud(result, attemptRev, patch) {
     if (result.ok) {
-      if (attemptRev === progress.draftRev) markSaved(patch)
+      if (attemptRev !== progress.draftRev) return
+      removeFailedDayLogDate(ownerKey, logId, dateKey)
+      markSaved(patch)
       return
     }
+    addFailedDayLogDate(ownerKey, logId, dateKey)
     if (result.toast) toast?.(result.toast === SERVER_SAVE_FAIL ? failHead + result.toast : result.toast)
     if (!progress.mounted) return
     setAutoSaveStatus('failed')
