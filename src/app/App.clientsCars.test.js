@@ -639,7 +639,7 @@ test('계정 B ready에서 stale owner A 거래처/차량 UI 저장·삭제는 A
   const apiBefore = (callCounts['clients.insert'] || 0) + (callCounts['vehicles.insert'] || 0) + (callCounts['vehicles.delete'] || 0)
   try {
     await act(async () => {
-      root.render(withSession(React.createElement(ClientListPage, {}), { ownerKey: ownerA }))
+      root.render(React.createElement(MemoryRouter, null, withSession(React.createElement(ClientListPage, {}), { ownerKey: ownerA })))
     })
     await act(async () => { findButtonByText(container, '+ 추가')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
     await waitUntil(() => !!container.querySelector('#clientCompanyName'))

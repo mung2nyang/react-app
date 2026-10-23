@@ -414,3 +414,12 @@ test('고정 노선 이상한 값: 횟수가 1~20 정수가 아니면 통째로 
   assert.equal(readAssistantFixed({ assistantFixed: [2] }), null)
   assert.equal(readAssistantFixed({ assistantCall: CALL }), null)
 })
+
+// 로드맵 24-G-2 — 운비서 버튼이 갈 곳: 거래처는 거래처 화면, 그 밖은 그 날짜 일지.
+test('갈 곳: 거래처는 /app/clients(assistantClient), 운행·고정 노선은 그 날짜 일지', async () => {
+  const { assistantNavTarget } = await import('./assistantCallState.js')
+  const heard = { name: '한진', manager: '', phone: '', paymentTerm: '', paymentTermValue: null, commType: '', commValue: null }
+  assert.deepEqual(assistantNavTarget(heard, { cancelOff: false }), ['/app/clients', { state: { from: 'home', assistantClient: heard } }])
+  assert.deepEqual(assistantNavTarget({ date: DATE, ...CALL }, { cancelOff: true }), [`/app/day/${DATE}`, { state: { from: 'home', assistantCall: { ...CALL, cancelOff: true } } }])
+  assert.deepEqual(assistantNavTarget({ date: DATE, count: 2, route: '' }, { cancelOff: false }), [`/app/day/${DATE}`, { state: { from: 'home', assistantFixed: { count: 2, route: '', cancelOff: false } } }])
+})

@@ -9,7 +9,7 @@ type Props = { assistant: UnbiseoAssistant, onOpenCall?: (record: UnbiseoRecord,
 
 export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
   const { loggedIn, text, setText, busy, answer, send, speech, speaking, stopSpeaking, callDetailOn, fixedOn, enabling, enableSetting, periodNotice, dayOff } = assistant
-  const record = answer?.call ?? answer?.expense ?? answer?.fixed
+  const record = answer?.call ?? answer?.expense ?? answer?.fixed ?? answer?.client
   const isCall = !!answer?.call
   const isFixed = !!answer?.fixed
 
@@ -24,6 +24,7 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
 
   // 버튼 자리는 하나만 — 계약 기간 밖 → 고정 노선·콜 상세 꺼짐 → 휴무 → [기록하기] 순서.
   function actionFor(record: UnbiseoRecord) {
+    if (answer?.client) return <button type="button" className="home-assistant-action" onClick={() => onOpenCall?.(record, { cancelOff: false })}>등록하기</button>
     if (periodNotice) {
       return (
         <div className="home-assistant-enable" role="status">

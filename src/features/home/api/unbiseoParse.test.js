@@ -21,7 +21,8 @@ mock.module('../../../data/cloud/supabaseClient.ts', {
   },
 })
 
-const { requestUnbiseoParse, clientNamesForAi, routeNamesForAi, describeFixed, BAD_INPUT, LOGIN_NEEDED, NOT_UNDERSTOOD, TRY_LATER } = await import('./unbiseoParse.ts')
+const { requestUnbiseoParse, clientNamesForAi, routeNamesForAi, BAD_INPUT, LOGIN_NEEDED, NOT_UNDERSTOOD, TRY_LATER } = await import('./unbiseoParse.ts')
+const { describeFixed } = await import('./unbiseoSentence.ts')
 
 beforeEach(() => { calls.length = 0; reply = async () => ({ data: null, error: null }) })
 
@@ -87,7 +88,7 @@ test('지출 칸을 그대로 돌려준다, 이상한 칸은 고쳐 담는다(�
 })
 
 test('지출 문장: 주유는 주유 종류, 그 밖은 항목명 → 분류 → 종류 이름, 빈 칸은 빼고 끝 글자 받침에 따라 "으로"/"로"', async () => {
-  const { describeExpense, describeResult } = await import('./unbiseoParse.ts')
+  const { describeExpense, describeResult } = await import('./unbiseoSentence.ts')
   const today = '2026-10-22'
   /** @type {import('./unbiseoParse.ts').UnbiseoExpense} */
   const base = { date: today, type: 'maint', cost: null, name: '', category: '', fuelType: '', payment: '' }
@@ -126,7 +127,7 @@ test('실패 문구: 401 로그인, 400 다시 말하기, 502 알아듣지 못�
 })
 
 test('결과 문장: 오늘이면 "오늘", 빈 칸은 빼고, 끝 글자 받침에 따라 "으로"/"로"', async () => {
-  const { describeCall, describeResult } = await import('./unbiseoParse.ts')
+  const { describeCall, describeResult } = await import('./unbiseoSentence.ts')
   const today = '2026-10-22'
   assert.equal(describeCall({ date: today, loadLoc: '평택', unloadLoc: '용인', fare: 300000, client: '한진' }, today), '오늘 평택 → 용인, 300,000원, 한진으로 기록할게요.')
   assert.equal(describeCall({ date: today, loadLoc: '인천', unloadLoc: '부산', fare: 450000, client: '롯데' }, today), '오늘 인천 → 부산, 450,000원, 롯데로 기록할게요.')
@@ -166,4 +167,31 @@ test('고정 노선 답이 이상하면 고쳐 담는다: 횟수 1~20 정수 아
 test('고정 노선 문장: "{오늘|M월 D일} {노선|고정 노선} n회로 기록할게요."', () => {
   assert.equal(describeFixed({ date: '2026-10-22', count: 2, route: '평택 → 용인' }, '2026-10-22'), '오늘 평택 → 용인 2회로 기록할게요.')
   assert.equal(describeFixed({ date: '2026-10-21', count: 3, route: '' }, '2026-10-22'), '10월 21일 고정 노선 3회로 기록할게요.')
+})
+
+// 로드맵 24-G-2 — 거래처 등록 답 읽기: 이름은 꼭(50자), 그 밖은 서버(24-G-1)와 같은 범위 안일 때만.
+test('거래처 답: 칸을 그대로 담고, 이름이 없거나 51자·칸이 없으면 알아듣지 못함', async () => {
+  const C0 = { name: '한진', manager: '', phone: '', paymentTerm: '', paymentTermValue: null, commType: '', commValue: null }
+  const read = async (/** @type {JsonValue} */ client) => { reply = async () => ({ data: { kind: 'client', client }, error: null }); return requestUnbiseoParse({ text: '거래처 등록', today: '2026-10-23', clientNames: [] }) }
+  assert.deepEqual(await read({ name: '한진', manager: '김철수', phone: '010-1234-5678', paymentTerm: 'next_month_end', paymentTermValue: null, commType: 'percent', commValue: 5 }),
+    { kind: 'client', client: { name: '한진', manager: '김철수', phone: '010-1234-5678', paymentTerm: 'next_month_end', paymentTermValue: null, commType: 'percent', commValue: 5 } })
+  assert.deepEqual(await read({ name: ' 한진 ' }), { kind: 'client', client: C0 })
+  for (const name of ['', 'ㄱ'.repeat(51), 5]) assert.deepEqual(await read({ name }), { kind: 'error', message: NOT_UNDERSTOOD }, String(name))
+  reply = async () => ({ data: { kind: 'client' }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '거래처 등록', today: '2026-10-23', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
+})
+
+test('거래처 답 이상한 칸은 빈 칸: 담당자 31자, 연락처 자리수, 결제 주기 목록 밖·값 범위, 수수료 범위', async () => {
+  const read = async (/** @type {{ [key: string]: JsonValue }} */ fields) => { reply = async () => ({ data: { kind: 'client', client: { name: '한진', ...fields } }, error: null }); const r = await requestUnbiseoParse({ text: '거래처 등록', today: '2026-10-23', clientNames: [] }); assert.equal(r.kind, 'client'); return r.kind === 'client' ? r.client : null }
+  assert.equal((await read({ manager: 'ㄱ'.repeat(31) }))?.manager, '')
+  assert.equal((await read({ phone: '(031)123-4567' }))?.phone, '031123-4567')
+  for (const phone of ['12345678', '01012345678901']) assert.equal((await read({ phone }))?.phone, '', phone)
+  assert.equal((await read({ paymentTerm: 'monthly' }))?.paymentTerm, '')
+  assert.equal((await read({ paymentTerm: 'after_days', paymentTermValue: 365 }))?.paymentTermValue, 365)
+  assert.equal((await read({ paymentTerm: 'after_days', paymentTermValue: 366 }))?.paymentTermValue, null)
+  assert.equal((await read({ paymentTerm: 'next_month_end', paymentTermValue: 10 }))?.paymentTermValue, null, '값이 필요 없는 주기')
+  for (const [commType, commValue] of /** @type {Array<[JsonValue, JsonValue]>} */ ([['percent', 101], ['direct', 10.5], ['fixed', 1000], ['percent', '5']])) {
+    const got = await read({ commType, commValue })
+    assert.deepEqual([got?.commType, got?.commValue], ['', null], `${commType} ${commValue}`)
+  }
 })

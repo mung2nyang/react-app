@@ -1,5 +1,5 @@
 // @ts-check
-// 주소 상태로 넘어온 운비서 운행(로드맵 24-B-2)·지출(24-C-2)·고정 노선(24-F-2) — 칸마다 모양을 보고, 이상한 칸은 빈 칸으로.
+// 주소 상태로 넘어온 운비서 운행(로드맵 24-B-2)·지출(24-C-2)·고정 노선(24-F-2)·거래처(24-G-2, 읽기는 거래처 화면) — 칸마다 모양을 보고, 이상한 칸은 빈 칸으로.
 import { FUEL_TYPES, MAINT_CATEGORIES, MISC_CATEGORIES } from '../../domain/expenses.ts'
 
 const TEXT_MAX = 100
@@ -94,10 +94,22 @@ export function readAssistantFixed(state) {
  * @param {{ cancelOff: boolean }} options
  */
 export function assistantCallNavState(record, options) {
+  if ('paymentTerm' in record) return { from: 'home', assistantClient: { ...record } }
   if ('count' in record) return { from: 'home', assistantFixed: { count: record.count, route: record.route, cancelOff: options.cancelOff } }
   if ('type' in record) {
     const { type, cost, name, category, fuelType, payment } = record
     return { from: 'home', assistantExpense: { type, cost, name, category, fuelType, payment, cancelOff: options.cancelOff } }
   }
   return { from: 'home', assistantCall: { loadLoc: record.loadLoc, unloadLoc: record.unloadLoc, fare: record.fare, client: record.client, cancelOff: options.cancelOff } }
+}
+
+/**
+ * 운비서 버튼 → navigate에 넘길 [갈 곳, { 주소 상태 }]. 거래처는 거래처 화면, 그 밖은 그 날짜 일지.
+ * @param {import('../../features/home/api/unbiseoParse.ts').UnbiseoRecord} record
+ * @param {{ cancelOff: boolean }} options
+ * @returns {[string, { state: object }]}
+ */
+export function assistantNavTarget(record, options) {
+  const state = assistantCallNavState(record, options)
+  return ['paymentTerm' in record ? '/app/clients' : `/app/day/${record.date}`, { state }]
 }

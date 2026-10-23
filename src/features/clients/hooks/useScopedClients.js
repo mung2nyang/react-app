@@ -6,6 +6,7 @@ import { requestClientDeletion } from '../../../data/sync/directMutationActions.
 import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
 import { useOwnerClients } from '../../../data/store/ownerDataHooks.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import useAssistantClient from './useAssistantClient.js'
 
 /** @typedef {import('../../../domain/clientTypes.ts').ClientDraft} ClientDraft */
 /** @typedef {import('../../../domain/clientTypes.ts').ClientLike} ClientLike */
@@ -48,11 +49,13 @@ export function useScopedClients({ ownerKey, scopeKey }) {
 
   const scopedClients = clients.filter((c) => scopeKey && c.scopedToVehicleNumber === scopeKey)
 
-  function openAdd() {
+  /** @param {Partial<ClientDraft>} [fields] 운비서가 채운 칸 */
+  function openAdd(fields) {
     setEditingId(null)
-    setDraft({ ...emptyDraft, scopedToVehicleNumber: scopeKey })
+    setDraft({ ...emptyDraft, ...fields, scopedToVehicleNumber: scopeKey })
     setModalOpen(true)
   }
+  useAssistantClient(openAdd)
 
   /** @param {ClientLike} item */
   function openEdit(item) {

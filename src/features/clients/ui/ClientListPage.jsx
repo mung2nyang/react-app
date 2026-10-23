@@ -5,6 +5,7 @@ import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import ClientFormModal from './ClientFormModal.jsx'
 import ClientListItem from './ClientListItem.jsx'
 import { useClientReorder } from '../hooks/useClientReorder.js'
+import useAssistantClient from '../hooks/useAssistantClient.js'
 import { requestClientSave } from '../../../data/sync/clientMutations.ts'
 import { requestClientDeletion } from '../../../data/sync/directMutationActions.ts'
 import { getCloudUserId } from '../../../data/cloud/cloudSession.ts'
@@ -41,11 +42,13 @@ export default function ClientListPage({ onBack, onOpenMenu }) {
   const reorder = useClientReorder(ownerKey, clients)
   const visibleClients = clients.filter((client) => !client.scopedToVehicleNumber)
 
-  function openAdd() {
+  /** @param {Partial<ClientDraft>} [fields] 운비서가 채운 칸 */
+  function openAdd(fields) {
     setEditingId(null)
-    setDraft({ ...emptyDraft })
+    setDraft({ ...emptyDraft, ...fields })
     setModalOpen(true)
   }
+  useAssistantClient(openAdd)
 
   function openEdit(/** @type {ClientLike} */ client) {
     setEditingId(client.id)
@@ -108,7 +111,7 @@ export default function ClientListPage({ onBack, onOpenMenu }) {
           />
         ))}
       </div>
-      <button type="button" className="management-add-fab" onClick={openAdd}>+ 추가</button>
+      <button type="button" className="management-add-fab" onClick={() => openAdd()}>+ 추가</button>
       {modalOpen && (
         <ClientFormModal draft={draft} setDraft={setDraft} editingId={editingId} onCancel={() => setModalOpen(false)} onSave={save} />
       )}

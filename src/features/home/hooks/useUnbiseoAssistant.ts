@@ -10,14 +10,15 @@ import { isOffDay } from '../../../domain/day-record.ts'
 import { assignmentPeriodNotice } from '../../../domain/drivers.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
-import { describeResult, requestUnbiseoParse, routeNamesForAi } from '../api/unbiseoParse.ts'
-import type { UnbiseoCall, UnbiseoExpense, UnbiseoFixed } from '../api/unbiseoParse.ts'
+import { requestUnbiseoParse, routeNamesForAi } from '../api/unbiseoParse.ts'
+import type { UnbiseoCall, UnbiseoClient, UnbiseoExpense, UnbiseoFixed } from '../api/unbiseoParse.ts'
+import { describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
 import { questionNumbers } from '../api/unbiseoNumbers.ts'
 import { describeQuestion } from '../api/unbiseoQuestion.ts'
 import useSpeechInput from './useSpeechInput.ts'
 import useSpeechOutput from './useSpeechOutput.ts'
 
-export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null }
+export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null, client: UnbiseoClient | null }
 
 export default function useUnbiseoAssistant() {
   const { ownerKey, session } = useSession()
@@ -63,20 +64,24 @@ export default function useUnbiseoAssistant() {
     const owner = ownerKey
     stopSpeaking()
     setBusy(true)
-    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null, fixed: null })
+    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null, fixed: null, client: null })
     // 고정 노선 칩이 보이는 일지일 때만 노선 이름을 보낸다.
     const routeNames = fixedOn && mainSettings.fixedRouteOn ? routeNamesForAi(mainSettings.fixedRoutePresets || []) : []
     const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || ''), routeNames })
     setBusy(false)
     if (owner !== currentOwner.current) return
+    // 이미 있는 이름이면 등록 버튼 없이 알린다.
+    const heardClient = result.kind === 'client' ? result.client : null
+    const existing = !!heardClient && clients.some((client) => (client.companyName || '').trim() === heardClient.name)
     // 질문 숫자는 매출·미수금 화면과 같은 함수로, 받은 그 순간 값에서.
-    const sentence = describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver)))
+    const sentence = existing && heardClient ? describeExistingClient(heardClient.name) : describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver)))
     setAnswer({
       said: trimmed,
       sentence,
       call: result.kind === 'call' ? result.call : null,
       expense: result.kind === 'expense' ? result.expense : null,
       fixed: result.kind === 'fixed' ? result.fixed : null,
+      client: existing ? null : heardClient,
     })
     if (byVoice) voice.speak(sentence)
   }

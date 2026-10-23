@@ -474,3 +474,27 @@ test('고정 노선 꺼짐: "켤까요?" + [켜기] → 앱 설정의 고정 노
     assert.deepEqual(opened, [{ record: { date: '2026-10-21', count: 3, route: '' }, options: { cancelOff: true } }])
   } finally { await view.cleanup() }
 })
+
+// 로드맵 24-G-2 — 거래처 등록: 문장 + [등록하기], 이미 있는 이름이면 문장만.
+test('거래처 등록: 문장 아래 [등록하기] — 누르면 들은 거래처를 넘긴다, 이미 있는 이름이면 버튼 없이 알림', async () => {
+  const owner = 'u-assistant-client'
+  commitClients(owner, [{ id: 'c1', companyName: '롯데' }])
+  const heard = { name: '한진', manager: '김철수', phone: '010-1234-5678', paymentTerm: 'next_month_end', paymentTermValue: null, commType: 'percent', commValue: 5 }
+  reply = async () => ({ data: { kind: 'client', client: heard }, error: null })
+  const opened = []
+  const view = await mount(owner, { ...CLOUD, userId: owner }, { props: { onOpenAssistantCall: (record, options) => opened.push({ record, options }) } })
+  try {
+    await view.type('거래처 등록 한진 김철수 010-1234-5678 익월 말일 수수료 5%')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '한진을 거래처로 등록할게요. (담당자 김철수, 010-1234-5678, 익월 말일 정산, 수수료 5%)')
+    assert.equal(actionButton(view.container, '기록하기'), undefined)
+    await act(async () => { actionButton(view.container, '등록하기').click() })
+    assert.deepEqual(opened, [{ record: heard, options: { cancelOff: false } }])
+
+    reply = async () => ({ data: { kind: 'client', client: { ...heard, name: '롯데' } }, error: null })
+    await view.type('거래처 등록 롯데')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '롯데는 이미 등록된 거래처예요.')
+    assert.equal(view.container.querySelector('.home-assistant-action'), null, '버튼 없음')
+  } finally { await view.cleanup() }
+})

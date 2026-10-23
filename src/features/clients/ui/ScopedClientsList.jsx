@@ -35,7 +35,7 @@ export default function ScopedClientsList({ scopeKey, listId, notice }) {
           ))
         )}
       </div>
-      <button type="button" className="management-add-fab" onClick={scoped.openAdd}>+ 추가</button>
+      <button type="button" className="management-add-fab" onClick={() => scoped.openAdd()}>+ 추가</button>
       {scoped.modalOpen && (
         <ClientFormModal
           draft={scoped.draft}
