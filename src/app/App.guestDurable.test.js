@@ -810,7 +810,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(A) — 레거시 payments가 있는
     assert.equal(errSpy.count(), 1, '디바운스 커밋 실패로 정확히 1번 로깅돼야 한다')
     assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), '실패 UI가 화면에 표시돼야 한다')
     assert.equal((container.querySelector('.autosave-status')?.textContent || '').includes('저장 완료'), false, '성공 문구가 보이면 안 된다')
-    assert.equal(container.querySelector('.toast-message')?.textContent || '', DEVICE_SAVE_FAIL)
+    assert.equal(container.querySelector('.toast-message')?.textContent || '', `9월 25일 운행일지 ${DEVICE_SAVE_FAIL}`, '어느 날 일지인지 날짜를 붙인다(로드맵 109-B 수정)')
     unsubscribe()
 
     const beforeUnloadEvent = fireBeforeUnload()
@@ -949,7 +949,7 @@ test('재감사 10차 FAIL 지적 1·2·3번(B) — 레거시 payments가 있는
     assert.equal(totalSupabaseCalls(), supabaseCallsBefore, '실패한 시도는 Supabase 호출로 이어지면 안 된다')
     assert.equal(errSpy.count(), 1, '디바운스 커밋 실패로 정확히 1번 로깅돼야 한다')
     assert.ok((container.querySelector('.autosave-status')?.textContent || '').includes('저장 실패'), '실패 UI가 표시돼야 한다')
-    assert.equal(container.querySelector('.toast-message')?.textContent || '', DEVICE_SAVE_FAIL)
+    assert.equal(container.querySelector('.toast-message')?.textContent || '', `9월 26일 운행일지 ${DEVICE_SAVE_FAIL}`)
     unsubscribe()
 
     const beforeUnloadEvent = fireBeforeUnload()

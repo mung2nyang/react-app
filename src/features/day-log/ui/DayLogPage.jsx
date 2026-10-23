@@ -98,14 +98,13 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onC
 
   if (periodNotice) return <AssignmentPeriodPage title={`${month}월 ${day}일 운행일지`} notice={periodNotice} onBack={onClose ? handleClose : undefined} onOpenMenu={onOpenMenu} />
   return (
-    <div className="page work-log-page">
+    <div className={`page work-log-page${workData[dateKey]?.assignedVehicleNumber ? ' has-assigned-vehicle' : ''}`}>
       <PageHeader
         title={<>{`${month}월 ${day}일 운행일지`}{workData[dateKey]?.assignedVehicleNumber ? <span className="assigned-vehicle-tag">배정 차량 {workData[dateKey].assignedVehicleNumber}</span> : null}</>}
-        titleExtra={<AutoSaveStatus status={autoSaveStatus} />}
+        titleExtra={<><AutoSaveStatus status={autoSaveStatus} /><DayFareTotal draft={draft} fixedRouteClient={fixedRouteClient} palletOn={palletVisible} /></>}
         onBack={onClose ? handleClose : undefined}
         onOpenMenu={onOpenMenu}
       />
-      <DayFareTotal draft={draft} fixedRouteClient={fixedRouteClient} palletOn={palletVisible} />
       <OffToggle isOff={draft.isOff} callCount={draft.callDetails.length} onChange={(off) => patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })} />
       <div className={`modal-work-details${draft.isOff ? ' is-off' : ''}`}>
         {settings.fixedOn && (

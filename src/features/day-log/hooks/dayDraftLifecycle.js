@@ -9,7 +9,7 @@ import { commitMainDayLogToCloud } from '../../../data/sync/dayLogCloudCommit.ts
 import { shouldCommitDayLogToCloud } from '../../../data/sync/mainDayLogRouting.ts'
 import { readOwnerLogWorkData } from '../../../data/store/ownerDataHooks.ts'
 import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../../data/sync/dayDraftActivity.ts'
-import { DEVICE_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
+import { DEVICE_SAVE_FAIL, SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.ts').EffectivePatch} EffectivePatch */
 /** @typedef {Record<string, import('../../../domain/dayRecordTypes.ts').DayRecordLike>} WorkMap */
@@ -62,6 +62,8 @@ export function createDayDraftSaver({ ownerKey, logId, dateKey, draft: initialDr
   /** @type {((message: string) => void)|undefined} */
   let toast
   let latestDraft = initialDraft
+  // 저장 실패 알림 앞에 붙는 날짜 — 어느 날 일지가 실패했는지 보이게.
+  const failHead = `${Number(dateKey.slice(5, 7))}월 ${Number(dateKey.slice(8, 10))}일 운행일지 `
 
   /** @param {EffectivePatch} patch */
   function markSaved(patch) {
@@ -78,7 +80,7 @@ export function createDayDraftSaver({ ownerKey, logId, dateKey, draft: initialDr
       saveLogWorkDataWithTombstoneCheck(ownerKey, logId, dateKey, latest, next)
     } catch (error) {
       if (progress.mounted) setAutoSaveStatus('failed')
-      toast?.(DEVICE_SAVE_FAIL)
+      toast?.(failHead + DEVICE_SAVE_FAIL)
       console.error('일지 자동 저장 실패:', error)
       const attemptRev = progress.draftRev
       queueFailedDayWrite(pendingOwner, dateKey, patch, (ok) => settlePendingDayWrite(progress, setAutoSaveStatus, attemptRev, ok))
@@ -94,7 +96,7 @@ export function createDayDraftSaver({ ownerKey, logId, dateKey, draft: initialDr
       if (attemptRev === progress.draftRev) markSaved(patch)
       return
     }
-    if (result.toast) toast?.(result.toast)
+    if (result.toast) toast?.(result.toast === SERVER_SAVE_FAIL ? failHead + result.toast : result.toast)
     if (!progress.mounted) return
     setAutoSaveStatus('failed')
     // draft는 화면에 남는다. 나가기 전 확인에 걸리도록 표시만 하고 재시도 큐는 없다.

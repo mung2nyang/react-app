@@ -158,6 +158,9 @@ test('횟수를 바꾸면 제목 아래 운송료 합계가 바로 바뀐다', a
   const line = () => view.container.querySelector('.day-fare-total')?.textContent
   try {
     assert.equal(line(), '운송료 합계 50,000원')
+    const stack = view.container.querySelector('.modal-title-stack')
+    assert.ok(stack?.querySelector('.day-fare-total'), '합계는 제목 묶음 안(제목 아래 여백에 뜸)')
+    assert.ok(stack?.querySelector('.autosave-status'), '저장 아이콘과 같은 묶음')
     await view.type('#modalFixedCountInput', '3')
     assert.equal(line(), '운송료 합계 200,000원')
   } finally {

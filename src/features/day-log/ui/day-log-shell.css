@@ -131,30 +131,47 @@
   position: relative;   /* 자식 절대배치 기준점만 됨, 세로쌓기 제거 */
 }
 
+/* 저장 아이콘 — 제목 오른쪽에 띄워 아이콘이 바뀌어도 제목이 안 움직인다. */
 .autosave-status {
   position: absolute;
-  top: 100%;             /* 제목 바로 아래 */
-  left: 50%;
-  transform: translateX(-50%);  /* 가운데 정렬 */
-  margin-top: 2px;
-  white-space: nowrap;
-  font-size: var(--fs-2);
-  font-weight: 600;
+  top: 6px;              /* 제목 첫 줄(약 27px) 가운데 */
+  left: 100%;
+  width: 14px;
+  height: 14px;
+  margin-left: 4px;      /* 320px 폭에서 메뉴 단추와 2px 남게 */
   color: var(--sub-text-color);
-  height: 20px;
-  line-height: 20px;
 }
 
-.autosave-status.visible { opacity: 1; }
+.autosave-status svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
-/* 제목 아래 하루 운송료 합계 — 0원·휴무면 글 없이 한 줄 높이만 남는다. */
+.autosave-pending svg { animation: autosave-spin 0.9s linear infinite; }
+@keyframes autosave-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .autosave-pending svg { animation: none; }
+}
+
+.autosave-status .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 제목 아래 하루 운송료 합계 — 제목 아래 여백 안에 떠 있어 0원·휴무로 글이 빠져도 아래 칸이 안 움직인다. */
 .work-log-page .day-fare-total {
+  position: absolute;
+  top: 100%;
+  left: 50%;
   height: 20px;
-  margin: 0 0 8px;
+  margin: 2px 0 0;
+  transform: translateX(-50%);
   color: var(--sub-text-color);
   font-size: var(--fs-3);
   line-height: 20px;
-  text-align: center;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -164,12 +181,13 @@
   font-weight: 700;
 }
 
-/* 연동 해제 때 복사된 날(7-D)의 배정 차량 표시 — 제목 옆 보조 글씨, 좁으면 이 글씨만 다음 줄로 */
+/* 연동 해제 때 복사된 날(7-D)의 배정 차량 표시 — 제목 다음 줄 가운데. 그날은 제목이 두 줄이라 합계 자리만큼 여백을 더 둔다. */
 .assigned-vehicle-tag {
-  display: inline-block;
-  margin-left: 6px;
+  display: block;
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   font-weight: 600;
   white-space: nowrap;
 }
+
+.work-log-page.has-assigned-vehicle .settings-header { margin-bottom: 28px; }

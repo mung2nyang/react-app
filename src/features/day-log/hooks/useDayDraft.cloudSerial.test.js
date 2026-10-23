@@ -21,7 +21,7 @@ const { readOwnerWorkData } = await import('../../../data/store/ownerDataHooks.t
 const { hasBusyDayDraft } = await import('../../../data/sync/dayDraftActivity.ts')
 
 const DK = '2026-10-21'
-const FAIL_FAST = '저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
+const FAIL_FAST = '10월 21일 운행일지 저장에 실패했습니다. 네트워크 상태를 확인해 주세요.'
 
 /** @param {number} ms */
 function wait(ms) {
