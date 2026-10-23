@@ -208,7 +208,7 @@ test('콜 상세 꺼짐: "켤까요?" + [켜기] → 앱 설정의 콜 상세가
 
 test('질문·실패 결과에는 [기록하기]·[켜기]가 없다', async () => {
   commitSettings('u-assistant-on', normalizeSettings({ callDetail: true }))
-  reply = async () => ({ data: { kind: 'question' }, error: null })
+  reply = async () => ({ data: { kind: 'question', question: { type: 'revenue', period: { unit: 'month', value: '2026-10' }, client: '', expenseType: '' } }, error: null })
   const view = await mount('u-assistant-on', CLOUD)
   try {
     await view.type('이번 달 매출')
@@ -317,5 +317,46 @@ test('지출 + 연동 기사 계약 기간 밖: 일지와 같은 안내 두 줄,
     const notes = [...view.container.querySelectorAll('.home-assistant-enable .home-assistant-note')].map((el) => el.textContent)
     assert.deepEqual(notes, ['계약기간 전 날짜입니다.', '10월 5일부터 기록할 수 있습니다.'])
     assert.equal(view.container.querySelector('.home-assistant-action'), null)
+  } finally { await view.cleanup() }
+})
+
+// 로드맵 24-D-2 — 질문은 앱이 화면과 같은 계산으로 낸 답 문장, 버튼 없음.
+test('질문: 내가 한 말 + 매출 화면과 같은 숫자의 답 문장, 버튼 없음 · 짧은 기간·그 밖은 안내', async () => {
+  const owner = 'u-assistant-question'
+  const thisMonth = todayWorkLogSelection(new Date()).dateKey.slice(0, 7)
+  commitWorkData(owner, { [`${thisMonth}-01`]: { callDetails: [{ id: 'q-1', client: '한진', fare: '150,000' }, { id: 'q-2', client: '롯데', fare: '50,000' }] } })
+  const ask = (question) => async () => ({ data: { kind: 'question', question: { client: '', expenseType: '', ...question } }, error: null })
+  const view = await mount(owner, { ...CLOUD, userId: owner })
+  const result = () => view.container.querySelector('.home-assistant-result')?.textContent
+  try {
+    reply = ask({ type: 'trips', period: { unit: 'month', value: thisMonth } })
+    await view.type('이번 달 몇 번 뛰었어')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-said')?.textContent, '내가 한 말: 이번 달 몇 번 뛰었어')
+    assert.equal(result(), `${Number(thisMonth.slice(5))}월 운행은 2회입니다.`)
+    assert.equal(view.container.querySelector('.home-assistant-action'), null)
+    assert.equal(view.container.querySelector('.home-assistant-enable'), null)
+    reply = ask({ type: 'revenue', period: { unit: 'month', value: thisMonth } })
+    await view.send()
+    assert.equal(result(), `${Number(thisMonth.slice(5))}월 매출은 200,000원입니다.`)
+    reply = ask({ type: 'revenue', period: { unit: 'unsupported' } })
+    await view.send()
+    assert.equal(result(), '달이나 연으로 물어봐 주세요. 예: 이번 달 매출 얼마야')
+    reply = ask({ type: 'other', period: { unit: 'month', value: thisMonth } })
+    await view.send()
+    assert.equal(result(), '아직 답할 수 없는 질문이에요. 매출·순이익·지출·미수금·운행 횟수를 물어봐 주세요.')
+    assert.equal(calls.every((call) => !JSON.stringify(call.body).includes('200,000') && !JSON.stringify(call.body).includes('200000')), true, '서버로 숫자가 가지 않음')
+  } finally { await view.cleanup() }
+})
+
+test('연동 기사 질문: 기사 본인 매출 화면 이름(정산액)', async () => {
+  const owner = 'u-assistant-question-driver'
+  const thisMonth = todayWorkLogSelection(new Date()).dateKey.slice(0, 7)
+  reply = async () => ({ data: { kind: 'question', question: { type: 'netProfit', period: { unit: 'month', value: thisMonth }, client: '', expenseType: '' } }, error: null })
+  const view = await mount(owner, { userId: owner, name: '김기사', accountType: 'employed_driver' })
+  try {
+    await view.type('이번 달 순이익')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, `${Number(thisMonth.slice(5))}월 정산액은 0원입니다.`)
   } finally { await view.cleanup() }
 })

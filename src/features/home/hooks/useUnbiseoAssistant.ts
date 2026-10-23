@@ -12,6 +12,8 @@ import { useToast } from '../../../shared/hooks/useToast.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { describeResult, requestUnbiseoParse } from '../api/unbiseoParse.ts'
 import type { UnbiseoCall, UnbiseoExpense } from '../api/unbiseoParse.ts'
+import { questionNumbers } from '../api/unbiseoNumbers.ts'
+import { describeQuestion } from '../api/unbiseoQuestion.ts'
 import useSpeechInput from './useSpeechInput.ts'
 
 export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null }
@@ -22,6 +24,7 @@ export default function useUnbiseoAssistant() {
   const settings = useOwnerSettings(ownerKey)
   const showToast = useToast()
   const loggedIn = isCloudSession(session)
+  const isDriver = session?.accountType === 'employed_driver'
   const workData = useOwnerWorkData(ownerKey)
   const myLink = useOwnerDrivers(ownerKey).find((driver) => driver.status === 'linked')
   const callDetailOn = !!resolveLogSettings(settings, 'main').callDetail
@@ -55,7 +58,8 @@ export default function useUnbiseoAssistant() {
     if (owner !== currentOwner.current) return
     setAnswer({
       said: trimmed,
-      sentence: describeResult(result, today),
+      // 질문 숫자는 매출·미수금 화면과 같은 함수로, 받은 그 순간 값에서.
+      sentence: describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver))),
       call: result.kind === 'call' ? result.call : null,
       expense: result.kind === 'expense' ? result.expense : null,
     })

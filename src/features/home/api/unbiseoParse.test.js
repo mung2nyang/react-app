@@ -52,13 +52,19 @@ test('운행 칸이 이상하면 고쳐 담는다: 날짜 모양이 아니면 �
   assert.equal(odd.kind === 'call' ? odd.call.fare : 'x', null)
 })
 
-test('질문·관계없음은 종류만, 모르는 종류·모양이 틀리면 알아듣지 못함', async () => {
-  for (const kind of ['question', 'unknown']) {
-    reply = async () => ({ data: { kind }, error: null })
-    assert.deepEqual(await requestUnbiseoParse({ text: '주유 8만원', today: '2026-10-22', clientNames: [] }), { kind })
-  }
+test('관계없음은 종류만, 질문은 질문 칸을 읽고, 모르는 종류·모양이 틀리면 알아듣지 못함', async () => {
+  reply = async () => ({ data: { kind: 'unknown' }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '오늘 날씨', today: '2026-10-22', clientNames: [] }), { kind: 'unknown' })
+  reply = async () => ({ data: { kind: 'question', question: { type: 'unpaid', period: { unit: 'all' }, client: '한진', expenseType: '' } }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '한진 미수금', today: '2026-10-22', clientNames: [] }), {
+    kind: 'question', question: { type: 'unpaid', period: { unit: 'all' }, client: '한진', expenseType: '' },
+  })
+  reply = async () => ({ data: { kind: 'question', question: { type: 'weather', period: { unit: 'day' } } }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '뭐', today: '2026-10-22', clientNames: [] }), {
+    kind: 'question', question: { type: 'other', period: { unit: 'month', value: '2026-10' }, client: '', expenseType: '' },
+  })
   /** @type {Array<JsonValue>} */
-  const odd = [{ kind: 'weather' }, { kind: 'call' }, { kind: 'expense' }, { kind: 'expense', expense: [] }, null, 'call', []]
+  const odd = [{ kind: 'weather' }, { kind: 'call' }, { kind: 'expense' }, { kind: 'expense', expense: [] }, { kind: 'question' }, { kind: 'question', question: 'revenue' }, null, 'call', []]
   for (const data of odd) {
     reply = async () => ({ data, error: null })
     assert.deepEqual(await requestUnbiseoParse({ text: '뭐', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
@@ -93,7 +99,7 @@ test('지출 문장: 주유는 주유 종류, 그 밖은 항목명 → 분류 �
   assert.equal(describeExpense({ ...base, category: '판금/도장', cost: 500000, payment: '카드' }, today), '오늘 판금/도장, 500,000원, 카드로 기록할게요.')
   assert.equal(describeExpense({ ...base }, today), '오늘 정비로 기록할게요.')
   assert.equal(describeExpense({ ...base, type: 'misc', cost: 5000 }, today), '오늘 기타, 5,000원으로 기록할게요.')
-  assert.equal(describeResult({ kind: 'expense', expense: { ...base, type: 'misc', name: '통행료', category: '통행료', cost: 5000 } }, today), '오늘 통행료, 5,000원으로 기록할게요.')
+  assert.equal(describeResult({ kind: 'expense', expense: { ...base, type: 'misc', name: '통행료', category: '통행료', cost: 5000 } }, today, () => ''), '오늘 통행료, 5,000원으로 기록할게요.')
 })
 
 test('빈 말·301자는 서버를 부르지 않는다', async () => {
@@ -127,7 +133,9 @@ test('결과 문장: 오늘이면 "오늘", 빈 칸은 빼고, 끝 글자 받침
   assert.equal(describeCall({ date: '2026-10-21', loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '' }, today), '10월 21일 수원 → 화성, 150,000원으로 기록할게요.')
   assert.equal(describeCall({ date: today, loadLoc: '평택', unloadLoc: '', fare: null, client: '' }, today), '오늘 평택으로 기록할게요.')
   assert.equal(describeCall({ date: today, loadLoc: '', unloadLoc: '', fare: null, client: '' }, today), '오늘 운행으로 기록할게요.')
-  assert.equal(describeResult({ kind: 'question' }, today), '질문 답하기는 곧 할 수 있게 됩니다.')
-  assert.equal(describeResult({ kind: 'unknown' }, today), '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.')
-  assert.equal(describeResult({ kind: 'error', message: TRY_LATER }, today), TRY_LATER)
+  /** @type {import('./unbiseoQuestion.ts').UnbiseoQuestion} */
+  const question = { type: 'trips', period: { unit: 'month', value: '2026-10' }, client: '', expenseType: '' }
+  assert.equal(describeResult({ kind: 'question', question }, today, (asked) => `답 ${asked.type}`), '답 trips', '질문 답은 숫자를 내는 쪽이 만든다')
+  assert.equal(describeResult({ kind: 'unknown' }, today, () => ''), '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.')
+  assert.equal(describeResult({ kind: 'error', message: TRY_LATER }, today, () => ''), TRY_LATER)
 })
