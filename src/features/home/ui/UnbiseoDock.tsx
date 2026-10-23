@@ -1,6 +1,8 @@
-// 홈이 아닌 화면에서 아래 메뉴 위 오른쪽에 떠 있는 운비서 캐릭터 버튼. 누르면 위로 카드가 열리며 바로 듣는다.
+// 홈이 아닌 화면에 떠 있는 운비서 캐릭터 버튼. 끌어서 옮기면 왼쪽·오른쪽 가장자리에 붙고, 누르면 아래 메뉴 위에 카드가 열리며 바로 듣는다.
+import type { CSSProperties } from 'react'
 import { assetPath } from '../../../shared/utils/assetPath.js'
 import { useUnbiseo } from '../hooks/unbiseoContext.ts'
+import { useDockPosition } from '../hooks/useDockPosition.ts'
 import HomeAssistantPanel from './HomeAssistantPanel.tsx'
 import './home-assistant.css'
 import './unbiseo-dock.css'
@@ -10,6 +12,7 @@ const AVATAR = assetPath('/images/assistant_unbiseo.png')
 export default function UnbiseoDock() {
   const { assistant, openCall, dockOpen, setDockOpen } = useUnbiseo()
   const { speech } = assistant
+  const { position, offset, fabRef, bind, justDragged } = useDockPosition()
   // 비회원은 띄우지 않는다 — 홈 카드에서 로그인 안내.
   if (!assistant.loggedIn) return null
 
@@ -20,10 +23,21 @@ export default function UnbiseoDock() {
   }
 
   if (!dockOpen) {
+    const place = { '--dock-lift': `${position.lift}px` } as CSSProperties
+    const moving = offset ? { transform: `translate(${offset[0]}px, ${offset[1]}px)` } : undefined
     return (
-      <section className="unbiseo-dock" aria-label="Ai 운비서">
-        <button type="button" className="unbiseo-dock-fab" aria-label="Ai 운비서 열기" aria-expanded={false} onClick={openAndListen}>
-          <img src={AVATAR} alt="" width="40" height="32" />
+      <section className={`unbiseo-dock${position.side === 'left' ? ' left' : ''}`} style={place} aria-label="Ai 운비서">
+        <button
+          {...bind()}
+          ref={fabRef}
+          type="button"
+          className="unbiseo-dock-fab"
+          style={moving}
+          aria-label="Ai 운비서 열기"
+          aria-expanded={false}
+          onClick={() => { if (!justDragged()) openAndListen() }}
+        >
+          <img src={AVATAR} alt="" width="40" height="32" draggable={false} />
         </button>
       </section>
     )

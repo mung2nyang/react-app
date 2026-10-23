@@ -111,6 +111,41 @@ test('홈에는 없고, 다른 화면에는 작은 캐릭터 버튼만 — 누�
   } finally { await view.cleanup() }
 })
 
+// 로드맵 108 — 옮긴 자리는 이 휴대폰에 남는다. 카드는 늘 아래 메뉴 위 앱 폭 전체.
+const DOCK_KEY = 'drivelogUnbiseoDockPosition'
+
+test('저장된 왼쪽·높이가 다시 열 때 버튼에 적용, 카드는 늘 지금 자리', async () => {
+  localStorage.setItem(DOCK_KEY, JSON.stringify({ side: 'left', lift: 120 }))
+  const view = await renderShell('dock-place', '/app/revenue')
+  try {
+    await waitUntil(() => !!view.dock())
+    assert.ok(view.dock()?.classList.contains('left'), '왼쪽 가장자리')
+    assert.equal(/** @type {HTMLElement|null} */ (view.dock())?.style.getPropertyValue('--dock-lift'), '120px')
+    await view.click(view.dock()?.querySelector('.unbiseo-dock-fab'))
+    assert.ok(view.dock()?.querySelector('.home-assistant-panel'), '누르면 카드')
+    assert.equal(view.dock()?.className, 'unbiseo-dock open', '카드는 왼쪽 정렬 없음')
+    assert.equal(/** @type {HTMLElement|null} */ (view.dock())?.style.getPropertyValue('--dock-lift'), '', '카드는 높이 옮김 없음')
+    await view.click(view.dock()?.querySelector('.unbiseo-dock-close'))
+    assert.ok(view.dock()?.classList.contains('left'), '접으면 옮긴 자리로')
+  } finally {
+    await view.cleanup()
+    localStorage.removeItem(DOCK_KEY)
+  }
+})
+
+test('저장 값이 깨졌으면 기본 자리(오른쪽, 높이 0)', async () => {
+  localStorage.setItem(DOCK_KEY, JSON.stringify({ side: 'top', lift: -3 }))
+  const view = await renderShell('dock-broken', '/app/revenue')
+  try {
+    await waitUntil(() => !!view.dock())
+    assert.equal(view.dock()?.className, 'unbiseo-dock')
+    assert.equal(/** @type {HTMLElement|null} */ (view.dock())?.style.getPropertyValue('--dock-lift'), '0px')
+  } finally {
+    await view.cleanup()
+    localStorage.removeItem(DOCK_KEY)
+  }
+})
+
 test('비회원에게는 띄우지 않는다', async () => {
   const view = await renderShell('guest', '/app/revenue', false)
   try {
