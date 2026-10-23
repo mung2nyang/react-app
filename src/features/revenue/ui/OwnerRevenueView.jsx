@@ -1,6 +1,6 @@
 // @ts-check
 // 차주(오너) 손익 화면. 기사 탭에서 개별 기사(차량) 드롭다운 필터.
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { isVehicleRevenueSharedWithOwner } from '../../../domain/cars.ts'
 import { getOwnerMonthlyFinanceDetail } from '../../../domain/finance.ts'
 import { useOwnerCars, useOwnerDriverExpenses, useOwnerExpenses, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.ts'
@@ -24,8 +24,8 @@ export default function OwnerRevenueView() {
   const { ownerKey } = useSession()
   const period = useRevenuePeriod()
   const { year, month, yearly } = period
-  const [scope, setScope] = useState('owner')
-  const [driverVehicle, setDriverVehicle] = useState(ALL_DRIVERS)
+  const [pickedScope, setScope] = useState('owner')
+  const [pickedDriver, setDriverVehicle] = useState(ALL_DRIVERS)
 
   const cars = useOwnerCars(ownerKey)
   const settings = useRevenueFinanceSettings(ownerKey)
@@ -46,15 +46,9 @@ export default function OwnerRevenueView() {
     [hasSubCar],
   )
 
-  useEffect(() => {
-    if (scope === 'driver' && !hasSubCar) setScope('owner')
-  }, [scope, hasSubCar])
-
-  useEffect(() => {
-    if (!driverVehicle) return
-    const stillPresent = subCars.some((car) => String(car.number || '').trim() === driverVehicle)
-    if (!stillPresent) setDriverVehicle(ALL_DRIVERS)
-  }, [subCars, driverVehicle])
+  // 기사 차량이 없어지면 "차주", 고른 기사가 없어지면 "전체 기사 합산"으로 보인다(고른 값은 남겨 둠).
+  const scope = pickedScope === 'driver' && !hasSubCar ? 'owner' : pickedScope
+  const driverVehicle = pickedDriver && subCars.some((car) => String(car.number || '').trim() === pickedDriver) ? pickedDriver : ALL_DRIVERS
 
   const scopedForDriver = scope === 'driver' && !!driverVehicle
   const financeSettings = useMemo(

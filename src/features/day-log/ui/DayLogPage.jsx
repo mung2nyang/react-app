@@ -38,6 +38,7 @@ import { useSession } from '../../../data/cloud/sessionContext.ts'
 /** @typedef {import('./dayLogTypes.js').Settings} Settings */
 
 const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
+const EMPTY_PINS = /** @type {Array<never>} */ ([])
 
 /**
  * @param {Object} props
@@ -66,7 +67,7 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onC
   const workData = logId === 'main' ? mainWorkData : (workDataByLogId[logId] || EMPTY_WORK)
   const myLink = useOwnerDrivers(ownerKey).find((driver) => driver.status === 'linked') // 연동 기사 본인 배정 기간
   const periodNotice = isEmployedDriver ? assignmentPeriodNotice(dateKey, myLink?.startDate, myLink?.endDate) : null
-  const pinnedLocations = settings.pinnedLocations || []
+  const pinnedLocations = settings.pinnedLocations || EMPTY_PINS
   const locationShortcuts = useMemo(
     () => locationShortcutList(workData, draft.callDetails, pinnedLocations),
     [workData, draft.callDetails, pinnedLocations],

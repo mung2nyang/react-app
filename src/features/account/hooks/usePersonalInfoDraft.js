@@ -47,6 +47,7 @@ export function usePersonalInfoDraft({ ownerKey, profile }) {
       savingRef.current = false
       if (mountedRef.current) setDraft({ ...dirtyRef.current })
     }
+    // oxlint-disable-next-line react/immutability -- 저장 중 바뀐 값이 남으면 한 번 더 저장한다(자기 호출).
     if (Object.keys(dirtyRef.current).length) await flush()
   }, [])
 

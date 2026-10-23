@@ -8,16 +8,19 @@ import ConfirmModal from '../../../shared/ui/ConfirmModal.jsx'
 
 export function useConfirm() {
   const [pending, setPending] = useState(/** @type {PendingConfirm|null} */ (null))
-  const pendingRef = useRef(pending)
-  pendingRef.current = pending
+  // 열 때 담고 닫을 때 비운다 — 그리는 중에는 건드리지 않는다.
+  const pendingRef = useRef(/** @type {PendingConfirm|null} */ (null))
 
   const confirm = useCallback((/** @type {string} */ message, /** @type {ConfirmOptions} */ options = {}) => new Promise((resolve) => {
-    setPending({ message, options, resolve })
+    const next = { message, options, resolve }
+    pendingRef.current = next
+    setPending(next)
   }), [])
 
   const close = useCallback((/** @type {boolean} */ value) => {
     const current = pendingRef.current
     if (!current) return
+    pendingRef.current = null
     current.resolve(value)
     setPending(null)
   }, [])

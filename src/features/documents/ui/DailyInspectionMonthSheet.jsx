@@ -16,32 +16,37 @@ import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../domain/dailyInspectionMonth.ts').MonthInspection} MonthInspection */
 
+/** @type {{ status: 'loading', byDate: Record<string, MonthInspection> }} */
+const LOADING = { status: 'loading', byDate: {} }
+
 /** @param {{ logKey: string, viewDate: Date, onChangeMonth: (next: Date) => void, tabs?: import('react').ReactNode }} props */
 export default function DailyInspectionMonthSheet({ logKey, viewDate, onChangeMonth, tabs }) {
   const { ownerKey } = useSession()
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
   const [rangeIndex, setRangeIndex] = useState(() => initialRangeIndex(year, month, new Date()))
-  const [load, setLoad] = useState(/** @type {{ status: 'loading'|'ready'|'error', byDate: Record<string, MonthInspection> }} */ ({ status: 'loading', byDate: {} }))
   const [reloadTick, setReloadTick] = useState(0)
   const cars = useOwnerCars(ownerKey)
   const profile = useOwnerProfile(ownerKey)
   const workData = useOwnerWorkDataByLogId(ownerKey)[logKey] || {}
   const vehicleId = vehicleSupabaseIdForLog(ownerKey, logKey)
   const car = (logKey === 'main' ? (cars.find((item) => item.type === 'main') || cars[0]) : cars.find((item) => item.number === logKey)) || null
+  // 결과는 어느 요청 것인지 열쇠(사용자·차량·달·다시 시도)와 같이 — 열쇠가 다르면 불러오는 중.
+  const loadKey = `${ownerKey}|${vehicleId}|${year}-${month}|${reloadTick}`
+  const [result, setResult] = useState(/** @type {{ key: string, status: 'ready'|'error', byDate: Record<string, MonthInspection> }|null} */ (null))
+  const load = result && result.key === loadKey ? result : LOADING
 
   useEffect(() => {
     if (vehicleId == null) return undefined
     let alive = true
-    setLoad({ status: 'loading', byDate: {} })
     fetchMonthDailyInspections(vehicleId, year, month)
-      .then((byDate) => { if (alive) setLoad({ status: 'ready', byDate }) })
+      .then((byDate) => { if (alive) setResult({ key: loadKey, status: 'ready', byDate }) })
       .catch((error) => {
         console.error('[DailyInspectionMonthSheet] 불러오기 실패:', error)
-        if (alive) setLoad({ status: 'error', byDate: {} })
+        if (alive) setResult({ key: loadKey, status: 'error', byDate: {} })
       })
     return () => { alive = false }
-  }, [vehicleId, year, month, reloadTick])
+  }, [vehicleId, year, month, loadKey])
 
   const days = useMemo(() => rangeDays(year, month, rangeIndex), [year, month, rangeIndex])
   const today = todayKey()

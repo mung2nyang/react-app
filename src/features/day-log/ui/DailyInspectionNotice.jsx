@@ -16,6 +16,8 @@ import { useSession } from '../../../data/cloud/sessionContext.ts'
 /** @typedef {import('../../../data/sync/dailyInspections.ts').DailyInspection} DailyInspection */
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
+/** @type {{ status: 'loading', record: DailyInspection|null }} */
+const LOADING = { status: 'loading', record: null }
 
 /**
  * @param {{
@@ -30,22 +32,24 @@ export default function DailyInspectionNotice({ logId, dateKey, month, day, enab
   const profile = useOwnerProfile(ownerKey)
   const vehicleId = vehicleSupabaseIdForLog(ownerKey, logId)
   const active = enabled && !isOff && ownerKey !== 'guest' && vehicleId != null
-  const [load, setLoad] = useState(/** @type {{ status: 'loading'|'ready'|'error', record: DailyInspection|null }} */ ({ status: 'loading', record: null }))
   const [reloadTick, setReloadTick] = useState(0)
+  // 결과는 어느 요청 것인지 열쇠(사용자·차량·날짜·다시 시도)와 같이 — 열쇠가 다르면 불러오는 중.
+  const loadKey = `${ownerKey}|${vehicleId}|${dateKey}|${reloadTick}`
+  const [result, setResult] = useState(/** @type {{ key: string, status: 'ready'|'error', record: DailyInspection|null }|null} */ (null))
+  const load = result && result.key === loadKey ? result : LOADING
   const [modalOpen, setModalOpen] = useState(false)
 
   useEffect(() => {
     if (!active || vehicleId == null) return undefined
     let alive = true
-    setLoad({ status: 'loading', record: null })
     fetchDailyInspection(vehicleId, dateKey)
-      .then((record) => { if (alive) setLoad({ status: 'ready', record }) })
+      .then((record) => { if (alive) setResult({ key: loadKey, status: 'ready', record }) })
       .catch((error) => {
         console.error('[DailyInspectionNotice] 불러오기 실패:', error)
-        if (alive) setLoad({ status: 'error', record: null })
+        if (alive) setResult({ key: loadKey, status: 'error', record: null })
       })
     return () => { alive = false }
-  }, [active, vehicleId, dateKey, reloadTick])
+  }, [active, vehicleId, dateKey, loadKey])
 
   if (!active || vehicleId == null) return null
   // 서버 확인 중엔 같은 크기 상자에 글자·버튼 자리 막대(빛 지나감)를 그려 아래 내용이 밀리지 않게 한다.
@@ -69,7 +73,7 @@ export default function DailyInspectionNotice({ logId, dateKey, month, day, enab
     if (vehicleId == null) return false
     try {
       await saveDailyInspection({ vehicleId, workDate: dateKey, items: next.items, actionNote: next.actionNote, inspectorName })
-      setLoad({ status: 'ready', record: { items: next.items, actionNote: next.actionNote.trim(), inspectorName } })
+      setResult({ key: loadKey, status: 'ready', record: { items: next.items, actionNote: next.actionNote.trim(), inspectorName } })
       return true
     } catch (error) {
       console.error('[DailyInspectionNotice] 저장 실패:', error)

@@ -100,6 +100,7 @@ export function useAppSession() {
   // 값으로 채운다. hydrate는 그 위에 서버 값을 덮어쓸 뿐 — 이 초기화 없이는 hydrate가
   // 없는 게스트 세션에서 store가 계속 비어 있게 된다.
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- 저장된 기록 채우기는 화면 밖 작업이라 effect에서 하고 결과만 담는다.
     setLoadFailedOwner(initializeOwnerFromPersist(ownerKey) ? '' : ownerKey)
   }, [ownerKey])
 

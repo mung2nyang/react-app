@@ -15,22 +15,23 @@ const FETCH_FAIL_TOAST = '문의 목록을 불러오지 못했습니다.'
  */
 export default function MyInquiriesList({ userId }) {
   const showToast = useToast()
-  const [items, setItems] = useState(/** @type {Array<SupportInquiryRow>} */ ([]))
-  const [loading, setLoading] = useState(true)
+  // 결과는 어느 사용자 것인지 열쇠와 같이 — 열쇠가 다르면 불러오는 중.
+  const [result, setResult] = useState(/** @type {{ key: string, items: Array<SupportInquiryRow> }|null} */ (null))
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
     fetchMyInquiries(userId)
-      .then((rows) => { if (!cancelled) setItems(rows) })
+      .then((rows) => { if (!cancelled) setResult({ key: userId, items: rows }) })
       .catch(() => {
         if (cancelled) return
-        setItems([])
+        setResult({ key: userId, items: [] })
         showToast?.(FETCH_FAIL_TOAST)
       })
-      .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [userId, showToast])
+
+  const loading = result?.key !== userId
+  const items = result && !loading ? result.items : []
 
   if (loading) return <SkeletonLines lines={3} label="문의 목록 불러오는 중" />
   if (!items.length) return <div className="support-panel-empty">아직 접수한 문의나 건의가 없습니다.</div>

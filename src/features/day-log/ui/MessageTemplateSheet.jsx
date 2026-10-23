@@ -34,7 +34,7 @@ export default function MessageTemplateSheet({ item, client, onClose }) {
       showToast?.('거래처에 등록된 연락처가 없습니다.')
       return
     }
-    window.location.href = buildSmsHref(phone, body, navigator.userAgent)
+    window.location.assign(buildSmsHref(phone, body, navigator.userAgent))
     onClose()
   }
 

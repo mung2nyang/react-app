@@ -19,6 +19,8 @@ import './report.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
 
+const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
+
 /**
  * @param {Object} props
  * @param {string} [props.logId] 특정 차량(연동기사 배정차량·미연동 서브차량)으로 스코프. 없으면 메인 차량.
@@ -47,7 +49,7 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
   const cars = useMemo(() => (logKey === 'main' ? allCars : allCars.filter((car) => car.number === logKey)), [allCars, logKey])
   const practiceSettings = useOwnerSettings(ownerKey)
   const workByLogId = useOwnerWorkDataByLogId(ownerKey)
-  const workData = workByLogId[logKey] || {}
+  const workData = workByLogId[logKey] || EMPTY_WORK
   const clients = useOwnerClients(ownerKey)
   const storedProfile = useOwnerProfile(ownerKey)
   const report = useMemo(

@@ -11,17 +11,18 @@ import { vehicleSupabaseIdForLog } from '../../../data/sync/mainDayLogRouting.ts
 export default function useTodayInspectionMissing({ ownerKey, dateKey, enabled, isOff }) {
   const vehicleId = vehicleSupabaseIdForLog(ownerKey, 'main')
   const active = enabled && !isOff && ownerKey !== 'guest' && vehicleId != null
-  const [missing, setMissing] = useState(false)
+  // 결과는 어느 요청 것인지 열쇠(사용자·차량·날짜)와 같이 — 열쇠가 다르면 아직 확인 중(false).
+  const loadKey = `${ownerKey}|${vehicleId}|${dateKey}`
+  const [result, setResult] = useState(/** @type {{ key: string, missing: boolean }|null} */ (null))
 
   useEffect(() => {
-    setMissing(false)
     if (!active || vehicleId == null) return undefined
     let alive = true
     fetchDailyInspection(vehicleId, dateKey)
-      .then((record) => { if (alive) setMissing(record == null) })
+      .then((record) => { if (alive) setResult({ key: loadKey, missing: record == null }) })
       .catch((error) => { console.error('[useTodayInspectionMissing] 불러오기 실패:', error) })
     return () => { alive = false }
-  }, [active, vehicleId, dateKey])
+  }, [active, vehicleId, dateKey, loadKey])
 
-  return active && missing
+  return active && result?.key === loadKey && result.missing
 }

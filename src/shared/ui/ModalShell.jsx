@@ -24,7 +24,7 @@ export default function ModalShell({
 }) {
   const boxRef = useRef(/** @type {HTMLDivElement|null} */ (null))
   const latest = useRef({ onClose, closeOnEscape })
-  latest.current = { onClose, closeOnEscape }
+  useEffect(() => { latest.current = { onClose, closeOnEscape } })
 
   useEffect(() => {
     const token = {}
@@ -42,7 +42,7 @@ export default function ModalShell({
       openShells.splice(openShells.indexOf(token), 1)
       previous?.focus?.()
     }
-  }, [])
+  }, [initialFocusRef])
 
   return (
     <div className={overlayClassName} onClick={closeOnOverlay ? onClose : undefined}>

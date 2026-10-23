@@ -5,6 +5,7 @@ import { buildFinanceSettings } from '../../../data/sync/ownerFinance.ts'
 import { dueSoonItems, groupByClientMonth } from '../../../domain/receivables.ts'
 import {
   useOwnerCars,
+  useOwnerClients,
   useOwnerDrivers,
   useOwnerProfile,
   useOwnerSettings,
@@ -18,13 +19,15 @@ export function useReceivablesData(ownerKey, isEmployedDriver = false) {
   const practiceSettings = useOwnerSettings(ownerKey)
   const profile = useOwnerProfile(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
+  const clients = useOwnerClients(ownerKey)
   const settings = useMemo(() => {
+    void clients
     void cars
     void practiceSettings
     void profile
     void drivers
     return buildFinanceSettings(ownerKey)
-  }, [ownerKey, workDataByLogId, cars, practiceSettings, profile, drivers])
+  }, [ownerKey, clients, cars, practiceSettings, profile, drivers])
   const items = useMemo(() => getReceivableItems(settings, workDataByLogId), [settings, workDataByLogId])
   const groups = useMemo(() => groupByClientMonth(items), [items])
   const dueItems = useMemo(() => dueSoonItems(items), [items])
