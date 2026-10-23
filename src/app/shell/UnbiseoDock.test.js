@@ -269,3 +269,25 @@ test('지출 [기록하기] → 그 날짜 일지의 지출 창, 같은 날짜�
     assert.equal(window.location.pathname, `/app/day/${DATE}`, '일지에 그대로')
   } finally { await view.cleanup() }
 })
+
+// 로드맵 24-F-2 — 고정 노선 [기록하기] → 그 날짜 일지에서 바로 더함, 같은 날짜에서 또 넘기면 확인 창 없이 한 번 더.
+test('고정 노선 [기록하기] → 그 날짜 일지 칩이 오르고, 같은 날짜에서 또 넘기면 한 번 더', async () => {
+  const fixedReply = () => ({ data: { kind: 'fixed', fixed: { date: DATE, count: 2, route: '평택 → 용인' } } })
+  replies = [fixedReply(), fixedReply()]
+  const view = await renderShell('dock-fixed', '/app/revenue')
+  commitSettings('dock-fixed', normalizeSettings({ callDetail: true, fixedRouteOn: true, fixedRoutePresets: [{ id: 'r1', loadLoc: '평택', unloadLoc: '용인' }] }))
+  const chipCount = () => view.container.querySelector('.fixed-route-chip-count')?.textContent
+  try {
+    await view.askDock('어제 평택 용인 고정 2번')
+    await view.click(view.button('기록하기', view.dock() || undefined))
+    await waitUntil(() => chipCount() === '2회')
+    assert.equal(window.location.pathname, `/app/day/${DATE}`)
+    assert.equal(view.dock()?.querySelector('.home-assistant-panel'), null, '작게')
+
+    await view.askDock('어제 평택 용인 고정 2번')
+    await view.click(view.button('기록하기', view.dock() || undefined))
+    await waitUntil(() => chipCount() === '4회')
+    assert.ok(!view.container.textContent?.includes('저장하지 않은 입력이 있습니다'), '확인 창 없음')
+    assert.equal(window.location.pathname, `/app/day/${DATE}`, '일지에 그대로')
+  } finally { await view.cleanup() }
+})

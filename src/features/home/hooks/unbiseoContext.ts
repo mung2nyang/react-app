@@ -9,7 +9,7 @@ export type OpenAssistantCall = (record: UnbiseoRecord, options: { cancelOff: bo
 
 type UnbiseoShared = {
   assistant: UnbiseoAssistant
-  /** [기록하기]·[휴무 취소하고 기록] — 떠 있는 줄을 줄이고 그 날짜 일지로 */
+  /** [기록하기]·[휴무 취소하고 기록](운행·지출·고정 노선) — 떠 있는 줄을 줄이고 그 날짜 일지로 */
   openCall: OpenAssistantCall
   /** 떠 있는 줄이 펼쳐져 있나(화면을 옮겨도 그대로, 앱을 다시 켜면 줄임) */
   dockOpen: boolean

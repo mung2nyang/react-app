@@ -10,7 +10,7 @@ import { parseDateKeySelection } from '../../domain/calendar.ts'
 import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../../data/store/ownerDataHooks.ts'
 import { confirmLeaveIfUnsafe } from '../../data/sync/durableWriteGuard.ts'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
-import { readAssistantCall, readAssistantExpense } from './assistantCallState.js'
+import { readAssistantCall, readAssistantExpense, readAssistantFixed } from './assistantCallState.js'
 import { useSession } from '../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
@@ -42,12 +42,13 @@ export default function MainPageRoute({
     ? (cars[0]?.number || 'main')
     : logId
   const knownLog = logId === 'main' || cars.some((car) => car.number === logId)
-  // 운비서가 넘긴 운행·지출(assistantCall·assistantExpense)은 한 번만 — 받아서 넘기고 주소 상태에서 지운다(로드맵 24-B-2·24-C-2).
+  // 운비서가 넘긴 운행·지출·고정 노선은 한 번만 — 받아서 넘기고 주소 상태에서 지운다(로드맵 24-B-2·24-C-2·24-F-2).
   const assistantCall = readAssistantCall(location.state)
   const assistantExpense = readAssistantExpense(location.state)
+  const assistantFixed = readAssistantFixed(location.state)
 
   useEffect(() => {
-    if (!readAssistantCall(location.state) && !readAssistantExpense(location.state)) return
+    if (!readAssistantCall(location.state) && !readAssistantExpense(location.state) && !readAssistantFixed(location.state)) return
     navigate(`${location.pathname}${location.search}`, { replace: true, state: { from: location.state?.from } })
   }, [location, navigate])
 
@@ -84,6 +85,7 @@ export default function MainPageRoute({
         isEmployedDriver={session?.accountType === 'employed_driver'}
         assistantCall={assistantCall}
         assistantExpense={assistantExpense}
+        assistantFixed={assistantFixed}
         assistantCallKey={location.key}
       />
     )

@@ -9,14 +9,19 @@ import type { UnbiseoQuestion } from './unbiseoQuestion.ts'
 export const TEXT_MAX = 300
 const CLIENTS_MAX = 200
 const CLIENT_NAME_MAX = 50
+const ROUTES_MAX = 30
+const ROUTE_NAME_MAX = 60
+const FIXED_COUNT_MAX = 20
 
 export type UnbiseoCall = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
 export type UnbiseoExpense = { date: string, type: 'maint' | 'fuel' | 'misc', cost: number | null, name: string, category: string, fuelType: string, payment: string }
-/** [기록하기]로 일지에 넘기는 것 — 운행 또는 지출 */
-export type UnbiseoRecord = UnbiseoCall | UnbiseoExpense
+export type UnbiseoFixed = { date: string, count: number, route: string }
+/** [기록하기]로 일지에 넘기는 것 — 운행·지출·고정 노선 */
+export type UnbiseoRecord = UnbiseoCall | UnbiseoExpense | UnbiseoFixed
 export type UnbiseoResult =
   | { kind: 'call', call: UnbiseoCall }
   | { kind: 'expense', expense: UnbiseoExpense }
+  | { kind: 'fixed', fixed: UnbiseoFixed }
   | { kind: 'question', question: UnbiseoQuestion }
   | { kind: 'unknown' }
   | { kind: 'error', message: string }
@@ -57,6 +62,17 @@ function readExpense(row: { [key: string]: JsonValue }, today: string): UnbiseoE
   }
 }
 
+// 고정 노선 — 횟수 1~20(밖이면 1), 노선 이름은 보낸 것과 같은 길이 안만(로드맵 24-F-2).
+function readFixed(row: { [key: string]: JsonValue }, today: string): UnbiseoFixed {
+  const count = row.count
+  const route = text(row, 'route')
+  return {
+    date: dateOf(row, today),
+    count: typeof count === 'number' && Number.isInteger(count) && count >= 1 && count <= FIXED_COUNT_MAX ? count : 1,
+    route: route.length <= ROUTE_NAME_MAX ? route : '',
+  }
+}
+
 /** 서버가 돌려준 값 → 화면용. 모양이 틀리면 알아듣지 못함. */
 export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoResult {
   const row = record(data)
@@ -64,6 +80,8 @@ export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoR
   if (row.kind === 'unknown') return { kind: 'unknown' }
   const question = record(row.question)
   if (row.kind === 'question') return question ? { kind: 'question', question: readQuestion(question, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
+  const fixed = record(row.fixed)
+  if (row.kind === 'fixed') return fixed ? { kind: 'fixed', fixed: readFixed(fixed, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
   const expense = record(row.expense)
   if (row.kind === 'expense') return expense ? { kind: 'expense', expense: readExpense(expense, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
   const call = record(row.call)
@@ -91,6 +109,17 @@ export function clientNamesForAi(names: Array<string>): Array<string> {
   return out
 }
 
+/** 등록 노선 → "상차지 → 하차지" 이름(일지 칩과 같은 글자) — 빈 칸·긴 이름 빼고 겹침 없이 30개까지. */
+export function routeNamesForAi(presets: Array<{ loadLoc: string, unloadLoc: string }>): Array<string> {
+  const out: Array<string> = []
+  for (const preset of presets) {
+    const name = `${preset.loadLoc} → ${preset.unloadLoc}`
+    if (preset.loadLoc && preset.unloadLoc && name.length <= ROUTE_NAME_MAX && !out.includes(name)) out.push(name)
+    if (out.length >= ROUTES_MAX) break
+  }
+  return out
+}
+
 /** 받침 있으면 "으로", 없거나 ㄹ 받침·한글 아님이면 "로". */
 function withRo(word: string): string {
   const code = word.charCodeAt(word.length - 1) - 0xac00
@@ -113,6 +142,11 @@ export function describeCall(call: UnbiseoCall, today: string): string {
   return `${dateLabel} ${withRo(parts.join(', '))} 기록할게요.`
 }
 
+/** 고정 노선 결과 한 문장 — 노선을 못 알아들었으면 "고정 노선". */
+export function describeFixed(fixed: UnbiseoFixed, today: string): string {
+  return `${dateLabelOf(fixed.date, today)} ${fixed.route || '고정 노선'} ${fixed.count}회로 기록할게요.`
+}
+
 const EXPENSE_LABEL = { maint: '정비', fuel: '주유', misc: '기타' }
 
 /** 지출 결과 한 문장 — 항목은 주유면 주유 종류, 그 밖은 항목명 → 분류 → 종류 이름 순(빈 칸은 뺌). */
@@ -126,6 +160,7 @@ export function describeExpense(expense: UnbiseoExpense, today: string): string 
 export function describeResult(result: UnbiseoResult, today: string, answerQuestion: (question: UnbiseoQuestion) => string): string {
   if (result.kind === 'call') return describeCall(result.call, today)
   if (result.kind === 'expense') return describeExpense(result.expense, today)
+  if (result.kind === 'fixed') return describeFixed(result.fixed, today)
   if (result.kind === 'question') return answerQuestion(result.question)
   if (result.kind === 'unknown') return '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.'
   return result.message
@@ -138,12 +173,12 @@ function messageForStatus(status: number): string {
   return TRY_LATER
 }
 
-export async function requestUnbiseoParse(input: { text: string, today: string, clientNames: Array<string> }): Promise<UnbiseoResult> {
+export async function requestUnbiseoParse(input: { text: string, today: string, clientNames: Array<string>, routeNames?: Array<string> }): Promise<UnbiseoResult> {
   const said = input.text.trim()
   if (!said || said.length > TEXT_MAX) return { kind: 'error', message: BAD_INPUT }
   try {
     const { data, error } = await supabase.functions.invoke('unbiseo-parse', {
-      body: { text: said, today: input.today, clientNames: clientNamesForAi(input.clientNames) },
+      body: { text: said, today: input.today, clientNames: clientNamesForAi(input.clientNames), ...(input.routeNames?.length ? { routeNames: input.routeNames } : {}) },
     })
     if (error) {
       const status = error instanceof FunctionsHttpError && error.context instanceof Response ? error.context.status : 0

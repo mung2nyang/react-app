@@ -22,7 +22,7 @@ const { normalizeSettings } = await import('../../domain/practiceSettings.ts')
 const { commitClients, commitSettings, commitWorkData } = await import('../../data/store/commitHelpers.ts')
 const { readOwnerLogWorkData } = await import('../../data/store/ownerDataHooks.ts')
 const { readOwnerExpenses } = await import('../../data/store/ownerDataHooks.ts')
-const { readAssistantCall, readAssistantExpense } = await import('./assistantCallState.js')
+const { readAssistantCall, readAssistantExpense, readAssistantFixed } = await import('./assistantCallState.js')
 const { default: MainPageRoute } = await import('./MainPageRoute.jsx')
 
 // 열자마자 "저장하지 않은 입력" 확인 창이 뜨면 안 된다(뒤로가기 붙잡기와 주소 상태 지우기가 겹칠 때).
@@ -32,9 +32,9 @@ window.confirm = () => { confirms += 1; return true }
 const DATE = '2026-10-21'
 const CALL = { loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '한진' }
 
-/** @param {string} ownerKey @param {object|null} usr 주소 상태 @param {{ callDetail?: boolean, workData?: object }} [options] */
-async function render(ownerKey, usr, { callDetail = true, workData = {} } = {}) {
-  commitSettings(ownerKey, normalizeSettings({ callDetail }))
+/** @param {string} ownerKey @param {object|null} usr 주소 상태 @param {{ callDetail?: boolean, workData?: object, settings?: object }} [options] */
+async function render(ownerKey, usr, { callDetail = true, workData = {}, settings = {} } = {}) {
+  commitSettings(ownerKey, normalizeSettings({ callDetail, ...settings }))
   commitClients(ownerKey, [{ id: 'c1', companyName: '한진' }])
   commitWorkData(ownerKey, workData)
   window.history.replaceState(usr ? { usr, key: 'k1', idx: 0 } : null, '', `/app/day/${DATE}`)
@@ -328,4 +328,89 @@ test('지출 이상한 값은 그 칸만 빈 칸 — 모르는 종류는 정비,
     assert.deepEqual(activeText(view.container, '.pill-btn'), ['통행료'], '목록 밖 분류는 기본값')
     assert.deepEqual(activeText(view.container, '.segment-btn'), ['카드'])
   } finally { await view.cleanup() }
+})
+
+// 로드맵 24-F-2 — 운비서가 넘긴 고정 노선을 그 날짜 일지에 한 번 더한다(노선 칩·횟수 칸과 같은 동작, 저장은 일지 자동 저장).
+const ROUTES = { fixedRouteOn: true, fixedRoutePresets: [{ id: 'r1', loadLoc: '평택', unloadLoc: '용인' }, { id: 'r2', loadLoc: '화성', unloadLoc: '오산' }] }
+
+test('고정 노선이 칩 이름과 같으면 그 칩 횟수와 운행 횟수를 같이 올리고 알림, 주소 상태에서는 지워진다', async () => {
+  const view = await render('assist-fixed-route', { from: 'home', assistantFixed: { count: 2, route: '평택 → 용인' } }, { settings: ROUTES, workData: { [DATE]: { fixedCount: 1, fixedRouteCounts: { r2: 1 } } } })
+  try {
+    assert.deepEqual(view.toasts, ['평택 → 용인 2회를 더했습니다.'])
+    assert.deepEqual([...view.container.querySelectorAll('.fixed-route-chip-count')].map((el) => el.textContent), ['2회', '1회'])
+    assert.equal(readAssistantFixed(window.history.state?.usr), null)
+    assert.equal(window.history.state?.usr?.from, 'home')
+    assert.equal(view.container.querySelector('#callLoadLoc'), null, '운행 입력 창은 안 열림')
+  } finally { await view.cleanup() }
+  const saved = readOwnerLogWorkData('assist-fixed-route', 'main')[DATE]
+  assert.equal(saved?.fixedCount, 3)
+  assert.deepEqual(saved?.fixedRouteCounts, { r1: 2, r2: 1 })
+})
+
+test('노선이 없거나 칩 이름과 다르면 운행 횟수만 올린다', async () => {
+  const view = await render('assist-fixed-count', { from: 'home', assistantFixed: { count: 3, route: '' } }, { settings: ROUTES, workData: { [DATE]: { fixedCount: 2 } } })
+  try {
+    assert.deepEqual(view.toasts, ['고정 노선 3회를 더했습니다.'])
+  } finally { await view.cleanup() }
+  assert.equal(readOwnerLogWorkData('assist-fixed-count', 'main')[DATE]?.fixedCount, 5)
+  assert.ok(!readOwnerLogWorkData('assist-fixed-count', 'main')[DATE]?.fixedRouteCounts?.r1)
+
+  const other = await render('assist-fixed-other', { from: 'home', assistantFixed: { count: 1, route: '평택 → 용인' } }, { settings: { ...ROUTES, fixedRouteOn: false } })
+  try {
+    assert.deepEqual(other.toasts, ['고정 노선 1회를 더했습니다.'], '노선 칩을 끈 일지')
+  } finally { await other.cleanup() }
+  assert.equal(readOwnerLogWorkData('assist-fixed-other', 'main')[DATE]?.fixedCount, 1)
+})
+
+test('고정 노선 cancelOff: 휴무를 끄고 더한다, cancelOff 없이 휴무면 더하지 않는다', async () => {
+  const off = await render('assist-fixed-off', { from: 'home', assistantFixed: { count: 2, route: '화성 → 오산', cancelOff: true } }, { settings: ROUTES, workData: OFF_DAY })
+  try {
+    assert.equal(off.container.querySelector('.modal-work-details.is-off'), null, '휴무 꺼짐')
+  } finally { await off.cleanup() }
+  const saved = readOwnerLogWorkData('assist-fixed-off', 'main')[DATE]
+  assert.equal(!!saved?.isOff, false)
+  assert.equal(saved?.fixedCount, 2)
+  assert.deepEqual(saved?.fixedRouteCounts, { r2: 2 })
+
+  const keep = await render('assist-fixed-keep-off', { from: 'home', assistantFixed: { count: 2, route: '' } }, { settings: ROUTES, workData: OFF_DAY })
+  try {
+    assert.deepEqual(keep.toasts, [])
+  } finally { await keep.cleanup() }
+  assert.equal(readOwnerLogWorkData('assist-fixed-keep-off', 'main')[DATE]?.isOff, true)
+  assert.ok(!readOwnerLogWorkData('assist-fixed-keep-off', 'main')[DATE]?.fixedCount)
+})
+
+test('고정 노선 칸이 꺼진 일지면 더하지 않는다', async () => {
+  const view = await render('assist-fixed-disabled', { from: 'home', assistantFixed: { count: 2, route: '' } }, { settings: { fixedOn: false } })
+  try {
+    assert.deepEqual(view.toasts, [])
+  } finally { await view.cleanup() }
+  assert.ok(!readOwnerLogWorkData('assist-fixed-disabled', 'main')[DATE]?.fixedCount)
+})
+
+test('더한 뒤 주소 상태가 지워져 다시 그려도 또 더하지 않는다', async () => {
+  const first = await render('assist-fixed-again', { from: 'home', assistantFixed: { count: 2, route: '' } }, { settings: ROUTES })
+  const cleared = window.history.state
+  await first.cleanup()
+  assert.equal(readOwnerLogWorkData('assist-fixed-again', 'main')[DATE]?.fixedCount, 2)
+  window.history.replaceState(cleared, '', `/app/day/${DATE}`)
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  const routes = React.createElement(Routes, null, React.createElement(Route, { path: '/app/day/:date', element: React.createElement(MainPageRoute) }))
+  try {
+    await act(async () => { root.render(React.createElement(BrowserRouter, null, withSession(routes, { ownerKey: 'assist-fixed-again' }))) })
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+  assert.equal(readOwnerLogWorkData('assist-fixed-again', 'main')[DATE]?.fixedCount, 2)
+})
+
+test('고정 노선 이상한 값: 횟수가 1~20 정수가 아니면 통째로 버림, 100자 넘는 노선은 빈 칸, cancelOff는 참일 때만', () => {
+  for (const count of [0, 21, 2.5, '2', null, undefined]) assert.equal(readAssistantFixed({ assistantFixed: { count, route: '' } }), null, String(count))
+  assert.deepEqual(readAssistantFixed({ assistantFixed: { count: 20, route: ' 평택 → 용인 ', cancelOff: 'true' } }), { count: 20, route: '평택 → 용인', cancelOff: false })
+  assert.deepEqual(readAssistantFixed({ assistantFixed: { count: 1, route: '가'.repeat(101), cancelOff: true } }), { count: 1, route: '', cancelOff: true })
+  assert.equal(readAssistantFixed({ assistantFixed: [2] }), null)
+  assert.equal(readAssistantFixed({ assistantCall: CALL }), null)
 })

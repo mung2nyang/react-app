@@ -25,7 +25,8 @@ test('실패 날짜마다 알림(메인·기사 차량), 맨 앞·날짜 오래�
       title: '10월 22일 운행일지 저장이 실패했습니다.', body: '일지를 확인한 후 저장이 안 된 내용이 있으면 다시 입력해 주세요.', dateLabel: '', noDismiss: true,
     },
   ])
-  assert.equal(items[2]?.kind, 'inspectionRequired', '다른 알림은 그 뒤')
+  // 저녁이면 "오늘 일지" 알림도 끼므로 순서 대신 포함만 본다.
+  assert.ok(items.slice(2).some((item) => item.kind === 'inspectionRequired'), '다른 알림은 그 뒤')
 })
 
 test('알림 받기에서 꺼도, 닫은 id에 있어도 빠지지 않는다', () => {

@@ -8,9 +8,10 @@ type OpenCallOptions = { cancelOff: boolean }
 type Props = { assistant: UnbiseoAssistant, onOpenCall?: (record: UnbiseoRecord, options: OpenCallOptions) => void }
 
 export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
-  const { loggedIn, text, setText, busy, answer, send, speech, speaking, stopSpeaking, callDetailOn, enabling, enableCallDetail, periodNotice, dayOff } = assistant
-  const record = answer?.call ?? answer?.expense
+  const { loggedIn, text, setText, busy, answer, send, speech, speaking, stopSpeaking, callDetailOn, fixedOn, enabling, enableSetting, periodNotice, dayOff } = assistant
+  const record = answer?.call ?? answer?.expense ?? answer?.fixed
   const isCall = !!answer?.call
+  const isFixed = !!answer?.fixed
 
   if (!loggedIn) {
     return <p className="home-assistant-note">로그인하면 쓸 수 있습니다.</p>
@@ -21,7 +22,7 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
     void send(text)
   }
 
-  // 버튼 자리는 하나만 — 계약 기간 밖 → 콜 상세 꺼짐(운행만) → 휴무 → [기록하기] 순서.
+  // 버튼 자리는 하나만 — 계약 기간 밖 → 고정 노선·콜 상세 꺼짐 → 휴무 → [기록하기] 순서.
   function actionFor(record: UnbiseoRecord) {
     if (periodNotice) {
       return (
@@ -31,18 +32,18 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
         </div>
       )
     }
-    if (isCall && !callDetailOn) {
+    if ((isFixed && !fixedOn) || (isCall && !callDetailOn)) {
       return (
         <div className="home-assistant-enable">
-          <p className="home-assistant-note">콜 상세가 꺼져 있어요. 켤까요?</p>
-          <button type="button" className="home-assistant-action" disabled={enabling} onClick={() => void enableCallDetail()}>켜기</button>
+          <p className="home-assistant-note">{isFixed ? '고정 노선이 꺼져 있어요. 켤까요?' : '콜 상세가 꺼져 있어요. 켤까요?'}</p>
+          <button type="button" className="home-assistant-action" disabled={enabling} onClick={() => void enableSetting(isFixed ? { fixedOn: true } : { callDetail: true })}>켜기</button>
         </div>
       )
     }
     if (dayOff) {
       return (
         <div className="home-assistant-enable">
-          <p className="home-assistant-note">{`휴무를 취소하고 ${isCall ? '운행' : '지출'}을 기록할까요?`}</p>
+          <p className="home-assistant-note">{`휴무를 취소하고 ${isCall ? '운행' : isFixed ? '고정 노선' : '지출'}을 기록할까요?`}</p>
           <button type="button" className="home-assistant-action" onClick={() => onOpenCall?.(record, { cancelOff: true })}>휴무 취소하고 기록</button>
         </div>
       )

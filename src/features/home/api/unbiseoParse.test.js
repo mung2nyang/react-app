@@ -21,7 +21,7 @@ mock.module('../../../data/cloud/supabaseClient.ts', {
   },
 })
 
-const { requestUnbiseoParse, clientNamesForAi, BAD_INPUT, LOGIN_NEEDED, NOT_UNDERSTOOD, TRY_LATER } = await import('./unbiseoParse.ts')
+const { requestUnbiseoParse, clientNamesForAi, routeNamesForAi, describeFixed, BAD_INPUT, LOGIN_NEEDED, NOT_UNDERSTOOD, TRY_LATER } = await import('./unbiseoParse.ts')
 
 beforeEach(() => { calls.length = 0; reply = async () => ({ data: null, error: null }) })
 
@@ -138,4 +138,32 @@ test('결과 문장: 오늘이면 "오늘", 빈 칸은 빼고, 끝 글자 받침
   assert.equal(describeResult({ kind: 'question', question }, today, (asked) => `답 ${asked.type}`), '답 trips', '질문 답은 숫자를 내는 쪽이 만든다')
   assert.equal(describeResult({ kind: 'unknown' }, today, () => ''), '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.')
   assert.equal(describeResult({ kind: 'error', message: TRY_LATER }, today, () => ''), TRY_LATER)
+})
+
+// 로드맵 24-F-2 — 고정 노선: 노선 이름 보내기, 답 읽기(횟수 1~20·노선 60자), 문장.
+test('고정 노선 이름: 일지 칩과 같은 "상차지 → 하차지", 빈 칸·61자·겹침 빼고 30개까지, 없으면 보내지 않음', async () => {
+  assert.deepEqual(routeNamesForAi([{ loadLoc: '평택', unloadLoc: '용인' }, { loadLoc: '평택', unloadLoc: '용인' }, { loadLoc: '', unloadLoc: '오산' }, { loadLoc: 'ㄱ'.repeat(30), unloadLoc: 'ㄴ'.repeat(28) }, { loadLoc: '화성', unloadLoc: '오산' }]), ['평택 → 용인', '화성 → 오산'])
+  assert.equal(routeNamesForAi(Array.from({ length: 40 }, (_, i) => ({ loadLoc: `가${i}`, unloadLoc: '나' }))).length, 30)
+  reply = async () => ({ data: { kind: 'fixed', fixed: { date: '2026-10-22', count: 2, route: '평택 → 용인' } }, error: null })
+  const result = await requestUnbiseoParse({ text: '평택 용인 고정 2번', today: '2026-10-22', clientNames: [], routeNames: ['평택 → 용인'] })
+  assert.deepEqual(calls[0].body, { text: '평택 용인 고정 2번', today: '2026-10-22', clientNames: [], routeNames: ['평택 → 용인'] })
+  assert.deepEqual(result, { kind: 'fixed', fixed: { date: '2026-10-22', count: 2, route: '평택 → 용인' } })
+  await requestUnbiseoParse({ text: '오늘 고정 3번', today: '2026-10-22', clientNames: [], routeNames: [] })
+  assert.deepEqual(calls[1].body, { text: '오늘 고정 3번', today: '2026-10-22', clientNames: [] }, '빈 목록이면 칸 없이')
+})
+
+test('고정 노선 답이 이상하면 고쳐 담는다: 횟수 1~20 정수 아니면 1, 노선 61자는 빈 칸, 날짜 모양 아니면 오늘, 칸이 없으면 알아듣지 못함', async () => {
+  const read = async (/** @type {JsonValue} */ fixed) => { reply = async () => ({ data: { kind: 'fixed', fixed }, error: null }); return requestUnbiseoParse({ text: '고정', today: '2026-10-22', clientNames: [] }) }
+  for (const [said, want] of [[1, 1], [20, 20], [0, 1], [21, 1], [2.5, 1], ['3', 1], [null, 1]]) {
+    assert.deepEqual(await read({ date: '2026-10-21', count: said, route: '' }), { kind: 'fixed', fixed: { date: '2026-10-21', count: want, route: '' } }, String(said))
+  }
+  assert.deepEqual(await read({ date: '어제', count: 3, route: 'ㄱ'.repeat(61) }), { kind: 'fixed', fixed: { date: '2026-10-22', count: 3, route: '' } })
+  assert.deepEqual(await read({ route: ' 평택 → 용인 ' }), { kind: 'fixed', fixed: { date: '2026-10-22', count: 1, route: '평택 → 용인' } })
+  reply = async () => ({ data: { kind: 'fixed' }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '고정', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
+})
+
+test('고정 노선 문장: "{오늘|M월 D일} {노선|고정 노선} n회로 기록할게요."', () => {
+  assert.equal(describeFixed({ date: '2026-10-22', count: 2, route: '평택 → 용인' }, '2026-10-22'), '오늘 평택 → 용인 2회로 기록할게요.')
+  assert.equal(describeFixed({ date: '2026-10-21', count: 3, route: '' }, '2026-10-22'), '10월 21일 고정 노선 3회로 기록할게요.')
 })

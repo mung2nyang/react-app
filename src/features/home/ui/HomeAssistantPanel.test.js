@@ -420,3 +420,54 @@ test('읽어 주기: 말로 보낸 답만 읽고, [멈추기]·다시 듣기·�
     delete window.SpeechSynthesisUtterance
   }
 })
+
+// 로드맵 24-F-2 — 고정 노선: 칩이 보이는 계정만 노선 이름을 보내고, 버튼 자리는 꺼짐 [켜기] → 휴무 → [기록하기].
+test('고정 노선: 노선 칩이 보이면 이름을 같이 보내고, 문장 아래 [기록하기] — 누르면 알아들은 고정 노선을 넘긴다', async () => {
+  const owner = 'u-assistant-fixed'
+  commitSettings(owner, normalizeSettings({ fixedRouteOn: true, fixedRoutePresets: [{ id: 'r1', loadLoc: '평택', unloadLoc: '용인' }] }))
+  const today = todayWorkLogSelection(new Date()).dateKey
+  reply = async () => ({ data: { kind: 'fixed', fixed: { date: today, count: 2, route: '평택 → 용인' } }, error: null })
+  const opened = []
+  const view = await mount(owner, { ...CLOUD, userId: owner }, { props: { onOpenAssistantCall: (record, options) => opened.push({ record, options }) } })
+  try {
+    await view.type('평택 용인 고정 2번 뛰었어')
+    await view.send()
+    assert.deepEqual(calls[0].body.routeNames, ['평택 → 용인'])
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '오늘 평택 → 용인 2회로 기록할게요.')
+    await act(async () => { actionButton(view.container, '기록하기').click() })
+    assert.deepEqual(opened, [{ record: { date: today, count: 2, route: '평택 → 용인' }, options: { cancelOff: false } }])
+  } finally { await view.cleanup() }
+})
+
+test('고정 노선: 노선 칩을 끈 계정은 노선 이름을 보내지 않는다', async () => {
+  const owner = 'u-assistant-fixed-chips-off'
+  commitSettings(owner, normalizeSettings({ fixedRouteOn: false, fixedRoutePresets: [{ id: 'r1', loadLoc: '평택', unloadLoc: '용인' }] }))
+  const view = await mount(owner, { ...CLOUD, userId: owner })
+  try {
+    await view.type('오늘 고정 3번')
+    await view.send()
+    assert.equal('routeNames' in calls[0].body, false)
+  } finally { await view.cleanup() }
+})
+
+test('고정 노선 꺼짐: "켤까요?" + [켜기] → 앱 설정의 고정 노선이 켜지고 [기록하기], 그날 휴무면 [휴무 취소하고 기록]', async () => {
+  const owner = 'u-assistant-fixed-off'
+  commitSettings(owner, normalizeSettings({ fixedOn: false }))
+  commitWorkData(owner, { '2026-10-21': { isOff: true } })
+  reply = async () => ({ data: { kind: 'fixed', fixed: { date: '2026-10-21', count: 3, route: '' } }, error: null })
+  const opened = []
+  const view = await mount(owner, { ...CLOUD, userId: owner }, { props: { onOpenAssistantCall: (record, options) => opened.push({ record, options }) } })
+  try {
+    await view.type('어제 고정 3번')
+    await view.send()
+    assert.equal('routeNames' in calls[0].body, false, '고정 노선이 꺼졌으면 노선 이름 안 보냄')
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 21일 고정 노선 3회로 기록할게요.')
+    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '고정 노선이 꺼져 있어요. 켤까요?')
+    await act(async () => { actionButton(view.container, '켜기').click() })
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
+    assert.equal(readOwnerSettings(owner).fixedOn, true)
+    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '휴무를 취소하고 고정 노선을 기록할까요?')
+    await act(async () => { actionButton(view.container, '휴무 취소하고 기록').click() })
+    assert.deepEqual(opened, [{ record: { date: '2026-10-21', count: 3, route: '' }, options: { cancelOff: true } }])
+  } finally { await view.cleanup() }
+})

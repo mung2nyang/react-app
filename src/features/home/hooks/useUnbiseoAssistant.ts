@@ -10,14 +10,14 @@ import { isOffDay } from '../../../domain/day-record.ts'
 import { assignmentPeriodNotice } from '../../../domain/drivers.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
-import { describeResult, requestUnbiseoParse } from '../api/unbiseoParse.ts'
-import type { UnbiseoCall, UnbiseoExpense } from '../api/unbiseoParse.ts'
+import { describeResult, requestUnbiseoParse, routeNamesForAi } from '../api/unbiseoParse.ts'
+import type { UnbiseoCall, UnbiseoExpense, UnbiseoFixed } from '../api/unbiseoParse.ts'
 import { questionNumbers } from '../api/unbiseoNumbers.ts'
 import { describeQuestion } from '../api/unbiseoQuestion.ts'
 import useSpeechInput from './useSpeechInput.ts'
 import useSpeechOutput from './useSpeechOutput.ts'
 
-export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null }
+export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null }
 
 export default function useUnbiseoAssistant() {
   const { ownerKey, session } = useSession()
@@ -28,7 +28,9 @@ export default function useUnbiseoAssistant() {
   const isDriver = session?.accountType === 'employed_driver'
   const workData = useOwnerWorkData(ownerKey)
   const myLink = useOwnerDrivers(ownerKey).find((driver) => driver.status === 'linked')
-  const callDetailOn = !!resolveLogSettings(settings, 'main').callDetail
+  const mainSettings = resolveLogSettings(settings, 'main')
+  const callDetailOn = !!mainSettings.callDetail
+  const fixedOn = !!mainSettings.fixedOn
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [enabling, setEnabling] = useState(false)
@@ -61,8 +63,10 @@ export default function useUnbiseoAssistant() {
     const owner = ownerKey
     stopSpeaking()
     setBusy(true)
-    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null })
-    const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || '') })
+    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null, fixed: null })
+    // 고정 노선 칩이 보이는 일지일 때만 노선 이름을 보낸다.
+    const routeNames = fixedOn && mainSettings.fixedRouteOn ? routeNamesForAi(mainSettings.fixedRoutePresets || []) : []
+    const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || ''), routeNames })
     setBusy(false)
     if (owner !== currentOwner.current) return
     // 질문 숫자는 매출·미수금 화면과 같은 함수로, 받은 그 순간 값에서.
@@ -72,16 +76,17 @@ export default function useUnbiseoAssistant() {
       sentence,
       call: result.kind === 'call' ? result.call : null,
       expense: result.kind === 'expense' ? result.expense : null,
+      fixed: result.kind === 'fixed' ? result.fixed : null,
     })
     if (byVoice) voice.speak(sentence)
   }
 
-  // 앱 설정 화면의 "콜 상세" 켜기와 같은 값을 저장한다.
-  async function enableCallDetail() {
+  // 앱 설정 화면의 "콜 상세"·"고정 노선" 켜기와 같은 값을 저장한다.
+  async function enableSetting(patch: { callDetail: true } | { fixedOn: true }) {
     if (enabling) return
     setEnabling(true)
     try {
-      await savePracticeSettings(ownerKey, { callDetail: true })
+      await savePracticeSettings(ownerKey, patch)
     } catch (error) {
       console.error('설정 저장 실패:', error)
       showToast(SERVER_SAVE_FAIL)
@@ -90,11 +95,11 @@ export default function useUnbiseoAssistant() {
   }
 
   // [기록하기] 전에 일지와 같은 기준으로 계약 기간·휴무를 본다.
-  const callDate = answer?.call?.date ?? answer?.expense?.date
+  const callDate = answer?.call?.date ?? answer?.expense?.date ?? answer?.fixed?.date
   const periodNotice = callDate && session?.accountType === 'employed_driver' ? assignmentPeriodNotice(callDate, myLink?.startDate, myLink?.endDate) : null
   const dayOff = !!callDate && isOffDay(workData[callDate])
 
-  return { loggedIn, text, setText, busy, answer, send, speech, speaking: voice.speaking, stopSpeaking, callDetailOn, enabling, enableCallDetail, periodNotice, dayOff }
+  return { loggedIn, text, setText, busy, answer, send, speech, speaking: voice.speaking, stopSpeaking, callDetailOn, fixedOn, enabling, enableSetting, periodNotice, dayOff }
 }
 
 export type UnbiseoAssistant = ReturnType<typeof useUnbiseoAssistant>
