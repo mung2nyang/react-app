@@ -37,7 +37,7 @@ export default function CalendarPage({
   const month = viewDate.getMonth()
   const isMain = logId === 'main'
 
-  const { workData, settings, inputMode, unitPrice, expenses, summary } = useMonthSettlement({
+  const { workData, settings, inputMode, unitPrice, palletPrice, expenses, summary } = useMonthSettlement({
     ownerKey, logId, clientScopeKey, year, month,
   })
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
@@ -71,6 +71,7 @@ export default function CalendarPage({
         workData={workData}
         inputMode={inputMode}
         unitPrice={unitPrice}
+        palletPrice={palletPrice}
         paymentOn={paymentOn}
         expenses={expenses}
         expenseVehicle={isMain ? undefined : logId}

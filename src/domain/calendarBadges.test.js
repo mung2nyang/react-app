@@ -69,6 +69,28 @@ describe('dayFareTotal / dayWorkBadgeLabel — 달력 셀 뱃지', () => {
   })
 })
 
+// 로드맵 109-A — 하루 금액에 파렛트(장수 × 파렛트 단가, 꺼졌으면 쓰는 쪽이 0을 넘김).
+describe('dayFareTotal / dayWorkBadgeLabel — 파렛트', () => {
+  test('파렛트 장수 × 파렛트 단가를 더한다', () => {
+    const record = { fixedCount: 2, palletCount: 4 }
+    assert.equal(dayFareTotal(record, 100000, 3000), 212000)
+    assert.equal(dayWorkBadgeLabel(record, { inputMode: 'fare', unitPrice: 100000, palletPrice: 3000 }), '21.2만')
+  })
+
+  test('파렛트 단가 0(꺼짐)이거나 휴무면 지금과 같다', () => {
+    assert.equal(dayFareTotal({ fixedCount: 2, palletCount: 4 }, 100000, 0), 200000)
+    assert.equal(dayFareTotal({ fixedCount: 2, palletCount: 4 }, 100000), 200000)
+    assert.equal(dayWorkBadgeLabel({ isOff: true, palletCount: 4 }, { inputMode: 'fare', unitPrice: 100000, palletPrice: 3000 }), null)
+  })
+
+  test('파렛트만 있는 날: 금액 입력은 금액, 횟수 입력은 지금처럼 칸 비움(파렛트는 횟수 아님)', () => {
+    const record = { fixedCount: 0, palletCount: 3 }
+    assert.equal(dayWorkBadgeLabel(record, { inputMode: 'fare', unitPrice: 100000, palletPrice: 3000 }), '9,000원')
+    assert.equal(dayWorkBadgeLabel(record, { inputMode: 'count', unitPrice: 100000, palletPrice: 3000 }), null)
+    assert.equal(dayWorkBadgeLabel({ fixedCount: 2, palletCount: 3 }, { inputMode: 'count', unitPrice: 100000, palletPrice: 3000 }), '2회')
+  })
+})
+
 describe('dayHasUnpaid — 달력 셀 미수 점', () => {
   function unpaidData() {
     const added = upsertCallDetail([], { fare: '80,000', client: '한진', vatExempt: false }, -1, dateKey, clients)

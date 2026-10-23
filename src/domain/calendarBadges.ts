@@ -1,5 +1,5 @@
 // 달력 셀 뱃지 계산(dayFareTotal/dayWorkBadgeLabel/dayHasUnpaid)과 표시 포맷(formatFareShort).
-import { callFareTotal, dayTripCount, getCallDetails, getFixedCount, isOffDay } from './day-record.ts'
+import { callFareTotal, dayTripCount, getCallDetails, getFixedCount, getPalletCount, isOffDay } from './day-record.ts'
 import { filterByDate } from './expenses.ts'
 import { getDetailPaymentSummary } from './finance.ts'
 import { parseCurrencyValue } from './money.ts'
@@ -25,21 +25,18 @@ export function formatFareShort(amount: number): string {
   return `${n.toLocaleString('ko-KR')}원`
 }
 
-/**
- * 하루치 "운송료 표시" 금액 — inputMode==='fare'일 때 셀 뱃지에 쓴다.
- * 고정노선 연결 거래처의 fixedUnitPrice로 계산한다. 호출부가
- * resolveFixedUnitPrice로 그 값을 넘겨 준다.
- */
-export function dayFareTotal(record: DayRecordLike | null | undefined, unitPrice: number | string): number {
+// 하루 금액 — 고정 노선 횟수 × 단가 + 파렛트 장수 × 파렛트 단가 + 세부 운송료. 파렛트 단가는 쓰는 쪽이 켜짐 조건을 보고 넘긴다(꺼졌으면 0).
+export function dayFareTotal(record: DayRecordLike | null | undefined, unitPrice: number | string, palletPrice: number = 0): number {
   const unit = Math.max(0, parseCurrencyValue(unitPrice))
-  return getFixedCount(record) * unit + callFareTotal(record)
+  return getFixedCount(record) * unit + getPalletCount(record) * Math.max(0, palletPrice) + callFareTotal(record)
 }
 
 /** count 모드는 "N회", fare 모드는 짧은 금액 표기. 휴무거나 표시할 값이 전혀 없으면 null(뱃지 숨김). */
-export function dayWorkBadgeLabel(record: DayRecordLike | null | undefined, { inputMode = 'count', unitPrice = 0 }: { inputMode?: 'count' | 'fare', unitPrice?: number | string } = {}): string | null {
+export function dayWorkBadgeLabel(record: DayRecordLike | null | undefined, { inputMode = 'count', unitPrice = 0, palletPrice = 0 }: { inputMode?: 'count' | 'fare', unitPrice?: number | string, palletPrice?: number } = {}): string | null {
   if (isOffDay(record)) return null
   const trips = dayTripCount(record)
-  const fare = dayFareTotal(record, unitPrice)
+  // 횟수 입력 계정은 파렛트를 횟수로 안 세므로, 파렛트만 있는 날은 지금처럼 칸을 비운다.
+  const fare = dayFareTotal(record, unitPrice, inputMode === 'fare' ? palletPrice : 0)
   if (trips <= 0 && fare <= 0) return null
   return inputMode === 'fare' ? formatFareShort(fare) : `${trips}회`
 }

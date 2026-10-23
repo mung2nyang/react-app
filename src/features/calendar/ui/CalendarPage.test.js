@@ -522,3 +522,37 @@ test('새 홈 3단계 — 달력 탭 위쪽은 홈과 같은 한 줄(작은 로�
     container.remove()
   }
 })
+
+// 로드맵 109-A — 금액 입력 계정 달력 칸에 파렛트, 한 달 칸 합 = 달 정산 운송료 + 파렛트.
+test('파렛트 켠 고정 노선 거래처: 하루 칸에 파렛트 금액, 칸 합 = 달 정산 운송료 + 파렛트', async () => {
+  const ownerKey = 'test-calendar-pallet-day'
+  const client = { id: 'client-pl', companyName: '파렛트거래처', fixedRouteLinked: true, fixedUnitPrice: 100000, palletOn: true, palletPrice: 3000 }
+  commitClients(ownerKey, [client])
+  commitSettings(ownerKey, normalizeSettings({ inputMode: 'fare', fixedOn: true }))
+  commitWorkData(ownerKey, {
+    '2026-08-03': { isOff: false, fixedCount: 2, palletCount: 4, callDetails: [] },
+    '2026-08-04': { isOff: false, fixedCount: 0, palletCount: 3, callDetails: [] },
+    '2026-08-05': { isOff: true, fixedCount: 0, palletCount: 5, callDetails: [] },
+  })
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: ['/app?y=2026&m=7'] },
+        withSession(React.createElement(CalendarPage, { onSelectDay: () => {} }), { ownerKey }),
+      ))
+    })
+    const badges = [...container.querySelectorAll('.work-badge')].map((el) => el.textContent)
+    assert.deepEqual(badges, ['21.2만', '9,000원'], '2회×10만 + 4장×3천, 파렛트만 3장, 휴무는 없음')
+    const settled = monthSettlementSummary(getState().workLogs[ownerKey]?.main || {}, 2026, 7, {
+      unitPrice: 100000, fixedRouteClient: client, activeFixedOn: true, clients: [client],
+    })
+    assert.equal(settled.fare + settled.palletFare, 212000 + 9000)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})

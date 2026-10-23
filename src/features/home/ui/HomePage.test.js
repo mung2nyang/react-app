@@ -162,6 +162,23 @@ test('2단계 — 운행 줄: 고정 노선 + 콜 최대 3줄 + "외 N건", 제�
   }
 })
 
+// 로드맵 109-A — 오늘 카드 금액에도 파렛트(달력 칸과 같은 숫자).
+test('파렛트 켠 고정 노선 거래처: 오늘 카드 금액에 파렛트 장수 × 단가', async () => {
+  const { dateKey } = todayWorkLogSelection()
+  const client = { id: 'cl-pl', companyName: '파렛트거래처', fixedRouteLinked: true, fixedUnitPrice: 100000, palletOn: true, palletPrice: 3000 }
+  for (const [ownerKey, inputMode, expected] of [['test-home-pallet-fare', 'fare', '오늘 106,000원'], ['test-home-pallet-count', 'count', '오늘 1회, 106,000원']]) {
+    commitClients(ownerKey, [client])
+    commitSettings(ownerKey, normalizeSettings({ inputMode, fixedOn: true }))
+    commitWorkData(ownerKey, { [dateKey]: { isOff: false, fixedCount: 1, palletCount: 2, callDetails: [] } })
+    const view = await renderHome(ownerKey, () => {})
+    try {
+      assert.equal(view.container.querySelector('.home-today-status')?.textContent, expected)
+    } finally {
+      await view.cleanup()
+    }
+  }
+})
+
 test('2단계 — 할 일: 미수 건수·남은 금액(입금 완료 제외), 누르면 미수금 열기, 없으면 "할 일 없음"', async () => {
   const ownerKey = 'test-home-unpaid'
   const view0 = await renderHome(ownerKey, () => {})

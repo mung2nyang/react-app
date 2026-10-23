@@ -52,7 +52,7 @@ export default function HomePage({
   const clientScopeKey = session?.linkedOwnerId ? (cars[0]?.number || 'main') : 'main'
   const now = new Date()
   const today = todayWorkLogSelection(now)
-  const { workData, settings, inputMode, unitPrice, summary } = useMonthSettlement({
+  const { workData, settings, inputMode, unitPrice, palletPrice, summary } = useMonthSettlement({
     ownerKey, clientScopeKey, year: now.getFullYear(), month: now.getMonth(),
   })
   const record = workData[today.dateKey]
@@ -71,6 +71,7 @@ export default function HomePage({
         weekday={now.getDay()}
         inputMode={inputMode}
         unitPrice={unitPrice}
+        palletPrice={palletPrice}
         onOpenToday={onOpenToday}
       />
       <HomeAssistantBar />

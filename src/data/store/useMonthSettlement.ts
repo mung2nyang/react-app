@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { resolveLogSettings } from '../../domain/carSettingsScope.ts'
 import { getFixedRouteClient, resolveFixedUnitPrice } from '../../domain/clients.ts'
 import { monthSettlementSummary } from '../../domain/monthSettlement.ts'
+import { parseCurrencyValue } from '../../domain/money.ts'
 import {
   useOwnerCars, useOwnerClients, useOwnerExpenses,
   useOwnerSettings, useOwnerWorkData, useOwnerWorkDataByLogId,
@@ -27,6 +28,8 @@ export default function useMonthSettlement({ ownerKey, logId = 'main', clientSco
 
   const fixedRouteClient = getFixedRouteClient({ clients }, fixedScopeKey)
   const activeFixedOn = isMain ? !!settings.fixedOn : !!settings.subFixedOn
+  // 하루 금액(달력 칸·홈)용 — 달 합계와 같은 조건일 때만 파렛트 단가.
+  const palletPrice = activeFixedOn && fixedRouteClient?.palletOn ? parseCurrencyValue(fixedRouteClient.palletPrice) : 0
   const car = isMain ? null : (cars || []).find((c) => c.number === logId) || null
 
   const summary = useMemo(
@@ -35,5 +38,5 @@ export default function useMonthSettlement({ ownerKey, logId = 'main', clientSco
     }),
     [workData, year, month, logId, unitPrice, fixedRouteClient, activeFixedOn, clients, car, expenses],
   )
-  return { workData, settings, inputMode, unitPrice, expenses, summary }
+  return { workData, settings, inputMode, unitPrice, palletPrice, expenses, summary }
 }
