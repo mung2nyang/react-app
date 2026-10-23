@@ -42,6 +42,11 @@
   cursor: pointer;
 }
 
+[data-theme="dark"] .unbiseo-dock-fab {
+  background: var(--hover-bg);
+  border-color: #555555;
+}
+
 .unbiseo-dock-fab img {
   display: block;
   width: 40px;
