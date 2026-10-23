@@ -115,7 +115,8 @@ export function readAiAnswer(raw: string, input: ParseInput): Parsed | null {
   if (!row) return null
   if (row.kind === 'expense') return { kind: 'expense', expense: readExpense(row, input.today) }
   if (row.kind === 'question') return { kind: 'question', question: readQuestion(row, input.today, clientOf(row.client, input)) }
-  if (row.kind === 'sms') return { kind: 'sms', sms: readSmsDraft(row, input.today, clientOf(row.smsClient, input)) }
+  // "문자"가 없는 말은 AI가 문자라 해도 관계없음으로.
+  if (row.kind === 'sms') return input.text.includes('문자') ? { kind: 'sms', sms: readSmsDraft(row, input.today, clientOf(row.smsClient, input)) } : { kind: 'unknown' }
   if (row.kind === 'fixed') return { kind: 'fixed', fixed: readFixed(row, dayOf(row.date, input.today), input.routeNames) }
   if (row.kind === 'unknown') return { kind: 'unknown' }
   // 이름을 못 알아들은 거래처 등록은 관계없음으로.
