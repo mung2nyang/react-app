@@ -1,7 +1,7 @@
 // 운비서 결과를 앱이 정한 틀의 문장으로 — 빈 칸은 뺀다.
 import { formatWon } from '../../../domain/money.ts'
 import { formatPhoneNumber } from '../../../domain/formatPhone.ts'
-import { getPaymentTermLabel } from '../../../domain/clientPaymentTerms.ts'
+import { getPaymentTermLabel, needsPaymentTermValue } from '../../../domain/clientPaymentTerms.ts'
 import type { UnbiseoCall, UnbiseoClient, UnbiseoExpense, UnbiseoFixed, UnbiseoResult } from './unbiseoParse.ts'
 import type { UnbiseoQuestion } from './unbiseoQuestion.ts'
 
@@ -49,11 +49,13 @@ function particle(word: string, withFinal: string, without: string): string {
 
 /** 거래처 등록 문장 — 들은 칸만 괄호 안에(연락처·결제 주기는 거래처 창과 같은 표시). */
 export function describeClient(client: UnbiseoClient): string {
+  // 날짜가 필요한 주기인데 날짜가 없으면 뺀다 — 등록 창도 이때 기본값으로 연다.
+  const termShown = !!client.paymentTerm && (!needsPaymentTermValue(client.paymentTerm) || client.paymentTermValue !== null)
   const commission = client.commType === 'percent' ? `수수료 ${client.commValue}%` : client.commType === 'direct' ? `수수료 ${formatWon(client.commValue ?? 0)}` : ''
   const details = [
     client.manager && `담당자 ${client.manager}`,
     client.phone && formatPhoneNumber(client.phone),
-    client.paymentTerm && getPaymentTermLabel(client.paymentTerm, client.paymentTermValue ?? ''),
+    termShown && getPaymentTermLabel(client.paymentTerm, client.paymentTermValue ?? ''),
     commission,
   ].filter(Boolean)
   const head = `${particle(client.name, '을', '를')} 거래처로 등록할게요.`
