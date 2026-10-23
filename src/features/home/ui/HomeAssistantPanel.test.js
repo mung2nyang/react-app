@@ -144,13 +144,14 @@ test('받아쓰기 되는 브라우저: 줄의 마이크 하나 — 접힌 채 �
       await new Promise((resolve) => setTimeout(resolve, 0))
     })
     assert.equal(view.container.querySelector('.home-assistant-input').value, '주유 8만원')
-    assert.equal(calls.length, 1)
-    assert.equal(calls[0].body.text, '주유 8만원')
+    const parseCalls = () => calls.filter((call) => call.name === 'unbiseo-parse')
+    assert.equal(parseCalls().length, 1)
+    assert.equal(parseCalls()[0].body.text, '주유 8만원')
     assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 21일 주유, 80,000원으로 기록할게요.')
     await act(async () => { view.container.querySelector('.home-assistant-mic-btn').click() })
     await act(async () => { last.onerror({ error: 'not-allowed' }); last.onend() })
     assert.equal(view.container.querySelector('.home-assistant-note')?.textContent, '마이크 권한을 켜 주세요. 글로 써도 됩니다.')
-    assert.equal(calls.length, 1, '받아쓴 말이 없으면 안 보냄')
+    assert.equal(parseCalls().length, 1, '받아쓴 말이 없으면 안 보냄')
   } finally {
     await view.cleanup()
     delete window.webkitSpeechRecognition
@@ -387,7 +388,8 @@ test('읽어 주기: 말로 보낸 답만 읽고, [멈추기]·다시 듣기·�
   }
   try {
     await say('주유 8만원')
-    assert.equal(synth.spoken.length, 1)
+    assert.deepEqual(calls.filter((call) => call.name === 'unbiseo-voice').map((call) => call.body), [{ text: '10월 21일 주유, 80,000원으로 기록할게요.' }], 'xAI 목소리를 먼저 부름')
+    assert.equal(synth.spoken.length, 1, 'xAI 소리를 못 받으면 휴대폰 목소리')
     assert.equal(synth.spoken[0].text, '10월 21일 주유, 80,000원으로 기록할게요.')
     assert.equal(synth.spoken[0].lang, 'ko-KR')
     assert.ok(stopButton(), '읽는 동안 [멈추기]')
@@ -408,6 +410,7 @@ test('읽어 주기: 말로 보낸 답만 읽고, [멈추기]·다시 듣기·�
     await view.type('주유 8만원')
     await view.send()
     assert.equal(synth.spoken.length, 2, '글로 보낸 답은 읽지 않음')
+    assert.equal(calls.filter((call) => call.name === 'unbiseo-voice').length, 2, '글로 보낸 답은 목소리도 안 부름')
     assert.equal(stopButton(), undefined)
 
     await say('주유 8만원')
