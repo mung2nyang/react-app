@@ -8,14 +8,16 @@ const MAX_OUTPUT_TOKENS = 300
 /** 키 없음·AI 회사 장애 — 잠시 뒤 다시. */
 export class AiUnavailableError extends Error {}
 
-export type ParseInput = { text: string, today: string, clientNames: Array<string> }
+export type ParseInput = { text: string, today: string, clientNames: Array<string>, routeNames: Array<string> }
 
 const INSTRUCTION = [
   '너는 화물차 기사의 운행일지 앱 비서다. 기사가 말한 한국어 문장 하나를 받아 종류와 칸을 JSON으로만 돌려준다.',
-  'kind: 운행은 call, 기름값·수리비·타이어·통행료 같은 돈 쓴 일은 expense, 매출·기록·일지를 묻는 말은 question, 그 밖(날씨·인사·잡담)은 unknown.',
+  'kind: 운행은 call, 고정 노선 운행은 fixed, 기름값·수리비·타이어·통행료 같은 돈 쓴 일은 expense, 매출·기록·일지를 묻는 말은 question, 그 밖(날씨·인사·잡담)은 unknown.',
   '지명 두 개가 나오면 "에서"가 없어도 운행이다. 예: "어제 수원 화성 15만" → call, 수원→화성, 150000.',
+  'fixed는 말에 "고정"이 들어 있을 때만이다 — 지명이 고정 노선 목록과 같아도 "고정"이 없으면 call. 예: "평택 용인 고정 2번 뛰었어" → fixed, fixedCount 2, fixedRoute 평택 → 용인. "오늘 고정 3번" → fixed, fixedCount 3, fixedRoute null. "평택 용인" → call.',
+  'fixed일 때 date·fixedCount·fixedRoute만 채우고 나머지는 null. fixedCount는 횟수 정수(말하지 않았으면 null), fixedRoute는 고정 노선 목록의 이름 그대로 — 목록에 없거나 노선을 말하지 않았으면 null. fixed가 아니면 두 칸은 null.',
   '날씨·뉴스·잡담은 물음표가 있어도 question이 아니라 unknown이다. 예: "오늘 날씨 어때" → unknown.',
-  'call·expense·question일 때만 나머지 칸을 채운다. date는 아래 "날짜 표"에서 그대로 골라 YYYY-MM-DD로 — 직접 계산하지 마라. 날짜 말이 없거나 내일·모레 같은 앞날이면 오늘.',
+  'call·expense·question·fixed일 때만 나머지 칸을 채운다. date는 아래 "날짜 표"에서 그대로 골라 YYYY-MM-DD로 — 직접 계산하지 마라. 날짜 말이 없거나 내일·모레 같은 앞날이면 오늘.',
   '"10월 15일"처럼 월·일만 말하면 올해 그 날짜. "지난주 금요일"은 지난주 줄, "지난 월요일"은 오늘 전에 가장 가까운 그 요일 줄, "이번 주 화요일"은 이번 주 줄.',
   'loadLoc은 상차지(출발), unloadLoc은 하차지(도착) — 들은 지명 그대로. 먼저 말한 지명이 상차지, 다음이 하차지.',
   'fare는 원 단위 정수("30만원"은 300000, "15만"은 150000, "8만 5천"은 85000). 말하지 않았으면 빼라.',
@@ -70,7 +72,7 @@ export function monthTable(today: string): string {
 const RESPONSE_SCHEMA = {
   type: 'object',
   properties: {
-    kind: { type: 'string', enum: ['call', 'expense', 'question', 'unknown'] },
+    kind: { type: 'string', enum: ['call', 'expense', 'question', 'fixed', 'unknown'] },
     date: { type: ['string', 'null'], description: 'YYYY-MM-DD' },
     loadLoc: { type: ['string', 'null'] },
     unloadLoc: { type: ['string', 'null'] },
@@ -86,10 +88,12 @@ const RESPONSE_SCHEMA = {
     periodUnit: { type: ['string', 'null'], enum: ['month', 'year', 'all', 'unsupported', null] },
     periodValue: { type: ['string', 'null'], description: 'YYYY-MM 또는 YYYY' },
     questionExpenseType: { type: ['string', 'null'], enum: ['maint', 'fuel', 'misc', null] },
+    fixedCount: { type: ['integer', 'null'], description: '고정 노선 횟수' },
+    fixedRoute: { type: ['string', 'null'] },
   },
   required: [
     'kind', 'date', 'loadLoc', 'unloadLoc', 'fare', 'client', 'expenseType', 'cost', 'name', 'category', 'fuelType', 'payment',
-    'questionType', 'periodUnit', 'periodValue', 'questionExpenseType',
+    'questionType', 'periodUnit', 'periodValue', 'questionExpenseType', 'fixedCount', 'fixedRoute',
   ],
 }
 
@@ -102,7 +106,7 @@ type ChatAnswer = {
 export async function askAi(input: ParseInput): Promise<string | null> {
   const apiKey = Deno.env.get('XAI_API_KEY')
   if (!apiKey) throw new AiUnavailableError('no key')
-  const prompt = `날짜 표:\n${dateTable(input.today)}\n달 표:\n${monthTable(input.today)}\n거래처 목록: ${input.clientNames.join(', ') || '(없음)'}\n기사가 한 말: ${input.text}`
+  const prompt = `날짜 표:\n${dateTable(input.today)}\n달 표:\n${monthTable(input.today)}\n거래처 목록: ${input.clientNames.join(', ') || '(없음)'}\n고정 노선 목록: ${input.routeNames.join(', ') || '(없음)'}\n기사가 한 말: ${input.text}`
   const startedAt = Date.now()
   let response: Response
   try {
