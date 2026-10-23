@@ -23,6 +23,7 @@ const { collectNotifications, DAILY_INSPECTION_NOTICE_ID } = await import('../ap
 const { commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { readOwnerSettings } = await import('../../../data/store/ownerDataHooks.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
+const { addFailedDayLogDate, removeFailedDayLogDate } = await import('../../../data/sync/failedDayLogDates.ts')
 
 /**
  * @param {string} ownerKey
@@ -202,6 +203,31 @@ test('일상점검 의무화 안내: [바로 사용하기] = 스위치 켜짐 �
     assert.equal(collectNotifications(ownerKey).some((n) => n.id === DAILY_INSPECTION_NOTICE_ID), false)
     assert.equal(itemWith(view.container, '일상점검표가 의무화되었습니다'), undefined)
     assert.deepEqual(toasts, ['일상점검표를 켰습니다.'])
+  } finally {
+    await view.cleanup()
+  }
+})
+
+// 로드맵 110-B — 일지 저장 실패 알림: [닫기] 없음, 누르면 그 날짜 일지, 알림 받기에 이 종류 없음, 목록이 바뀌면 바로.
+test('일지 저장 실패 알림 — [닫기] 없음, 누르면 그 날짜 일지, 끄기 스위치 없음, 더하고 지우면 바로 바뀜', async () => {
+  const ownerKey = 'np-save-failed'
+  commitSettings(ownerKey, normalizeSettings({ dailyInspectionOn: true, notifOff: ['today'] }))
+  /** @type {string[]} */
+  const opened = []
+  const view = await renderPage(ownerKey, { onOpenPage: (page) => opened.push(page) })
+  const title = '10월 22일 운행일지 저장이 실패했습니다.'
+  try {
+    assert.equal(itemWith(view.container, title), undefined)
+    await act(async () => { addFailedDayLogDate(ownerKey, 'main', '2026-10-22') })
+    const item = itemWith(view.container, title)
+    assert.ok(item, '화면을 옮기지 않아도 바로 생긴다')
+    assert.equal(view.container.querySelector('.notif-item'), item, '맨 위')
+    assert.equal([...item.querySelectorAll('button')].some((el) => el.textContent === '닫기'), false, '[닫기] 없음')
+    assert.equal(switchOf(view.container, 'saveFailed'), null, '알림 받기에 이 종류 없음')
+    await act(async () => { item.querySelector('.notif-item-copy')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
+    assert.deepEqual(opened, ['day/2026-10-22'])
+    await act(async () => { removeFailedDayLogDate(ownerKey, 'main', '2026-10-22') })
+    assert.equal(itemWith(view.container, title), undefined, '지우면 바로 사라진다')
   } finally {
     await view.cleanup()
   }

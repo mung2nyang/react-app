@@ -7,6 +7,7 @@ type Stored = Record<string, Array<FailedDayLogDate>>
 
 const STORAGE_KEY = 'drivelogFailedDayLogDates'
 const listeners = new Set<() => void>()
+let version = 0
 
 function toEntry(value: JsonValue): FailedDayLogDate | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
@@ -36,6 +37,7 @@ function writeAll(next: Stored) {
   } catch {
     /* 저장 못 하면 이번만 기록 없이 — 일지 저장 흐름은 그대로 */
   }
+  version += 1
   listeners.forEach((listener) => listener())
 }
 
@@ -56,6 +58,11 @@ export function removeFailedDayLogDate(ownerKey: string, logId: string, dateKey:
   const next = list.filter((item) => !(item.logId === logId && item.dateKey === dateKey))
   if (next.length === list.length) return
   writeAll({ ...all, [ownerKey]: next })
+}
+
+/** 화면 구독용 지금 값 — 목록이 바뀔 때만 달라진다. */
+export function failedDayLogDatesVersion() {
+  return version
 }
 
 /** 목록이 바뀌면 부른다. 돌려준 함수가 구독 해제. */

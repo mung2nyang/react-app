@@ -3,6 +3,7 @@
 import { todayKey } from '../../../domain/expenses.ts'
 import { todayWorkLogSelection } from '../../../domain/calendar.ts'
 import { formatWon } from '../../../domain/money.ts'
+import { getShortCarNum } from '../../../domain/cars.ts'
 import { getDdayLabel, overdueItems } from '../../../domain/receivables.ts'
 import { buildFinanceSettings, loadWorkDataByLogId } from '../../../data/sync/ownerFinance.ts'
 import { getReceivableItems } from '../../../domain/finance.ts'
@@ -11,10 +12,12 @@ import { commitDismissedNotifications } from '../../../data/store/commitHelpers.
 import { readOwnerDrivers, readOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
 import { getLastBackupAt } from '../../../data/sync/guestBackup.ts'
 import { isCloudSession } from '../../../data/cloud/cloudSession.ts'
+import { listFailedDayLogDates } from '../../../data/sync/failedDayLogDates.ts'
 
 /** @typedef {import('../../../domain/financeReceivables.ts').ReceivableItemLike} ReceivableItemLike */
 
 export const DAILY_INSPECTION_NOTICE_ID = 'daily-inspection-required'
+const SAVE_FAILED_KIND = 'saveFailed'
 
 /** 'YYYY-MM-DD…' → 'MM.DD'(알림 날짜 줄). 모양이 아니면 빈 글자. @param {JsonValue|undefined} value */
 function shortDate(value) {
@@ -44,8 +47,23 @@ export function dismissNotification(ownerKey, id) {
  */
 export function collectNotifications(ownerKey = 'guest', session = null) {
   const dismissed = loadDismissed(ownerKey)
-  /** @type {Array<{ id: string, kind: string, page: string, title: string, body: string, dateLabel: string, actionLabel?: string, dismissLabel?: string }>} */
+  /** @type {Array<{ id: string, kind: string, page: string, title: string, body: string, dateLabel: string, actionLabel?: string, dismissLabel?: string, noDismiss?: boolean }>} */
   const items = []
+
+  // 일지 저장 실패(로그인) — 휴대폰에 남은 실패 날짜마다. 닫기·끄기 없이, 다시 저장되거나 그 날짜 일지를 열면 사라진다.
+  const failed = [...listFailedDayLogDates(ownerKey)].sort((a, b) => a.dateKey.localeCompare(b.dateKey) || a.logId.localeCompare(b.logId))
+  failed.forEach(({ logId, dateKey }) => {
+    const car = logId === 'main' ? '' : `(${getShortCarNum(logId)})`
+    items.push({
+      id: `saveFailed:${logId}:${dateKey}`,
+      kind: SAVE_FAILED_KIND,
+      page: logId === 'main' ? `day/${dateKey}` : `logs/${logId}/day/${dateKey}`,
+      title: `${Number(dateKey.slice(5, 7))}월 ${Number(dateKey.slice(8, 10))}일 운행일지${car} 저장이 실패했습니다.`,
+      body: '일지를 확인한 후 저장이 안 된 내용이 있으면 다시 입력해 주세요.',
+      dateLabel: '',
+      noDismiss: true,
+    })
+  })
   const settings = buildFinanceSettings(ownerKey)
   const workDataByLogId = loadWorkDataByLogId(ownerKey)
 
@@ -150,7 +168,7 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
     }
   }
 
-  // 알림 화면 "알림 받기"에서 끈 종류는 목록·알림 숫자에서 뺌(일상점검 의무화 안내는 끌 수 없음).
+  // 알림 화면 "알림 받기"에서 끈 종류는 목록·알림 숫자에서 뺌(일상점검 의무화 안내·일지 저장 실패는 끌 수 없음).
   const off = readOwnerSettings(ownerKey).notifOff || []
-  return items.filter((item) => !off.includes(item.kind))
+  return items.filter((item) => item.kind === SAVE_FAILED_KIND || !off.includes(item.kind))
 }

@@ -95,7 +95,7 @@ export default function NotificationsPage({ onBack, onOpenMenu, onOpenPage }) {
               {item.actionLabel && (
                 <button type="button" className="notif-action-primary" onClick={turnOnInspection}>{item.actionLabel}</button>
               )}
-              <button type="button" className="notif-action-dismiss" onClick={() => dismiss(item.id)}>{item.dismissLabel || '닫기'}</button>
+              {!('noDismiss' in item && item.noDismiss) && <button type="button" className="notif-action-dismiss" onClick={() => dismiss(item.id)}>{item.dismissLabel || '닫기'}</button>}
             </div>
           </article>
         ))}
