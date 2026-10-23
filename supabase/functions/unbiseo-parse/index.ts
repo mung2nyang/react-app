@@ -5,12 +5,18 @@ import type { ParseInput } from './grok.ts'
 
 type Json = string | number | boolean | null | Array<Json> | { [key: string]: Json }
 type Call = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
-type Parsed = { kind: 'call', call: Call } | { kind: 'expense' } | { kind: 'question' } | { kind: 'unknown' }
+type Expense = { date: string, type: 'maint' | 'fuel' | 'misc', cost: number | null, name: string, category: string, fuelType: string, payment: string }
+type Parsed = { kind: 'call', call: Call } | { kind: 'expense', expense: Expense } | { kind: 'question' } | { kind: 'unknown' }
 
 const TEXT_MAX = 300
 const CLIENTS_MAX = 200
 const CLIENT_NAME_MAX = 50
 const PLACE_MAX = 100
+// 앱 domain/expenses.ts 목록과 같게 — 서버는 앱 파일을 못 읽는다.
+const MAINT_CATEGORIES = ['엔진/미션', '판금/도장', '소모품', '기타']
+const MISC_CATEGORIES = ['통행료', '주차비', '과태료', '기타']
+const FUEL_TYPES = ['주유', '요소수', '기타']
+const PAYMENTS = ['카드', '현금']
 const NOT_UNDERSTOOD = '알아듣지 못했습니다. 다시 말해 주세요.'
 const TRY_LATER = '잠시 뒤 다시 시도해 주세요.'
 const CORS = {
@@ -53,6 +59,35 @@ function place(value: Json | undefined): string {
   return typeof value === 'string' ? value.trim().slice(0, PLACE_MAX) : ''
 }
 
+// 앞날(내일·모레)은 오늘로 — 날짜 계산은 AI에 맡기지 않는다.
+function dayOf(value: Json | undefined, today: string): string {
+  return isDateKey(value) && value <= today ? value : today
+}
+
+function won(value: Json | undefined): number | null {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null
+}
+
+function oneOf(value: Json | undefined, list: Array<string>): string {
+  const heard = typeof value === 'string' ? value.trim() : ''
+  return list.includes(heard) ? heard : ''
+}
+
+// 지출 칸 — 분류·결제는 앱 목록에 있을 때만, 날짜는 운행과 같은 규칙(로드맵 24-C-1).
+function readExpense(row: { [key: string]: Json }, today: string): Expense {
+  const type = row.expenseType === 'fuel' || row.expenseType === 'misc' ? row.expenseType : 'maint'
+  const categories = type === 'maint' ? MAINT_CATEGORIES : type === 'misc' ? MISC_CATEGORIES : []
+  return {
+    date: dayOf(row.date, today),
+    type,
+    cost: won(row.cost),
+    name: place(row.name),
+    category: oneOf(row.category, categories),
+    fuelType: type === 'fuel' ? oneOf(row.fuelType, FUEL_TYPES) : '',
+    payment: oneOf(row.payment, PAYMENTS),
+  }
+}
+
 /** AI 답 → 돌려줄 모양. 모양이 틀리면 null(502). */
 export function readAiAnswer(raw: string, input: ParseInput): Parsed | null {
   let parsed: Json
@@ -63,19 +98,18 @@ export function readAiAnswer(raw: string, input: ParseInput): Parsed | null {
   }
   const row = record(parsed)
   if (!row) return null
-  if (row.kind === 'expense' || row.kind === 'question' || row.kind === 'unknown') return { kind: row.kind }
+  if (row.kind === 'expense') return { kind: 'expense', expense: readExpense(row, input.today) }
+  if (row.kind === 'question' || row.kind === 'unknown') return { kind: row.kind }
   if (row.kind !== 'call') return null
-  const fare = typeof row.fare === 'number' && Number.isSafeInteger(row.fare) && row.fare >= 0 ? row.fare : null
   const heard = place(row.client)
   const known = input.clientNames.find((name) => name.trim() === heard)
   return {
     kind: 'call',
     call: {
-      // 앞날(내일·모레)은 오늘로 — 날짜 계산은 AI에 맡기지 않는다.
-      date: isDateKey(row.date) && row.date <= input.today ? row.date : input.today,
+      date: dayOf(row.date, input.today),
       loadLoc: place(row.loadLoc),
       unloadLoc: place(row.unloadLoc),
-      fare,
+      fare: won(row.fare),
       client: known ?? heard,
     },
   }
