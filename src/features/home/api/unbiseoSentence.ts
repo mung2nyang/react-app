@@ -42,7 +42,7 @@ export function describeExpense(expense: UnbiseoExpense, today: string): string 
 }
 
 /** 받침 있으면 "을"·"은", 없거나 한글 아님이면 "를"·"는". */
-function particle(word: string, withFinal: string, without: string): string {
+export function withParticle(word: string, withFinal: string, without: string): string {
   const code = word.charCodeAt(word.length - 1) - 0xac00
   return code >= 0 && code <= 11171 && code % 28 !== 0 ? `${word}${withFinal}` : `${word}${without}`
 }
@@ -58,13 +58,13 @@ export function describeClient(client: UnbiseoClient): string {
     termShown && getPaymentTermLabel(client.paymentTerm, client.paymentTermValue ?? ''),
     commission,
   ].filter(Boolean)
-  const head = `${particle(client.name, '을', '를')} 거래처로 등록할게요.`
+  const head = `${withParticle(client.name, '을', '를')} 거래처로 등록할게요.`
   return details.length ? `${head} (${details.join(', ')})` : head
 }
 
 /** 이미 있는 이름 — 등록 버튼 없이 알림만. */
 export function describeExistingClient(name: string): string {
-  return `${particle(name, '은', '는')} 이미 등록된 거래처예요.`
+  return `${withParticle(name, '은', '는')} 이미 등록된 거래처예요.`
 }
 
 /** 결과 한 문장(운행·지출·질문·관계없음·실패). 질문 답은 숫자를 내는 쪽(answerQuestion)이 만든다. */
@@ -73,6 +73,7 @@ export function describeResult(result: UnbiseoResult, today: string, answerQuest
   if (result.kind === 'expense') return describeExpense(result.expense, today)
   if (result.kind === 'fixed') return describeFixed(result.fixed, today)
   if (result.kind === 'client') return describeClient(result.client)
+  if (result.kind === 'sms') return result.sms.client ? `${result.sms.client}에 미수금 문자를 보낼게요.` : '미수금 문자를 보낼게요.'
   if (result.kind === 'question') return answerQuestion(result.question)
   if (result.kind === 'unknown') return '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.'
   return result.message

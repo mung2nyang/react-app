@@ -1,5 +1,7 @@
 const CUSTOM_BODIES_KEY = 'messageTemplateCustomBodies'
 const REPORT_SHARE_KEY = 'reportShareMessagePattern'
+/** 문구 1~3 이름 — 일지 문자 창·운비서 문자가 같이 쓴다. */
+export const MESSAGE_TEMPLATE_TITLES = ['미수금 안내', '입금 요청', '운행 완료']
 
 export function getDefaultMessageTemplatePatterns(): [string, string, string] {
   return [

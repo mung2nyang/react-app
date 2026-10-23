@@ -3,6 +3,8 @@ import { FunctionsHttpError } from '@supabase/supabase-js'
 import type { JsonValue } from '../../../domain/jsonTypes.ts'
 import { supabase } from '../../../data/cloud/supabaseClient.ts'
 import { readQuestion } from './unbiseoQuestion.ts'
+import { readSms } from './unbiseoSms.ts'
+import type { UnbiseoSms } from './unbiseoSms.ts'
 import type { UnbiseoQuestion } from './unbiseoQuestion.ts'
 
 export const TEXT_MAX = 300
@@ -26,6 +28,7 @@ export type UnbiseoResult =
   | { kind: 'expense', expense: UnbiseoExpense }
   | { kind: 'fixed', fixed: UnbiseoFixed }
   | { kind: 'client', client: UnbiseoClient }
+  | { kind: 'sms', sms: UnbiseoSms }
   | { kind: 'question', question: UnbiseoQuestion }
   | { kind: 'unknown' }
   | { kind: 'error', message: string }
@@ -107,6 +110,8 @@ export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoR
   if (row.kind === 'unknown') return { kind: 'unknown' }
   const question = record(row.question)
   if (row.kind === 'question') return question ? { kind: 'question', question: readQuestion(question, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
+  const sms = record(row.sms)
+  if (row.kind === 'sms') return sms ? { kind: 'sms', sms: readSms(sms) } : { kind: 'error', message: NOT_UNDERSTOOD }
   const client = record(row.client)
   const clientDraft = row.kind === 'client' && client ? readClient(client) : null
   if (row.kind === 'client') return clientDraft ? { kind: 'client', client: clientDraft } : { kind: 'error', message: NOT_UNDERSTOOD }

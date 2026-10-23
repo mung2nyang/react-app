@@ -1,6 +1,6 @@
 // @ts-check
 import { parseCurrencyValue } from '../../../domain/money.ts'
-import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../../data/sync/messageTemplates.ts'
+import { fillMessageTemplatePattern, getMessageTemplatePatterns, MESSAGE_TEMPLATE_TITLES } from '../../../data/sync/messageTemplates.ts'
 import './message-template.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { buildSmsHref } from '../../../domain/smsHref.ts'
@@ -8,8 +8,6 @@ import { useToast } from '../../../shared/hooks/useToast.js'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
-
-const TEMPLATE_TITLES = ['미수금 안내', '입금 요청', '운행 완료']
 
 /**
  * @param {Object} props
@@ -23,7 +21,7 @@ export default function MessageTemplateSheet({ item, client, onClose }) {
   const route = `${item.loadLoc || '상차지'} → ${item.unloadLoc || '하차지'}`
   const company = item.client || '거래처'
   const templates = getMessageTemplatePatterns().map((pattern, index) => ({
-    title: TEMPLATE_TITLES[index],
+    title: MESSAGE_TEMPLATE_TITLES[index],
     body: fillMessageTemplatePattern(pattern, { company, route, fare }),
   }))
 

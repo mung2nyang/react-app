@@ -195,3 +195,11 @@ test('거래처 답 이상한 칸은 빈 칸: 담당자 31자, 연락처 자리�
     assert.deepEqual([got?.commType, got?.commValue], ['', null], `${commType} ${commValue}`)
   }
 })
+
+// 로드맵 24-H-2 — 미수금 문자 답 읽기(칸 검사는 unbiseoSms.test.js).
+test('문자 답: sms 칸을 읽고, 칸이 없으면 알아듣지 못함', async () => {
+  reply = async () => ({ data: { kind: 'sms', sms: { client: '한진', month: '2026-07', all: false, template: 1 } }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '한진 7월분 미수금 문자', today: '2026-10-23', clientNames: [] }), { kind: 'sms', sms: { client: '한진', month: '2026-07', all: false, template: 1 } })
+  reply = async () => ({ data: { kind: 'sms' }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '미수금 문자', today: '2026-10-23', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
+})

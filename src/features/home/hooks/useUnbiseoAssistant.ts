@@ -12,13 +12,14 @@ import { useToast } from '../../../shared/hooks/useToast.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { requestUnbiseoParse, routeNamesForAi } from '../api/unbiseoParse.ts'
 import type { UnbiseoCall, UnbiseoClient, UnbiseoExpense, UnbiseoFixed } from '../api/unbiseoParse.ts'
+import type { UnbiseoSms } from '../api/unbiseoSms.ts'
 import { describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
 import { questionNumbers } from '../api/unbiseoNumbers.ts'
 import { describeQuestion } from '../api/unbiseoQuestion.ts'
 import useSpeechInput from './useSpeechInput.ts'
 import useSpeechOutput from './useSpeechOutput.ts'
 
-export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null, client: UnbiseoClient | null }
+export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null, client: UnbiseoClient | null, sms: UnbiseoSms | null }
 
 export default function useUnbiseoAssistant() {
   const { ownerKey, session } = useSession()
@@ -64,7 +65,7 @@ export default function useUnbiseoAssistant() {
     const owner = ownerKey
     stopSpeaking()
     setBusy(true)
-    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null, fixed: null, client: null })
+    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null, fixed: null, client: null, sms: null })
     // 고정 노선 칩이 보이는 일지일 때만 노선 이름을 보낸다.
     const routeNames = fixedOn && mainSettings.fixedRouteOn ? routeNamesForAi(mainSettings.fixedRoutePresets || []) : []
     const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || ''), routeNames })
@@ -82,6 +83,7 @@ export default function useUnbiseoAssistant() {
       expense: result.kind === 'expense' ? result.expense : null,
       fixed: result.kind === 'fixed' ? result.fixed : null,
       client: existing ? null : heardClient,
+      sms: result.kind === 'sms' ? result.sms : null,
     })
     if (byVoice) voice.speak(sentence)
   }

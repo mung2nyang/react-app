@@ -1,0 +1,50 @@
+/* 운비서 미수금 문자 되묻기(UnbiseoSmsSteps 전용) — 고르기 단추·건 체크 목록·채운 문구. */
+.unbiseo-sms-step {
+  display: grid;
+  gap: 6px;
+}
+
+.unbiseo-sms-choice {
+  justify-self: start;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--fs-3);
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.unbiseo-sms-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: var(--fs-3);
+}
+
+.unbiseo-sms-check input {
+  width: 20px;
+  height: 20px;
+}
+
+.unbiseo-sms-body {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font-size: var(--fs-3);
+  line-height: 1.5;
+}
+
+/* [문자 열기]는 링크라 단추 모양(home-assistant-action)에 글자 가운데·밑줄 없음만 더한다. */
+.unbiseo-sms-open {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}

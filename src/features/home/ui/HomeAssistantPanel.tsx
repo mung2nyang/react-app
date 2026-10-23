@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { TEXT_MAX } from '../api/unbiseoParse.ts'
 import type { UnbiseoRecord } from '../api/unbiseoParse.ts'
 import type { UnbiseoAssistant } from '../hooks/useUnbiseoAssistant.ts'
+import UnbiseoSmsSteps from './UnbiseoSmsSteps.tsx'
 
 type OpenCallOptions = { cancelOff: boolean }
 type Props = { assistant: UnbiseoAssistant, onOpenCall?: (record: UnbiseoRecord, options: OpenCallOptions) => void }
@@ -74,6 +75,7 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
           <p className="home-assistant-result">{answer.sentence}</p>
           {speaking && <button type="button" className="home-assistant-action" onClick={stopSpeaking}>멈추기</button>}
           {record && actionFor(record)}
+          {answer.sms && <UnbiseoSmsSteps sms={answer.sms} />}
         </div>
       )}
     </div>
