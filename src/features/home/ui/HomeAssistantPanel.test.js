@@ -86,9 +86,11 @@ test('글로 보내기: 거래처 이름·오늘을 같이 보내고, 내가 한
   } finally { await view.cleanup() }
 })
 
+const EXPENSE_FUEL = { date: '2026-10-21', type: 'fuel', cost: 80000, name: '', category: '', fuelType: '주유', payment: '' }
+
 test('보내는 동안 다시 보내기·글 칸이 잠기고, 지출·실패는 정해진 문구', async () => {
   let release = () => {}
-  reply = () => new Promise((resolve) => { release = () => resolve({ data: { kind: 'expense' }, error: null }) })
+  reply = () => new Promise((resolve) => { release = () => resolve({ data: { kind: 'expense', expense: EXPENSE_FUEL }, error: null }) })
   const view = await mount('u-assistant', CLOUD)
   try {
     await view.type('주유 8만원')
@@ -97,7 +99,7 @@ test('보내는 동안 다시 보내기·글 칸이 잠기고, 지출·실패는
     assert.ok(view.container.querySelector('.home-assistant-input').disabled)
     assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '알아듣는 중…')
     await act(async () => { release(); await new Promise((resolve) => setTimeout(resolve, 0)) })
-    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '지출 기록은 곧 할 수 있게 됩니다.')
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 21일 주유, 80,000원으로 기록할게요.')
     reply = async () => { throw new Error('network') }
     await view.send()
     assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '잠시 뒤 다시 시도해 주세요.')
@@ -122,7 +124,7 @@ test('받아쓰기 되는 브라우저: 줄의 마이크 하나 — 접힌 채 �
     abort() {}
   }
   window.webkitSpeechRecognition = FakeRecognizer
-  reply = async () => ({ data: { kind: 'expense' }, error: null })
+  reply = async () => ({ data: { kind: 'expense', expense: EXPENSE_FUEL }, error: null })
   const view = await mount('u-assistant', CLOUD, { open: false })
   try {
     assert.equal(view.container.querySelectorAll('.home-assistant-mic-btn').length, 1, '마이크 버튼은 하나')
@@ -144,7 +146,7 @@ test('받아쓰기 되는 브라우저: 줄의 마이크 하나 — 접힌 채 �
     assert.equal(view.container.querySelector('.home-assistant-input').value, '주유 8만원')
     assert.equal(calls.length, 1)
     assert.equal(calls[0].body.text, '주유 8만원')
-    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '지출 기록은 곧 할 수 있게 됩니다.')
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 21일 주유, 80,000원으로 기록할게요.')
     await act(async () => { view.container.querySelector('.home-assistant-mic-btn').click() })
     await act(async () => { last.onerror({ error: 'not-allowed' }); last.onend() })
     assert.equal(view.container.querySelector('.home-assistant-note')?.textContent, '마이크 권한을 켜 주세요. 글로 써도 됩니다.')
@@ -204,12 +206,12 @@ test('콜 상세 꺼짐: "켤까요?" + [켜기] → 앱 설정의 콜 상세가
   } finally { await view.cleanup() }
 })
 
-test('지출·실패 결과에는 [기록하기]·[켜기]가 없다', async () => {
+test('질문·실패 결과에는 [기록하기]·[켜기]가 없다', async () => {
   commitSettings('u-assistant-on', normalizeSettings({ callDetail: true }))
-  reply = async () => ({ data: { kind: 'expense' }, error: null })
+  reply = async () => ({ data: { kind: 'question' }, error: null })
   const view = await mount('u-assistant-on', CLOUD)
   try {
-    await view.type('주유 8만원')
+    await view.type('이번 달 매출')
     await view.send()
     assert.equal(view.container.querySelector('.home-assistant-action'), null)
     reply = async () => { throw new Error('network') }
@@ -269,5 +271,51 @@ test('그날 휴무: "휴무를 취소하고 운행을 기록할까요?" + [휴�
     await act(async () => { actionButton(view.container, '휴무 취소하고 기록').click() })
     assert.deepEqual(opened.map((item) => item.options), [{ cancelOff: true }])
     assert.equal(opened[0].call.date, '2026-10-21')
+  } finally { await view.cleanup() }
+})
+
+// 로드맵 24-C-2 — 지출 결과 아래도 같은 자리에 [기록하기]·휴무·기간 안내(콜 상세 꺼짐은 운행만).
+const expenseOn = (date) => async () => ({ data: { kind: 'expense', expense: { ...EXPENSE_FUEL, date } }, error: null })
+
+test('지출: 콜 상세가 꺼져 있어도 [기록하기] — 누르면 알아들은 지출을 그대로 넘긴다', async () => {
+  commitSettings('u-assistant-expense', normalizeSettings({ callDetail: false }))
+  reply = expenseOn('2026-10-21')
+  const opened = []
+  const view = await mount('u-assistant-expense', { ...CLOUD, userId: 'u-assistant-expense' }, { props: { onOpenAssistantCall: (record, options) => opened.push({ record, options }) } })
+  try {
+    await view.type('어제 주유 8만원')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-enable'), null, '켜기 안내 없음')
+    await act(async () => { actionButton(view.container, '기록하기').click() })
+    assert.deepEqual(opened, [{ record: { ...EXPENSE_FUEL, date: '2026-10-21' }, options: { cancelOff: false } }])
+  } finally { await view.cleanup() }
+})
+
+test('지출 그날 휴무: "휴무를 취소하고 지출을 기록할까요?" + [휴무 취소하고 기록] → cancelOff를 같이 넘긴다', async () => {
+  commitWorkData('u-assistant-expense-off', { '2026-10-21': { isOff: true } })
+  reply = expenseOn('2026-10-21')
+  const opened = []
+  const view = await mount('u-assistant-expense-off', { ...CLOUD, userId: 'u-assistant-expense-off' }, { props: { onOpenAssistantCall: (record, options) => opened.push({ record, options }) } })
+  try {
+    await view.type('어제 주유 8만원')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '휴무를 취소하고 지출을 기록할까요?')
+    assert.equal(actionButton(view.container, '기록하기'), undefined)
+    await act(async () => { actionButton(view.container, '휴무 취소하고 기록').click() })
+    assert.deepEqual(opened.map((item) => item.options), [{ cancelOff: true }])
+    assert.equal(opened[0].record.type, 'fuel')
+  } finally { await view.cleanup() }
+})
+
+test('지출 + 연동 기사 계약 기간 밖: 일지와 같은 안내 두 줄, 버튼 없음', async () => {
+  commitDrivers('u-assistant-driver', [{ id: 'link-1', name: '김기사', phone: '', vehicleNumber: '34나5678', startDate: '2026-10-05', endDate: '2026-10-25', status: 'linked' }])
+  reply = expenseOn('2026-10-01')
+  const view = await mount('u-assistant-driver', DRIVER)
+  try {
+    await view.type('주유 8만원')
+    await view.send()
+    const notes = [...view.container.querySelectorAll('.home-assistant-enable .home-assistant-note')].map((el) => el.textContent)
+    assert.deepEqual(notes, ['계약기간 전 날짜입니다.', '10월 5일부터 기록할 수 있습니다.'])
+    assert.equal(view.container.querySelector('.home-assistant-action'), null)
   } finally { await view.cleanup() }
 })

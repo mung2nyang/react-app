@@ -1,11 +1,11 @@
 // 운비서 대화는 앱 전체에 하나 — 홈 카드와 떠 있는 줄이 같이 쓴다(로드맵 24-B-3-B). 휴대폰에 저장하지 않는다.
 import { createContext, createElement, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { UnbiseoCall } from '../api/unbiseoParse.ts'
+import type { UnbiseoRecord } from '../api/unbiseoParse.ts'
 import useUnbiseoAssistant from './useUnbiseoAssistant.ts'
 import type { UnbiseoAssistant } from './useUnbiseoAssistant.ts'
 
-export type OpenAssistantCall = (call: UnbiseoCall, options: { cancelOff: boolean }) => void
+export type OpenAssistantCall = (record: UnbiseoRecord, options: { cancelOff: boolean }) => void
 
 type UnbiseoShared = {
   assistant: UnbiseoAssistant

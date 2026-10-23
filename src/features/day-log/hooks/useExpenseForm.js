@@ -22,20 +22,22 @@ export function useExpenseForm(ownerKey, dateKey, logId = 'main') {
   const [editingId, setEditingId] = useState(/** @type {string|null} */ (null))
   const [draft, setDraft] = useState(() => emptyExpenseDraft('maint', dateKey))
 
-  /** @param {string} kind */
-  function openAdd(kind) {
+  // preset — 운비서가 채운 처음 값(빈 칸은 기본값 그대로)
+  /** @param {string} kind @param {import('../../../domain/expenseTypes.ts').ExpenseDraft} [preset] */
+  function openAdd(kind, preset) {
+    const fresh = () => ({ ...emptyExpenseDraft(kind, dateKey, logId !== 'main' ? logId : undefined), ...preset })
     if (kindPick) {
       setKindPick(false)
       setTimeout(() => {
         setEditingId(null)
-        setDraft(emptyExpenseDraft(kind, dateKey, logId !== 'main' ? logId : undefined))
+        setDraft(fresh())
         setModalOpen(true)
       }, 420)
       return
     }
     setKindPick(false)
     setEditingId(null)
-    setDraft(emptyExpenseDraft(kind, dateKey, logId !== 'main' ? logId : undefined))
+    setDraft(fresh())
     setModalOpen(true)
   }
 

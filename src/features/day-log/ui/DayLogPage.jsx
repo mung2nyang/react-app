@@ -14,6 +14,7 @@ import useCallDetailActions from '../hooks/useCallDetailActions.js'
 import { bindInlinePanelActions } from './inlinePanelActions.js'
 import usePanelBackGuard from '../hooks/usePanelBackGuard.js'
 import useAssistantPrefill from '../hooks/useAssistantPrefill.js'
+import useAssistantExpense from '../hooks/useAssistantExpense.js'
 import { popPanelGuardThen } from '../../../shared/utils/historyMoves.js'
 import AutoSaveStatus from './AutoSaveStatus.jsx'
 import OffToggle from './OffToggle.jsx'
@@ -51,9 +52,10 @@ const EMPTY_WORK = /** @type {Record<string, never>} */ ({})
  * @param {string} [props.clientScopeKey] 거래처 스코프(연동 기사는 배정 차량번호). 없으면 logId.
  * @param {boolean} [props.isEmployedDriver] 기사연동 계정 세션이면 콜 상세의 산재보험료 칸을 숨긴다(CallDetailForm 참고).
  * @param {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string, cancelOff: boolean }|null} [props.assistantCall] 운비서가 넘긴 운행(useAssistantPrefill)
+ * @param {import('../hooks/useAssistantExpense.js').AssistantExpense|null} [props.assistantExpense] 운비서가 넘긴 지출(useAssistantExpense)
  * @param {string} [props.assistantCallKey] 이동 키 — 같은 날짜에서 또 넘기면 바뀜
  */
-export default function DayLogPage({ month, day, dateKey, clients, settings, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false, assistantCall = null, assistantCallKey }) {
+export default function DayLogPage({ month, day, dateKey, clients, settings, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false, assistantCall = null, assistantExpense = null, assistantCallKey }) {
   const { ownerKey } = useSession()
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, logId)
@@ -89,6 +91,7 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onC
   // 콜 상세·비용 입력 칸은 하나만 열리게 inlinePanelActions.js가 묶는다.
   const { openCallForm, openExpenseAdd, openExpenseEdit, openExpenseKindPick, confirmLeaveOpenPanel } = bindInlinePanelActions(dispatch, expenseForm, { callFormOpen, editingCallId })
   const { prefill, formKey } = useAssistantPrefill({ assistantCall, assistantCallKey, callDetailOn: !!settings.callDetail, draft, callFormOpen, editingCallId, dispatch, closeExpense: expenseForm.closeAll, confirmLeaveOpenPanel })
+  useAssistantExpense({ assistantExpense, assistantCallKey, draft, dispatch, openAdd: expenseForm.openAdd, confirmLeaveOpenPanel })
   usePanelBackGuard(callFormOpen || expenseForm.modalOpen, confirmLeaveOpenPanel, () => { expenseForm.closeAll(); dispatch({ type: 'closeCallForm' }); onClose?.() })
 
   if (periodNotice) return <AssignmentPeriodPage title={`${month}월 ${day}일 운행일지`} notice={periodNotice} onBack={onClose ? handleClose : undefined} onOpenMenu={onOpenMenu} />

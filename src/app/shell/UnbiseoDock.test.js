@@ -211,3 +211,26 @@ test('받아쓰기 되는 휴대폰: 버튼을 한 번 누르면 카드가 열�
     Reflect.deleteProperty(window, 'webkitSpeechRecognition')
   }
 })
+
+// 로드맵 24-C-2 — 지출도 같은 길: [기록하기] → 그 날짜 일지의 지출 창, 이미 열려 있으면 확인 창 먼저.
+const expenseReply = (/** @type {'fuel'|'misc'} */ type, /** @type {number} */ cost) => ({ data: { kind: 'expense', expense: { date: DATE, type, cost, name: type === 'misc' ? '통행료' : '', category: type === 'misc' ? '통행료' : '', fuelType: type === 'fuel' ? '주유' : '', payment: '' } } })
+
+test('지출 [기록하기] → 그 날짜 일지의 지출 창, 같은 날짜에서 또 넘기면 확인 창 [나가기] 뒤 새로 채움', async () => {
+  replies = [expenseReply('fuel', 120000), expenseReply('misc', 5000)]
+  const view = await renderShell('dock-expense', '/app/revenue')
+  try {
+    await view.askDock('어제 경유 12만원')
+    await view.click(view.button('기록하기', view.dock() || undefined))
+    await waitUntil(() => view.value('expenseCost') === '120,000')
+    assert.equal(window.location.pathname, `/app/day/${DATE}`)
+    assert.equal(view.dock()?.querySelector('.home-assistant-panel'), null, '작게')
+
+    await view.askDock('어제 통행료 5천원')
+    await view.click(view.button('기록하기', view.dock() || undefined))
+    await waitUntil(() => !!view.button('나가기'))
+    await view.click(view.button('나가기'))
+    await waitUntil(() => view.value('expenseCost') === '5,000')
+    assert.equal(view.value('expenseName'), '통행료')
+    assert.equal(window.location.pathname, `/app/day/${DATE}`, '일지에 그대로')
+  } finally { await view.cleanup() }
+})

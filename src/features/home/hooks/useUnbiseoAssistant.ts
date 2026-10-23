@@ -11,10 +11,10 @@ import { assignmentPeriodNotice } from '../../../domain/drivers.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { describeResult, requestUnbiseoParse } from '../api/unbiseoParse.ts'
-import type { UnbiseoCall } from '../api/unbiseoParse.ts'
+import type { UnbiseoCall, UnbiseoExpense } from '../api/unbiseoParse.ts'
 import useSpeechInput from './useSpeechInput.ts'
 
-export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null }
+export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null }
 
 export default function useUnbiseoAssistant() {
   const { ownerKey, session } = useSession()
@@ -49,11 +49,16 @@ export default function useUnbiseoAssistant() {
     const today = todayWorkLogSelection(new Date()).dateKey
     const owner = ownerKey
     setBusy(true)
-    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null })
+    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null })
     const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || '') })
     setBusy(false)
     if (owner !== currentOwner.current) return
-    setAnswer({ said: trimmed, sentence: describeResult(result, today), call: result.kind === 'call' ? result.call : null })
+    setAnswer({
+      said: trimmed,
+      sentence: describeResult(result, today),
+      call: result.kind === 'call' ? result.call : null,
+      expense: result.kind === 'expense' ? result.expense : null,
+    })
   }
 
   // 앱 설정 화면의 "콜 상세" 켜기와 같은 값을 저장한다.
@@ -70,7 +75,7 @@ export default function useUnbiseoAssistant() {
   }
 
   // [기록하기] 전에 일지와 같은 기준으로 계약 기간·휴무를 본다.
-  const callDate = answer?.call?.date
+  const callDate = answer?.call?.date ?? answer?.expense?.date
   const periodNotice = callDate && session?.accountType === 'employed_driver' ? assignmentPeriodNotice(callDate, myLink?.startDate, myLink?.endDate) : null
   const dayOff = !!callDate && isOffDay(workData[callDate])
 

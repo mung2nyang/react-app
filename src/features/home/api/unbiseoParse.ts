@@ -9,9 +9,12 @@ const CLIENTS_MAX = 200
 const CLIENT_NAME_MAX = 50
 
 export type UnbiseoCall = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
+export type UnbiseoExpense = { date: string, type: 'maint' | 'fuel' | 'misc', cost: number | null, name: string, category: string, fuelType: string, payment: string }
+/** [기록하기]로 일지에 넘기는 것 — 운행 또는 지출 */
+export type UnbiseoRecord = UnbiseoCall | UnbiseoExpense
 export type UnbiseoResult =
   | { kind: 'call', call: UnbiseoCall }
-  | { kind: 'expense' }
+  | { kind: 'expense', expense: UnbiseoExpense }
   | { kind: 'question' }
   | { kind: 'unknown' }
   | { kind: 'error', message: string }
@@ -30,22 +33,44 @@ function text(row: { [key: string]: JsonValue }, key: string): string {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+function dateOf(row: { [key: string]: JsonValue }, today: string): string {
+  const date = text(row, 'date')
+  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : today
+}
+
+function wonOf(value: JsonValue | undefined): number | null {
+  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null
+}
+
+function readExpense(row: { [key: string]: JsonValue }, today: string): UnbiseoExpense {
+  const type = row.type === 'fuel' ? 'fuel' : row.type === 'misc' ? 'misc' : 'maint'
+  return {
+    date: dateOf(row, today),
+    type,
+    cost: wonOf(row.cost),
+    name: text(row, 'name'),
+    category: text(row, 'category'),
+    fuelType: text(row, 'fuelType'),
+    payment: text(row, 'payment'),
+  }
+}
+
 /** 서버가 돌려준 값 → 화면용. 모양이 틀리면 알아듣지 못함. */
 export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoResult {
   const row = record(data)
   if (!row) return { kind: 'error', message: NOT_UNDERSTOOD }
-  if (row.kind === 'expense' || row.kind === 'question' || row.kind === 'unknown') return { kind: row.kind }
+  if (row.kind === 'question' || row.kind === 'unknown') return { kind: row.kind }
+  const expense = record(row.expense)
+  if (row.kind === 'expense') return expense ? { kind: 'expense', expense: readExpense(expense, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
   const call = record(row.call)
   if (row.kind !== 'call' || !call) return { kind: 'error', message: NOT_UNDERSTOOD }
-  const date = text(call, 'date')
-  const fare = call.fare
   return {
     kind: 'call',
     call: {
-      date: /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : today,
+      date: dateOf(call, today),
       loadLoc: text(call, 'loadLoc'),
       unloadLoc: text(call, 'unloadLoc'),
-      fare: typeof fare === 'number' && Number.isSafeInteger(fare) && fare >= 0 ? fare : null,
+      fare: wonOf(call.fare),
       client: text(call, 'client'),
     },
   }
@@ -70,20 +95,33 @@ function withRo(word: string): string {
   return final === 0 || final === 8 ? `${word}로` : `${word}으로`
 }
 
+function dateLabelOf(date: string, today: string): string {
+  const [, month, day] = date.split('-').map(Number)
+  return date === today ? '오늘' : `${month}월 ${day}일`
+}
+
 /** 운행 결과 한 문장 — 앱이 정해진 틀로 만든다(빈 칸은 뺌). */
 export function describeCall(call: UnbiseoCall, today: string): string {
-  const [, month, day] = call.date.split('-').map(Number)
-  const dateLabel = call.date === today ? '오늘' : `${month}월 ${day}일`
+  const dateLabel = dateLabelOf(call.date, today)
   const route = [call.loadLoc, call.unloadLoc].filter(Boolean).join(' → ')
   const parts = [route, call.fare === null ? '' : formatWon(call.fare), call.client].filter(Boolean)
   if (!parts.length) return `${dateLabel} 운행으로 기록할게요.`
   return `${dateLabel} ${withRo(parts.join(', '))} 기록할게요.`
 }
 
+const EXPENSE_LABEL = { maint: '정비', fuel: '주유', misc: '기타' }
+
+/** 지출 결과 한 문장 — 항목은 주유면 주유 종류, 그 밖은 항목명 → 분류 → 종류 이름 순(빈 칸은 뺌). */
+export function describeExpense(expense: UnbiseoExpense, today: string): string {
+  const item = expense.type === 'fuel' ? expense.fuelType || '주유' : expense.name || expense.category || EXPENSE_LABEL[expense.type]
+  const parts = [item, expense.cost === null ? '' : formatWon(expense.cost), expense.payment].filter(Boolean)
+  return `${dateLabelOf(expense.date, today)} ${withRo(parts.join(', '))} 기록할게요.`
+}
+
 /** 결과 한 문장(운행·지출·질문·관계없음·실패). */
 export function describeResult(result: UnbiseoResult, today: string): string {
   if (result.kind === 'call') return describeCall(result.call, today)
-  if (result.kind === 'expense') return '지출 기록은 곧 할 수 있게 됩니다.'
+  if (result.kind === 'expense') return describeExpense(result.expense, today)
   if (result.kind === 'question') return '질문 답하기는 곧 할 수 있게 됩니다.'
   if (result.kind === 'unknown') return '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.'
   return result.message

@@ -21,7 +21,8 @@ const { withToast } = await import('../../testSupport/withToast.js')
 const { normalizeSettings } = await import('../../domain/practiceSettings.ts')
 const { commitClients, commitSettings, commitWorkData } = await import('../../data/store/commitHelpers.ts')
 const { readOwnerLogWorkData } = await import('../../data/store/ownerDataHooks.ts')
-const { readAssistantCall } = await import('./assistantCallState.js')
+const { readOwnerExpenses } = await import('../../data/store/ownerDataHooks.ts')
+const { readAssistantCall, readAssistantExpense } = await import('./assistantCallState.js')
 const { default: MainPageRoute } = await import('./MainPageRoute.jsx')
 
 // 열자마자 "저장하지 않은 입력" 확인 창이 뜨면 안 된다(뒤로가기 붙잡기와 주소 상태 지우기가 겹칠 때).
@@ -208,4 +209,123 @@ test('휴무를 끈 뒤 주소 상태가 지워져 다시 그려도 휴무를 �
     container.remove()
   }
   assert.equal(readOwnerLogWorkData('assist-off-again', 'main')[DATE]?.isOff, true)
+})
+
+// 로드맵 24-C-2 — 운비서가 넘긴 지출로 그 종류 지출 창을 채워 한 번 연다(저장은 지금 지출 창 그대로).
+const FUEL = { type: 'fuel', cost: 120000, name: '경유', category: '', fuelType: '주유', payment: '' }
+const MAINT = { type: 'maint', cost: 150000, name: '엔진오일 교환', category: '소모품', fuelType: '', payment: '현금' }
+/** @param {HTMLElement} container @param {string} selector */
+const activeText = (container, selector) => [...container.querySelectorAll(`.maint-fuel-inline-host ${selector}.active`)].map((el) => el.textContent?.trim())
+
+test('지출로 들어오면 그 종류 지출 창이 채워진 채 열리고, 주소 상태에서는 지워진다(from은 남김)', async () => {
+  const view = await render('assist-expense-open', { from: 'home', assistantExpense: FUEL }, { callDetail: false })
+  try {
+    assert.equal(view.valueOf('expenseCost'), '120,000')
+    assert.deepEqual(activeText(view.container, '.pill-btn'), ['주유'], '주유 종류')
+    assert.deepEqual(activeText(view.container, '.segment-btn'), ['카드'], '결제는 기본값 그대로')
+    assert.equal(view.container.querySelector('#callLoadLoc'), null, '운행 입력 창은 안 엶')
+    assert.equal(window.history.state?.usr?.from, 'home')
+    assert.equal(window.history.state?.usr?.assistantExpense, undefined)
+    assert.equal(window.history.state?.usr?.panelGuard, true, '붙잡기 기록이 맨 위')
+    assert.equal(confirms, 0)
+  } finally { await view.cleanup() }
+})
+
+test('지출 [저장] → 지금 저장 그대로 1건, 다시 "+ 주유 추가"는 빈 창', async () => {
+  const view = await render('assist-expense-save', { from: 'home', assistantExpense: FUEL })
+  try {
+    await view.click(view.button('저장'))
+    assert.deepEqual(view.toasts, ['내역을 등록했습니다.'])
+    await view.click(view.button('+ 주유 추가'))
+    assert.notEqual(view.valueOf('expenseCost'), '120,000')
+    await view.click(view.button('취소'))
+  } finally { await view.cleanup() }
+  const saved = readOwnerExpenses('assist-expense-save')
+  assert.equal(saved.length, 1)
+  assert.equal(saved[0].kind, 'fuel')
+  assert.equal(saved[0].date, DATE)
+  assert.equal(saved[0].cost, 120000)
+  assert.equal(saved[0].fuelType, '주유')
+})
+
+test('지출 [취소] → 아무것도 안 남는다', async () => {
+  const view = await render('assist-expense-cancel', { from: 'home', assistantExpense: MAINT })
+  try {
+    await view.click(view.button('취소'))
+    // 닫힘 애니메이션 끝 — 브라우저처럼 지출 창을 내린다.
+    const host = view.container.querySelector('.maint-fuel-inline-host')
+    assert.ok(host)
+    const event = new window.Event('transitionend', { bubbles: true })
+    Object.defineProperty(event, 'propertyName', { value: 'grid-template-rows' })
+    await act(async () => { host.dispatchEvent(event) })
+    assert.equal(view.container.querySelector('#expenseCost'), null)
+  } finally { await view.cleanup() }
+  assert.equal(readOwnerExpenses('assist-expense-cancel').length, 0)
+})
+
+test('정비 지출: 항목명·분류·결제가 채워진다', async () => {
+  const view = await render('assist-expense-maint', { from: 'home', assistantExpense: MAINT })
+  try {
+    assert.equal(view.valueOf('expenseName'), '엔진오일 교환')
+    assert.equal(view.valueOf('expenseCost'), '150,000')
+    assert.deepEqual(activeText(view.container, '.pill-btn'), ['소모품'])
+    assert.deepEqual(activeText(view.container, '.segment-btn'), ['현금'])
+  } finally { await view.cleanup() }
+})
+
+test('지출 cancelOff: 휴무가 꺼지고 채운 지출 창이 열린다, 닫아도 휴무는 꺼진 채', async () => {
+  const view = await render('assist-expense-off', { from: 'home', assistantExpense: { ...FUEL, cancelOff: true } }, { workData: OFF_DAY })
+  try {
+    assert.equal(view.container.querySelector('.modal-work-details.is-off'), null, '휴무 꺼짐')
+    assert.equal(view.valueOf('expenseCost'), '120,000')
+    assert.equal(confirms, 0)
+    await view.click(view.button('취소'))
+  } finally { await view.cleanup() }
+  assert.equal(!!readOwnerLogWorkData('assist-expense-off', 'main')[DATE]?.isOff, false, '저장된 기록도 휴무 아님')
+})
+
+test('지출 cancelOff 없이 들어오면 휴무는 그대로', async () => {
+  const view = await render('assist-expense-keep-off', { from: 'home', assistantExpense: FUEL }, { workData: OFF_DAY })
+  try {
+    assert.ok(view.container.querySelector('.modal-work-details.is-off'))
+  } finally { await view.cleanup() }
+  assert.equal(readOwnerLogWorkData('assist-expense-keep-off', 'main')[DATE]?.isOff, true)
+})
+
+test('지출 주소 상태가 지워진 뒤 다시 그리면 지출 창이 열리지 않는다', async () => {
+  const first = await render('assist-expense-again', { from: 'home', assistantExpense: FUEL })
+  const cleared = window.history.state
+  await first.cleanup()
+  window.history.replaceState(cleared, '', `/app/day/${DATE}`)
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  const routes = React.createElement(Routes, null, React.createElement(Route, { path: '/app/day/:date', element: React.createElement(MainPageRoute) }))
+  try {
+    await act(async () => { root.render(React.createElement(BrowserRouter, null, withSession(routes, { ownerKey: 'assist-expense-again' }))) })
+    assert.equal(container.querySelector('#expenseCost'), null)
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
+test('지출 이상한 값은 그 칸만 빈 칸 — 모르는 종류는 정비, 목록 밖 분류·주유 종류·결제, 음수·소수 금액, 100자 넘는 글자', async () => {
+  const empty = { type: 'maint', cost: null, name: '', category: '', fuelType: '', payment: '', cancelOff: false }
+  assert.deepEqual(readAssistantExpense({ assistantExpense: { type: 'repair', cost: -5, name: '가'.repeat(101), category: '타이어', fuelType: '주유', payment: '신용카드' } }), empty)
+  assert.deepEqual(readAssistantExpense({ assistantExpense: { type: 'misc', cost: 5000, name: ' 통행료 ', category: '통행료', payment: '현금', cancelOff: 'true' } }), { ...empty, type: 'misc', cost: 5000, name: '통행료', category: '통행료', payment: '현금' })
+  assert.equal(readAssistantExpense({ assistantExpense: { type: 'misc', category: '소모품' } })?.category, '', '기타 목록 밖')
+  assert.equal(readAssistantExpense({ assistantExpense: { type: 'fuel', category: '소모품', fuelType: '경유' } })?.category, '', '주유는 분류 없음')
+  assert.equal(readAssistantExpense({ assistantExpense: { type: 'fuel', fuelType: '경유' } })?.fuelType, '', '목록 밖 주유 종류')
+  assert.equal(readAssistantExpense({ assistantExpense: { type: 'fuel', cost: 1.5 } })?.cost, null)
+  assert.equal(readAssistantExpense({ assistantExpense: { ...FUEL, cancelOff: true } })?.cancelOff, true)
+  assert.equal(readAssistantExpense({ assistantCall: CALL }), null)
+  assert.equal(readAssistantExpense(null), null)
+  assert.equal(readAssistantExpense({ assistantExpense: ['주유'] }), null)
+  const view = await render('assist-expense-bad', { from: 'home', assistantExpense: { type: 'misc', cost: -5, name: '주차', category: '타이어', payment: 'card' } })
+  try {
+    assert.equal(view.valueOf('expenseName'), '주차')
+    assert.deepEqual(activeText(view.container, '.pill-btn'), ['통행료'], '목록 밖 분류는 기본값')
+    assert.deepEqual(activeText(view.container, '.segment-btn'), ['카드'])
+  } finally { await view.cleanup() }
 })

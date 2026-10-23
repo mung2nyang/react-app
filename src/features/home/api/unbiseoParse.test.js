@@ -52,15 +52,48 @@ test('운행 칸이 이상하면 고쳐 담는다: 날짜 모양이 아니면 �
   assert.equal(odd.kind === 'call' ? odd.call.fare : 'x', null)
 })
 
-test('지출·질문·관계없음은 종류만, 모르는 종류·모양이 틀리면 알아듣지 못함', async () => {
-  for (const kind of ['expense', 'question', 'unknown']) {
+test('질문·관계없음은 종류만, 모르는 종류·모양이 틀리면 알아듣지 못함', async () => {
+  for (const kind of ['question', 'unknown']) {
     reply = async () => ({ data: { kind }, error: null })
     assert.deepEqual(await requestUnbiseoParse({ text: '주유 8만원', today: '2026-10-22', clientNames: [] }), { kind })
   }
-  for (const data of [{ kind: 'weather' }, { kind: 'call' }, null, 'call', []]) {
+  /** @type {Array<JsonValue>} */
+  const odd = [{ kind: 'weather' }, { kind: 'call' }, { kind: 'expense' }, { kind: 'expense', expense: [] }, null, 'call', []]
+  for (const data of odd) {
     reply = async () => ({ data, error: null })
     assert.deepEqual(await requestUnbiseoParse({ text: '뭐', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
   }
+})
+
+// 로드맵 24-C-2 — 지출 칸 읽기·문장.
+test('지출 칸을 그대로 돌려준다, 이상한 칸은 고쳐 담는다(날짜 모양 아니면 오늘, 모르는 종류는 정비, 금액 정수 아니면 없음)', async () => {
+  const expense = { date: '2026-10-21', type: 'fuel', cost: 120000, name: '경유', category: '', fuelType: '주유', payment: '카드' }
+  reply = async () => ({ data: { kind: 'expense', expense }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '어제 경유 12만원', today: '2026-10-22', clientNames: [] }), { kind: 'expense', expense })
+  reply = async () => ({ data: { kind: 'expense', expense: { date: '어제', type: 'repair', cost: -5, name: 3, payment: ' 현금 ' } }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '수리', today: '2026-10-22', clientNames: [] }), {
+    kind: 'expense', expense: { date: '2026-10-22', type: 'maint', cost: null, name: '', category: '', fuelType: '', payment: '현금' },
+  })
+  reply = async () => ({ data: { kind: 'expense', expense: { type: 'misc', cost: 1.5 } }, error: null })
+  const odd = await requestUnbiseoParse({ text: '통행료', today: '2026-10-22', clientNames: [] })
+  assert.equal(odd.kind === 'expense' ? odd.expense.cost : 'x', null)
+  assert.equal(odd.kind === 'expense' ? odd.expense.type : 'x', 'misc')
+})
+
+test('지출 문장: 주유는 주유 종류, 그 밖은 항목명 → 분류 → 종류 이름, 빈 칸은 빼고 끝 글자 받침에 따라 "으로"/"로"', async () => {
+  const { describeExpense, describeResult } = await import('./unbiseoParse.ts')
+  const today = '2026-10-22'
+  /** @type {import('./unbiseoParse.ts').UnbiseoExpense} */
+  const base = { date: today, type: 'maint', cost: null, name: '', category: '', fuelType: '', payment: '' }
+  assert.equal(describeExpense({ ...base, date: '2026-10-21', type: 'fuel', cost: 120000, name: '경유', fuelType: '주유' }, today), '10월 21일 주유, 120,000원으로 기록할게요.')
+  assert.equal(describeExpense({ ...base, type: 'fuel', fuelType: '요소수', cost: 30000 }, today), '오늘 요소수, 30,000원으로 기록할게요.')
+  assert.equal(describeExpense({ ...base, type: 'fuel' }, today), '오늘 주유로 기록할게요.')
+  assert.equal(describeExpense({ ...base, cost: 150000, name: '엔진오일 교환', category: '소모품', payment: '현금' }, today), '오늘 엔진오일 교환, 150,000원, 현금으로 기록할게요.')
+  assert.equal(describeExpense({ ...base, name: '와이퍼' }, today), '오늘 와이퍼로 기록할게요.')
+  assert.equal(describeExpense({ ...base, category: '판금/도장', cost: 500000, payment: '카드' }, today), '오늘 판금/도장, 500,000원, 카드로 기록할게요.')
+  assert.equal(describeExpense({ ...base }, today), '오늘 정비로 기록할게요.')
+  assert.equal(describeExpense({ ...base, type: 'misc', cost: 5000 }, today), '오늘 기타, 5,000원으로 기록할게요.')
+  assert.equal(describeResult({ kind: 'expense', expense: { ...base, type: 'misc', name: '통행료', category: '통행료', cost: 5000 } }, today), '오늘 통행료, 5,000원으로 기록할게요.')
 })
 
 test('빈 말·301자는 서버를 부르지 않는다', async () => {
