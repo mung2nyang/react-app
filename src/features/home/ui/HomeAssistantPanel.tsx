@@ -8,7 +8,7 @@ type OpenCallOptions = { cancelOff: boolean }
 type Props = { assistant: UnbiseoAssistant, onOpenCall?: (record: UnbiseoRecord, options: OpenCallOptions) => void }
 
 export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
-  const { loggedIn, text, setText, busy, answer, send, speech, callDetailOn, enabling, enableCallDetail, periodNotice, dayOff } = assistant
+  const { loggedIn, text, setText, busy, answer, send, speech, speaking, stopSpeaking, callDetailOn, enabling, enableCallDetail, periodNotice, dayOff } = assistant
   const record = answer?.call ?? answer?.expense
   const isCall = !!answer?.call
 
@@ -70,6 +70,7 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
         <div className="home-assistant-answer" aria-live="polite">
           <p className="home-assistant-said">내가 한 말: {answer.said}</p>
           <p className="home-assistant-result">{answer.sentence}</p>
+          {speaking && <button type="button" className="home-assistant-action" onClick={stopSpeaking}>멈추기</button>}
           {record && actionFor(record)}
         </div>
       )}

@@ -360,3 +360,63 @@ test('연동 기사 질문: 기사 본인 매출 화면 이름(정산액)', asyn
     assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, `${Number(thisMonth.slice(5))}월 정산액은 0원입니다.`)
   } finally { await view.cleanup() }
 })
+
+// 로드맵 24-E — 마이크로 말했을 때만 답을 소리로, [멈추기], 마이크를 다시 누르면 읽던 것 먼저 멈춤.
+test('읽어 주기: 말로 보낸 답만 읽고, [멈추기]·다시 듣기·글로 보내기는 읽지 않거나 멈춘다', async () => {
+  let last = null
+  window.webkitSpeechRecognition = class {
+    constructor() { last = this }
+    start() {}
+    stop() { this.onend?.() }
+    abort() {}
+  }
+  const synth = { spoken: [], cancels: 0, speak(utterance) { this.spoken.push(utterance) }, cancel() { this.cancels += 1 } }
+  window.speechSynthesis = synth
+  window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text } }
+  reply = async () => ({ data: { kind: 'expense', expense: EXPENSE_FUEL }, error: null })
+  const view = await mount('u-assistant', CLOUD, { open: false })
+  const mic = () => view.container.querySelector('.home-assistant-mic-btn')
+  const stopButton = () => actionButton(view.container, '멈추기')
+  async function say(words) {
+    await act(async () => { mic().click() })
+    await act(async () => {
+      last.onresult({ results: [[{ transcript: words }]] })
+      last.onend()
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+  }
+  try {
+    await say('주유 8만원')
+    assert.equal(synth.spoken.length, 1)
+    assert.equal(synth.spoken[0].text, '10월 21일 주유, 80,000원으로 기록할게요.')
+    assert.equal(synth.spoken[0].lang, 'ko-KR')
+    assert.ok(stopButton(), '읽는 동안 [멈추기]')
+    let before = synth.cancels
+    await act(async () => { stopButton().click() })
+    assert.equal(synth.cancels, before + 1)
+    assert.equal(stopButton(), undefined)
+
+    await say('주유 8만원')
+    assert.equal(synth.spoken.length, 2)
+    before = synth.cancels
+    await act(async () => { mic().click() })
+    assert.equal(synth.cancels, before + 1, '듣기를 시작하면 읽던 것을 먼저 멈춤')
+    assert.ok(mic().classList.contains('listening'))
+    assert.equal(stopButton(), undefined)
+    await act(async () => { last.onend() })
+
+    await view.type('주유 8만원')
+    await view.send()
+    assert.equal(synth.spoken.length, 2, '글로 보낸 답은 읽지 않음')
+    assert.equal(stopButton(), undefined)
+
+    await say('주유 8만원')
+    await act(async () => { synth.spoken[2].onend() })
+    assert.equal(stopButton(), undefined, '다 읽으면 [멈추기]가 사라짐')
+  } finally {
+    await view.cleanup()
+    delete window.webkitSpeechRecognition
+    delete window.speechSynthesis
+    delete window.SpeechSynthesisUtterance
+  }
+})

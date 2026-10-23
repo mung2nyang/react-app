@@ -15,6 +15,7 @@ import type { UnbiseoCall, UnbiseoExpense } from '../api/unbiseoParse.ts'
 import { questionNumbers } from '../api/unbiseoNumbers.ts'
 import { describeQuestion } from '../api/unbiseoQuestion.ts'
 import useSpeechInput from './useSpeechInput.ts'
+import useSpeechOutput from './useSpeechOutput.ts'
 
 export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null }
 
@@ -39,30 +40,40 @@ export default function useUnbiseoAssistant() {
     setText('')
     setAnswer(null)
   }
+  // 마이크로 말했을 때만 답을 소리로 — 듣기를 시작하면 읽던 것을 먼저 멈춘다(로드맵 24-E).
+  const voice = useSpeechOutput()
+  const stopSpeaking = voice.stop
   const currentOwner = useRef(ownerKey)
-  useEffect(() => { currentOwner.current = ownerKey }, [ownerKey])
-  const speech = useSpeechInput((heard) => {
+  useEffect(() => {
+    currentOwner.current = ownerKey
+    stopSpeaking()
+  }, [ownerKey, stopSpeaking])
+  const input = useSpeechInput((heard) => {
     setText(heard)
-    void send(heard)
+    void send(heard, true)
   })
+  const speech = { ...input, start() { stopSpeaking(); input.start() } }
 
-  async function send(said: string) {
+  async function send(said: string, byVoice = false) {
     const trimmed = said.trim()
     if (!loggedIn || busy || !trimmed) return
     const today = todayWorkLogSelection(new Date()).dateKey
     const owner = ownerKey
+    stopSpeaking()
     setBusy(true)
     setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null })
     const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || '') })
     setBusy(false)
     if (owner !== currentOwner.current) return
+    // 질문 숫자는 매출·미수금 화면과 같은 함수로, 받은 그 순간 값에서.
+    const sentence = describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver)))
     setAnswer({
       said: trimmed,
-      // 질문 숫자는 매출·미수금 화면과 같은 함수로, 받은 그 순간 값에서.
-      sentence: describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver))),
+      sentence,
       call: result.kind === 'call' ? result.call : null,
       expense: result.kind === 'expense' ? result.expense : null,
     })
+    if (byVoice) voice.speak(sentence)
   }
 
   // 앱 설정 화면의 "콜 상세" 켜기와 같은 값을 저장한다.
@@ -83,7 +94,7 @@ export default function useUnbiseoAssistant() {
   const periodNotice = callDate && session?.accountType === 'employed_driver' ? assignmentPeriodNotice(callDate, myLink?.startDate, myLink?.endDate) : null
   const dayOff = !!callDate && isOffDay(workData[callDate])
 
-  return { loggedIn, text, setText, busy, answer, send, speech, callDetailOn, enabling, enableCallDetail, periodNotice, dayOff }
+  return { loggedIn, text, setText, busy, answer, send, speech, speaking: voice.speaking, stopSpeaking, callDetailOn, enabling, enableCallDetail, periodNotice, dayOff }
 }
 
 export type UnbiseoAssistant = ReturnType<typeof useUnbiseoAssistant>
