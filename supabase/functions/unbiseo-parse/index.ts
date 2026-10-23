@@ -2,6 +2,8 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.112.3'
 import { AiUnavailableError, askAi } from './grok.ts'
 import type { ParseInput } from './grok.ts'
+import { readClientDraft } from './clientDraft.ts'
+import type { ClientDraft } from './clientDraft.ts'
 import { readFixed, readRouteNames } from './fixedRoute.ts'
 import type { Fixed } from './fixedRoute.ts'
 import { readQuestion } from './question.ts'
@@ -9,7 +11,7 @@ import type { Json, Question } from './question.ts'
 
 type Call = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
 type Expense = { date: string, type: 'maint' | 'fuel' | 'misc', cost: number | null, name: string, category: string, fuelType: string, payment: string }
-type Parsed = { kind: 'call', call: Call } | { kind: 'expense', expense: Expense } | { kind: 'question', question: Question } | { kind: 'fixed', fixed: Fixed } | { kind: 'unknown' }
+type Parsed = { kind: 'call', call: Call } | { kind: 'expense', expense: Expense } | { kind: 'question', question: Question } | { kind: 'fixed', fixed: Fixed } | { kind: 'client', client: ClientDraft } | { kind: 'unknown' }
 
 const TEXT_MAX = 300
 const CLIENTS_MAX = 200
@@ -113,6 +115,11 @@ export function readAiAnswer(raw: string, input: ParseInput): Parsed | null {
   if (row.kind === 'question') return { kind: 'question', question: readQuestion(row, input.today, clientOf(row.client, input)) }
   if (row.kind === 'fixed') return { kind: 'fixed', fixed: readFixed(row, dayOf(row.date, input.today), input.routeNames) }
   if (row.kind === 'unknown') return { kind: 'unknown' }
+  // 이름을 못 알아들은 거래처 등록은 관계없음으로.
+  if (row.kind === 'client') {
+    const client = readClientDraft(row)
+    return client ? { kind: 'client', client } : { kind: 'unknown' }
+  }
   if (row.kind !== 'call') return null
   return {
     kind: 'call',
