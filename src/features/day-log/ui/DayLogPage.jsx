@@ -17,6 +17,7 @@ import useAssistantPrefill from '../hooks/useAssistantPrefill.js'
 import useAssistantExpense from '../hooks/useAssistantExpense.js'
 import { popPanelGuardThen } from '../../../shared/utils/historyMoves.js'
 import AutoSaveStatus from './AutoSaveStatus.jsx'
+import DayFareTotal from './DayFareTotal.jsx'
 import OffToggle from './OffToggle.jsx'
 import FixedCountSection from './FixedCountSection.jsx'
 import FixedRouteChips from './FixedRouteChips.jsx'
@@ -104,6 +105,7 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onC
         onBack={onClose ? handleClose : undefined}
         onOpenMenu={onOpenMenu}
       />
+      <DayFareTotal draft={draft} fixedRouteClient={fixedRouteClient} palletOn={palletVisible} />
       <OffToggle isOff={draft.isOff} callCount={draft.callDetails.length} onChange={(off) => patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })} />
       <div className={`modal-work-details${draft.isOff ? ' is-off' : ''}`}>
         {settings.fixedOn && (

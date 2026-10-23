@@ -147,6 +147,23 @@
 
 .autosave-status.visible { opacity: 1; }
 
+/* 제목 아래 하루 운송료 합계 — 0원·휴무면 글 없이 한 줄 높이만 남는다. */
+.work-log-page .day-fare-total {
+  height: 20px;
+  margin: 0 0 8px;
+  color: var(--sub-text-color);
+  font-size: var(--fs-3);
+  line-height: 20px;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.work-log-page .day-fare-total strong {
+  color: var(--text-color);
+  font-weight: 700;
+}
+
 /* 연동 해제 때 복사된 날(7-D)의 배정 차량 표시 — 제목 옆 보조 글씨, 좁으면 이 글씨만 다음 줄로 */
 .assigned-vehicle-tag {
   display: inline-block;

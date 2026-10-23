@@ -52,7 +52,7 @@ export default function CalendarMonthSummary({ paymentOn, unpaidTotal, summary, 
           </svg>
           이번 달 미수금 {unpaidTotal.toLocaleString()}원이 있습니다.
         </div>
-        <p className="unpaid-dot-legend"><span className="unpaid-dot-legend-mark" aria-hidden="true" />빨간 점: 미수금이 남은 날</p>
+        <p className="unpaid-dot-legend"><span className="unpaid-dot-legend-mark" aria-hidden="true" />미수금</p>
         </>
       )}
 

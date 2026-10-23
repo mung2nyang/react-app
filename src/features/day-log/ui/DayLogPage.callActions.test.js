@@ -38,8 +38,8 @@ const SETTINGS = normalizeSettings({
 })
 const SEED_CALL = { id: 'call-1', loadLoc: '부산', unloadLoc: '대구', client: '', fare: '50000' }
 
-/** @param {string} ownerKey @param {Array<typeof SEED_CALL>} calls */
-async function render(ownerKey, calls) {
+/** @param {string} ownerKey @param {Array<typeof SEED_CALL>} calls @param {Array<object>} [clients] */
+async function render(ownerKey, calls, clients = []) {
   commitWorkData(ownerKey, calls.length ? { [DATE]: { callDetails: calls } } : {})
   window.history.replaceState(null, '', `/app/day/${DATE}`)
   const toasts = /** @type {Array<string>} */ ([])
@@ -48,7 +48,7 @@ async function render(ownerKey, calls) {
   const root = createRoot(container)
   await act(async () => {
     root.render(withToast(React.createElement(BrowserRouter, null, withSession(React.createElement(DayLogPage, {
-      month: 10, day: 17, dateKey: DATE, clients: [], settings: SETTINGS,
+      month: 10, day: 17, dateKey: DATE, clients, settings: SETTINGS,
     }), { ownerKey })), (/** @type {string} */ m) => { toasts.push(m) }))
   })
   /** @param {string} text */
@@ -146,6 +146,20 @@ test('고정 장소 저장이 실패하면 "고정 장소 저장에 실패했습
     await view.click(view.container.querySelector('[aria-label="부산 장소 고정"]'))
     assert.equal(pinSave.calls - before, 1)
     assert.deepEqual(view.toasts, ['고정 장소 저장에 실패했습니다.'])
+  } finally {
+    await view.cleanup()
+  }
+})
+
+// 로드맵 109-B — 제목 아래 운송료 합계는 저장을 기다리지 않고 입력하는 즉시 바뀐다.
+test('횟수를 바꾸면 제목 아래 운송료 합계가 바로 바뀐다', async () => {
+  const clients = [{ id: 'cl', companyName: '고정거래처', fixedRouteLinked: true, fixedUnitPrice: 50000 }]
+  const view = await render('daylog-fare-total', [SEED_CALL], clients)
+  const line = () => view.container.querySelector('.day-fare-total')?.textContent
+  try {
+    assert.equal(line(), '운송료 합계 50,000원')
+    await view.type('#modalFixedCountInput', '3')
+    assert.equal(line(), '운송료 합계 200,000원')
   } finally {
     await view.cleanup()
   }

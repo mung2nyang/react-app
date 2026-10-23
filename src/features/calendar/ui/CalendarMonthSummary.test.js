@@ -277,7 +277,7 @@ test('빨간 점 설명 줄 — 미수 카드가 있을 때만(로드맵 47-B)',
   const shown = await renderSummary(emptySummary(), { paymentOn: true, unpaidTotal: 130000 })
   try {
     const legend = shown.container.querySelector('.unpaid-dot-legend')
-    assert.equal(legend?.textContent, '빨간 점: 미수금이 남은 날')
+    assert.equal(legend?.textContent, '미수금')
     assert.ok(legend?.querySelector('.unpaid-dot-legend-mark'), '달력 점과 같은 작은 점')
   } finally {
     await shown.cleanup()
