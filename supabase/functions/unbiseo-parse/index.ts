@@ -2,11 +2,12 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.112.3'
 import { AiUnavailableError, askAi } from './grok.ts'
 import type { ParseInput } from './grok.ts'
+import { readQuestion } from './question.ts'
+import type { Json, Question } from './question.ts'
 
-type Json = string | number | boolean | null | Array<Json> | { [key: string]: Json }
 type Call = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
 type Expense = { date: string, type: 'maint' | 'fuel' | 'misc', cost: number | null, name: string, category: string, fuelType: string, payment: string }
-type Parsed = { kind: 'call', call: Call } | { kind: 'expense', expense: Expense } | { kind: 'question' } | { kind: 'unknown' }
+type Parsed = { kind: 'call', call: Call } | { kind: 'expense', expense: Expense } | { kind: 'question', question: Question } | { kind: 'unknown' }
 
 const TEXT_MAX = 300
 const CLIENTS_MAX = 200
@@ -68,6 +69,12 @@ function won(value: Json | undefined): number | null {
   return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null
 }
 
+// 거래처는 목록 이름과 같을 때만 그 이름, 아니면 들은 그대로.
+function clientOf(value: Json | undefined, input: ParseInput): string {
+  const heard = place(value)
+  return input.clientNames.find((name) => name.trim() === heard) ?? heard
+}
+
 function oneOf(value: Json | undefined, list: Array<string>): string {
   const heard = typeof value === 'string' ? value.trim() : ''
   return list.includes(heard) ? heard : ''
@@ -99,10 +106,9 @@ export function readAiAnswer(raw: string, input: ParseInput): Parsed | null {
   const row = record(parsed)
   if (!row) return null
   if (row.kind === 'expense') return { kind: 'expense', expense: readExpense(row, input.today) }
-  if (row.kind === 'question' || row.kind === 'unknown') return { kind: row.kind }
+  if (row.kind === 'question') return { kind: 'question', question: readQuestion(row, input.today, clientOf(row.client, input)) }
+  if (row.kind === 'unknown') return { kind: 'unknown' }
   if (row.kind !== 'call') return null
-  const heard = place(row.client)
-  const known = input.clientNames.find((name) => name.trim() === heard)
   return {
     kind: 'call',
     call: {
@@ -110,7 +116,7 @@ export function readAiAnswer(raw: string, input: ParseInput): Parsed | null {
       loadLoc: place(row.loadLoc),
       unloadLoc: place(row.unloadLoc),
       fare: won(row.fare),
-      client: known ?? heard,
+      client: clientOf(row.client, input),
     },
   }
 }
