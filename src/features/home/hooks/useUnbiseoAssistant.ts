@@ -13,6 +13,8 @@ import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { requestUnbiseoParse, routeNamesForAi } from '../api/unbiseoParse.ts'
 import type { UnbiseoCall, UnbiseoClient, UnbiseoExpense, UnbiseoFixed } from '../api/unbiseoParse.ts'
 import type { UnbiseoSms } from '../api/unbiseoSms.ts'
+import { matchChoice } from '../api/unbiseoChoice.ts'
+import type { UnbiseoStep } from '../api/unbiseoChoice.ts'
 import { describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
 import { questionNumbers } from '../api/unbiseoNumbers.ts'
 import { describeQuestion } from '../api/unbiseoQuestion.ts'
@@ -57,10 +59,27 @@ export default function useUnbiseoAssistant() {
     void send(heard, true)
   })
   const speech = { ...input, start() { stopSpeaking(); input.start() } }
+  // 되묻기 화면이 알려 주는 지금 단계 — 화면이 있는 동안만 든다(로드맵 24-H-3).
+  const step = useRef<UnbiseoStep | null>(null)
+  const speakNext = useRef(false)
+  function reportStep(next: UnbiseoStep | null) {
+    step.current = next
+    if (!next || !speakNext.current) return
+    speakNext.current = false
+    voice.speak(next.question)
+  }
 
   async function send(said: string, byVoice = false) {
     const trimmed = said.trim()
     if (!loggedIn || busy || !trimmed) return
+    // 카드가 버튼으로 묻는 중이면 먼저 버튼 이름과 맞춰 본다.
+    const chosen = matchChoice(trimmed, step.current?.choices ?? [])
+    speakNext.current = !!chosen && byVoice
+    if (chosen) {
+      setText('')
+      chosen.choose()
+      return
+    }
     const today = todayWorkLogSelection(new Date()).dateKey
     const owner = ownerKey
     stopSpeaking()
@@ -106,7 +125,7 @@ export default function useUnbiseoAssistant() {
   const periodNotice = callDate && session?.accountType === 'employed_driver' ? assignmentPeriodNotice(callDate, myLink?.startDate, myLink?.endDate) : null
   const dayOff = !!callDate && isOffDay(workData[callDate])
 
-  return { loggedIn, text, setText, busy, answer, send, speech, speaking: voice.speaking, stopSpeaking, callDetailOn, fixedOn, enabling, enableSetting, periodNotice, dayOff }
+  return { loggedIn, text, setText, busy, answer, send, reportStep, speech, speaking: voice.speaking, stopSpeaking, callDetailOn, fixedOn, enabling, enableSetting, periodNotice, dayOff }
 }
 
 export type UnbiseoAssistant = ReturnType<typeof useUnbiseoAssistant>
