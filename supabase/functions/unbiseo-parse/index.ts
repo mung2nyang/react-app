@@ -15,7 +15,7 @@ import type { Json, Question } from './question.ts'
 
 type Call = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
 type Expense = { date: string, type: 'maint' | 'fuel' | 'misc', cost: number | null, name: string, category: string, fuelType: string, payment: string }
-type Parsed = { kind: 'call', call: Call } | { kind: 'expense', expense: Expense } | { kind: 'question', question: Question } | { kind: 'fixed', fixed: Fixed } | { kind: 'client', client: ClientDraft } | { kind: 'sms', sms: SmsDraft } | { kind: 'weather', weather: WeatherDraft } | { kind: 'unknown' }
+type Parsed = { kind: 'call', call: Call } | { kind: 'expense', expense: Expense } | { kind: 'question', question: Question } | { kind: 'fixed', fixed: Fixed } | { kind: 'client', client: ClientDraft } | { kind: 'sms', sms: SmsDraft } | { kind: 'weather', weather: WeatherDraft } | { kind: 'inspection', inspection: { date: string } } | { kind: 'unknown' }
 
 const TEXT_MAX = 300
 const CLIENTS_MAX = 200
@@ -120,6 +120,8 @@ export function readAiAnswer(raw: string, input: ParseInput): Parsed | null {
   // "문자"가 없는 말은 AI가 문자라 해도 관계없음으로.
   if (row.kind === 'sms') return input.text.includes('문자') ? { kind: 'sms', sms: readSmsDraft(row, input.today, clientOf(row.smsClient, input)) } : { kind: 'unknown' }
   if (row.kind === 'weather') return { kind: 'weather', weather: readWeatherDraft(row, input.today) }
+  // "점검"이 없는 말은 AI가 점검표라 해도 관계없음으로.
+  if (row.kind === 'inspection') return input.text.includes('점검') ? { kind: 'inspection', inspection: { date: dayOf(row.date, input.today) } } : { kind: 'unknown' }
   if (row.kind === 'fixed') return { kind: 'fixed', fixed: readFixed(row, dayOf(row.date, input.today), input.routeNames) }
   if (row.kind === 'unknown') return { kind: 'unknown' }
   // 이름을 못 알아들은 거래처 등록은 관계없음으로.
