@@ -106,7 +106,7 @@ function readClient(row: { [key: string]: JsonValue }): UnbiseoClient | null {
   }
 }
 
-// 날씨 — 날짜 모양이 틀리면 오늘, 지역은 30자까지(로드맵 24-I-2).
+// 날씨 — 날짜 모양이 틀리면 오늘, 지역은 30자까지.
 function readWeather(row: { [key: string]: JsonValue }, today: string): UnbiseoWeather {
   return { date: dateOf(row, today), place: text(row, 'place').slice(0, WEATHER_PLACE_MAX) }
 }
