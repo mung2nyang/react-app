@@ -109,9 +109,11 @@ export default function UnbiseoSmsSteps({ sms, onStep }: Props) {
           <div className="unbiseo-sms-step">
             <p className="home-assistant-note">{done.join(' · ')}</p>
             <p className="home-assistant-note">어떤 문구로 보낼까요?</p>
-            {MESSAGE_TEMPLATE_TITLES.map((title, index) => (
-              <button key={title} type="button" className="unbiseo-sms-choice" onClick={() => setTemplate(TEMPLATE_NUMBERS[index])}>{title}</button>
-            ))}
+            <div className="unbiseo-sms-row">
+              {MESSAGE_TEMPLATE_TITLES.map((title, index) => (
+                <button key={title} type="button" className="unbiseo-sms-choice" onClick={() => setTemplate(TEMPLATE_NUMBERS[index])}>{title}</button>
+              ))}
+            </div>
           </div>
         ),
       }

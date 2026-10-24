@@ -19,6 +19,12 @@
   cursor: pointer;
 }
 
+.unbiseo-sms-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .unbiseo-sms-check {
   display: flex;
   align-items: center;
