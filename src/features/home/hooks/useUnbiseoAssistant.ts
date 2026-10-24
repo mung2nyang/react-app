@@ -15,13 +15,18 @@ import type { UnbiseoCall, UnbiseoClient, UnbiseoExpense, UnbiseoFixed } from '.
 import type { UnbiseoSms } from '../api/unbiseoSms.ts'
 import { matchChoice } from '../api/unbiseoChoice.ts'
 import type { UnbiseoStep } from '../api/unbiseoChoice.ts'
-import { describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
+import { WEATHER_WAIT, describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
+import { requestWeatherSentence } from '../api/unbiseoWeather.ts'
 import { questionNumbers } from '../api/unbiseoNumbers.ts'
 import { describeQuestion } from '../api/unbiseoQuestion.ts'
 import useSpeechInput from './useSpeechInput.ts'
 import useSpeechOutput from './useSpeechOutput.ts'
 
 export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null, client: UnbiseoClient | null, sms: UnbiseoSms | null }
+
+function waiting(said: string, sentence: string): UnbiseoAnswer {
+  return { said, sentence, call: null, expense: null, fixed: null, client: null, sms: null }
+}
 
 export default function useUnbiseoAssistant() {
   const { ownerKey, session } = useSession()
@@ -84,17 +89,21 @@ export default function useUnbiseoAssistant() {
     const owner = ownerKey
     stopSpeaking()
     setBusy(true)
-    setAnswer({ said: trimmed, sentence: '알아듣는 중…', call: null, expense: null, fixed: null, client: null, sms: null })
+    setAnswer(waiting(trimmed, '알아듣는 중…'))
     // 고정 노선 칩이 보이는 일지일 때만 노선 이름을 보낸다.
     const routeNames = fixedOn && mainSettings.fixedRouteOn ? routeNamesForAi(mainSettings.fixedRoutePresets || []) : []
     const result = await requestUnbiseoParse({ text: trimmed, today, clientNames: clients.map((client) => client.companyName || ''), routeNames })
+    // 날씨는 위치·기상청까지 받아 온 뒤 문장을 만든다.
+    const asksWeather = result.kind === 'weather' && owner === currentOwner.current
+    if (asksWeather) setAnswer(waiting(trimmed, WEATHER_WAIT))
+    const weatherSentence = asksWeather && result.kind === 'weather' ? await requestWeatherSentence(result.weather, today) : ''
     setBusy(false)
     if (owner !== currentOwner.current) return
     // 이미 있는 이름이면 등록 버튼 없이 알린다.
     const heardClient = result.kind === 'client' ? result.client : null
     const existing = !!heardClient && clients.some((client) => (client.companyName || '').trim() === heardClient.name)
     // 질문 숫자는 매출·미수금 화면과 같은 함수로, 받은 그 순간 값에서.
-    const sentence = existing && heardClient ? describeExistingClient(heardClient.name) : describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver)))
+    const sentence = weatherSentence || (existing && heardClient ? describeExistingClient(heardClient.name) : describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver))))
     setAnswer({
       said: trimmed,
       sentence,

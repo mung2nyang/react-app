@@ -14,12 +14,14 @@ const ROUTES_MAX = 30
 const ROUTE_NAME_MAX = 60
 const FIXED_COUNT_MAX = 20
 const MANAGER_MAX = 30
+const WEATHER_PLACE_MAX = 30
 // 앱 거래처 결제 주기 목록(domain/clientPaymentTerms.ts)과 같은 값.
 const PAYMENT_TERMS = ['same_day', 'after_days', 'next_month_day', 'next_month_end', 'second_month_day', 'second_month_end']
 
 export type UnbiseoCall = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
 export type UnbiseoExpense = { date: string, type: 'maint' | 'fuel' | 'misc', cost: number | null, name: string, category: string, fuelType: string, payment: string }
 export type UnbiseoFixed = { date: string, count: number, route: string }
+export type UnbiseoWeather = { date: string, place: string }
 export type UnbiseoClient = { name: string, manager: string, phone: string, paymentTerm: string, paymentTermValue: number | null, commType: 'percent' | 'direct' | '', commValue: number | null }
 /** [기록하기]·[등록하기]로 넘기는 것 — 운행·지출·고정 노선은 일지로, 거래처는 거래처 화면으로 */
 export type UnbiseoRecord = UnbiseoCall | UnbiseoExpense | UnbiseoFixed | UnbiseoClient
@@ -29,6 +31,7 @@ export type UnbiseoResult =
   | { kind: 'fixed', fixed: UnbiseoFixed }
   | { kind: 'client', client: UnbiseoClient }
   | { kind: 'sms', sms: UnbiseoSms }
+  | { kind: 'weather', weather: UnbiseoWeather }
   | { kind: 'question', question: UnbiseoQuestion }
   | { kind: 'unknown' }
   | { kind: 'error', message: string }
@@ -103,6 +106,11 @@ function readClient(row: { [key: string]: JsonValue }): UnbiseoClient | null {
   }
 }
 
+// 날씨 — 날짜 모양이 틀리면 오늘, 지역은 30자까지(로드맵 24-I-2).
+function readWeather(row: { [key: string]: JsonValue }, today: string): UnbiseoWeather {
+  return { date: dateOf(row, today), place: text(row, 'place').slice(0, WEATHER_PLACE_MAX) }
+}
+
 /** 서버가 돌려준 값 → 화면용. 모양이 틀리면 알아듣지 못함. */
 export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoResult {
   const row = record(data)
@@ -112,6 +120,8 @@ export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoR
   if (row.kind === 'question') return question ? { kind: 'question', question: readQuestion(question, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
   const sms = record(row.sms)
   if (row.kind === 'sms') return sms ? { kind: 'sms', sms: readSms(sms) } : { kind: 'error', message: NOT_UNDERSTOOD }
+  const weather = record(row.weather)
+  if (row.kind === 'weather') return weather ? { kind: 'weather', weather: readWeather(weather, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
   const client = record(row.client)
   const clientDraft = row.kind === 'client' && client ? readClient(client) : null
   if (row.kind === 'client') return clientDraft ? { kind: 'client', client: clientDraft } : { kind: 'error', message: NOT_UNDERSTOOD }

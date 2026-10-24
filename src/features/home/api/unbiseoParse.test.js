@@ -72,6 +72,18 @@ test('관계없음은 종류만, 질문은 질문 칸을 읽고, 모르는 종�
   }
 })
 
+// 로드맵 24-I-2 — 날씨 칸 읽기: 날짜 모양이 틀리면 오늘, 지역은 30자까지, 앞뒤 공백 뺌.
+test('날씨 칸: 날짜·지역을 읽고, 칸이 없으면 알아듣지 못함', async () => {
+  reply = async () => ({ data: { kind: 'weather', weather: { date: '2026-10-23', place: ' 평택 ' } }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '내일 평택 날씨', today: '2026-10-22', clientNames: [] }), { kind: 'weather', weather: { date: '2026-10-23', place: '평택' } })
+  reply = async () => ({ data: { kind: 'weather', weather: { date: '내일', place: '가'.repeat(40) } }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '날씨', today: '2026-10-22', clientNames: [] }), { kind: 'weather', weather: { date: '2026-10-22', place: '가'.repeat(30) } })
+  reply = async () => ({ data: { kind: 'weather', weather: { place: 7 } }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '날씨', today: '2026-10-22', clientNames: [] }), { kind: 'weather', weather: { date: '2026-10-22', place: '' } })
+  reply = async () => ({ data: { kind: 'weather', weather: 'rain' }, error: null })
+  assert.deepEqual(await requestUnbiseoParse({ text: '날씨', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
+})
+
 // 로드맵 24-C-2 — 지출 칸 읽기·문장.
 test('지출 칸을 그대로 돌려준다, 이상한 칸은 고쳐 담는다(날짜 모양 아니면 오늘, 모르는 종류는 정비, 금액 정수 아니면 없음)', async () => {
   const expense = { date: '2026-10-21', type: 'fuel', cost: 120000, name: '경유', category: '', fuelType: '주유', payment: '카드' }

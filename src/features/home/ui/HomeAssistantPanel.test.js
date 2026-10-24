@@ -498,3 +498,91 @@ test('거래처 등록: 문장 아래 [등록하기] — 누르면 들은 거래
     assert.equal(view.container.querySelector('.home-assistant-action'), null, '버튼 없음')
   } finally { await view.cleanup() }
 })
+
+// 로드맵 24-I-2 — 날씨: 기다리는 동안 "날씨를 알아보는 중…"·입력 잠김, 받아 온 뒤 문장, 마이크면 그 문장만 읽기, 계정이 바뀌면 버림.
+const WEATHER_DAY = { date: '', sky: 'cloudy', precip: 'rain', min: 18, max: 23, pop: 60 }
+function weatherReplies() {
+  let release = () => {}
+  const today = todayWorkLogSelection(new Date()).dateKey
+  supabase.functions = {
+    invoke: async (name, options) => {
+      calls.push({ name, body: options.body })
+      if (name === 'unbiseo-parse') return { data: { kind: 'weather', weather: { date: today, place: '평택' } }, error: null }
+      if (name === 'unbiseo-weather') return new Promise((resolve) => { release = () => resolve({ data: { kind: 'weather', weather: { ...WEATHER_DAY, date: today } }, error: null }) })
+      return { data: null, error: null }
+    },
+  }
+  return { release: async () => { await act(async () => { release(); await new Promise((resolve) => setTimeout(resolve, 0)) }) } }
+}
+const restoreInvoke = () => { supabase.functions = { invoke: async (name, options) => { calls.push({ name, body: options.body }); return reply() } } }
+const SAID = '오늘 평택 날씨는 흐리고 비, 18~23도, 비 올 확률 60%예요.'
+
+test('날씨: 기다리는 동안 문구·입력 잠김, 받아 온 뒤 날씨 문장, 글로 보낸 답은 읽지 않음', async () => {
+  const server = weatherReplies()
+  const view = await mount('u-assistant', CLOUD)
+  try {
+    await view.type('오늘 평택 날씨 어때')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '날씨를 알아보는 중…')
+    assert.equal(view.container.querySelector('.home-assistant-input')?.disabled, true)
+    await server.release()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, SAID)
+    assert.equal(view.container.querySelector('.home-assistant-input')?.disabled, false)
+    assert.equal(view.container.querySelector('.home-assistant-said')?.textContent, '내가 한 말: 오늘 평택 날씨 어때')
+    assert.deepEqual(calls.map((call) => call.name), ['unbiseo-parse', 'unbiseo-weather'], '글로 보낸 답은 목소리를 안 부름')
+    assert.deepEqual(calls[1].body, { date: todayWorkLogSelection(new Date()).dateKey, place: '평택' })
+    assert.equal(view.container.querySelector('.home-assistant-action'), null, '버튼 없음')
+  } finally { await view.cleanup(); restoreInvoke() }
+})
+
+test('날씨: 마이크로 물으면 받아 온 날씨 문장만 소리로 읽는다', async () => {
+  let last = null
+  window.webkitSpeechRecognition = class { constructor() { last = this } start() {} stop() { this.onend?.() } abort() {} }
+  const synth = { spoken: [], speak(utterance) { this.spoken.push(utterance.text) }, cancel() {} }
+  window.speechSynthesis = synth
+  window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text } }
+  const server = weatherReplies()
+  const view = await mount('u-assistant', CLOUD, { open: false })
+  try {
+    await act(async () => { view.container.querySelector('.home-assistant-mic-btn').click() })
+    await act(async () => {
+      last.onresult({ results: [[{ transcript: '오늘 평택 날씨 어때' }]] })
+      last.onend()
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+    assert.deepEqual(synth.spoken, [], '기다리는 문구는 읽지 않음')
+    await server.release()
+    assert.deepEqual(calls.filter((call) => call.name === 'unbiseo-voice').map((call) => call.body), [{ text: SAID }])
+    assert.deepEqual(synth.spoken, [SAID])
+  } finally {
+    await view.cleanup()
+    restoreInvoke()
+    delete window.webkitSpeechRecognition
+    delete window.speechSynthesis
+    delete window.SpeechSynthesisUtterance
+  }
+})
+
+test('날씨: 기다리는 동안 계정이 바뀌면 받아 온 날씨는 버린다', async () => {
+  const server = weatherReplies()
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  const render = (ownerKey, session) => root.render(withSession(React.createElement(UnbiseoProvider, { onOpenCall: () => {} }, React.createElement(HomeAssistantBar)), { ownerKey, session }))
+  try {
+    await act(async () => { render('u-assistant', CLOUD) })
+    await act(async () => { container.querySelector('.home-assistant-toggle').click() })
+    const input = container.querySelector('.home-assistant-input')
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+    await act(async () => { setter.call(input, '오늘 평택 날씨 어때'); input.dispatchEvent(new window.Event('input', { bubbles: true })) })
+    await act(async () => { container.querySelector('.home-assistant-send').click(); await new Promise((resolve) => setTimeout(resolve, 0)) })
+    assert.equal(container.querySelector('.home-assistant-result')?.textContent, '날씨를 알아보는 중…')
+    await act(async () => { render('u-other', { ...CLOUD, userId: 'u-other' }) })
+    await server.release()
+    assert.equal(container.querySelector('.home-assistant-result'), null, '다른 계정 카드에 앞 계정 날씨가 안 뜸')
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+    restoreInvoke()
+  }
+})
