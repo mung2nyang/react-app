@@ -1,0 +1,98 @@
+/* 로그인 첫 화면 — 로고·제목·구글 버튼·비회원·약관 문구. 색은 variables.css 공통 값. */
+
+.auth-intro-view {
+  justify-content: center;
+  gap: 56px;
+}
+
+.auth-brand-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -24px 0 52px;
+}
+
+.auth-logo-img { height: 60px; width: auto; object-fit: contain; }
+.auth-logo-text {
+  color: var(--text-color);
+  font-family: 'Jua', sans-serif;
+  font-size: 33px;
+  font-weight: var(--fw-regular);
+  line-height: 1;
+  letter-spacing: -.5px;
+}
+
+.auth-intro-eyebrow {
+  margin: 0;
+  color: var(--accent-soft-color);
+  font-size: var(--fs-2);
+  font-weight: var(--fw-bold);
+}
+
+.auth-intro-view .auth-heading-box { margin-bottom: 0; }
+
+.auth-intro-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* 구글 로그인 버튼 — 테마에 따라 구글 규칙의 밝은/어두운 버튼 색 */
+.auth-google-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  border: 1px solid var(--google-btn-border);
+  border-radius: 18px;
+  background: var(--google-btn-bg);
+  color: var(--google-btn-text);
+  font: inherit;
+  font-size: var(--fs-5);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+}
+
+.auth-google-btn:disabled { opacity: 0.6; cursor: default; }
+
+/* 로딩 중: 로고·글자는 자리만 두고 감추고 가운데에 점 세 개(모양은 index.html) */
+.auth-google-btn-loading:disabled { opacity: 1; }
+.auth-google-btn-loading > :not(.boot-loading-dots) { visibility: hidden; }
+.auth-google-btn .boot-loading-dots {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+}
+
+.auth-google-logo { width: 22px; height: 22px; flex-shrink: 0; }
+
+.auth-guest-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: 8px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--sub-text-color);
+  font: inherit;
+  font-size: var(--fs-2);
+  font-weight: var(--fw-bold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-intro-terms {
+  margin: 96px 0 0;
+  color: var(--sub-text-color);
+  font-size: var(--fs-2);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.auth-intro-term { color: var(--accent-soft-color); font-weight: var(--fw-semibold); }

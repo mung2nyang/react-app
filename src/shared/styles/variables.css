@@ -54,6 +54,7 @@
   --google-btn-bg: #ffffff; /* 구글 로그인 버튼 색은 구글 규칙 값 그대로 */
   --google-btn-border: #747775;
   --google-btn-text: #1f1f1f;
+  --accent-soft-color: #3b56b0; /* 작은 제목·약관 문서 이름 연한 강조 */
 }
 
 [data-theme="dark"] {
@@ -81,4 +82,5 @@
   --google-btn-bg: #131314;
   --google-btn-border: #8e918f;
   --google-btn-text: #e3e3e3;
+  --accent-soft-color: #a3b3f5;
 }

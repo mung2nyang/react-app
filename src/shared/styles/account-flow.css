@@ -1,4 +1,4 @@
-/* 계정 화면 틀(컨테이너·페이지)과 로그인 첫 화면·단추. 색은 variables.css 공통 값. 입력 단계는 auth-form.css, 처음 정보 입력은 onboarding.css. */
+/* 계정 화면 틀(컨테이너·페이지)과 환영 화면 단추. 색은 variables.css 공통 값. 로그인 첫 화면은 auth-intro.css, 입력 단계는 auth-form.css, 처음 정보 입력은 onboarding.css. */
 
 .container.account-flow-container {
   min-height: 100dvh;
@@ -22,49 +22,6 @@
   min-height: calc(100dvh - 84px);
   text-align: left;
 }
-
-.auth-brand-head {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  color: var(--primary-color);
-  font-size: var(--fs-6);
-  font-weight: var(--fw-black);
-}
-
-.auth-logo-img { width: 39px; height: 30px; object-fit: contain; }
-.auth-logo-text { color: var(--text-color); font-family: 'Jua', sans-serif; font-weight: var(--fw-regular); letter-spacing: -.5px; }
-
-.auth-intro-bottom {
-  display: flex;
-  flex-direction: column;
-  margin-top: auto;
-  padding-bottom: 4px;
-}
-
-.auth-btn-stack { display: grid; gap: 12px; }
-
-/* 구글 로그인 버튼 — 테마에 따라 구글 규칙의 밝은/어두운 버튼 색 */
-.auth-google-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 60px;
-  border: 1px solid var(--google-btn-border);
-  border-radius: 18px;
-  background: var(--google-btn-bg);
-  color: var(--google-btn-text);
-  font: inherit;
-  font-size: var(--fs-5);
-  font-weight: var(--fw-bold);
-  cursor: pointer;
-}
-
-.auth-google-btn:disabled { opacity: 0.6; cursor: default; }
-
-.auth-google-logo { width: 22px; height: 22px; flex-shrink: 0; }
 
 .auth-primary-btn {
   width: 100%;
@@ -114,38 +71,6 @@
 @keyframes save-action-spin {
   to { transform: rotate(360deg); }
 }
-
-.auth-guest-btn {
-  width: max-content;
-  margin: 18px 0 0;
-  padding: 8px 2px;
-  border: none;
-  background: none;
-  color: var(--sub-text-color);
-  font: inherit;
-  font-size: var(--fs-2);
-  font-weight: var(--fw-bold);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.auth-intro-view {
-  align-items: center;
-  justify-content: center;
-  gap: 48px;
-  text-align: center;
-}
-
-.auth-intro-view .auth-brand-head { justify-content: center; margin: 0; }
-.auth-intro-view .auth-logo-img { height: 54px; width: auto; }
-.auth-intro-view .auth-logo-text { font-size: 2.2rem; line-height: 1; }
-.auth-intro-view .auth-intro-bottom {
-  width: 100%;
-  max-width: 360px;
-  margin: 0 auto;
-  align-items: center;
-}
-.auth-intro-view .auth-btn-stack { width: 100%; }
 
 @media (max-width: 360px) {
   .account-flow-page { padding-inline: 0; }

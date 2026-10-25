@@ -1,5 +1,6 @@
 // @ts-check
 import { assetPath } from '../../../shared/utils/assetPath.js'
+import './auth-intro.css'
 
 const BANNER = assetPath('/images/banner_image.png')
 
@@ -16,7 +17,7 @@ function GoogleLogo() {
 }
 
 /**
- * 첫 화면: 구글 로그인(처음이면 /welcome 기본 정보 → 첫 설정)과 비회원 시작만.
+ * 첫 화면: 소개 문구, 구글 로그인(처음이면 /welcome 기본 정보 → 첫 설정)과 비회원 시작, 약관 안내(링크 없음).
  * @param {Object} props
  * @param {() => void} [props.onGuest]
  * @param {() => void} [props.onGoogle]
@@ -26,18 +27,35 @@ export default function AuthIntroView({ onGuest, onGoogle, busy = false }) {
   return (
     <div className="account-flow-page">
       <div className="auth-view auth-intro-view">
-        <div className="auth-brand-head">
-          <img src={BANNER} alt="" className="auth-logo-img" />
-          <span className="auth-logo-text">운행일지</span>
+        <div>
+          <div className="auth-brand-head">
+            <img src={BANNER} alt="" className="auth-logo-img" />
+            <span className="auth-logo-text">운행일지</span>
+          </div>
+          <p className="auth-intro-eyebrow">간편한 차량 운행 관리</p>
+          <div className="auth-heading-box">
+            <h1>운행 기록을<br />간편하게 관리하세요</h1>
+            <p className="auth-desc-text">매일의 운행 내역을 쉽고 빠르게 기록해 보세요.</p>
+          </div>
         </div>
         <div className="auth-intro-bottom">
-          <div className="auth-btn-stack">
-            <button type="button" className="auth-google-btn" disabled={busy} onClick={onGoogle}>
-              <GoogleLogo />
-              <span>Google 계정으로 로그인하기</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            className={`auth-google-btn${busy ? ' auth-google-btn-loading' : ''}`}
+            disabled={busy}
+            aria-busy={busy}
+            onClick={onGoogle}
+          >
+            <GoogleLogo />
+            <span>Google 계정으로 로그인하기</span>
+            {busy && <span className="boot-loading-dots" aria-hidden="true"><span></span><span></span><span></span></span>}
+          </button>
           <button type="button" className="auth-guest-btn" onClick={onGuest}>비회원으로 시작하기</button>
+          <p className="auth-intro-terms">
+            최초 로그인 시 <span className="auth-intro-term">서비스 이용약관</span> 및{' '}
+            <span className="auth-intro-term">개인정보 처리방침</span>,{' '}
+            <span className="auth-intro-term">위치기반서비스 이용약관</span>에 동의하는 것으로 간주합니다.
+          </p>
         </div>
       </div>
     </div>
