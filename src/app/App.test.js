@@ -1130,3 +1130,41 @@ test('알림 화면 — 알림 단추 → /app/notifications(옆 창 없음) →
     container.remove()
   }
 })
+
+// 로그인 계정이 다크로 쓰다 로그아웃하면 로그인 화면도 다크 — 세션이 비고 주소가 아직 /app인 순간 비회원(라이트) 설정으로 덮지 않는다.
+test('로그인 계정 설정에서 다크 → 개인정보 [로그아웃] → 로그인 화면도 다크, 마지막 테마 기억도 dark', async () => {
+  window.history.pushState({}, '', '/app/me/settings')
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createTrackedRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
+    })
+    await waitUntil(() => !!container.querySelector('#theme-dark'), { timeoutMs: 5000 })
+    const darkSwitch = container.querySelector('#theme-dark')
+    assert.ok(darkSwitch, '설정 화면 다크 모드 스위치')
+    await act(async () => { darkSwitch.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })) })
+    await waitUntil(() => document.documentElement.getAttribute('data-theme') === 'dark')
+    assert.equal(document.documentElement.getAttribute('data-theme'), 'dark', '설정에서 다크로 바꿈')
+
+    await act(async () => {
+      window.history.pushState({}, '', '/app/me/profile')
+      window.dispatchEvent(new window.PopStateEvent('popstate'))
+    })
+    await waitUntil(() => Array.from(container.querySelectorAll('button')).some((btn) => btn.textContent.trim() === '로그아웃'), { timeoutMs: 5000 })
+    const logout = Array.from(container.querySelectorAll('button')).find((btn) => btn.textContent.trim() === '로그아웃')
+    assert.ok(logout, '개인정보 화면 [로그아웃]')
+    await act(async () => { logout.dispatchEvent(new window.MouseEvent('click', { bubbles: true, cancelable: true })) })
+    await waitUntil(() => !!container.querySelector('.auth-guest-btn'), { timeoutMs: 5000 })
+    assert.equal(window.location.pathname, '/auth')
+    await act(async () => { await wait(50) })
+    assert.equal(document.documentElement.getAttribute('data-theme'), 'dark', '로그아웃 뒤 로그인 화면이 라이트로 바뀌면 안 된다')
+    assert.equal(localStorage.getItem('lastTheme'), 'dark', '마지막 테마 기억도 dark')
+  } finally {
+    await unmountTracked(root)
+    container.remove()
+    document.documentElement.removeAttribute('data-theme')
+    localStorage.removeItem('lastTheme')
+  }
+})

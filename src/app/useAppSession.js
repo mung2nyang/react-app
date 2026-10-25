@@ -105,10 +105,10 @@ export function useAppSession() {
   }, [ownerKey])
 
   useEffect(() => {
-    // 부트 중·계정 화면은 덮지 않고 마지막 테마를 둔다(로그아웃해도 라이트로 바뀌지 않게).
-    if (booting || inAccountFlow) return
+    // 부트 중·세션 없음·계정 화면은 덮지 않고 마지막 테마를 둔다(로그아웃해도 라이트로 바뀌지 않게).
+    if (booting || !session || inAccountFlow) return
     applyTheme(practiceSettings.theme)
-  }, [booting, inAccountFlow, practiceSettings.theme, location.pathname])
+  }, [booting, session, inAccountFlow, practiceSettings.theme, location.pathname])
 
   useEffect(() => {
     if (!toast) return undefined
