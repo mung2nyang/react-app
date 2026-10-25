@@ -157,7 +157,6 @@ export default function AppShell({ onBackToAuth, onGoAuth, onSessionUpdate }) {
     <div className="container main-app-container">
       <OfflineBanner />
       <HydrationRetryBanner />
-      <ConfirmDialogHost />
       <div ref={pageBoxRef} className="page-transition">
         <PageLoadErrorBoundary resetKey={location.pathname}>
         <Suspense fallback={<PageSkeleton path={location.pathname} onOpenMenu={() => setMenuOpen(true)} />}>
@@ -192,6 +191,7 @@ export default function AppShell({ onBackToAuth, onGoAuth, onSessionUpdate }) {
           navigate(`/app/logs/${encodeURIComponent(vehicleNumber)}/manage`)
         }}
       />
+      <ConfirmDialogHost />
     </div>
     </UnbiseoProvider>
   )
