@@ -19,7 +19,7 @@
 .modal-content.expense-form-content .form-group > label {
   color: var(--text-color);
   font-size: var(--fs-3);
-  font-weight: var(--fw-strong);
+  font-weight: var(--fw-bold);
 }
 
 /* 한 줄 입력(라벨·입력칸) — 운행 일지 운송료 줄과 같은 배치 */

@@ -53,7 +53,7 @@
   color: var(--text-color);
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: var(--fw-strong);
+  font-weight: var(--fw-bold);
   text-align: center;
   appearance: textfield;
   -webkit-touch-callout: none;
@@ -77,7 +77,7 @@
   color: var(--primary-color);
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: var(--fw-strong);
+  font-weight: var(--fw-bold);
   cursor: pointer;
 }
 
@@ -150,7 +150,7 @@
   background: var(--primary-fill);
   color: #fff;
   font: inherit;
-  font-weight: var(--fw-strong);
+  font-weight: var(--fw-bold);
   font-size: var(--fs-2);
   cursor: pointer;
 }

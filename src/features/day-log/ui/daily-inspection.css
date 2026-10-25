@@ -20,7 +20,7 @@
 
 .daily-inspection-notice > span {
   font-size: var(--fs-3);
-  font-weight: var(--fw-strong);
+  font-weight: var(--fw-bold);
 }
 
 .di-notice-btn {

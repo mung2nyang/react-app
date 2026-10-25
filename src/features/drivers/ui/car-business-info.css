@@ -12,11 +12,11 @@
 }
 .car-biz-card h3 { margin: 0; color: var(--text-color); font-size: var(--title-2-size); font-weight: var(--title-2-weight); }
 .car-biz-card .form-group { margin: 0; }
-.car-biz-card .form-group label { display: block; margin-bottom: 8px; color: var(--text-color); font-size: var(--fs-3); font-weight: var(--fw-strong); text-align: left; }
+.car-biz-card .form-group label { display: block; margin-bottom: 8px; color: var(--text-color); font-size: var(--fs-3); font-weight: var(--fw-bold); text-align: left; }
 .car-biz-card .input-box { text-align: left; }
 .car-biz-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .car-biz-toggle > div { min-width: 0; text-align: left; }
-.car-biz-toggle > div > label { color: var(--text-color); font-size: var(--fs-4); font-weight: var(--fw-strong); }
+.car-biz-toggle > div > label { color: var(--text-color); font-size: var(--fs-4); font-weight: var(--fw-bold); }
 .car-biz-toggle p { margin: 4px 0 0; color: var(--sub-text-color); font-size: var(--fs-floor); line-height: 1.4; word-break: keep-all; }
 .car-biz-owner-line { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--input-bg); color: var(--sub-text-color); font-size: var(--fs-floor); }
 .car-biz-owner-line { text-align: left; }

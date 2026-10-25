@@ -70,7 +70,7 @@
 .work-log-page .fixed-route-input-row > label {
   color: var(--text-color);
   font-size: var(--fs-3);
-  font-weight: var(--fw-strong);
+  font-weight: var(--fw-bold);
 }
 
 .work-log-page .call-detail-panel label.load-label { color: var(--primary-color); font-weight: var(--fw-heavy); }

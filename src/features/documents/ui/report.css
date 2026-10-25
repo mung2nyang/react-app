@@ -41,7 +41,7 @@
   width: 22%;
   background: var(--input-bg);
   color: var(--sub-text-color);
-  font-weight: var(--fw-strong);
+  font-weight: var(--fw-bold);
   text-align: center;
 }
 
@@ -101,7 +101,7 @@
 .report-table th {
   background: var(--input-bg);
   color: var(--sub-text-color);
-  font-weight: var(--fw-strong);
+  font-weight: var(--fw-bold);
   text-align: center;
 }
 
