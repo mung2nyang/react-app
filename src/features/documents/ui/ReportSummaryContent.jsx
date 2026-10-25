@@ -56,7 +56,7 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
         <tbody>
           <tr>
             <td style={{ textAlign: 'center', padding: 15, color: 'var(--sub-text-color)' }}>
-              해당 월의 운송 내역이 없습니다.
+              선택한 달의 운송 내역이 없습니다.
             </td>
           </tr>
         </tbody>

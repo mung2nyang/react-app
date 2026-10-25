@@ -32,7 +32,7 @@ function AdminInquiryList() {
 
   const reload = () => setReloadKey((key) => key + 1)
 
-  if (!items) return <SkeletonLines lines={3} label="문의 목록 불러오는 중" />
+  if (!items) return <SkeletonLines lines={3} label="문의 목록을 불러오는 중…" />
   if (!items.length) return <div className="support-panel-empty">아직 들어온 문의가 없습니다.</div>
 
   const pending = items.filter((item) => !item.answer.trim()).length

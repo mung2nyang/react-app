@@ -56,7 +56,7 @@ export default function InquiryForm({ userId }) {
       </label>
       <label>
         내용
-        <textarea className="input-box" rows={6} maxLength={1000} placeholder="문의 내용을 자세히 적어주세요" value={content} onChange={(e) => setContent(e.target.value)} required />
+        <textarea className="input-box" rows={6} maxLength={1000} placeholder="문의 내용을 자세히 입력해 주세요" value={content} onChange={(e) => setContent(e.target.value)} required />
       </label>
       <button className="personal-account-btn" type="submit" disabled={busy}>문의 접수하기</button>
     </form>

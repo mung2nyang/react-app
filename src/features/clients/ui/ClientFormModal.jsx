@@ -65,7 +65,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
       </div>
       <div className="personal-inline-fields">
         <div className="form-group">
-          <label htmlFor="clientManagerName">이름 (담당자)</label>
+          <label htmlFor="clientManagerName">담당자 이름</label>
           <ClearableInput id="clientManagerName" className="input-box" placeholder="담당자 이름 입력" value={draft.managerName || ''} onChange={(e) => setDraft({ ...draft, managerName: e.target.value })} />
         </div>
         <div className="form-group">

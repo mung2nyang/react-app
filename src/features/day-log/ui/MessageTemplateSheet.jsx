@@ -45,7 +45,7 @@ export default function MessageTemplateSheet({ item, client, onClose }) {
           </div>
           <button type="button" onClick={onClose} aria-label="닫기">×</button>
         </div>
-        <p className="message-template-help">보낼 양식을 선택하면 문자 앱에서 내용을 확인하고 수정할 수 있습니다.</p>
+        <p className="message-template-help">문구를 선택하면 문자 앱에서 내용을 확인하고 수정할 수 있습니다.</p>
         <div className="message-template-list">
           {templates.map((template) => (
             <button type="button" key={template.title} onClick={() => send(template.body)}>

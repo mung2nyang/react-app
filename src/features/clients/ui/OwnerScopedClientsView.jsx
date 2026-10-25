@@ -24,7 +24,7 @@ export default function OwnerScopedClientsView({ onBack, onOpenMenu }) {
         listId="ownerScopedClientsListContainer"
         notice={(
           <p className="linked-driver-readonly-notice" style={{ marginBottom: 10 }}>
-            <span>차주와 공유하는 거래처 목록입니다. 등록, 수정, 삭제가 차주 화면에도 함께 반영됩니다.</span>
+            <span>차주와 공유하는 거래처 목록입니다. 여기서 거래처를 등록, 수정, 삭제하면 차주 화면에도 반영됩니다.</span>
           </p>
         )}
       />

@@ -58,7 +58,7 @@ test('모양: 제목·안내·두 칸·단추 4개', async () => {
   const view = await mount()
   try {
     const text = view.container.textContent || ''
-    for (const part of ['점검표 보내기', '보내는 방법이나 파일 형식을 선택해 주세요.', '카카오톡으로 보내기', '파일과 안내 문구를 함께 공유합니다.', '문자로 보내기', '파일을 저장하고 안내 문구로 문자 앱을 엽니다. 받는 사람은 직접 골라 주세요.']) {
+    for (const part of ['점검표 보내기', '전송 방법과 파일 형식을 선택해 주세요.', '카카오톡으로 보내기', '파일과 안내 문구를 함께 공유합니다.', '문자로 보내기', '파일을 저장한 뒤 문자 앱을 엽니다. 받는 사람을 직접 선택해 주세요.']) {
       assert.ok(text.includes(part), part)
     }
     assert.equal(view.container.querySelectorAll('.report-share-format-buttons button').length, 4)

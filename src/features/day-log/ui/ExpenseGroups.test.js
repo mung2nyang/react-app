@@ -37,7 +37,7 @@ describe('ExpenseGroups — 유가보조금 표시', () => {
       { id: 'f1', kind: 'fuel', date: '2026-10-14', fuelType: '경유', cost: 80000, subsidy: 12000, liters: 50 },
     ])
     assert.ok(badges.includes('유가보조금 12,000원'))
-    assert.ok(text.includes('주유 합계80,000원'))
+    assert.ok(text.includes('주유 지출 합계80,000원'))
     assert.ok(text.includes('지출 합계80,000원'))
   })
 

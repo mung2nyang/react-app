@@ -16,7 +16,7 @@ export default function DriverUnlinkControls({ driver, meId, counterpartLabel, o
     return <button type="button" className="driver-card-action-btn danger" onClick={() => onAction('request')}>해제 요청</button>
   }
   const due = unlinkAutoDateLabel(driver.unlinkRequestedAt)
-  const dueText = due ? ` (${due} 자동 해제)` : ''
+  const dueText = due ? ` (${due}에 자동으로 연동 해제)` : ''
   if (requestedBy === meId) {
     return (
       <>

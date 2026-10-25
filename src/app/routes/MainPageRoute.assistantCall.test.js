@@ -74,7 +74,7 @@ async function render(ownerKey, usr, { callDetail = true, workData = {}, setting
 test('운비서 운행으로 들어오면 새 입력 창이 채워진 채 열리고, 주소 상태에서는 지워진다(from은 남김)', async () => {
   const view = await render('assist-open', { from: 'home', assistantCall: CALL })
   try {
-    assert.equal(view.title(), '21일 일지 세부 입력')
+    assert.equal(view.title(), '21일 운행일지 세부 내역 입력')
     assert.equal(view.valueOf('callLoadLoc'), '수원')
     assert.equal(view.valueOf('callUnloadLoc'), '화성')
     assert.equal(view.valueOf('callFare'), '150,000')
@@ -92,7 +92,7 @@ test('[저장] → 지금 저장 그대로 1건, 다시 "+ 추가"는 빈 입력
     await view.click(view.button('저장'))
     assert.deepEqual(view.toasts, ['세부 입력을 저장했습니다.'])
     await view.settle()
-    await view.click(view.button('+ 운행일지 추가'))
+    await view.click(view.button('+ 세부 내역 추가'))
     assert.equal(view.valueOf('callLoadLoc'), '')
     assert.equal(view.valueOf('callFare'), '')
     await view.click(view.button('취소'))
@@ -111,7 +111,7 @@ test('[취소] → 아무것도 안 남고, 다시 "+ 추가"는 빈 입력 창'
   try {
     await view.click(view.button('취소'))
     await view.settle()
-    await view.click(view.button('+ 운행일지 추가'))
+    await view.click(view.button('+ 세부 내역 추가'))
     assert.equal(view.valueOf('callLoadLoc'), '')
     assert.equal(view.valueOf('callClient'), '')
     await view.click(view.button('취소'))

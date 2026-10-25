@@ -103,8 +103,8 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         <FieldError problem={shown} field="inviteCode" inputId="drvCode" />
         {linked && (
           <p className="driver-invite-note">
-            초대 코드는 1회만 사용할 수 있습니다.<br />
-            기존 연동을 해제하고 다시 연결할 경우, 새 코드를 발급해 주세요.
+            초대 코드는 한 번만 사용할 수 있습니다.<br />
+            연동을 해제한 뒤 다시 연결하려면 새 초대 코드를 발급해 주세요.
           </p>
         )}
       </div>

@@ -17,7 +17,7 @@ const { default: DriverConnectionPage } = await import('./DriverConnectionPage.j
 const { commitDrivers } = await import('../../../data/store/commitHelpers.ts')
 const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.ts')
 
-const GUEST_NOTICE = '기사 초대는 로그인 후 쓸 수 있습니다. 로그인하면 배정 차량과 시작일을 넣어 초대할 수 있습니다.'
+const GUEST_NOTICE = '기사를 초대하려면 로그인한 뒤 배정 차량과 계약 시작일을 입력하세요.'
 
 /** @param {Record<string, import('../../../data/store/atomicPersist.ts').JsonValue|null>} session */
 async function renderPage(ownerKey, session) {

@@ -41,7 +41,7 @@ export default function CarDriverConnectPanel({
       {tab === 'link' && (
         <div className="car-driver-connect-body">
           <p className="car-driver-connect-copy">
-            기사를 초대해 차량을 배정하세요.
+            기사를 초대하고 이 차량을 배정하세요.
             <br />
             (배정된 기사가 작성한 운행일지를 확인할 수 있습니다.)
           </p>

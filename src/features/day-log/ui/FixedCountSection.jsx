@@ -55,7 +55,7 @@ export default function FixedCountSection({ count, isOff, quickCounts, fixedRout
       </div>
       <FixedAmountLine label="고정 노선 금액" count={count} unit="회" price={fixedRouteClient?.fixedUnitPrice} isOff={isOff} />
       {quickCounts.length > 0 && (
-        <div className="fixed-count-quick-buttons" aria-label="운행 횟수 빠른 선택">
+        <div className="fixed-count-quick-buttons" aria-label="운행 횟수 선택">
           {quickCounts.map((n) => (
             <button
               key={n}

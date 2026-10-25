@@ -77,7 +77,7 @@ export default function ShareFileModal({
     <ModalShell onClose={onClose} contentClassName="modal-content report-share-content" label={title}>
       <div className="report-share-head">
         <strong>{title}</strong>
-        <p>보내는 방법이나 파일 형식을 선택해 주세요.</p>
+        <p>전송 방법과 파일 형식을 선택해 주세요.</p>
       </div>
       <div className="report-share-options">
         <section className="report-share-channel">

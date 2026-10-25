@@ -63,7 +63,7 @@ test('22-D 연동 기사: 데이터 불러오기만 보이고, 창에는 다운�
     assert.equal(view.entry, '데이터 불러오기')
     const entry = [...view.container.querySelectorAll('.mypage-notice-link')].find((el) => el.textContent.includes('데이터 불러오기'))
     await act(async () => { entry?.dispatchEvent(new window.MouseEvent('click', { bubbles: true })) })
-    assert.ok(view.container.textContent.includes('지금 없는 날짜의 일지만'))
+    assert.ok(view.container.textContent.includes('현재 저장되어 있지 않은 날짜의 운행일지만'))
     const buttons = [...view.container.querySelectorAll('.modal-btns button')].map((b) => b.textContent)
     assert.deepEqual(buttons, ['취소', '불러오기'])
   } finally { await view.cleanup() }

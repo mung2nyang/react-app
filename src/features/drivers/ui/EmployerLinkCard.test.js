@@ -101,7 +101,7 @@ test('요청 없음: 연동 정보 + [해제 요청] → 요청 후 "차주 동�
     assert.ok(view.container.textContent?.includes('배정 차량 11가1111'))
     assert.deepEqual(labels(view.container), ['해제 요청'])
     await click(view.container, '해제 요청')
-    assert.ok(view.container.textContent?.includes('해제 요청 중 — 차주 동의 대기 (10월 4일 자동 해제)'))
+    assert.ok(view.container.textContent?.includes('해제 요청 중 — 차주 동의 대기 (10월 4일에 자동으로 연동 해제)'))
     assert.deepEqual(labels(view.container), ['요청 취소'])
     assert.deepEqual(view.unlinked, [])
     assert.deepEqual(flow, [])
@@ -129,7 +129,7 @@ test('차주 요청 [동의] → 해제 확정: 내 계정 세션 재생성 → 
   handlers.rpc = { consent_driver_unlink: rpcRow('disconnected', '') }
   const view = await renderCard()
   try {
-    assert.ok(view.container.textContent?.includes('차주가 해제를 요청했습니다 (10월 4일 자동 해제)'))
+    assert.ok(view.container.textContent?.includes('차주가 해제를 요청했습니다 (10월 4일에 자동으로 연동 해제)'))
     await click(view.container, '동의')
     assert.deepEqual(flow, [`session:${DRIVER}`, `hydrate:${DRIVER}:${DRIVER}:false`])
     assert.deepEqual(view.unlinked, [NEXT_SESSION])

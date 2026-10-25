@@ -71,7 +71,7 @@ export default function CallDetailList({ details, settings, clients, canAdd = tr
       )}
       {canAdd && (
         <div className="call-detail-add-row">
-          <button type="button" className="call-detail-add-btn" onClick={onAdd}>+ 운행일지 추가</button>
+          <button type="button" className="call-detail-add-btn" onClick={onAdd}>+ 세부 내역 추가</button>
         </div>
       )}
       {children}

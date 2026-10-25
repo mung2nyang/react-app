@@ -81,7 +81,7 @@ export default function DataDownloadModal({ onClose, employed = false }) {
       setBusy(true)
       const next = planned.ok ? await addInspectionPicks(ownerKey, parsed, planned, { employed }) : planned
       if (!next.ok) showToast?.(next.error)
-      else if (!describeRestoreCounts(next.counts)) showToast?.('더할 기록이 없습니다. 파일의 기록이 모두 이미 있습니다.')
+      else if (!describeRestoreCounts(next.counts)) showToast?.('추가할 기록이 없습니다. 파일에 있는 기록이 모두 이미 저장되어 있습니다.')
       else setPlan(next)
     } catch (error) {
       console.error('데이터 불러오기 파일 읽기 실패:', error)
@@ -99,7 +99,7 @@ export default function DataDownloadModal({ onClose, employed = false }) {
       const res = await applyMemberRestore(ownerKey, plan)
       const done = describeRestoreCounts(res.counts)
       if (res.ok) showToast?.(`불러왔습니다 — ${done}`)
-      else if (res.toast) showToast?.(done ? `${res.toast} (먼저 저장됨: ${done})` : res.toast)
+      else if (res.toast) showToast?.(done ? `${res.toast} 먼저 저장된 항목: ${done}` : res.toast)
     } catch (error) {
       console.error('데이터 불러오기 실패:', error)
       showToast?.('불러오지 못했습니다. 잠시 후 다시 시도해 주세요.')
@@ -112,12 +112,12 @@ export default function DataDownloadModal({ onClose, employed = false }) {
       <ModalShell onClose={onClose} closeOnOverlay={!busy} closeOnEscape={!busy} label="데이터 불러오기">
         <div className="modal-title">데이터 불러오기</div>
         <p className="confirm-modal-text" style={TEXT_STYLE}>
-          {`이 파일에서 지금 없는 것만 더합니다.\n${describeRestoreCounts(plan.counts)}\n이미 있는 기록은 내용이 달라도 건드리지 않습니다.`}
+          {`이 파일에 있는 항목 중 현재 저장되어 있지 않은 것만 추가합니다.\n${describeRestoreCounts(plan.counts)}\n이미 저장된 기록은 내용이 달라도 변경하지 않습니다.`}
         </p>
         {(employed || plan.skipped > 0) && (
           <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
             {employed
-              ? '일지만 불러옵니다. 거래처, 지출, 세금계산서와 다른 차량 기록은 건너뜁니다.'
+              ? '운행일지만 불러옵니다. 거래처, 지출, 세금계산서 및 다른 차량의 기록은 불러오지 않습니다.'
               : '내 차량에 없거나 기사가 연동된 차량의 기록은 건너뜁니다.'}
           </p>
         )}
@@ -138,7 +138,7 @@ export default function DataDownloadModal({ onClose, employed = false }) {
       <ModalShell onClose={onClose} closeOnOverlay={!busy} closeOnEscape={!busy} label="데이터 불러오기">
         <div className="modal-title">데이터 불러오기</div>
         <p className="confirm-modal-text" style={TEXT_STYLE}>
-          {'받아 둔 파일에서 지금 없는 날짜의 일지만 내 운행일지에 더합니다.\n이미 있는 날짜는 건드리지 않습니다.'}
+          {'백업 파일에서 현재 저장되어 있지 않은 날짜의 운행일지만 추가합니다.\n이미 기록이 있는 날짜의 운행일지는 변경하지 않습니다.'}
         </p>
         <div className="modal-btns">
           <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>
@@ -159,7 +159,7 @@ export default function DataDownloadModal({ onClose, employed = false }) {
         {'파일에는 계좌번호 등 개인정보가 들어 있으니 안전하게 보관해 주세요.\n세무 신고용 서류는 서류 발급에서 PDF나 엑셀로도 받을 수 있습니다.'}
       </p>
       <p className="confirm-modal-text" style={SUB_TEXT_STYLE}>
-        {'불러오기는 받아 둔 파일에서 지금 없는 일지, 거래처, 지출, 세금계산서만 더합니다.'}
+        {'파일을 불러오면 현재 저장되어 있지 않은 운행일지, 거래처, 지출, 세금계산서만 추가합니다.'}
       </p>
       <div className="modal-btns">
         <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>

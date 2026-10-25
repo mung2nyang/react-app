@@ -77,7 +77,7 @@ async function render(ownerKey, calls, clients = []) {
 test('콜 상세 새로 저장 → 카드 1개, "세부 입력을 저장했습니다."', async () => {
   const view = await render('daylog-call-add', [])
   try {
-    await view.click(view.button('+ 운행일지 추가'))
+    await view.click(view.button('+ 세부 내역 추가'))
     await view.type('#callLoadLoc', '광주')
     await view.type('#callFare', '30000')
     await view.click(view.button('저장'))

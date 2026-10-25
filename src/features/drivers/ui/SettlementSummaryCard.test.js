@@ -42,7 +42,7 @@ test('매출제 20% 사업소득자(둘 다 ON): 운송료 1,000,000 → 정산�
     assert.equal(view.rows['기사 정산금'], '200,000원')
     assert.equal(view.rows['산재보험 (기사 몫)'], '-1,251원')
     assert.equal(view.rows['원천징수 (3.3%)'], '-6,600원')
-    assert.equal(view.rows['최종 실수령 정산액'], '192,149원')
+    assert.equal(view.rows['최종 실수령액'], '192,149원')
     assert.equal(Object.keys(view.rows).includes('수수료'), false, '옛 "수수료" 줄은 기사 정산금으로 바뀌었다')
   } finally { await view.cleanup() }
 })
@@ -54,7 +54,7 @@ test('월급제 둘 다 OFF: 산재·원천징수 줄이 없고 월급 그대로
     assert.equal(view.rows['기사 정산금'], '2,000,000원')
     assert.equal('산재보험 (기사 몫)' in view.rows, false)
     assert.equal('원천징수 (3.3%)' in view.rows, false)
-    assert.equal(view.rows['최종 실수령 정산액'], '2,000,000원')
+    assert.equal(view.rows['최종 실수령액'], '2,000,000원')
   } finally { await view.cleanup() }
 })
 
@@ -67,13 +67,13 @@ test('켠 공제만 줄로 보인다: 원천징수만 ON이면 원천징수 줄�
   const employee = await render({ tripCount: 1, totalFare: 1000000, commissionAmount: 200000, car: { number: 'a', driverIncomeType: 'employee', insuranceOn: true, withholdingOn: false } })
   try {
     assert.equal('산재보험 (기사 몫)' in employee.rows, false)
-    assert.equal(employee.rows['최종 실수령 정산액'], '200,000원')
+    assert.equal(employee.rows['최종 실수령액'], '200,000원')
   } finally { await employee.cleanup() }
 })
 
 test('detail이 없으면 전부 0원으로 안전하게 그린다', async () => {
   const view = await render(null)
   try {
-    assert.equal(view.rows['최종 실수령 정산액'], '0원')
+    assert.equal(view.rows['최종 실수령액'], '0원')
   } finally { await view.cleanup() }
 })

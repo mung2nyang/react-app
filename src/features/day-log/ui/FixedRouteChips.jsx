@@ -16,7 +16,7 @@
 export default function FixedRouteChips({ routePresets, routeCounts, isOff, onRun }) {
   if (routePresets.length === 0) return null
   return (
-    <div className="fixed-route-quick-buttons" aria-label="자주 다니는 노선 (누르면 1회 추가)">
+    <div className="fixed-route-quick-buttons" aria-label="자주 운행하는 노선 (누르면 운행 횟수 1회 추가)">
       {routePresets.map((route) => {
         const routeCount = routeCounts[route.id] || 0
         return (

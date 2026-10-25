@@ -117,7 +117,7 @@ test('확인이 끝나면 막대가 사라지고 "작성이 필요합니다" + [
     assert.equal(view.container.querySelectorAll('.di-skeleton').length, 2)
     await act(async () => { release(null) })
     assert.equal(view.container.querySelectorAll('.di-skeleton').length, 0)
-    assert.ok(view.text().includes('일상점검표 작성이 필요합니다.'))
+    assert.ok(view.text().includes('일상점검표를 작성해 주세요.'))
     assert.ok([...view.container.querySelectorAll('button')].some((el) => el.textContent === '+ 입력'))
   } finally {
     await view.cleanup()
@@ -127,7 +127,7 @@ test('확인이 끝나면 막대가 사라지고 "작성이 필요합니다" + [
 test('작성 전 [+ 입력] → 빈 칸이면 저장 안 됨 → [모두 양호] → 저장 → "작성 완료 [보기]"', async () => {
   const view = await render()
   try {
-    assert.ok(view.text().includes('일상점검표 작성이 필요합니다.'))
+    assert.ok(view.text().includes('일상점검표를 작성해 주세요.'))
     await view.click('+ 입력')
     assert.ok(view.text().includes('10월 1일 일상점검표'))
     assert.ok(view.text().includes('점검자: 차주이름 (자동 서명)'), '메인 차량(기사명 없음) = 로그인한 사람 이름')
@@ -211,7 +211,7 @@ test('불러오기 실패 → "불러오지 못했습니다 [다시 시도]" →
     assert.ok(view.text().includes('일상점검표를 불러오지 못했습니다.'))
     failFetch = false
     await view.click('다시 시도')
-    assert.ok(view.text().includes('일상점검표 작성이 필요합니다.'))
+    assert.ok(view.text().includes('일상점검표를 작성해 주세요.'))
   } finally {
     await view.cleanup()
   }
@@ -242,7 +242,7 @@ test('다 비우고 [저장] → 확인 창 [취소]면 수정 화면에 그대�
   try {
     await clearAll(view)
     await view.click('저장')
-    assert.deepEqual(asked, ['점검표를 지울까요?\n모든 항목이 비어 있어 10월 1일 점검표가 지워집니다. 되돌릴 수 없습니다.'])
+    assert.deepEqual(asked, ['점검표를 지울까요?\n모든 항목을 비우면 10월 1일 점검표가 삭제됩니다. 삭제한 점검표는 복구할 수 없습니다.'])
     assert.deepEqual(deleted, [], '취소면 안 지움')
     assert.ok(document.body.querySelector('.di-choice'), '수정 화면 그대로')
     assert.deepEqual(view.toasts, [])
@@ -253,7 +253,7 @@ test('다 비우고 [저장] → 확인 창 [취소]면 수정 화면에 그대�
     assert.equal(saved.length, 0, '저장이 아니라 지우기')
     assert.equal(document.body.querySelector('.daily-inspection-modal'), null, '창 닫힘')
     assert.deepEqual(view.toasts, ['일상점검표를 지웠습니다.'])
-    assert.ok(view.text().includes('일상점검표 작성이 필요합니다.'))
+    assert.ok(view.text().includes('일상점검표를 작성해 주세요.'))
     await view.click('+ 입력')
     await view.click('모두 양호')
     await view.click('저장')

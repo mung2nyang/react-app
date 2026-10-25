@@ -51,11 +51,11 @@ test('연동 중 카드 세 가지 상태: [해제 요청] / 요청 중·[요청
     assert.ok(buttons(none).includes('해제 요청'))
     assert.equal(buttons(none).includes('연동 해제'), false, '바로 끊는 버튼은 없어야 한다')
 
-    assert.ok(mine.textContent?.includes('해제 요청 중 — 기사 동의 대기 (10월 4일 자동 해제)'))
+    assert.ok(mine.textContent?.includes('해제 요청 중 — 기사 동의 대기 (10월 4일에 자동으로 연동 해제)'))
     assert.ok(buttons(mine).includes('요청 취소'))
     assert.equal(buttons(mine).includes('해제 요청'), false)
 
-    assert.ok(theirs.textContent?.includes('기사가 해제를 요청했습니다 (10월 4일 자동 해제)'))
+    assert.ok(theirs.textContent?.includes('기사가 해제를 요청했습니다 (10월 4일에 자동으로 연동 해제)'))
     assert.ok(buttons(theirs).includes('동의'))
     assert.equal(buttons(theirs).some((label) => label?.includes('거절')), false, '거절 버튼은 없다')
   } finally {

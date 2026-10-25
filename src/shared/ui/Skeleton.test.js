@@ -28,13 +28,13 @@ async function render(element) {
 }
 
 test('SkeletonLines: 지정한 줄 수만큼 막대 + 상태 알림·읽기용 문구', async () => {
-  const view = await render(React.createElement(SkeletonLines, { lines: 3, label: '문의 목록 불러오는 중' }))
+  const view = await render(React.createElement(SkeletonLines, { lines: 3, label: '문의 목록을 불러오는 중…' }))
   try {
     const box = view.container.querySelector('[role="status"]')
     assert.ok(box, '상태 알림이 있어야 한다')
     assert.equal(box?.getAttribute('aria-busy'), 'true')
     assert.equal(view.container.querySelectorAll('.skeleton-bar').length, 3)
-    assert.equal(view.container.querySelector('.skeleton-sr')?.textContent, '문의 목록 불러오는 중')
+    assert.equal(view.container.querySelector('.skeleton-sr')?.textContent, '문의 목록을 불러오는 중…')
   } finally {
     await view.cleanup()
   }

@@ -89,9 +89,9 @@ export default function AppSettingsBackupSection() {
 
   return (
     <section className="setting-section settings-backup-card">
-      <h3>데이터 관리 (백업 / 복구)</h3>
+      <h3>데이터 관리(백업/복원)</h3>
       <p className="car-type-hint" style={{ marginTop: 4, marginBottom: 10 }}>
-        운행일지, 기사 연동 기록, 세금계산서와 설정을 함께 보관하고 복원합니다.
+        운행일지, 기사 연동 기록, 세금계산서, 앱 설정을 함께 백업하고 복원합니다.
       </p>
       <div className="last-backup-status">{formatBackupStatus(lastBackupAt)}</div>
       <div className="backup-btn-group">

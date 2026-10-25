@@ -42,7 +42,7 @@ export default function DailyInspectionExportBar({ form, ready }) {
           <button type="button" className="theme-toggle-btn" disabled={!ready} onClick={() => setShareOpen(true)}>공유</button>
         </div>
       </div>
-      <p className="doc-export-notice">※ PDF나 이미지로 내보내면 선택한 달의 전체 점검표가 법정 서식으로 저장됩니다.</p>
+      <p className="doc-export-notice">※ 선택한 달의 점검표 전체를 법정 서식의 PDF 또는 이미지 파일로 저장합니다.</p>
       {ready && (
         <div className="legal-form-offscreen" aria-hidden="true">
           <div ref={formRef}><DailyInspectionLegalForm {...form} /></div>

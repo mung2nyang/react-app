@@ -106,7 +106,7 @@ test('차주의 미연동 기사 거래처: 제목, 그 차량 거래처만, 추
   seed({ cars: [{ id: 'car-1', number: '11가1111', type: 'main' }, { id: 'car-2', number: '12가3456', type: 'sub', driverName: '박기사' }], clients: [MINE, OTHER, MAIN_ONLY], drivers: [], workLogs: { main: {} } })
   const view = await mount(withSession(React.createElement(LinkedDriverClientsPage, {}), { ownerKey: OWNER }), '/logs/12가3456/clients', '/logs/:logId/clients')
   try {
-    assert.ok(view.container.textContent?.includes('박기사 거래처'))
+    assert.ok(view.container.textContent?.includes('박기사 담당 거래처'))
     assert.equal(view.container.textContent?.includes('차주와 공유하는'), false)
     assert.deepEqual(view.names(), ['한빛물류'])
     await addEditDelete(view, '12가3456')
@@ -122,7 +122,7 @@ test('차주의 연동 기사 거래처: "○○ 기사 거래처" 제목, 그 �
   })
   const view = await mount(withSession(React.createElement(LinkedDriverClientsPage, {}), { ownerKey: OWNER }), '/drivers/d-1/clients', '/drivers/:linkId/clients')
   try {
-    assert.ok(view.container.textContent?.includes('최연동 기사 거래처'))
+    assert.ok(view.container.textContent?.includes('최연동님의 거래처'))
     assert.deepEqual(view.names(), ['한빛물류'])
   } finally { await view.cleanup() }
 })

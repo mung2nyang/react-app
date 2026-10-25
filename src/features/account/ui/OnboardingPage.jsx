@@ -62,7 +62,7 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
           <div className="onboarding-step-view">
             <div className="onboarding-heading">
               <h1>주로 어떤 방식으로<br />일하시나요?</h1>
-              <p>선택 사항이에요.<br />이 항목들은 나중에 설정 화면에서 언제든 켜고 끌 수 있어요.</p>
+              <p>선택 항목이에요.<br />나중에 설정에서 언제든 이 항목을 켜거나 끌 수 있어요.</p>
             </div>
             <div className="onboarding-options-list">
               <button type="button" className={`onboarding-card-btn${wizard.workStyle === 'fixed' ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, workStyle: 'fixed' })}>정해진 노선을 반복해서 다녀요</button>
@@ -75,12 +75,12 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
         {step === 2 && (
           <div className="onboarding-step-view">
             <div className="onboarding-heading">
-              <h1>수금 관리까지<br />하시겠어요?</h1>
-              <p>선택 사항이에요.<br />나중에 설정 화면에서 언제든 바꿀 수 있어요.</p>
+              <h1>미수금도<br />관리하시겠어요?</h1>
+              <p>선택 항목이에요.<br />나중에 설정 화면에서 언제든 바꿀 수 있어요.</p>
             </div>
             <div className="onboarding-options-list">
-              <button type="button" className={`onboarding-card-btn${wizard.paymentOn === true ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, paymentOn: true })}>네, 입금 안 된 것까지 챙기고 싶어요</button>
-              <button type="button" className={`onboarding-card-btn${wizard.paymentOn === false ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, paymentOn: false })}>아니요, 기록만 남길게요</button>
+              <button type="button" className={`onboarding-card-btn${wizard.paymentOn === true ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, paymentOn: true })}>네, 아직 입금되지 않은 운송료도 관리할게요</button>
+              <button type="button" className={`onboarding-card-btn${wizard.paymentOn === false ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, paymentOn: false })}>아니요, 운행 기록만 관리할게요</button>
             </div>
           </div>
         )}
@@ -89,7 +89,7 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
           <div className="onboarding-step-view">
             <div className="onboarding-heading">
               <h1>필요한 기록 항목을<br />선택해 주세요</h1>
-              <p>선택 사항이에요.<br />건너뛰어도 괜찮아요.</p>
+              <p>선택 항목이에요.<br />건너뛰어도 괜찮아요.</p>
             </div>
             <div className="onboarding-options-list">
               <button type="button" className={`onboarding-card-btn${wizard.timeOn ? ' active' : ''}`} onClick={() => setWizard({ ...wizard, timeOn: !wizard.timeOn })}>운행 시간도 기록할래요</button>

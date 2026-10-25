@@ -87,7 +87,7 @@ export default function ExpenseFormModal({
           <>
             <div className="form-group">
               <label htmlFor="expenseName">{draft.kind === 'misc' ? '항목명' : '정비 항목명'}</label>
-              <ClearableInput id="expenseName" className="input-box" placeholder="항목명을 입력하세요" value={draft.name} onChange={(e) => onChange({ ...draft, name: e.target.value })} {...invalidProps(shown, 'name', 'expenseName')} />
+              <ClearableInput id="expenseName" className="input-box" placeholder="항목명을 입력해 주세요" value={draft.name} onChange={(e) => onChange({ ...draft, name: e.target.value })} {...invalidProps(shown, 'name', 'expenseName')} />
               <FieldError problem={shown} field="name" inputId="expenseName" />
             </div>
             <div className="form-group">
@@ -132,7 +132,7 @@ export default function ExpenseFormModal({
             <CurrencyInput
               id="expenseCost"
               className="input-box"
-              placeholder="비용을 입력하세요"
+              placeholder="비용을 입력해 주세요"
               value={formatCurrencyInput(draft.cost)}
               onValueChange={(next) => onChange({ ...draft, cost: parseCurrencyValue(next) })}
               {...invalidProps(shown, 'cost', 'expenseCost')}

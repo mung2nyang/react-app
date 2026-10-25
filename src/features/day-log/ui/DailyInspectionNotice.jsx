@@ -87,7 +87,7 @@ export default function DailyInspectionNotice({ logId, dateKey, month, day, enab
   // 지우기는 확인 창을 거쳐 서버에서 지운 뒤 "작성 필요"로 돌린다.
   async function remove() {
     if (vehicleId == null) return false
-    const ok = await confirmDialog({ title: '점검표를 지울까요?', message: `모든 항목이 비어 있어 ${month}월 ${day}일 점검표가 지워집니다. 되돌릴 수 없습니다.`, confirmLabel: '지우기', cancelLabel: '취소', danger: true })
+    const ok = await confirmDialog({ title: '점검표를 지울까요?', message: `모든 항목을 비우면 ${month}월 ${day}일 점검표가 삭제됩니다. 삭제한 점검표는 복구할 수 없습니다.`, confirmLabel: '지우기', cancelLabel: '취소', danger: true })
     if (!ok) return false
     try {
       await deleteDailyInspection({ vehicleId, workDate: dateKey })
@@ -116,7 +116,7 @@ export default function DailyInspectionNotice({ logId, dateKey, month, day, enab
           </>
         ) : (
           <>
-            <span>일상점검표 작성이 필요합니다.</span>
+            <span>일상점검표를 작성해 주세요.</span>
             <button type="button" className="di-notice-btn" onClick={() => setModalOpen(true)}>+ 입력</button>
           </>
         )}

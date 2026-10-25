@@ -155,10 +155,10 @@ test('일자별 표 — 정상 행·휴무·파렛트 컬럼 on/off', async () =
   }
 })
 
-test('빈 달이면 해당 월의 운송 내역이 없습니다.', async () => {
+test('빈 달이면 선택한 달의 운송 내역이 없습니다.', async () => {
   const { container, cleanup } = await renderSummary({ days: [] })
   try {
-    assert.ok(container.textContent.includes('해당 월의 운송 내역이 없습니다.'))
+    assert.ok(container.textContent.includes('선택한 달의 운송 내역이 없습니다.'))
   } finally {
     await cleanup()
   }

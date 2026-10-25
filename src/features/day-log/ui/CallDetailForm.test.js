@@ -130,7 +130,7 @@ describe('운송료 1,000만원 초과 저장 확인(로드맵 43-C)', () => {
   test('초과 + 취소 → 저장 안 함, 입력 창 그대로', async () => {
     const result = await clickSave('20,000,000', false)
     // 앱 확인 창을 그릴 곳(AppShell)이 없는 테스트에서는 같은 문구로 기본 창이 대신 묻는다.
-    assert.deepEqual(result.asked, ['운송료가 1,000만원을 넘습니다\n입력한 운송료: 20,000,000원. 이 금액이 맞으면 저장해 주세요.'])
+    assert.deepEqual(result.asked, ['운송료가 1,000만원을 넘습니다\n입력한 운송료는 20,000,000원입니다. 이 금액이 맞으면 저장해 주세요.'])
     assert.equal(result.saved, 0)
     assert.equal(result.stillOpen, true)
   })
@@ -194,7 +194,7 @@ test('운비서 처음 값(prefill)은 새 입력으로 채운다 — 제목에 
   const view = await mount({ prefill: { loadLoc: '수원', unloadLoc: '화성', fare: 150000, client: '한진' } })
   try {
     const value = (/** @type {string} */ id) => /** @type {HTMLInputElement|null} */ (view.container.querySelector(`#${id}`))?.value
-    assert.equal(view.container.querySelector('.call-detail-modal-title')?.textContent, '27일 일지 세부 입력')
+    assert.equal(view.container.querySelector('.call-detail-modal-title')?.textContent, '27일 운행일지 세부 내역 입력')
     assert.equal(value('callLoadLoc'), '수원')
     assert.equal(value('callUnloadLoc'), '화성')
     assert.equal(value('callFare'), '150,000')

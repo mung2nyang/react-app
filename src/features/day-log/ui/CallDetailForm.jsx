@@ -59,12 +59,12 @@ export default function CallDetailForm({
   const vatPreview = !fareNumber
     ? ''
     : draft.vatExempt
-      ? '면세 거래로 부가세가 적용되지 않습니다.'
+      ? '면세 거래에는 부가가치세가 부과되지 않습니다.'
       : `부가세 포함 ${(fareNumber + vatOf(fareNumber)).toLocaleString('ko-KR')}원`
   const selectedClient = clients.find((item) => item.companyName === draft.client)
   const paymentGuide = selectedClient
     ? getPaymentTermLabel(selectedClient.paymentTerm, selectedClient.paymentTermValue)
-    : '거래처를 선택하면 결제 조건에 맞춰 자동 입력됩니다.'
+    : '거래처를 선택하면 결제 조건에 따라 자동으로 입력됩니다.'
 
   async function handleSave() {
     const found = checkCallDetailDraft(draft)
@@ -84,10 +84,10 @@ export default function CallDetailForm({
 
   return (
     <div className="modal-content call-detail-modal-content">
-      <div className="modal-title call-detail-modal-title">{`${Number(dateKey.slice(8, 10))}일 일지 세부 입력${value ? ' 수정' : ''}`}</div>
+      <div className="modal-title call-detail-modal-title">{`${Number(dateKey.slice(8, 10))}일 운행일지 세부 내역${value ? ' 수정' : ' 입력'}`}</div>
       {!value && previousItem && (
         <button type="button" className="call-detail-copy-prev-btn" onClick={() => setDraft(draftFromDetail(previousItem, dateKey, clients))}>
-          ↺ 바로 전 내역 그대로 채우기
+          ↺ 이전 내역 불러오기
         </button>
       )}
       <div className="call-detail-panel call-route-panel">
@@ -153,7 +153,7 @@ export default function CallDetailForm({
           </div>
         </div>
         <CallVatExemptRow draft={draft} setDraft={setDraft} />
-        <p className="billing-settings-note">부가세 포함 금액이면 1.1로 나눈 금액을 입력해 주세요. (예: 110,000원 → 100,000원)</p>
+        <p className="billing-settings-note">부가가치세가 포함된 금액이라면 1.1로 나눈 공급가액을 입력해 주세요. (예: 110,000원 → 100,000원)</p>
         {vatPreview && <p className="billing-settings-note vat-preview">{vatPreview}</p>}
       </div>
       {settings.paymentOn && <CallDetailPaymentFields draft={draft} setDraft={setDraft} paymentGuide={paymentGuide} />}
@@ -185,8 +185,8 @@ export default function CallDetailForm({
       )}
       {settings.paymentOn && !isEmployedDriver && <CallInsuranceFeeField draft={draft} setDraft={setDraft} />}
       <div className="call-detail-panel form-group call-remarks-panel">
-        <label htmlFor="callRemarks">비고</label>
-        <ClearableInput id="callRemarks" className="input-box" placeholder="특이사항 입력" value={draft.remarks} onChange={(e) => setDraft({ ...draft, remarks: e.target.value })} />
+        <label htmlFor="callRemarks">메모</label>
+        <ClearableInput id="callRemarks" className="input-box" placeholder="특이 사항을 입력해 주세요" value={draft.remarks} onChange={(e) => setDraft({ ...draft, remarks: e.target.value })} />
       </div>
       <div className="modal-btns call-detail-form-actions">
         <button type="button" className="modal-btn cancel" onClick={onClose}>취소</button>

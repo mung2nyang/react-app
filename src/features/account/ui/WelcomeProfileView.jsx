@@ -39,7 +39,7 @@ export default function WelcomeProfileView({ initialName = '', onSubmit }) {
         </div>
         <div className="auth-heading-box">
           <h1>기본 정보</h1>
-          <p className="auth-desc-text">이름과 전화번호를 입력해 주세요.</p>
+          <p className="auth-desc-text">이름과 휴대전화 번호를 입력해 주세요.</p>
         </div>
 
         <div className="auth-form-fields">
@@ -53,7 +53,7 @@ export default function WelcomeProfileView({ initialName = '', onSubmit }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <p className="auth-field-hint">서비스 이용 및 본인 확인을 위해 실명이 필요합니다.</p>
+            <p className="auth-field-hint">서비스 이용과 본인 확인을 위해 실명을 입력해 주세요.</p>
           </div>
           <div className="auth-field">
             <label htmlFor="welcomePhone">휴대전화 번호</label>

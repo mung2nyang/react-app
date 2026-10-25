@@ -16,8 +16,8 @@ import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {null|'first'|'second'} WithdrawStep */
 
-const WITHDRAW_MSG_1 = '모든 운행 기록, 거래처, 정산 데이터가 영구적으로 삭제되며 복구할 수 없습니다.'
-const WITHDRAW_MSG_2 = '탈퇴하면 되돌릴 수 없습니다. 마지막으로 한 번 더 확인해 주세요.'
+const WITHDRAW_MSG_1 = '모든 운행 기록, 거래처 정보, 정산 데이터가 영구 삭제되며 복구할 수 없습니다.'
+const WITHDRAW_MSG_2 = '탈퇴 후에는 계정을 복구할 수 없습니다. 계속 진행할까요?'
 const WITHDRAW_LINKED_MSG = '연동을 먼저 해제해야 탈퇴할 수 있습니다.'
 
 /**
@@ -76,11 +76,11 @@ export default function PersonalInfoPage({ onBack, onGoAuth, onOpenMenu, onUnlin
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">01</span>
-            <div><h3>사업자 정보</h3><p>{employed ? '차주가 입력한 정보입니다 (수정 불가)' : '세금계산서와 서류 출력에 사용되는 정보입니다.'}</p></div>
+            <div><h3>사업자 정보</h3><p>{employed ? '차주가 입력한 정보입니다. 수정할 수 없습니다' : '세금계산서와 각종 서류를 발급할 때 사용하는 정보입니다.'}</p></div>
           </div>
           <div className="form-group">
-            <label htmlFor="bizName">사업자명 (상호)</label>
-            <ClearableInput id="bizName" className="input-box" disabled={employed} placeholder="사업자명을 입력하세요" value={get('bizName')} onChange={(e) => update('bizName', e.target.value)} />
+            <label htmlFor="bizName">상호(사업자명)</label>
+            <ClearableInput id="bizName" className="input-box" disabled={employed} placeholder="상호를 입력해 주세요" value={get('bizName')} onChange={(e) => update('bizName', e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="bizRepresentative">대표자명</label>
@@ -129,7 +129,7 @@ export default function PersonalInfoPage({ onBack, onGoAuth, onOpenMenu, onUnlin
         <section className="setting-section personal-card">
           <div className="personal-card-heading">
             <span className="personal-card-icon">02</span>
-            <div><h3>대표자/연락처</h3><p>대표자 기본 정보</p></div>
+            <div><h3>대표자 및 연락처</h3><p>대표자 정보</p></div>
           </div>
           <div className="form-group">
             <label htmlFor="userName">성명 (대표자)</label>
@@ -148,7 +148,7 @@ export default function PersonalInfoPage({ onBack, onGoAuth, onOpenMenu, onUnlin
             <div><h3>계정</h3><p>로그인 상태와 계정 연결 관리</p></div>
           </div>
           {guest ? (
-            <button type="button" className="personal-account-btn" onClick={onGoAuth}>로그인하러 가기</button>
+            <button type="button" className="personal-account-btn" onClick={onGoAuth}>로그인하기</button>
           ) : (
             <>
               <button
@@ -178,7 +178,7 @@ export default function PersonalInfoPage({ onBack, onGoAuth, onOpenMenu, onUnlin
         <ConfirmModal
           title="정말 탈퇴하시겠습니까?"
           message={WITHDRAW_MSG_1}
-          confirmLabel="다음"
+          confirmLabel="다음 단계"
           onCancel={() => setWithdrawStep(null)}
           onConfirm={() => setWithdrawStep('second')}
         />

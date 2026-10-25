@@ -78,7 +78,7 @@ export default function MessageSettingsPage({ onBack }) {
         </div>
         <textarea className="message-settings-textarea" maxLength={500} aria-label="미수금 안내 문자 문구" id="msgUnpaid" value={unpaid} onChange={(e) => setUnpaid(e.target.value)} {...invalidProps(shown, 'msgUnpaid', 'msgUnpaid')} />
         <FieldError problem={shown} field="msgUnpaid" inputId="msgUnpaid" />
-        <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처}, {운행구간}, {운송료}'}</p>
+        <p className="message-settings-variables"><b>자동으로 입력되는 항목:</b> {'{거래처}, {운행구간}, {운송료}'}</p>
       </section>
 
       <section className="message-settings-section">
@@ -88,7 +88,7 @@ export default function MessageSettingsPage({ onBack }) {
         </div>
         <textarea className="message-settings-textarea" maxLength={500} aria-label="입금 요청 문자 문구" id="msgPaymentRequest" value={paymentRequest} onChange={(e) => setPaymentRequest(e.target.value)} {...invalidProps(shown, 'msgPaymentRequest', 'msgPaymentRequest')} />
         <FieldError problem={shown} field="msgPaymentRequest" inputId="msgPaymentRequest" />
-        <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처}, {운행구간}, {운송료}'}</p>
+        <p className="message-settings-variables"><b>자동으로 입력되는 항목:</b> {'{거래처}, {운행구간}, {운송료}'}</p>
       </section>
 
       <section className="message-settings-section">
@@ -98,7 +98,7 @@ export default function MessageSettingsPage({ onBack }) {
         </div>
         <textarea className="message-settings-textarea" maxLength={500} aria-label="운행 완료 문자 문구" id="msgTripComplete" value={tripComplete} onChange={(e) => setTripComplete(e.target.value)} {...invalidProps(shown, 'msgTripComplete', 'msgTripComplete')} />
         <FieldError problem={shown} field="msgTripComplete" inputId="msgTripComplete" />
-        <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처}, {운행구간}, {운송료}'}</p>
+        <p className="message-settings-variables"><b>자동으로 입력되는 항목:</b> {'{거래처}, {운행구간}, {운송료}'}</p>
       </section>
 
       <section className="message-settings-section">
@@ -108,7 +108,7 @@ export default function MessageSettingsPage({ onBack }) {
         </div>
         <textarea className="message-settings-textarea" maxLength={500} aria-label="운송비 내역서 공유 문구" id="msgReportShare" value={reportShare} onChange={(e) => setReportShare(e.target.value)} {...invalidProps(shown, 'msgReportShare', 'msgReportShare')} />
         <FieldError problem={shown} field="msgReportShare" inputId="msgReportShare" />
-        <p className="message-settings-variables"><b>자동 입력:</b> {'{거래처}'}</p>
+        <p className="message-settings-variables"><b>자동으로 입력되는 항목:</b> {'{거래처}'}</p>
       </section>
 
       <div className="message-settings-actions">

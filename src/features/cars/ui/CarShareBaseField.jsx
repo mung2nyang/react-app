@@ -24,7 +24,7 @@ export default function CarShareBaseField({ value, onChange }) {
         onChange={(next) => onChange(next === 'afterClientCommission' ? 'afterClientCommission' : 'gross')}
         className="app-dropdown-boxed"
       />
-      <p className="car-settlement-mode-guide">예) 운송료 100만원, 거래처 수수료 10만원, 기사 몫 30% → 운송료 전체 30만원 / 거래처 수수료 뗀 뒤 27만원</p>
+      <p className="car-settlement-mode-guide">예: 운송료가 100만 원이고 거래처 수수료가 10만 원일 때, 기사 몫이 운송료 전체 기준 30%이면 30만 원, 수수료 차감 후 기준 30%이면 27만 원입니다.</p>
     </div>
   )
 }

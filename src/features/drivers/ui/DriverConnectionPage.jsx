@@ -113,8 +113,8 @@ export default function DriverConnectionPage({ onBack, navigate }) {
         <div className="driver-section-heading">
           <div>
             <h3>기사 연결 현황</h3>
-            <p>연동 상태와 차량 계약기간을 관리합니다.</p>
-            {!cloud && <p>기사 초대는 로그인 후 쓸 수 있습니다. 로그인하면 배정 차량과 시작일을 넣어 초대할 수 있습니다.</p>}
+            <p>기사 연동 상태와 차량 계약 기간을 관리합니다.</p>
+            {!cloud && <p>기사를 초대하려면 로그인한 뒤 배정 차량과 계약 시작일을 입력하세요.</p>}
           </div>
         </div>
         <div className="driver-summary-counts">
@@ -143,7 +143,7 @@ export default function DriverConnectionPage({ onBack, navigate }) {
             </div>
             <div>
               <span>계약기간</span>
-              <strong>{driver.startDate || '-'}{driver.endDate ? ` ~ ${driver.endDate}` : ' ~ 종료일 없음'}</strong>
+              <strong>{driver.startDate || '-'}{driver.endDate ? ` ~ ${driver.endDate}` : ' ~ 종료일 미정'}</strong>
             </div>
           </div>
 

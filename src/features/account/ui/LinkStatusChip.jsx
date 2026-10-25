@@ -33,7 +33,7 @@ export default function LinkStatusChip({ employed, onOpenProfile, children }) {
             <dt>배정 차량</dt><dd>{link.vehicleNumber || '-'}</dd>
             <dt>계약기간</dt><dd>{link.startDate || '-'} ~ {link.endDate || '종료일 없음'}</dd>
           </dl>
-          <p className="confirm-modal-text">연동 해제는 개인정보 → 소속 연결에서 할 수 있습니다.</p>
+          <p className="confirm-modal-text">{'개인정보 > 소속 연결에서 연동을 해제할 수 있습니다.'}</p>
           <div className="modal-btns">
             <button type="button" className="modal-btn cancel" onClick={() => setOpen(false)}>닫기</button>
             <button type="button" className="modal-btn confirm" onClick={() => { setOpen(false); onOpenProfile() }}>개인정보로 가기</button>

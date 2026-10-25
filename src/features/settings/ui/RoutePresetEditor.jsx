@@ -45,14 +45,14 @@ export default function RoutePresetEditor({ scope, settings, onPatch }) {
     <div className="setting-item fixed-route-preset-setting">
       <div className="run-count-preset-copy">
         <label>자주 다니는 노선 등록</label>
-        <p>부산→대구처럼 항상 같은 구간만 오간다면, 노선을 등록해 두고 일일운행에서 한 번 눌러 횟수를 기록하세요.</p>
+        <p>부산→대구처럼 같은 구간을 자주 운행한다면 노선으로 등록해 두세요. 운행일지에서 해당 노선을 누르면 운행 횟수가 기록됩니다.</p>
       </div>
       <div className="fixed-route-preset-list">
         {presets.length === 0 && <div className="fixed-route-preset-empty">등록된 노선이 없습니다.</div>}
         {presets.map((route) => (
           <div key={route.id} className="fixed-route-preset-row">
             <span>{route.loadLoc} → {route.unloadLoc}</span>
-            <button type="button" title="노선 삭제" aria-label={`${route.loadLoc} → ${route.unloadLoc} 삭제`} onClick={() => onPatch(removeFixedRoutePreset(settings, scope, route.id))}>×</button>
+            <button type="button" title="노선 삭제" aria-label={`${route.loadLoc} → ${route.unloadLoc} 노선 삭제`} onClick={() => onPatch(removeFixedRoutePreset(settings, scope, route.id))}>×</button>
           </div>
         ))}
       </div>

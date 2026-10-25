@@ -26,7 +26,7 @@ const emptyDraft = {
   inviteCode: '', inviteStartDate: '', inviteDriverId: null, connectMode: 'log',
 }
 const DELETE_CAR_CONFIRM = '이 차량의 운행 기록도 함께 지워지며 되돌릴 수 없습니다.'
-const DISCONNECT_CONFIRM = '연동 중인 기사에게는 해제 요청이 가고, 기사가 동의하거나 3일이 지나면 해제됩니다.'
+const DISCONNECT_CONFIRM = '연동 중인 기사에게 연동 해제 요청이 전달됩니다. 기사가 동의하거나 3일이 지나면 연동이 해제됩니다.'
 
 /**
  * @param {Object} props

@@ -33,7 +33,7 @@ export default function InviteRedeemModal({ onClose, onLinked }) {
         await hydrateFromSupabase(session.userId, ownerKeyFromSession(next), { employedDriver: !!next.linkedOwnerId })
       } catch (error) {
         console.error(error)
-        showToast?.('연동은 됐지만 기록 일부를 불러오지 못했습니다.')
+        showToast?.('연동은 완료했지만 일부 기록을 불러오지 못했습니다.')
       }
       showToast?.('차주와 연동되었습니다.')
       onLinked(next)
@@ -50,7 +50,7 @@ export default function InviteRedeemModal({ onClose, onLinked }) {
       <div className="modal-title">초대 코드 입력</div>
       <p className="invite-redeem-note">
         차주에게 전달받은 초대 코드를 입력해 주세요.<br />
-        연동이 완료되면 기사님이 입력한 운행, 매출 내역이 차주에게 공유됩니다.
+        연동이 완료되면 기사님이 입력한 운행 및 매출 내역이 차주와 공유됩니다.
       </p>
       <div className="form-group">
         <label htmlFor="driverInviteCode">초대 코드</label>

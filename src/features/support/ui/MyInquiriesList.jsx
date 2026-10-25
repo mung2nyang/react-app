@@ -33,7 +33,7 @@ export default function MyInquiriesList({ userId }) {
   const loading = result?.key !== userId
   const items = result && !loading ? result.items : []
 
-  if (loading) return <SkeletonLines lines={3} label="문의 목록 불러오는 중" />
+  if (loading) return <SkeletonLines lines={3} label="문의 목록을 불러오는 중…" />
   if (!items.length) return <div className="support-panel-empty">아직 접수한 문의나 건의가 없습니다.</div>
 
   return (

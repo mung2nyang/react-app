@@ -13,7 +13,7 @@ import { useSession } from '../../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../../data/sync/syncTypes.ts').AppSession} AppSession */
 
-const HYDRATE_FAIL_TOAST = '연동은 해제됐지만 내 기록 일부를 불러오지 못했습니다.'
+const HYDRATE_FAIL_TOAST = '연동을 해제했지만 일부 기록을 불러오지 못했습니다.'
 
 /**
  * @param {{

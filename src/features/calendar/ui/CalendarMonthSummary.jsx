@@ -7,7 +7,7 @@ import SummaryInfoToggle from '../../../shared/ui/SummaryInfoToggle.jsx'
  * @typedef {ReturnType<typeof import('../../../domain/monthSettlement.ts').monthSettlementSummary>} MonthSettlementSummary
  */
 
-const TOTAL_INFO = '운송료 + 파렛트 회수 청구액 − 수수료 + 부가세입니다. 아래 정비비, 주유비, 통행료는 합계에서 빼지 않은 이번 달 차량 지출 기록입니다.'
+const TOTAL_INFO = '합계는 운송료와 파렛트 회수 청구액에 부가세를 더하고 수수료를 뺀 금액입니다. 아래 정비비, 주유비, 통행료는 이 합계에서 차감하지 않은 이번 달 차량 지출입니다.'
 
 /** 수수료 설정 표시: "10%"는 그대로, 금액은 "건당 5,000원" @param {string} setting */
 function perTripSetting(setting) {
@@ -17,7 +17,7 @@ function perTripSetting(setting) {
 /** @param {string} setting */
 function clientCommInfo(setting) {
   const shown = setting ? `(${perTripSetting(setting)})` : ''
-  return `거래처 등록 때 적은 수수료${shown}만큼 이 거래처 운송료에서 뺍니다.`
+  return `거래처를 등록할 때 설정한 수수료${shown}를 이 거래처의 운송료에서 차감합니다.`
 }
 
 /**
@@ -28,7 +28,7 @@ function subCarCommInfo(label, base) {
   const setting = label.replace(/^\S+ 차량 (?=건당 |\d)/, '')
   const shown = setting && setting !== label ? `(${setting})` : ''
   const from = base === 'afterClientCommission' ? '거래처 수수료를 뺀 운송료에서' : '운송료 전체에서'
-  return `차량 관리에 적은 이 차량의 수수료${shown}입니다. ${from} 계산해 이만큼 뺍니다.`
+  return `차량 관리에서 설정한 이 차량의 수수료${shown}입니다. ${from} 계산해 차감합니다.`
 }
 
 /**

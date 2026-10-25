@@ -140,7 +140,7 @@ export default function AppSettingsPage({ onBack, onOpenMenu }) {
             onChange={(checked) => patchActive({ callDetail: checked })}
           />
           {!fixedOn && (
-            <p className="car-type-hint">고정 노선을 끄면 세부 입력이 필수로 켜집니다.</p>
+            <p className="car-type-hint">고정 노선을 끄면 세부 입력이 자동으로 필수 설정됩니다.</p>
           )}
           {activeSettings.callDetail && (
             <div className="tree-line-group">

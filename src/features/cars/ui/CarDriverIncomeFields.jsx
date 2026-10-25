@@ -38,8 +38,8 @@ export default function CarDriverIncomeFields({ draft, setDraft }) {
         <label>기사 유형</label>
         <p className="car-settlement-mode-guide">
           {isEmployee
-            ? '4대보험 근로자는 산재보험료를 차주가 전액 부담하고, 3.3% 세금은 떼지 않습니다.'
-            : '3.3% 사업소득자는 산재보험료를 차주와 기사가 반반 부담하고, 기사 정산액에서 3.3% 세금을 뗍니다.'}
+            ? '4대 보험 근로자는 산재보험료를 차주가 전액 부담하며, 사업소득세 3.3%는 공제하지 않습니다.'
+            : '사업소득자(3.3%)는 산재보험료를 차주와 기사가 절반씩 부담하며, 기사 정산액에서 사업소득세 3.3%를 공제합니다.'}
         </p>
         <div className="car-commission-type" role="group" aria-label="기사 유형">
           <button type="button" className={isEmployee ? 'active' : ''} aria-pressed={isEmployee} onClick={() => setType('employee')}>4대보험 근로자</button>

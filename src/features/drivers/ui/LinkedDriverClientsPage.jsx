@@ -40,8 +40,8 @@ export default function LinkedDriverClientsPage({ onBack, onOpenMenu }) {
   }
 
   const title = unlinked
-    ? (ctx.plate ? `${ctx.car?.driverName || getShortCarNum(ctx.plate)} 거래처` : '거래처')
-    : `${link?.driverName || '기사'} 기사 거래처`
+    ? (ctx.plate ? `${ctx.car?.driverName || getShortCarNum(ctx.plate)} 담당 거래처` : '거래처')
+    : `${link?.driverName || '기사'}님의 거래처`
 
   if (ctx.notFound) {
     return (

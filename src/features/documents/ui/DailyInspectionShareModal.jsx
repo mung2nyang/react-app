@@ -14,7 +14,7 @@ export default function DailyInspectionShareModal({ month, buildFile, onClose })
     <ShareFileModal
       title="점검표 보내기"
       kakaoHint="파일과 안내 문구를 함께 공유합니다."
-      smsHint="파일을 저장하고 안내 문구로 문자 앱을 엽니다. 받는 사람은 직접 골라 주세요."
+      smsHint="파일을 저장한 뒤 문자 앱을 엽니다. 받는 사람을 직접 선택해 주세요."
       shareTitle="일상점검표"
       kakaoText={message}
       unsupportedToast="이 기기에서는 파일 공유를 지원하지 않습니다."

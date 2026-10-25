@@ -91,7 +91,7 @@ export async function confirmLargeFareSave(fare) {
   if (!isLargeFare(fare)) return true
   return confirmDialog({
     title: '운송료가 1,000만원을 넘습니다',
-    message: `입력한 운송료: ${fare}원. 이 금액이 맞으면 저장해 주세요.`,
+    message: `입력한 운송료는 ${fare}원입니다. 이 금액이 맞으면 저장해 주세요.`,
     confirmLabel: '이 금액으로 저장',
     cancelLabel: '금액 고치기',
   })

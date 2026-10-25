@@ -64,7 +64,7 @@ test('연동 기사 → 칩, 누르면 운송사·배정 차량·계약기간 �
     await click(view.chip())
     assert.deepEqual(view.opened, [])
     const text = view.dialog()?.textContent || ''
-    for (const part of ['연동 중', '운송사', '차주로지스', '배정 차량', '12가3456', '계약기간', '2026-10-01 ~ 종료일 없음', '연동 해제는 개인정보 → 소속 연결에서 할 수 있습니다.']) {
+    for (const part of ['연동 중', '운송사', '차주로지스', '배정 차량', '12가3456', '계약기간', '2026-10-01 ~ 종료일 없음', '개인정보 > 소속 연결에서 연동을 해제할 수 있습니다.']) {
       assert.ok(text.includes(part), part)
     }
     await click(button('개인정보로 가기'))

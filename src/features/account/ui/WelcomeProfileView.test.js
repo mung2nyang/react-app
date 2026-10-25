@@ -84,7 +84,7 @@ test('로드맵 16: 이름 칸 제목·예시가 실명, 칸 바로 아래에 �
   const view = await render('구글이름', async () => true)
   try {
     const hint = view.nameInput.closest('.auth-field')?.querySelector('.auth-field-hint')
-    assert.equal(hint?.textContent, '서비스 이용 및 본인 확인을 위해 실명이 필요합니다.')
+    assert.equal(hint?.textContent, '서비스 이용과 본인 확인을 위해 실명을 입력해 주세요.')
     assert.equal(view.nameInput.closest('.auth-field')?.querySelector('label')?.textContent, '이름(실명)')
     assert.equal(view.nameInput.placeholder, '본인 실명')
   } finally { await view.cleanup() }

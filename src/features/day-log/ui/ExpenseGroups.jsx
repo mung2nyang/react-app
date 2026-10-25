@@ -58,7 +58,7 @@ export default function ExpenseGroups({ dayExpenses, onEdit, onDelete }) {
       <div className="call-detail-daily-summary expense-daily-summary">
         {groups.map(({ kindItem, total }) => (
           <div key={kindItem.value}>
-            <b>{kindItem.label} 합계</b>
+            <b>{kindItem.label} 지출 합계</b>
             <strong>{formatWon(total)}</strong>
           </div>
         ))}

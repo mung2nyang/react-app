@@ -34,7 +34,7 @@ export default function AuthIntroView({ onGuest, onGoogle, busy = false }) {
           <div className="auth-btn-stack">
             <button type="button" className="auth-google-btn" disabled={busy} onClick={onGoogle}>
               <GoogleLogo />
-              <span>Google 계정으로 로그인</span>
+              <span>Google 계정으로 로그인하기</span>
             </button>
           </div>
           <button type="button" className="auth-guest-btn" onClick={onGuest}>비회원으로 시작하기</button>

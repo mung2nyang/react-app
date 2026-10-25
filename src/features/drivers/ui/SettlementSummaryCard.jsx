@@ -66,7 +66,7 @@ export default function SettlementSummaryCard({
       <div className="summary-row"><span>기사 정산금</span><span className="summary-value">{formatWon(breakdown.settlementAmount)}</span></div>
       {showInsurance && <div className="summary-row"><span>산재보험 (기사 몫)</span><span className="summary-value">{deductionWon(breakdown.insuranceDriverShare)}</span></div>}
       {showWithholding && <div className="summary-row"><span>원천징수 (3.3%)</span><span className="summary-value">{deductionWon(breakdown.withholding)}</span></div>}
-      <div className="summary-row total"><span>최종 실수령 정산액</span><span className="summary-value">{formatWon(breakdown.driverNet)}</span></div>
+      <div className="summary-row total"><span>최종 실수령액</span><span className="summary-value">{formatWon(breakdown.driverNet)}</span></div>
     </section>
   )
 }
