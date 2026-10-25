@@ -2,7 +2,7 @@
 import { formatWon } from '../../../domain/money.ts'
 import { formatPhoneNumber } from '../../../domain/formatPhone.ts'
 import { getPaymentTermLabel, needsPaymentTermValue } from '../../../domain/clientPaymentTerms.ts'
-import type { UnbiseoCall, UnbiseoClient, UnbiseoExpense, UnbiseoFixed, UnbiseoResult } from './unbiseoParse.ts'
+import type { UnbiseoCall, UnbiseoClient, UnbiseoDayOff, UnbiseoExpense, UnbiseoFixed, UnbiseoResult } from './unbiseoParse.ts'
 import type { UnbiseoQuestion } from './unbiseoQuestion.ts'
 
 /** 받침 있으면 "으로", 없거나 ㄹ 받침·한글 아님이면 "로". */
@@ -67,6 +67,13 @@ export function describeExistingClient(name: string): string {
   return `${withParticle(name, '은', '는')} 이미 등록된 거래처예요.`
 }
 
+/** 휴무 문장 — 이미 그 상태면(same) 알림만. */
+export function describeDayOff(dayOff: UnbiseoDayOff, today: string, same: boolean): string {
+  const label = dateLabelOf(dayOff.date, today)
+  if (same) return `${withParticle(label, '은', '는')} ${dayOff.off ? '이미 휴무예요.' : '휴무가 아니에요.'}`
+  return dayOff.off ? `${withParticle(label, '을', '를')} 휴무로 할게요.` : `${label} 휴무를 취소할게요.`
+}
+
 export const WEATHER_WAIT = '날씨를 알아보는 중…'
 export const INSPECTION_WAIT = '점검표를 확인하는 중…'
 
@@ -80,6 +87,7 @@ export function describeResult(result: UnbiseoResult, today: string, answerQuest
   if (result.kind === 'question') return answerQuestion(result.question)
   if (result.kind === 'weather') return WEATHER_WAIT
   if (result.kind === 'inspection') return INSPECTION_WAIT
+  if (result.kind === 'dayOff') return describeDayOff(result.dayOff, today, false)
   if (result.kind === 'unknown') return '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.'
   return result.message
 }

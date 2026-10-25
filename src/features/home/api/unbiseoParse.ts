@@ -6,25 +6,17 @@ import { readQuestion } from './unbiseoQuestion.ts'
 import { readSms } from './unbiseoSms.ts'
 import type { UnbiseoSms } from './unbiseoSms.ts'
 import type { UnbiseoQuestion } from './unbiseoQuestion.ts'
+import { CLIENT_NAME_MAX, ROUTE_NAME_MAX, dateOf, readClient, readDayOff, readExpense, readFixed, readWeather, record, text, wonOf } from './unbiseoFields.ts'
+import type { UnbiseoClient, UnbiseoDayOff, UnbiseoExpense, UnbiseoFixed, UnbiseoWeather } from './unbiseoFields.ts'
+export type { UnbiseoClient, UnbiseoDayOff, UnbiseoExpense, UnbiseoFixed, UnbiseoWeather } from './unbiseoFields.ts'
 
 export const TEXT_MAX = 300
 const CLIENTS_MAX = 200
-const CLIENT_NAME_MAX = 50
 const ROUTES_MAX = 30
-const ROUTE_NAME_MAX = 60
-const FIXED_COUNT_MAX = 20
-const MANAGER_MAX = 30
-const WEATHER_PLACE_MAX = 30
-// 앱 거래처 결제 주기 목록(domain/clientPaymentTerms.ts)과 같은 값.
-const PAYMENT_TERMS = ['same_day', 'after_days', 'next_month_day', 'next_month_end', 'second_month_day', 'second_month_end']
 
 export type UnbiseoCall = { date: string, loadLoc: string, unloadLoc: string, fare: number | null, client: string }
-export type UnbiseoExpense = { date: string, type: 'maint' | 'fuel' | 'misc', cost: number | null, name: string, category: string, fuelType: string, payment: string }
-export type UnbiseoFixed = { date: string, count: number, route: string }
-export type UnbiseoWeather = { date: string, place: string }
-export type UnbiseoClient = { name: string, manager: string, phone: string, paymentTerm: string, paymentTermValue: number | null, commType: 'percent' | 'direct' | '', commValue: number | null }
-/** [기록하기]·[등록하기]로 넘기는 것 — 운행·지출·고정 노선은 일지로, 거래처는 거래처 화면으로 */
-export type UnbiseoRecord = UnbiseoCall | UnbiseoExpense | UnbiseoFixed | UnbiseoClient
+/** [기록하기]·[등록하기]·휴무 버튼으로 넘기는 것 — 운행·지출·고정 노선·휴무는 일지로, 거래처는 거래처 화면으로 */
+export type UnbiseoRecord = UnbiseoCall | UnbiseoExpense | UnbiseoFixed | UnbiseoClient | UnbiseoDayOff
 export type UnbiseoResult =
   | { kind: 'call', call: UnbiseoCall }
   | { kind: 'expense', expense: UnbiseoExpense }
@@ -33,6 +25,7 @@ export type UnbiseoResult =
   | { kind: 'sms', sms: UnbiseoSms }
   | { kind: 'weather', weather: UnbiseoWeather }
   | { kind: 'inspection', inspection: { date: string } }
+  | { kind: 'dayOff', dayOff: UnbiseoDayOff }
   | { kind: 'question', question: UnbiseoQuestion }
   | { kind: 'unknown' }
   | { kind: 'error', message: string }
@@ -41,76 +34,6 @@ export const LOGIN_NEEDED = '로그인이 필요합니다.'
 export const BAD_INPUT = '말이 너무 길거나 비었어요. 300자까지 다시 말해 주세요.'
 export const NOT_UNDERSTOOD = '알아듣지 못했습니다. 다시 말해 주세요.'
 export const TRY_LATER = '잠시 뒤 다시 시도해 주세요.'
-
-function record(value: JsonValue | undefined): { [key: string]: JsonValue } | null {
-  return value && typeof value === 'object' && !Array.isArray(value) ? value : null
-}
-
-function text(row: { [key: string]: JsonValue }, key: string): string {
-  const value = row[key]
-  return typeof value === 'string' ? value.trim() : ''
-}
-
-function dateOf(row: { [key: string]: JsonValue }, today: string): string {
-  const date = text(row, 'date')
-  return /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : today
-}
-
-function wonOf(value: JsonValue | undefined): number | null {
-  return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : null
-}
-
-function readExpense(row: { [key: string]: JsonValue }, today: string): UnbiseoExpense {
-  const type = row.type === 'fuel' ? 'fuel' : row.type === 'misc' ? 'misc' : 'maint'
-  return {
-    date: dateOf(row, today),
-    type,
-    cost: wonOf(row.cost),
-    name: text(row, 'name'),
-    category: text(row, 'category'),
-    fuelType: text(row, 'fuelType'),
-    payment: text(row, 'payment'),
-  }
-}
-
-// 고정 노선 — 횟수 1~20(밖이면 1), 노선 이름은 보낸 것과 같은 길이 안만(로드맵 24-F-2).
-function readFixed(row: { [key: string]: JsonValue }, today: string): UnbiseoFixed {
-  const count = row.count
-  const route = text(row, 'route')
-  return {
-    date: dateOf(row, today),
-    count: typeof count === 'number' && Number.isInteger(count) && count >= 1 && count <= FIXED_COUNT_MAX ? count : 1,
-    route: route.length <= ROUTE_NAME_MAX ? route : '',
-  }
-}
-
-// 거래처 등록 — 이름은 꼭(50자), 그 밖은 서버(24-G-1)와 같은 범위 안일 때만, 아니면 빈 칸.
-function readClient(row: { [key: string]: JsonValue }): UnbiseoClient | null {
-  const name = text(row, 'name')
-  if (!name || name.length > CLIENT_NAME_MAX) return null
-  const manager = text(row, 'manager')
-  const digits = text(row, 'phone').replace(/[^0-9]/g, '').length
-  const term = PAYMENT_TERMS.find((item) => item === row.paymentTerm) ?? ''
-  const termValue = row.paymentTermValue
-  const termMax = term === 'after_days' ? 365 : term === 'next_month_day' || term === 'second_month_day' ? 31 : 0
-  const commType = row.commType === 'percent' || row.commType === 'direct' ? row.commType : ''
-  const commValue = row.commValue
-  const commOk = commType !== '' && typeof commValue === 'number' && commValue >= 0 && (commType === 'percent' ? commValue <= 100 : Number.isSafeInteger(commValue))
-  return {
-    name,
-    manager: manager.length <= MANAGER_MAX ? manager : '',
-    phone: digits >= 9 && digits <= 13 ? text(row, 'phone').replace(/[^0-9-]/g, '') : '',
-    paymentTerm: term,
-    paymentTermValue: typeof termValue === 'number' && Number.isInteger(termValue) && termValue >= 1 && termValue <= termMax ? termValue : null,
-    commType: commOk ? commType : '',
-    commValue: commOk ? commValue : null,
-  }
-}
-
-// 날씨 — 날짜 모양이 틀리면 오늘, 지역은 30자까지.
-function readWeather(row: { [key: string]: JsonValue }, today: string): UnbiseoWeather {
-  return { date: dateOf(row, today), place: text(row, 'place').slice(0, WEATHER_PLACE_MAX) }
-}
 
 /** 서버가 돌려준 값 → 화면용. 모양이 틀리면 알아듣지 못함. */
 export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoResult {
@@ -123,6 +46,9 @@ export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoR
   if (row.kind === 'sms') return sms ? { kind: 'sms', sms: readSms(sms) } : { kind: 'error', message: NOT_UNDERSTOOD }
   const weather = record(row.weather)
   if (row.kind === 'weather') return weather ? { kind: 'weather', weather: readWeather(weather, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
+  const dayOff = record(row.dayOff)
+  const dayOffDraft = row.kind === 'dayOff' && dayOff ? readDayOff(dayOff, today) : null
+  if (row.kind === 'dayOff') return dayOffDraft ? { kind: 'dayOff', dayOff: dayOffDraft } : { kind: 'error', message: NOT_UNDERSTOOD }
   const inspection = record(row.inspection)
   if (row.kind === 'inspection') return inspection ? { kind: 'inspection', inspection: { date: dateOf(inspection, today) } } : { kind: 'error', message: NOT_UNDERSTOOD }
   const client = record(row.client)

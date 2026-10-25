@@ -9,6 +9,7 @@ const FIXED_COUNT_MAX = 20
 /** @typedef {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string, cancelOff: boolean }} AssistantCall */
 /** @typedef {{ type: 'maint'|'fuel'|'misc', cost: number|null, name: string, category: string, fuelType: string, payment: string, cancelOff: boolean }} AssistantExpense */
 /** @typedef {{ count: number, route: string, cancelOff: boolean }} AssistantFixed */
+/** @typedef {{ off: boolean }} AssistantDayOff */
 
 /** @param {object} row @param {string} key */
 function textOf(row, key) {
@@ -89,12 +90,23 @@ export function readAssistantFixed(state) {
 }
 
 /**
+ * 휴무로 할지(참)·취소할지(거짓) — 참·거짓이 아니면 버린다.
+ * @param {object|null|undefined} state location.state
+ * @returns {AssistantDayOff|null}
+ */
+export function readAssistantDayOff(state) {
+  const off = Reflect.get(rowOf(state, 'assistantDayOff') || {}, 'off')
+  return typeof off === 'boolean' ? { off } : null
+}
+
+/**
  * 운비서 [기록하기] → 일지로 갈 때 주소 상태. 일지 닫기는 온 곳으로 뒤로가기(from: 'home').
  * @param {import('../../features/home/api/unbiseoParse.ts').UnbiseoRecord} record 운행·지출·고정 노선
  * @param {{ cancelOff: boolean }} options
  */
 export function assistantCallNavState(record, options) {
   if ('paymentTerm' in record) return { from: 'home', assistantClient: { ...record } }
+  if ('off' in record) return { from: 'home', assistantDayOff: { off: record.off } }
   if ('count' in record) return { from: 'home', assistantFixed: { count: record.count, route: record.route, cancelOff: options.cancelOff } }
   if ('type' in record) {
     const { type, cost, name, category, fuelType, payment } = record

@@ -16,6 +16,7 @@ import usePanelBackGuard from '../hooks/usePanelBackGuard.js'
 import useAssistantPrefill from '../hooks/useAssistantPrefill.js'
 import useAssistantExpense from '../hooks/useAssistantExpense.js'
 import useAssistantFixed from '../hooks/useAssistantFixed.js'
+import useAssistantDayOff from '../hooks/useAssistantDayOff.js'
 import { popPanelGuardThen } from '../../../shared/utils/historyMoves.js'
 import AutoSaveStatus from './AutoSaveStatus.jsx'
 import DayFareTotal from './DayFareTotal.jsx'
@@ -57,9 +58,10 @@ const EMPTY_PINS = /** @type {Array<never>} */ ([])
  * @param {{ loadLoc: string, unloadLoc: string, fare: number|null, client: string, cancelOff: boolean }|null} [props.assistantCall] 운비서가 넘긴 운행(useAssistantPrefill)
  * @param {import('../hooks/useAssistantExpense.js').AssistantExpense|null} [props.assistantExpense] 운비서가 넘긴 지출(useAssistantExpense)
  * @param {import('../hooks/useAssistantFixed.js').AssistantFixed|null} [props.assistantFixed] 운비서가 넘긴 고정 노선(useAssistantFixed)
+ * @param {import('../hooks/useAssistantDayOff.js').AssistantDayOff|null} [props.assistantDayOff] 운비서가 넘긴 휴무(useAssistantDayOff)
  * @param {string} [props.assistantCallKey] 이동 키 — 같은 날짜에서 또 넘기면 바뀜
  */
-export default function DayLogPage({ month, day, dateKey, clients, settings, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false, assistantCall = null, assistantExpense = null, assistantFixed = null, assistantCallKey }) {
+export default function DayLogPage({ month, day, dateKey, clients, settings, onClose, onOpenMenu, logId = 'main', clientScopeKey, isEmployedDriver = false, assistantCall = null, assistantExpense = null, assistantFixed = null, assistantDayOff = null, assistantCallKey }) {
   const { ownerKey } = useSession()
   const { draft, editingCallId, callFormOpen, dispatch, autoSaveStatus } = useDayDraft(ownerKey, dateKey, logId)
   const expenseForm = useExpenseForm(ownerKey, dateKey, logId)
@@ -97,6 +99,7 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onC
   const { prefill, formKey } = useAssistantPrefill({ assistantCall, assistantCallKey, callDetailOn: !!settings.callDetail, draft, callFormOpen, editingCallId, dispatch, closeExpense: expenseForm.closeAll, confirmLeaveOpenPanel })
   useAssistantExpense({ assistantExpense, assistantCallKey, draft, dispatch, openAdd: expenseForm.openAdd, confirmLeaveOpenPanel })
   useAssistantFixed({ assistantFixed, assistantCallKey, fixedOn: !!settings.fixedOn, routePresets, draft, patchDraft, runRoute })
+  useAssistantDayOff({ assistantDayOff, assistantCallKey, draft, patchDraft, month, day })
   usePanelBackGuard(callFormOpen || expenseForm.modalOpen, confirmLeaveOpenPanel, () => { expenseForm.closeAll(); dispatch({ type: 'closeCallForm' }); onClose?.() })
 
   if (periodNotice) return <AssignmentPeriodPage title={`${month}월 ${day}일 운행일지`} notice={periodNotice} onBack={onClose ? handleClose : undefined} onOpenMenu={onOpenMenu} />

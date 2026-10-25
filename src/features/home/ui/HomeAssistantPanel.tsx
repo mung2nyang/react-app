@@ -10,7 +10,7 @@ type Props = { assistant: UnbiseoAssistant, onOpenCall?: (record: UnbiseoRecord,
 
 export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
   const { loggedIn, text, setText, busy, answer, send, reportStep, speech, speaking, stopSpeaking, callDetailOn, fixedOn, enabling, enableSetting, saving, saveInspection, periodNotice, dayOff } = assistant
-  const record = answer?.call ?? answer?.expense ?? answer?.fixed ?? answer?.client
+  const record = answer?.call ?? answer?.expense ?? answer?.fixed ?? answer?.client ?? answer?.dayOff
   const isCall = !!answer?.call
   const isFixed = !!answer?.fixed
 
@@ -23,7 +23,7 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
     void send(text)
   }
 
-  // 버튼 자리는 하나만 — 계약 기간 밖 → 고정 노선·콜 상세 꺼짐 → 휴무 → [기록하기] 순서.
+  // 버튼 자리는 하나만 — 계약 기간 밖 → 휴무 버튼 → 고정 노선·콜 상세 꺼짐 → 휴무 → [기록하기] 순서.
   function actionFor(record: UnbiseoRecord) {
     if (answer?.client) return <button type="button" className="home-assistant-action" onClick={() => onOpenCall?.(record, { cancelOff: false })}>등록하기</button>
     if (periodNotice) {
@@ -34,6 +34,8 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
         </div>
       )
     }
+    // 휴무는 그 날짜 일지로 가서 휴무 단추와 같이 바꾼다.
+    if (answer?.dayOff) return <button type="button" className="home-assistant-action" onClick={() => onOpenCall?.(record, { cancelOff: false })}>{answer.dayOff.off ? '휴무로 하기' : '휴무 취소하기'}</button>
     if ((isFixed && !fixedOn) || (isCall && !callDetailOn)) {
       return (
         <div className="home-assistant-enable">

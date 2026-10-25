@@ -746,3 +746,67 @@ test('점검표: 저장하는 동안 계정이 바뀌면 결과도 알림도 붙
     container.remove()
   }
 })
+
+// 로드맵 24-K-2 — 휴무: "{날짜}을 휴무로 할게요." + [휴무로 하기] → 그 날짜 일지로 넘김, 이미 휴무·휴무 아님은 문장만, 연동 기사 기간 밖은 기간 안내.
+const offReply = (date, off) => { reply = async () => ({ data: { kind: 'dayOff', dayOff: { date, off } }, error: null }) }
+const offButton = (container) => [...container.querySelectorAll('.home-assistant-action')].find((button) => /휴무로 하기|휴무 취소하기/.test(button.textContent)) || null
+
+test('휴무: 문장과 [휴무로 하기] — 누르면 들은 날짜·휴무를 넘긴다, 취소 말이면 [휴무 취소하기]', async () => {
+  const today = todayWorkLogSelection(new Date()).dateKey
+  commitWorkData('u-assistant-dayoff', { '2026-10-03': { isOff: true } })
+  const opened = []
+  const view = await mount('u-assistant-dayoff', { ...CLOUD, userId: 'u-assistant-dayoff' }, { props: { onOpenAssistantCall: (record, options) => { opened.push({ record, options }) } } })
+  try {
+    offReply(today, true)
+    await view.type('오늘 휴무')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '오늘을 휴무로 할게요.')
+    assert.equal(offButton(view.container)?.textContent, '휴무로 하기')
+    await act(async () => { offButton(view.container).click() })
+    assert.deepEqual(opened, [{ record: { date: today, off: true }, options: { cancelOff: false } }])
+    offReply('2026-10-03', false)
+    await view.type('10월 3일 휴무 취소')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 3일 휴무를 취소할게요.')
+    assert.equal(offButton(view.container)?.textContent, '휴무 취소하기')
+  } finally { await view.cleanup() }
+})
+
+test('휴무: 이미 휴무·휴무 아님은 문장만, 버튼 없음', async () => {
+  commitWorkData('u-assistant-dayoff-same', { '2026-10-03': { isOff: true } })
+  const view = await mount('u-assistant-dayoff-same', { ...CLOUD, userId: 'u-assistant-dayoff-same' })
+  try {
+    offReply('2026-10-03', true)
+    await view.type('10월 3일 휴무')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 3일은 이미 휴무예요.')
+    assert.equal(offButton(view.container), null)
+    offReply('2026-10-04', false)
+    await view.type('10월 4일 휴무 취소')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 4일은 휴무가 아니에요.')
+    assert.equal(offButton(view.container), null)
+    assert.equal(view.container.querySelector('.home-assistant-action'), null)
+  } finally { await view.cleanup() }
+})
+
+test('휴무: 연동 기사 계약 기간 밖이면 이미 휴무여도 기간 안내, 버튼 없음 — 기간 안이면 [휴무로 하기]', async () => {
+  const OWNER = 'u-assistant-dayoff-driver'
+  const SESSION = { userId: OWNER, name: '김기사', accountType: 'employed_driver' }
+  commitDrivers(OWNER, [{ id: 'link-1', name: '김기사', phone: '', vehicleNumber: '34나5678', startDate: '2026-10-05', endDate: '2026-10-25', status: 'linked' }])
+  commitWorkData(OWNER, { '2026-10-01': { isOff: true } })
+  const view = await mount(OWNER, SESSION)
+  try {
+    offReply('2026-10-01', true)
+    await view.type('10월 1일 휴무')
+    await view.send()
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 1일을 휴무로 할게요.')
+    const notes = [...view.container.querySelectorAll('.home-assistant-enable .home-assistant-note')].map((el) => el.textContent)
+    assert.deepEqual(notes, ['계약기간 전 날짜입니다.', '10월 5일부터 기록할 수 있습니다.'])
+    assert.equal(offButton(view.container), null)
+    offReply('2026-10-10', true)
+    await view.type('10월 10일 휴무')
+    await view.send()
+    assert.equal(offButton(view.container)?.textContent, '휴무로 하기')
+  } finally { await view.cleanup() }
+})

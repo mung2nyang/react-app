@@ -84,6 +84,27 @@ test('날씨 칸: 날짜·지역을 읽고, 칸이 없으면 알아듣지 못함
   assert.deepEqual(await requestUnbiseoParse({ text: '날씨', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
 })
 
+// 로드맵 24-K-2 — 휴무 칸 읽기: 날짜 모양이 틀리면 오늘(앞날 그대로), off가 참·거짓이 아니면 알아듣지 못함. 문장은 받침을 따른다.
+test('휴무 칸: 날짜·휴무를 읽고, 모양이 틀리면 알아듣지 못함 — 문장', async () => {
+  const ask = () => requestUnbiseoParse({ text: '휴무', today: '2026-10-22', clientNames: [] })
+  reply = async () => ({ data: { kind: 'dayOff', dayOff: { date: '2026-11-03', off: true } }, error: null })
+  assert.deepEqual(await ask(), { kind: 'dayOff', dayOff: { date: '2026-11-03', off: true } }, '앞날 그대로')
+  reply = async () => ({ data: { kind: 'dayOff', dayOff: { date: '내일', off: false } }, error: null })
+  assert.deepEqual(await ask(), { kind: 'dayOff', dayOff: { date: '2026-10-22', off: false } })
+  /** @type {Array<JsonValue>} */
+  const odd = [{ kind: 'dayOff' }, { kind: 'dayOff', dayOff: [] }, { kind: 'dayOff', dayOff: { date: '2026-10-22' } }, { kind: 'dayOff', dayOff: { date: '2026-10-22', off: 'true' } }]
+  for (const data of odd) {
+    reply = async () => ({ data, error: null })
+    assert.deepEqual(await ask(), { kind: 'error', message: NOT_UNDERSTOOD }, JSON.stringify(data))
+  }
+  const { describeDayOff } = await import('./unbiseoSentence.ts')
+  assert.equal(describeDayOff({ date: '2026-10-22', off: true }, '2026-10-22', false), '오늘을 휴무로 할게요.')
+  assert.equal(describeDayOff({ date: '2026-10-26', off: true }, '2026-10-22', false), '10월 26일을 휴무로 할게요.')
+  assert.equal(describeDayOff({ date: '2026-10-22', off: false }, '2026-10-22', false), '오늘 휴무를 취소할게요.')
+  assert.equal(describeDayOff({ date: '2026-10-22', off: true }, '2026-10-22', true), '오늘은 이미 휴무예요.')
+  assert.equal(describeDayOff({ date: '2026-10-03', off: false }, '2026-10-22', true), '10월 3일은 휴무가 아니에요.')
+})
+
 // 로드맵 24-J-2 — 점검표 칸 읽기: 날짜 모양이 틀리면 오늘, 칸이 없으면 알아듣지 못함.
 test('점검표 칸: 날짜를 읽고, 칸이 없으면 알아듣지 못함', async () => {
   const ask = () => requestUnbiseoParse({ text: '점검표 모두 양호', today: '2026-10-22', clientNames: [] })

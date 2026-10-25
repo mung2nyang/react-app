@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { isCloudSession } from '../../../data/cloud/cloudSession.ts'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
-import { useOwnerClients, useOwnerDrivers, useOwnerSettings, useOwnerWorkData } from '../../../data/store/ownerDataHooks.ts'
+import { readOwnerDrivers, readOwnerWorkData, useOwnerClients, useOwnerDrivers, useOwnerSettings, useOwnerWorkData } from '../../../data/store/ownerDataHooks.ts'
 import { savePracticeSettings } from '../../../data/sync/settingsSave.ts'
 import { resolveLogSettings } from '../../../domain/carSettingsScope.ts'
 import { todayWorkLogSelection } from '../../../domain/calendar.ts'
@@ -11,11 +11,11 @@ import { assignmentPeriodNotice } from '../../../domain/drivers.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { requestUnbiseoParse, routeNamesForAi } from '../api/unbiseoParse.ts'
-import type { UnbiseoCall, UnbiseoClient, UnbiseoExpense, UnbiseoFixed } from '../api/unbiseoParse.ts'
+import type { UnbiseoCall, UnbiseoClient, UnbiseoDayOff, UnbiseoExpense, UnbiseoFixed } from '../api/unbiseoParse.ts'
 import type { UnbiseoSms } from '../api/unbiseoSms.ts'
 import { matchChoice } from '../api/unbiseoChoice.ts'
 import type { UnbiseoStep } from '../api/unbiseoChoice.ts'
-import { INSPECTION_WAIT, WEATHER_WAIT, describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
+import { INSPECTION_WAIT, WEATHER_WAIT, describeDayOff, describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
 import { checkInspection, saveAllGood, savedSentence } from '../api/unbiseoInspection.ts'
 import type { UnbiseoInspectionSave } from '../api/unbiseoInspection.ts'
 import { requestWeatherSentence } from '../api/unbiseoWeather.ts'
@@ -24,10 +24,17 @@ import { describeQuestion } from '../api/unbiseoQuestion.ts'
 import useSpeechInput from './useSpeechInput.ts'
 import useSpeechOutput from './useSpeechOutput.ts'
 
-export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null, client: UnbiseoClient | null, sms: UnbiseoSms | null, inspection: UnbiseoInspectionSave | null }
+export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null, client: UnbiseoClient | null, sms: UnbiseoSms | null, inspection: UnbiseoInspectionSave | null, dayOff: UnbiseoDayOff | null }
 
 function waiting(said: string, sentence: string): UnbiseoAnswer {
-  return { said, sentence, call: null, expense: null, fixed: null, client: null, sms: null, inspection: null }
+  return { said, sentence, call: null, expense: null, fixed: null, client: null, sms: null, inspection: null, dayOff: null }
+}
+
+/** 휴무를 지금 그 상태로 바꿀 수 없는지 — 연동 기사 계약 기간 밖이면 아님(카드가 기간 안내), 이미 그 상태면 참. 값은 묻는 그 순간 것. */
+function dayOffAlready(owner: string, dayOff: UnbiseoDayOff, isDriver: boolean): boolean {
+  const link = isDriver ? readOwnerDrivers(owner).find((driver) => driver.status === 'linked') : null
+  if (isDriver && assignmentPeriodNotice(dayOff.date, link?.startDate, link?.endDate)) return false
+  return isOffDay(readOwnerWorkData(owner)[dayOff.date]) === dayOff.off
 }
 
 export default function useUnbiseoAssistant() {
@@ -110,8 +117,10 @@ export default function useUnbiseoAssistant() {
     // 이미 있는 이름이면 등록 버튼 없이 알린다.
     const heardClient = result.kind === 'client' ? result.client : null
     const existing = !!heardClient && clients.some((client) => (client.companyName || '').trim() === heardClient.name)
+    // 휴무는 이미 그 상태면 버튼 없이 알린다.
+    const sameDayOff = result.kind === 'dayOff' && dayOffAlready(owner, result.dayOff, isDriver)
     // 질문 숫자는 매출·미수금 화면과 같은 함수로, 받은 그 순간 값에서.
-    const sentence = weatherSentence || checked?.sentence || (existing && heardClient ? describeExistingClient(heardClient.name) : describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver))))
+    const sentence = weatherSentence || checked?.sentence || (sameDayOff && result.kind === 'dayOff' ? describeDayOff(result.dayOff, today, true) : existing && heardClient ? describeExistingClient(heardClient.name) : describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver))))
     setAnswer({
       said: trimmed,
       sentence,
@@ -121,6 +130,7 @@ export default function useUnbiseoAssistant() {
       client: existing ? null : heardClient,
       sms: result.kind === 'sms' ? result.sms : null,
       inspection: checked?.save ?? null,
+      dayOff: result.kind === 'dayOff' && !sameDayOff ? result.dayOff : null,
     })
     if (byVoice) voice.speak(sentence)
   }
@@ -154,7 +164,7 @@ export default function useUnbiseoAssistant() {
   }
 
   // [기록하기] 전에 일지와 같은 기준으로 계약 기간·휴무를 본다.
-  const callDate = answer?.call?.date ?? answer?.expense?.date ?? answer?.fixed?.date
+  const callDate = answer?.call?.date ?? answer?.expense?.date ?? answer?.fixed?.date ?? answer?.dayOff?.date
   const periodNotice = callDate && session?.accountType === 'employed_driver' ? assignmentPeriodNotice(callDate, myLink?.startDate, myLink?.endDate) : null
   const dayOff = !!callDate && isOffDay(workData[callDate])
 

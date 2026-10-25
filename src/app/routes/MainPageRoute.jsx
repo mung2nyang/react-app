@@ -10,7 +10,7 @@ import { parseDateKeySelection } from '../../domain/calendar.ts'
 import { useOwnerCars, useOwnerClients, useOwnerSettings } from '../../data/store/ownerDataHooks.ts'
 import { confirmLeaveIfUnsafe } from '../../data/sync/durableWriteGuard.ts'
 import { resolveWorkLogCloseTarget } from './workLogNavigation.js'
-import { readAssistantCall, readAssistantExpense, readAssistantFixed } from './assistantCallState.js'
+import { readAssistantCall, readAssistantDayOff, readAssistantExpense, readAssistantFixed } from './assistantCallState.js'
 import { useSession } from '../../data/cloud/sessionContext.ts'
 
 /** @typedef {import('../../data/sync/syncTypes.ts').AppSession} AppSession */
@@ -46,9 +46,10 @@ export default function MainPageRoute({
   const assistantCall = readAssistantCall(location.state)
   const assistantExpense = readAssistantExpense(location.state)
   const assistantFixed = readAssistantFixed(location.state)
+  const assistantDayOff = readAssistantDayOff(location.state)
 
   useEffect(() => {
-    if (!readAssistantCall(location.state) && !readAssistantExpense(location.state) && !readAssistantFixed(location.state)) return
+    if (!readAssistantCall(location.state) && !readAssistantExpense(location.state) && !readAssistantFixed(location.state) && !readAssistantDayOff(location.state)) return
     navigate(`${location.pathname}${location.search}`, { replace: true, state: { from: location.state?.from } })
   }, [location, navigate])
 
@@ -86,6 +87,7 @@ export default function MainPageRoute({
         assistantCall={assistantCall}
         assistantExpense={assistantExpense}
         assistantFixed={assistantFixed}
+        assistantDayOff={assistantDayOff}
         assistantCallKey={location.key}
       />
     )
