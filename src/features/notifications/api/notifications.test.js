@@ -98,7 +98,7 @@ describe('notifications — 오늘 운행일지 알림 (시간 게이트·미입
     assert.ok(todayNotif, '18시 이후 미기록이면 알림이 있어야 한다')
     assert.equal(todayNotif.id, `today:${todayKey()}`)
     assert.equal(todayNotif.page, 'home')
-    assert.equal(todayNotif.title, '오늘 운행일지가 비어 있습니다')
+    assert.equal(todayNotif.title, '오늘 작성한 운행일지가 없습니다')
   })
 
   test('18시 이후: 레코드가 빈 객체({})면 여전히 알림이 있다', () => {

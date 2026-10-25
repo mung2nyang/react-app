@@ -26,14 +26,14 @@ export default function UnbiseoDock() {
     const place = { '--dock-lift': `${position.lift}px` } as CSSProperties
     const moving = offset ? { transform: `translate(${offset[0]}px, ${offset[1]}px)` } : undefined
     return (
-      <section className={`unbiseo-dock${position.side === 'left' ? ' left' : ''}`} style={place} aria-label="Ai 운비서">
+      <section className={`unbiseo-dock${position.side === 'left' ? ' left' : ''}`} style={place} aria-label="AI 운비서">
         <button
           {...bind()}
           ref={fabRef}
           type="button"
           className="unbiseo-dock-fab"
           style={moving}
-          aria-label="Ai 운비서 열기"
+          aria-label="AI 운비서 열기"
           aria-expanded={false}
           onClick={() => { if (!justDragged()) openAndListen() }}
         >
@@ -44,13 +44,13 @@ export default function UnbiseoDock() {
   }
 
   return (
-    <section className="unbiseo-dock open" aria-label="Ai 운비서">
+    <section className="unbiseo-dock open" aria-label="AI 운비서">
       <div className="unbiseo-dock-card">
         <div className="home-assistant-head unbiseo-dock-head">
           <span className="home-assistant-avatar">
             <img src={AVATAR} alt="" width="36" height="29" />
           </span>
-          <strong className="home-assistant-name unbiseo-dock-name">Ai 운비서</strong>
+          <strong className="home-assistant-name unbiseo-dock-name">AI 운비서</strong>
           {speech.supported && (
             <button
               type="button"

@@ -157,7 +157,7 @@ describe('OwnerMonthlyCards variant=driverSelf', () => {
       assert.ok(text.includes('원천징수 3.3%-1,980원'))
       assert.equal(text.includes('산재보험(기사 부담)'), false)
       assert.ok(text.includes('차량 운송 수입'))
-      assert.ok(text.includes('운송 수입 합계(정산 전)'))
+      assert.ok(text.includes('정산 전 운송 수입 합계'))
     } finally {
       root.unmount()
       container.remove()

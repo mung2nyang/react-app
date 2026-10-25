@@ -167,7 +167,7 @@ test('받아쓰기 되는 브라우저: 줄의 마이크 하나 — 접힌 채 �
     assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 21일 주유, 80,000원으로 기록할게요.')
     await act(async () => { view.container.querySelector('.home-assistant-mic-btn').click() })
     await act(async () => { last.onerror({ error: 'not-allowed' }); last.onend() })
-    assert.equal(view.container.querySelector('.home-assistant-note')?.textContent, '마이크 권한을 켜 주세요. 글로 써도 됩니다.')
+    assert.equal(view.container.querySelector('.home-assistant-note')?.textContent, '마이크 사용을 허용해 주세요. 음성 대신 직접 입력해도 됩니다.')
     assert.equal(parseCalls().length, 1, '받아쓴 말이 없으면 안 보냄')
   } finally {
     await view.cleanup()
@@ -215,7 +215,7 @@ test('콜 상세 꺼짐: "켤까요?" + [켜기] → 앱 설정의 콜 상세가
     await view.type('어제 수원 화성 15만')
     await view.send()
     assert.equal(actionButton(view.container, '기록하기'), undefined)
-    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '콜 상세가 꺼져 있어요. 켤까요?')
+    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '운행 세부 입력 기능이 꺼져 있어요. 켤까요?')
     await act(async () => { actionButton(view.container, '켜기').click() })
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
     assert.equal(readOwnerSettings('u-assistant-off').callDetail, true)
@@ -359,10 +359,10 @@ test('질문: 내가 한 말 + 매출 화면과 같은 숫자의 답 문장, 버
     assert.equal(result(), `${Number(thisMonth.slice(5))}월 매출은 200,000원입니다.`)
     reply = ask({ type: 'revenue', period: { unit: 'unsupported' } })
     await view.send()
-    assert.equal(result(), '달이나 연으로 물어봐 주세요. 예: 이번 달 매출 얼마야')
+    assert.equal(result(), '월별 또는 연도별로 물어봐 주세요. 예: 이번 달 매출은 얼마야?')
     reply = ask({ type: 'other', period: { unit: 'month', value: thisMonth } })
     await view.send()
-    assert.equal(result(), '아직 답할 수 없는 질문이에요. 매출·순이익·지출·미수금·운행 횟수를 물어봐 주세요.')
+    assert.equal(result(), '아직 답변할 수 없는 질문이에요. 매출, 순이익, 지출, 미수금 또는 운행 횟수를 물어봐 주세요.')
     assert.equal(calls.every((call) => !JSON.stringify(call.body).includes('200,000') && !JSON.stringify(call.body).includes('200000')), true, '서버로 숫자가 가지 않음')
   } finally { await view.cleanup() }
 })
@@ -482,7 +482,7 @@ test('고정 노선 꺼짐: "켤까요?" + [켜기] → 앱 설정의 고정 노
     await view.send()
     assert.equal('routeNames' in calls[0].body, false, '고정 노선이 꺼졌으면 노선 이름 안 보냄')
     assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '10월 21일 고정 노선 3회로 기록할게요.')
-    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '고정 노선이 꺼져 있어요. 켤까요?')
+    assert.equal(view.container.querySelector('.home-assistant-enable .home-assistant-note')?.textContent, '고정 노선 기능이 꺼져 있어요. 켤까요?')
     await act(async () => { actionButton(view.container, '켜기').click() })
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
     assert.equal(readOwnerSettings(owner).fixedOn, true)
@@ -503,7 +503,7 @@ test('거래처 등록: 문장 아래 [등록하기] — 누르면 들은 거래
   try {
     await view.type('거래처 등록 한진 김철수 010-1234-5678 익월 말일 수수료 5%')
     await view.send()
-    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '한진을 거래처로 등록할게요. (담당자 김철수, 010-1234-5678, 익월 말일 정산, 수수료 5%)')
+    assert.equal(view.container.querySelector('.home-assistant-result')?.textContent, '한진을 거래처로 등록할게요. (담당자 김철수, 010-1234-5678, 다음 달 말일 정산, 수수료 5%)')
     assert.equal(actionButton(view.container, '기록하기'), undefined)
     await act(async () => { actionButton(view.container, '등록하기').click() })
     assert.deepEqual(opened, [{ record: heard, options: { cancelOff: false } }])
@@ -532,7 +532,7 @@ function weatherReplies() {
   return { release: async () => { await act(async () => { release(); await new Promise((resolve) => setTimeout(resolve, 0)) }) } }
 }
 const restoreInvoke = () => { supabase.functions = { invoke: async (name, options) => { calls.push({ name, body: options.body }); return reply() } } }
-const SAID = '오늘 평택 날씨는 흐리고 비, 18~23도, 비 올 확률 60%예요.'
+const SAID = '오늘 평택 날씨는 흐리고 비, 최저 18도, 최고 23도, 비 올 확률 60%예요.'
 
 test('날씨: 기다리는 동안 문구·입력 잠김, 받아 온 뒤 날씨 문장, 글로 보낸 답은 읽지 않음', async () => {
   const server = weatherReplies()

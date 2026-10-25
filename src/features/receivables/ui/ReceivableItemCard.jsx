@@ -61,7 +61,7 @@ export default function ReceivableItemCard({
 
   const route = (item.loadLoc || item.unloadLoc)
     ? <>{item.loadLoc || '상차지 없음'}<span>→</span>{item.unloadLoc || '하차지 없음'}</>
-    : '운행 구간 미등록'
+    : '운행 구간이 등록되지 않았습니다'
 
   return (
     <article className="receivable-detail-item">
@@ -74,12 +74,12 @@ export default function ReceivableItemCard({
       <div className="receivable-detail-due">
         {item.paymentDueDate
           ? <><span>입금 예정 {item.paymentDueDate.replace(/-/g, '.')}</span>{dday && <b>{dday}</b>}</>
-          : <span>입금 예정일 미등록</span>}
+          : <span>입금 예정일이 등록되지 않았습니다</span>}
       </div>
       {item.remarks && <p className="receivable-detail-remarks">{item.remarks}</p>}
       <div className={`receivable-payment-status ${isPartial ? 'partial' : 'unpaid'}`}>
         {isPartial
-          ? `${formatWon(item.paidAmount)} 입금, ${formatWon(item.remainingAmount)} 남음`
+          ? `${formatWon(item.paidAmount)} 입금 / ${formatWon(item.remainingAmount)} 미수`
           : '미수'}
         <span className="receivable-original-fare"> (전체 {formatWon(item.fare)})</span>
       </div>

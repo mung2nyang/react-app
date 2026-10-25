@@ -46,28 +46,28 @@ test('답 문장 — 차주: 매출·순이익·지출(종류별)·운행 횟수
 })
 
 test('답 문장 — 연동 기사는 기사 매출 화면 이름(운송 수입·정산액)', () => {
-  assert.equal(describeQuestion(q({}), TODAY, true, numbers({ amount: 450000 })), '10월 운송 수입(정산 전)은 450,000원입니다.')
+  assert.equal(describeQuestion(q({}), TODAY, true, numbers({ amount: 450000 })), '10월 정산 전 운송 수입은 450,000원입니다.')
   assert.equal(describeQuestion(q({ type: 'netProfit' }), TODAY, true, numbers({ amount: 67078 })), '10월 정산액은 67,078원입니다.')
   assert.equal(describeQuestion(q({ type: 'trips' }), TODAY, true, numbers({ count: 2 })), '10월 운행은 2회입니다.')
 })
 
 test('답 문장 — 미수금: 전체·거래처·달·0원', () => {
   const unpaid = q({ type: 'unpaid', period: { unit: 'all' } })
-  assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 300000, count: 2 })), '남은 미수금은 300,000원입니다(2건).')
-  assert.equal(describeQuestion({ ...unpaid, client: '한진' }, TODAY, false, numbers({ amount: 300000, count: 2 })), '한진 남은 미수금은 300,000원입니다(2건).')
-  assert.equal(describeQuestion({ ...unpaid, period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1 })), '10월 운행분 남은 미수금은 100,000원입니다(1건).')
-  assert.equal(describeQuestion({ ...unpaid, client: '한진', period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1 })), '한진 10월 운행분 남은 미수금은 100,000원입니다(1건).')
+  assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 300000, count: 2 })), '남은 미수금은 300,000원입니다. 2건입니다.')
+  assert.equal(describeQuestion({ ...unpaid, client: '한진' }, TODAY, false, numbers({ amount: 300000, count: 2 })), '한진 남은 미수금은 300,000원입니다. 2건입니다.')
+  assert.equal(describeQuestion({ ...unpaid, period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1 })), '10월 운행분 남은 미수금은 100,000원입니다. 1건입니다.')
+  assert.equal(describeQuestion({ ...unpaid, client: '한진', period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1 })), '한진 10월 운행분 남은 미수금은 100,000원입니다. 1건입니다.')
   // 기사 차량 운행분이 섞이면 범위를 밝힌다(매출 답은 차주 탭 = 메인만).
-  assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 3309258, count: 14, withSub: true })), '남은 미수금은 3,309,258원입니다(기사 차량 포함, 14건).')
-  assert.equal(describeQuestion({ ...unpaid, client: '한진', period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1, withSub: true })), '한진 10월 운행분 남은 미수금은 100,000원입니다(기사 차량 포함, 1건).')
+  assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 3309258, count: 14, withSub: true })), '남은 미수금은 3,309,258원입니다. 기사 차량을 포함해 14건입니다.')
+  assert.equal(describeQuestion({ ...unpaid, client: '한진', period: OCT }, TODAY, false, numbers({ amount: 100000, count: 1, withSub: true })), '한진 10월 운행분 남은 미수금은 100,000원입니다. 기사 차량을 포함해 1건입니다.')
   assert.equal(describeQuestion(unpaid, TODAY, false, numbers({ amount: 0, count: 0, withSub: false })), '남은 미수금이 없습니다.')
   assert.equal(describeQuestion(unpaid, TODAY, false, numbers()), '남은 미수금이 없습니다.')
   assert.equal(describeQuestion({ ...unpaid, client: '한진' }, TODAY, false, numbers()), '한진 남은 미수금이 없습니다.')
 })
 
 test('답 문장 — 거래처 매출: 공급가액·부가세 포함, 운행이 없으면 없음', () => {
-  assert.equal(describeQuestion(q({ client: '한진' }), TODAY, false, numbers({ supply: 400000, amount: 440000, count: 3 })), '한진 10월 매출은 공급가액 400,000원, 부가세 포함 440,000원입니다.')
-  assert.equal(describeQuestion(q({ client: '한진', period: { unit: 'year', value: '2026' } }), TODAY, false, numbers({ supply: 1000, amount: 1100, count: 1 })), '한진 2026년 매출은 공급가액 1,000원, 부가세 포함 1,100원입니다.')
+  assert.equal(describeQuestion(q({ client: '한진' }), TODAY, false, numbers({ supply: 400000, amount: 440000, count: 3 })), '한진의 10월 매출은 공급가액 기준 400,000원이며, 부가가치세를 포함하면 440,000원입니다.')
+  assert.equal(describeQuestion(q({ client: '한진', period: { unit: 'year', value: '2026' } }), TODAY, false, numbers({ supply: 1000, amount: 1100, count: 1 })), '한진의 2026년 매출은 공급가액 기준 1,000원이며, 부가가치세를 포함하면 1,100원입니다.')
   assert.equal(describeQuestion(q({ client: '롯데' }), TODAY, false, numbers()), '롯데 10월 매출이 없습니다.')
 })
 
@@ -82,8 +82,8 @@ test('숫자 없이 답하는 경우는 숫자를 내지 않는다: 그 밖·짧
     assert.equal(describeQuestion(q({ type, client: '한진' }), TODAY, false, counted), CLIENT_ONLY_SALES, type)
   }
   assert.equal(asked, 0)
-  assert.equal(ASK_BY_MONTH, '달이나 연으로 물어봐 주세요. 예: 이번 달 매출 얼마야')
-  assert.equal(CANNOT_ANSWER, '아직 답할 수 없는 질문이에요. 매출·순이익·지출·미수금·운행 횟수를 물어봐 주세요.')
+  assert.equal(ASK_BY_MONTH, '월별 또는 연도별로 물어봐 주세요. 예: 이번 달 매출은 얼마야?')
+  assert.equal(CANNOT_ANSWER, '아직 답변할 수 없는 질문이에요. 매출, 순이익, 지출, 미수금 또는 운행 횟수를 물어봐 주세요.')
   assert.equal(CLIENT_ONLY_SALES, '거래처별로는 매출과 미수금만 답할 수 있어요.')
 })
 
@@ -103,7 +103,7 @@ test('하루 답 문장: 운송료·운행·지출·미수금, 0원이면 운송
   assert.equal(describeQuestion(q({ period: day('2026-10-22') }), TODAY, false, numbers()), '10월 22일 운송료가 없습니다.')
   assert.equal(describeQuestion(q({ type: 'trips', period: day('2026-10-22') }), TODAY, false, numbers({ count: 3 })), '10월 22일 운행은 3회입니다.')
   assert.equal(describeQuestion(q({ type: 'expense', expenseType: 'fuel', period: day('2026-10-15') }), TODAY, false, numbers({ amount: 80000 })), '10월 15일 주유비는 80,000원입니다.')
-  assert.equal(describeQuestion(q({ type: 'unpaid', period: day(TODAY) }), TODAY, false, numbers({ amount: 30000, count: 1 })), '오늘 운행분 남은 미수금은 30,000원입니다(1건).')
+  assert.equal(describeQuestion(q({ type: 'unpaid', period: day(TODAY) }), TODAY, false, numbers({ amount: 30000, count: 1 })), '오늘 운행분 남은 미수금은 30,000원입니다. 1건입니다.')
   assert.equal(describeQuestion(q({ type: 'trips', period: day('2025-09-03') }), TODAY, false, numbers({ count: 1 })), '2025년 9월 3일 운행은 1회입니다.')
 })
 
@@ -111,8 +111,8 @@ test('하루 순이익·거래처 매출은 숫자 없이 안내', () => {
   let asked = 0
   const counted = () => { asked += 1; return { amount: 1, count: 1, supply: 1 } }
   const period = /** @type {const} */ ({ unit: 'day', value: TODAY })
-  assert.equal(describeQuestion(q({ type: 'netProfit', period }), TODAY, false, counted), '순이익은 달이나 연으로 물어봐 주세요.')
-  assert.equal(describeQuestion(q({ type: 'netProfit', period }), TODAY, true, counted), '순이익은 달이나 연으로 물어봐 주세요.')
-  assert.equal(describeQuestion(q({ client: '한진', period }), TODAY, false, counted), '거래처별 매출은 달이나 연으로 물어봐 주세요.')
+  assert.equal(describeQuestion(q({ type: 'netProfit', period }), TODAY, false, counted), '순이익은 월별 또는 연도별로 물어봐 주세요.')
+  assert.equal(describeQuestion(q({ type: 'netProfit', period }), TODAY, true, counted), '순이익은 월별 또는 연도별로 물어봐 주세요.')
+  assert.equal(describeQuestion(q({ client: '한진', period }), TODAY, false, counted), '거래처별 매출은 월별 또는 연도별로 물어봐 주세요.')
   assert.equal(asked, 0)
 })

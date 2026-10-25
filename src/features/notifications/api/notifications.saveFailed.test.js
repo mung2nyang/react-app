@@ -18,11 +18,11 @@ test('실패 날짜마다 알림(메인·기사 차량), 맨 앞·날짜 오래�
   assert.deepEqual(items.slice(0, 2), [
     {
       id: 'saveFailed:34나5678:2026-10-09', kind: 'saveFailed', page: 'logs/34나5678/day/2026-10-09',
-      title: '10월 9일 운행일지(5678) 저장이 실패했습니다.', body: '일지를 확인한 후 저장이 안 된 내용이 있으면 다시 입력해 주세요.', dateLabel: '', noDismiss: true,
+      title: '10월 9일 운행일지(5678)를 저장하지 못했습니다.', body: '일지를 확인한 후 저장이 안 된 내용이 있으면 다시 입력해 주세요.', dateLabel: '', noDismiss: true,
     },
     {
       id: 'saveFailed:main:2026-10-22', kind: 'saveFailed', page: 'day/2026-10-22',
-      title: '10월 22일 운행일지 저장이 실패했습니다.', body: '일지를 확인한 후 저장이 안 된 내용이 있으면 다시 입력해 주세요.', dateLabel: '', noDismiss: true,
+      title: '10월 22일 운행일지를 저장하지 못했습니다.', body: '일지를 확인한 후 저장이 안 된 내용이 있으면 다시 입력해 주세요.', dateLabel: '', noDismiss: true,
     },
   ])
   // 저녁이면 "오늘 일지" 알림도 끼므로 순서 대신 포함만 본다.

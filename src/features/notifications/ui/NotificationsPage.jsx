@@ -32,7 +32,7 @@ export default function NotificationsPage({ onBack, onOpenMenu, onOpenPage }) {
   const adminRole = useIsAdmin()
   const kinds = [
     { kind: 'overdue', label: '연체 미수금' },
-    { kind: 'today', label: '오늘 운행일지 비어 있음', hint: '오후 6시 이후' },
+    { kind: 'today', label: '오늘 작성한 운행일지 없음', hint: '오후 6시 이후' },
     ...(!isGuest && !session?.linkedOwnerId ? [{ kind: 'driverInvite', label: '기사 초대 대기' }] : []),
     ...(isGuest ? [{ kind: 'backup', label: '백업 권장' }] : []),
     ...(!isGuest ? [{ kind: 'inquiryAnswer', label: '문의 답변 도착' }] : []),

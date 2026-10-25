@@ -8,11 +8,11 @@ export type UnbiseoQuestion = { type: QuestionType, period: QuestionPeriod, clie
 export type QuestionNumbers = { amount: number, count: number, supply: number, withSub?: boolean }
 
 const TYPES: Array<QuestionType> = ['revenue', 'netProfit', 'expense', 'unpaid', 'trips', 'other']
-export const ASK_BY_MONTH = '달이나 연으로 물어봐 주세요. 예: 이번 달 매출 얼마야'
-export const CANNOT_ANSWER = '아직 답할 수 없는 질문이에요. 매출·순이익·지출·미수금·운행 횟수를 물어봐 주세요.'
+export const ASK_BY_MONTH = '월별 또는 연도별로 물어봐 주세요. 예: 이번 달 매출은 얼마야?'
+export const CANNOT_ANSWER = '아직 답변할 수 없는 질문이에요. 매출, 순이익, 지출, 미수금 또는 운행 횟수를 물어봐 주세요.'
 export const CLIENT_ONLY_SALES = '거래처별로는 매출과 미수금만 답할 수 있어요.'
-export const NET_PROFIT_BY_MONTH = '순이익은 달이나 연으로 물어봐 주세요.'
-export const CLIENT_SALES_BY_MONTH = '거래처별 매출은 달이나 연으로 물어봐 주세요.'
+export const NET_PROFIT_BY_MONTH = '순이익은 월별 또는 연도별로 물어봐 주세요.'
+export const CLIENT_SALES_BY_MONTH = '거래처별 매출은 월별 또는 연도별로 물어봐 주세요.'
 
 // 매출 화면(revenueFormat.js won)과 같은 표시 — 순이익·정산액은 음수도 그대로.
 function formatWon(amount: number): string {
@@ -85,15 +85,15 @@ export function describeQuestion(question: UnbiseoQuestion, today: string, isDri
     const prefix = [question.client, label && `${label} 운행분`].filter(Boolean).join(' ')
     const head = prefix ? `${prefix} ` : ''
     // 매출 답(차주 탭 = 메인 차량만)과 범위가 달라 기사 차량분이 있으면 밝힌다.
-    return amount > 0 ? `${head}남은 미수금은 ${formatWon(amount)}입니다(${withSub ? '기사 차량 포함, ' : ''}${count}건).` : `${head}남은 미수금이 없습니다.`
+    return amount > 0 ? `${head}남은 미수금은 ${formatWon(amount)}입니다. ${withSub ? '기사 차량을 포함해 ' : ''}${count}건입니다.` : `${head}남은 미수금이 없습니다.`
   }
   if (question.type === 'revenue' && question.client) {
     if (count === 0) return `${question.client} ${label} 매출이 없습니다.`
-    return `${question.client} ${label} 매출은 공급가액 ${formatWon(supply)}, 부가세 포함 ${formatWon(amount)}입니다.`
+    return `${question.client}의 ${label} 매출은 공급가액 기준 ${formatWon(supply)}이며, 부가가치세를 포함하면 ${formatWon(amount)}입니다.`
   }
   if (question.type === 'trips') return `${label} 운행은 ${count}회입니다.`
   if (question.type === 'expense') return `${label} ${EXPENSE_TOPIC[question.expenseType]} ${formatWon(amount)}입니다.`
   if (question.type === 'revenue' && question.period.unit === 'day') return amount > 0 ? `${label} 운송료는 ${formatWon(amount)}입니다.` : `${label} 운송료가 없습니다.`
   if (question.type === 'netProfit') return `${label} ${isDriver ? '정산액은' : '순이익은'} ${formatWon(amount)}입니다.`
-  return `${label} ${isDriver ? '운송 수입(정산 전)은' : '매출은'} ${formatWon(amount)}입니다.`
+  return `${label} ${isDriver ? '정산 전 운송 수입은' : '매출은'} ${formatWon(amount)}입니다.`
 }

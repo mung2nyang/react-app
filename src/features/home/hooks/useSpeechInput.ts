@@ -15,9 +15,9 @@ type Recognizer = {
 }
 type RecognizerCtor = new () => Recognizer
 
-export const MIC_DENIED = '마이크 권한을 켜 주세요. 글로 써도 됩니다.'
-export const NO_SPEECH = '말소리가 들리지 않았어요. 다시 눌러 말해 주세요.'
-export const SPEECH_FAILED = '받아쓰기를 하지 못했어요. 글로 써 주세요.'
+export const MIC_DENIED = '마이크 사용을 허용해 주세요. 음성 대신 직접 입력해도 됩니다.'
+export const NO_SPEECH = '음성을 인식하지 못했어요. 다시 눌러 말씀해 주세요.'
+export const SPEECH_FAILED = '음성을 글자로 바꾸지 못했어요. 직접 입력해 주세요.'
 
 function recognizerCtor(): RecognizerCtor | null {
   if (typeof window === 'undefined') return null

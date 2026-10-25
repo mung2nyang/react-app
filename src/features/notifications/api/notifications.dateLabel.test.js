@@ -14,7 +14,7 @@ describe('notifications — 날짜 줄·끈 종류', () => {
   beforeEach(() => { localStorage.clear() })
   afterEach(() => { mock.timers.reset() })
 
-  test('오늘 운행일지 비어 있음 = 오늘 MM.DD', () => {
+  test('오늘 작성한 운행일지 없음 = 오늘 MM.DD', () => {
     mock.timers.enable({ apis: ['Date'], now: new Date(2026, 9, 10, 18, 30, 0).getTime() })
     const item = collectNotifications('label-today').find((n) => n.kind === 'today')
     assert.equal(item?.dateLabel, '10.10')

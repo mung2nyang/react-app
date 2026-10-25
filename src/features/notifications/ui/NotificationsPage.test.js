@@ -95,7 +95,7 @@ test('목록: 연체 알림에 날짜 줄(운행·입금 예정), 누르면 미�
 
 test('알림이 없으면 "알림이 없습니다."', async () => {
   const ownerKey = 'np-empty'
-  // 오후 6시 이후엔 "오늘 운행일지 비어 있음"이 생기므로 그 종류는 꺼 두고 본다(시간에 따라 흔들리지 않게).
+  // 오후 6시 이후엔 "오늘 작성한 운행일지 없음"이 생기므로 그 종류는 꺼 두고 본다(시간에 따라 흔들리지 않게).
   commitSettings(ownerKey, normalizeSettings({ dailyInspectionOn: true, notifOff: ['today'] }))
   const view = await renderPage(ownerKey)
   try {
@@ -190,7 +190,7 @@ test('일상점검 의무화 안내: [바로 사용하기] = 스위치 켜짐 �
   const view = await renderPage(ownerKey, { showToast: (m) => toasts.push(m) })
   try {
     assert.equal(switchOf(view.container, 'inspectionRequired'), null, '법령 안내라 끄기 스위치가 없어야 한다')
-    const item = itemWith(view.container, '일상점검표가 의무화되었습니다')
+    const item = itemWith(view.container, '출발 전 일상점검표 작성이 의무화되었습니다')
     assert.ok(item, '의무화 알림이 있어야 한다')
     const labels = [...item.querySelectorAll('button')].map((el) => el.textContent?.trim())
     assert.ok(labels.includes('바로 사용하기'))
@@ -201,7 +201,7 @@ test('일상점검 의무화 안내: [바로 사용하기] = 스위치 켜짐 �
     await act(async () => { await Promise.resolve() })
     assert.equal(readOwnerSettings(ownerKey).dailyInspectionOn, true)
     assert.equal(collectNotifications(ownerKey).some((n) => n.id === DAILY_INSPECTION_NOTICE_ID), false)
-    assert.equal(itemWith(view.container, '일상점검표가 의무화되었습니다'), undefined)
+    assert.equal(itemWith(view.container, '출발 전 일상점검표 작성이 의무화되었습니다'), undefined)
     assert.deepEqual(toasts, ['일상점검표를 켰습니다.'])
   } finally {
     await view.cleanup()
@@ -215,7 +215,7 @@ test('일지 저장 실패 알림 — [닫기] 없음, 누르면 그 날짜 일�
   /** @type {string[]} */
   const opened = []
   const view = await renderPage(ownerKey, { onOpenPage: (page) => opened.push(page) })
-  const title = '10월 22일 운행일지 저장이 실패했습니다.'
+  const title = '10월 22일 운행일지를 저장하지 못했습니다.'
   try {
     assert.equal(itemWith(view.container, title), undefined)
     await act(async () => { addFailedDayLogDate(ownerKey, 'main', '2026-10-22') })

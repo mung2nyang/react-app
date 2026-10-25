@@ -185,7 +185,7 @@ test('결과 문장: 오늘이면 "오늘", 빈 칸은 빼고, 끝 글자 받침
   /** @type {import('./unbiseoQuestion.ts').UnbiseoQuestion} */
   const question = { type: 'trips', period: { unit: 'month', value: '2026-10' }, client: '', expenseType: '' }
   assert.equal(describeResult({ kind: 'question', question }, today, (asked) => `답 ${asked.type}`), '답 trips', '질문 답은 숫자를 내는 쪽이 만든다')
-  assert.equal(describeResult({ kind: 'unknown' }, today, () => ''), '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.')
+  assert.equal(describeResult({ kind: 'unknown' }, today, () => ''), '운행 기록 요청으로 이해하지 못했어요. 다시 말씀해 주세요.')
   assert.equal(describeResult({ kind: 'error', message: TRY_LATER }, today, () => ''), TRY_LATER)
 })
 

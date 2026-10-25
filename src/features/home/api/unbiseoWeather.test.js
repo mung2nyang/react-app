@@ -51,8 +51,8 @@ test('지난 날·모레 뒤는 위치도 서버도 쓰지 않고 바로 문장'
   fakeLocation('ok')
   assert.equal(await requestWeatherSentence({ date: '2026-10-23', place: '' }, TODAY), WEATHER_PAST)
   assert.equal(await requestWeatherSentence({ date: '2026-10-27', place: '평택' }, TODAY), WEATHER_TOO_FAR)
-  assert.equal(WEATHER_PAST, '지난 날씨는 알려 드리지 않아요.')
-  assert.equal(WEATHER_TOO_FAR, '모레까지만 알려 드릴 수 있어요.')
+  assert.equal(WEATHER_PAST, '과거 날씨는 안내하지 않아요.')
+  assert.equal(WEATHER_TOO_FAR, '날씨는 모레까지 확인할 수 있어요.')
   assert.equal(weatherRangeSentence('2026-10-26', TODAY), null, '모레는 됨')
   assert.equal(weatherRangeSentence('2027-01-01', '2026-12-31'), null, '해 바뀜 내일')
   assert.deepEqual(calls, [])
@@ -62,7 +62,7 @@ test('지난 날·모레 뒤는 위치도 서버도 쓰지 않고 바로 문장'
 test('지역이 있으면 그 이름으로 — 위치를 묻지 않는다', async () => {
   fakeLocation('ok')
   reply = async () => ({ data: { kind: 'weather', weather: { ...DAY, date: '2026-10-25' } }, error: null })
-  assert.equal(await requestWeatherSentence({ date: '2026-10-25', place: '평택' }, TODAY), '내일 평택 날씨는 흐리고 비, 18~23도, 비 올 확률 60%예요.')
+  assert.equal(await requestWeatherSentence({ date: '2026-10-25', place: '평택' }, TODAY), '내일 평택 날씨는 흐리고 비, 최저 18도, 최고 23도, 비 올 확률 60%예요.')
   assert.deepEqual(calls, [{ name: 'unbiseo-weather', body: { date: '2026-10-25', place: '평택' } }])
   assert.deepEqual(asked, [])
 })
@@ -70,7 +70,7 @@ test('지역이 있으면 그 이름으로 — 위치를 묻지 않는다', asyn
 test('지역이 없으면 휴대폰 위치 → 격자 번호만 보낸다(위도·경도 없음), 정확도 낮음·10초·10분 안 위치', async () => {
   fakeLocation('ok')
   reply = async () => ({ data: { kind: 'weather', weather: DAY }, error: null })
-  assert.equal(await requestWeatherSentence({ date: TODAY, place: '' }, TODAY), '오늘 지금 있는 곳 날씨는 흐리고 비, 18~23도, 비 올 확률 60%예요.')
+  assert.equal(await requestWeatherSentence({ date: TODAY, place: '' }, TODAY), '오늘 지금 있는 곳 날씨는 흐리고 비, 최저 18도, 최고 23도, 비 올 확률 60%예요.')
   assert.deepEqual(calls, [{ name: 'unbiseo-weather', body: { date: TODAY, nx: 62, ny: 114 } }])
   assert.doesNotMatch(JSON.stringify(calls), /36\.9|127\.1|lat|lon/)
   assert.deepEqual(asked, [{ enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }])
@@ -81,7 +81,7 @@ test('위치를 못 쓰면(거절·시간 넘김·지원 안 함) 서버를 부�
     fakeLocation(mode)
     assert.equal(await requestWeatherSentence({ date: TODAY, place: '' }, TODAY), NO_LOCATION, mode)
   }
-  assert.equal(NO_LOCATION, '위치를 허용하거나 지역을 말해 주세요.')
+  assert.equal(NO_LOCATION, '위치 정보 사용을 허용하거나 지역명을 말해 주세요.')
   assert.deepEqual(calls, [])
 })
 
@@ -89,8 +89,8 @@ test('서버 답: 찾지 못함·지난·범위 밖·로그인·실패', async (
   fakeLocation('ok')
   const ask = (/** @type {string} */ place) => requestWeatherSentence({ date: TODAY, place }, TODAY)
   reply = async () => ({ data: { kind: 'noPlace' }, error: null })
-  assert.equal(await ask('평택 송탄'), '평택 송탄은 찾지 못했어요. 시나 구 이름으로 말해 주세요.')
-  assert.equal(await ask('부산 강서구'), '부산 강서구는 찾지 못했어요. 시나 구 이름으로 말해 주세요.')
+  assert.equal(await ask('평택 송탄'), '평택 송탄 지역을 찾지 못했어요. 시, 군, 구 이름을 말해 주세요.')
+  assert.equal(await ask('부산 강서구'), '부산 강서구 지역을 찾지 못했어요. 시, 군, 구 이름을 말해 주세요.')
   assert.equal(await ask(''), TRY_LATER, '격자로 물었는데 찾지 못함은 실패로')
   reply = async () => ({ data: { kind: 'past' }, error: null })
   assert.equal(await ask('평택'), WEATHER_PAST, '서버 날짜가 하루 앞서도')
@@ -116,8 +116,8 @@ test('서버 답: 찾지 못함·지난·범위 밖·로그인·실패', async (
 
 test('문장 모양: 하늘만·비눈만·기온 한쪽·빠진 칸은 뺀다, 받침에 따라 이에요·예요', () => {
   const at = (/** @type {object} */ day, place = '평택', date = TODAY) => describeWeather({ sky: null, precip: null, min: null, max: null, pop: null, ...day }, { date, place }, TODAY)
-  assert.equal(at({ sky: 'clear', min: 3, max: 12, pop: 0 }), '오늘 평택 날씨는 맑음, 3~12도, 비 올 확률 0%예요.')
-  assert.equal(at({ sky: 'mostlyCloudy', precip: 'shower', min: -2, max: 5 }, '평택', '2026-10-26'), '모레 평택 날씨는 구름 많고 소나기, -2~5도예요.')
+  assert.equal(at({ sky: 'clear', min: 3, max: 12, pop: 0 }), '오늘 평택 날씨는 맑음, 최저 3도, 최고 12도, 비 올 확률 0%예요.')
+  assert.equal(at({ sky: 'mostlyCloudy', precip: 'shower', min: -2, max: 5 }, '평택', '2026-10-26'), '모레 평택 날씨는 구름 많고 소나기, 최저 -2도, 최고 5도예요.')
   assert.equal(at({ sky: 'clear', precip: 'snow' }), '오늘 평택 날씨는 맑고 눈이에요.')
   assert.equal(at({ sky: 'clear' }), '오늘 평택 날씨는 맑음이에요.')
   assert.equal(at({ precip: 'rainSnow', max: 4 }), '오늘 평택 날씨는 비나 눈, 최고 4도예요.')

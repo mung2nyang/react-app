@@ -88,6 +88,6 @@ export function describeResult(result: UnbiseoResult, today: string, answerQuest
   if (result.kind === 'weather') return WEATHER_WAIT
   if (result.kind === 'inspection') return INSPECTION_WAIT
   if (result.kind === 'dayOff') return describeDayOff(result.dayOff, today, false)
-  if (result.kind === 'unknown') return '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.'
+  if (result.kind === 'unknown') return '운행 기록 요청으로 이해하지 못했어요. 다시 말씀해 주세요.'
   return result.message
 }

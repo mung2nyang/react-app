@@ -60,7 +60,7 @@ export default function ReceivablesDetailPage({ isEmployedDriver = false }) {
           <strong>{formatWon(detailTotal)}</strong>
         </div>
         <div className="receivable-detail-meta">
-          {detailItems.length}건, {dueDates.length ? `입금 예정일 ${dueDates[0].replace(/-/g, '.')}` : '입금 예정일 미등록'}
+          {detailItems.length}건, {dueDates.length ? `입금 예정일 ${dueDates[0].replace(/-/g, '.')}` : '입금 예정일이 등록되지 않았습니다'}
         </div>
       </section>
 

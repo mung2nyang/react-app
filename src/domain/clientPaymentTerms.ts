@@ -2,12 +2,12 @@
 import type { ClientLike } from './clientTypes.ts'
 
 export const PAYMENT_TERMS = [
-  { value: 'same_day', label: '당일/수시 정산' },
-  { value: 'after_days', label: '운행 건별 정산 (N일 후)' },
-  { value: 'next_month_day', label: '익월 지정일 정산' },
-  { value: 'next_month_end', label: '익월 말일 정산' },
-  { value: 'second_month_day', label: '익익월 지정일 정산' },
-  { value: 'second_month_end', label: '익익월 말일 정산' },
+  { value: 'same_day', label: '당일 또는 수시 정산' },
+  { value: 'after_days', label: '운행일로부터 N일 후 정산' },
+  { value: 'next_month_day', label: '다음 달 지정일 정산' },
+  { value: 'next_month_end', label: '다음 달 말일 정산' },
+  { value: 'second_month_day', label: '다다음 달 지정일 정산' },
+  { value: 'second_month_end', label: '다다음 달 말일 정산' },
 ]
 
 export function needsPaymentTermValue(term?: string) {
@@ -15,12 +15,12 @@ export function needsPaymentTermValue(term?: string) {
 }
 
 export function getPaymentTermLabel(term?: string, value?: string | number) {
-  if (term === 'next_month_end') return '익월 말일 정산'
-  if (term === 'second_month_end') return '익익월 말일 정산'
-  if (term === 'next_month_day') return `익월 ${value || ''}일 정산`
-  if (term === 'second_month_day') return `익익월 ${value || ''}일 정산`
-  if (term === 'after_days') return `운행 건별 ${value || ''}일 후 정산`
-  return '당일/수시 정산'
+  if (term === 'next_month_end') return '다음 달 말일 정산'
+  if (term === 'second_month_end') return '다다음 달 말일 정산'
+  if (term === 'next_month_day') return `다음 달 ${value || ''}일 정산`
+  if (term === 'second_month_day') return `다다음 달 ${value || ''}일 정산`
+  if (term === 'after_days') return `운행일로부터 ${value || ''}일 후 정산`
+  return '당일 또는 수시 정산'
 }
 
 export function formatDateToYmd(date: Date) {

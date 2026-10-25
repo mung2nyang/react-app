@@ -31,8 +31,8 @@ export type UnbiseoResult =
   | { kind: 'error', message: string }
 
 export const LOGIN_NEEDED = '로그인이 필요합니다.'
-export const BAD_INPUT = '말이 너무 길거나 비었어요. 300자까지 다시 말해 주세요.'
-export const NOT_UNDERSTOOD = '알아듣지 못했습니다. 다시 말해 주세요.'
+export const BAD_INPUT = '입력 내용이 너무 길거나 비어 있어요. 300자 이내로 다시 입력해 주세요.'
+export const NOT_UNDERSTOOD = '내용을 이해하지 못했어요. 다시 말씀해 주세요.'
 export const TRY_LATER = '잠시 뒤 다시 시도해 주세요.'
 
 /** 서버가 돌려준 값 → 화면용. 모양이 틀리면 알아듣지 못함. */

@@ -242,7 +242,7 @@ test('할 일: 기사 차량이 있으면 미수금을 차량별 줄로(메인 �
   }
 })
 
-test('2단계 — 할 일: 일상점검 켜짐·서버에 오늘 점검표 없음이면 "오늘 일상점검 안 함" → 오늘 일지, 있으면 안 보임', async () => {
+test('2단계 — 할 일: 일상점검 켜짐·서버에 오늘 점검표 없음이면 "오늘 일상점검표 미작성" → 오늘 일지, 있으면 안 보임', async () => {
   const ownerKey = 'test-home-inspection'
   const { dateKey } = todayWorkLogSelection()
   commitCars(ownerKey, [{ id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' }])
@@ -253,7 +253,7 @@ test('2단계 — 할 일: 일상점검 켜짐·서버에 오늘 점검표 없�
   try {
     await act(async () => { await Promise.resolve() })
     assert.equal(inspectionFetches, 1, '서버에 한 번 물어봐야 한다')
-    assert.deepEqual(texts(view.container, '.home-todo-row'), ['오늘 일상점검 안 함 ›'])
+    assert.deepEqual(texts(view.container, '.home-todo-row'), ['오늘 일상점검표 미작성 ›'])
     await act(async () => {
       view.container.querySelector('.home-todo-row')?.dispatchEvent(new window.MouseEvent('click', { bubbles: true }))
     })
@@ -352,7 +352,7 @@ test('AI 비서 — 오늘 카드와 할 일 사이에 운비서 줄(그림·이
     assert.deepEqual(order, ['today', 'assistant', 'todo', 'month'])
     const bar = view.container.querySelector('.home-assistant')
     assert.ok(bar?.querySelector('img[src$="assistant_unbiseo.png"]'), '비서 얼굴 그림')
-    assert.equal(bar?.querySelector('.home-assistant-name')?.textContent, 'Ai 운비서')
+    assert.equal(bar?.querySelector('.home-assistant-name')?.textContent, 'AI 운비서')
     assert.equal(bar?.querySelector('.home-assistant-hint')?.textContent, '운비서에게 무엇이든 물어보세요')
     assert.equal(bar?.querySelector('.home-assistant-mic-btn'), null, '테스트 화면은 받아쓰기가 없어 마이크 버튼 없음(마이크는 HomeAssistantPanel.test.js)')
     assert.equal(bar?.tagName, 'SECTION')

@@ -39,7 +39,7 @@ export default function HomeAssistantPanel({ assistant, onOpenCall }: Props) {
     if ((isFixed && !fixedOn) || (isCall && !callDetailOn)) {
       return (
         <div className="home-assistant-enable">
-          <p className="home-assistant-note">{isFixed ? '고정 노선이 꺼져 있어요. 켤까요?' : '콜 상세가 꺼져 있어요. 켤까요?'}</p>
+          <p className="home-assistant-note">{isFixed ? '고정 노선 기능이 꺼져 있어요. 켤까요?' : '운행 세부 입력 기능이 꺼져 있어요. 켤까요?'}</p>
           <button type="button" className="home-assistant-action" disabled={enabling} onClick={() => void enableSetting(isFixed ? { fixedOn: true } : { callDetail: true })}>켜기</button>
         </div>
       )

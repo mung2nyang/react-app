@@ -45,7 +45,7 @@ export default function ReceivablesListPage({ isEmployedDriver = false, onBack, 
           className={`receivable-tab${tab === 'monthly' ? ' active' : ''}`}
           onClick={() => setTab('monthly')}
         >
-          월별 묶음 정산
+          월별 미수금 정산
         </button>
         <button
           type="button"
@@ -104,7 +104,7 @@ export default function ReceivablesListPage({ isEmployedDriver = false, onBack, 
                     onClick={() => actions.payGroup(group.client, group.monthKey, false)}
                     disabled={actions.saving}
                   >
-                    입금완료
+                    입금 완료
                   </button>
                 </div>
               </div>
@@ -115,7 +115,7 @@ export default function ReceivablesListPage({ isEmployedDriver = false, onBack, 
 
       {tab === 'due' && (
         <>
-          {dueItems.length === 0 && <div className="empty-state">D-3 이내 또는 연체된 미수금이 없습니다.</div>}
+          {dueItems.length === 0 && <div className="empty-state">입금 예정일이 3일 이내로 다가왔거나 이미 지난 미수금이 없습니다.</div>}
           {dueItems.map((/** @type {ReceivableItemLike} */ item) => (
             <ReceivableItemCard
               key={receivableItemKey(item)}

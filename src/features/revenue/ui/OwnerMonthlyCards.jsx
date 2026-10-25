@@ -83,7 +83,7 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
           </>
         )}
         <div className="summary-row" style={{ marginTop: 14 }}>
-          <span>당월 부가세(공급가액 기준 10%)</span>
+          <span>이번 달 부가가치세(공급가액의 10%)</span>
           <span className="summary-value">{won(detail.vatAmount)}</span>
         </div>
         <RevenueDetailRow
@@ -110,14 +110,14 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
         )}
         {!isDriverSelf && (
           <RevenueDetailRow
-            label="당월 유가보조금 환급"
+            label="이번 달 유가보조금 환급액"
             amount={detail.income.fuelSubsidy.total}
             items={detail.income.fuelSubsidy.items}
             showDate
           />
         )}
         <div className="summary-row total">
-          <span>{isDriverSelf ? '운송 수입 합계(정산 전)' : '합계'}</span>
+          <span>{isDriverSelf ? '정산 전 운송 수입 합계' : '합계'}</span>
           <span className="summary-value">{(Number(detail.income.total) || 0).toLocaleString('ko-KR')}원</span>
         </div>
       </div>

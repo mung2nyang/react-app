@@ -20,7 +20,7 @@ export default function HomeTodoCard({ inspectionMissing, unpaidRows, onOpenInsp
       <p className="home-card-label">할 일</p>
       {inspectionMissing && (
         <button type="button" className="home-todo-row" onClick={onOpenInspection}>
-          <span>오늘 일상점검 안 함</span><span className="home-row-arrow" aria-hidden="true">›</span>
+          <span>오늘 일상점검표 미작성</span><span className="home-row-arrow" aria-hidden="true">›</span>
         </button>
       )}
       {unpaidRows.map((row) => (

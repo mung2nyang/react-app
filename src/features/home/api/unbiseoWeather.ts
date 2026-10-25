@@ -12,9 +12,9 @@ type Sky = 'clear' | 'mostlyCloudy' | 'cloudy'
 type Precip = 'rain' | 'rainSnow' | 'snow' | 'shower'
 type DayWeather = { sky: Sky | null, precip: Precip | null, min: number | null, max: number | null, pop: number | null }
 
-export const WEATHER_PAST = '지난 날씨는 알려 드리지 않아요.'
-export const WEATHER_TOO_FAR = '모레까지만 알려 드릴 수 있어요.'
-export const NO_LOCATION = '위치를 허용하거나 지역을 말해 주세요.'
+export const WEATHER_PAST = '과거 날씨는 안내하지 않아요.'
+export const WEATHER_TOO_FAR = '날씨는 모레까지 확인할 수 있어요.'
+export const NO_LOCATION = '위치 정보 사용을 허용하거나 지역명을 말해 주세요.'
 const LOCATION_TIMEOUT_MS = 10000
 const LOCATION_MAX_AGE_MS = 600000
 const DAY_LABELS = ['오늘', '내일', '모레']
@@ -68,7 +68,7 @@ export function describeWeather(day: DayWeather, weather: UnbiseoWeather, today:
   const skyWord = day.sky ? SKY_WORDS[day.sky] : null
   const precip = day.precip ? PRECIP_WORDS[day.precip] : ''
   const look = precip ? [skyWord?.[1], precip].filter(Boolean).join(' ') : skyWord?.[0] ?? ''
-  const temps = day.min !== null && day.max !== null ? `${day.min}~${day.max}도` : day.min !== null ? `최저 ${day.min}도` : day.max !== null ? `최고 ${day.max}도` : ''
+  const temps = day.min !== null && day.max !== null ? `최저 ${day.min}도, 최고 ${day.max}도` : day.min !== null ? `최저 ${day.min}도` : day.max !== null ? `최고 ${day.max}도` : ''
   const parts = [look, temps, day.pop === null ? '' : `비 올 확률 ${day.pop}%`].filter(Boolean)
   const head = `${DAY_LABELS[daysFrom(today, weather.date)] ?? ''} ${where}`.trim()
   if (!parts.length) return TRY_LATER
@@ -81,7 +81,7 @@ function sentenceOf(data: JsonValue | undefined, weather: UnbiseoWeather, today:
   if (row?.kind === 'weather' && day) return describeWeather(readDay(day), weather, today)
   if (row?.kind === 'past') return WEATHER_PAST
   if (row?.kind === 'tooFar') return WEATHER_TOO_FAR
-  if (row?.kind === 'noPlace' && weather.place) return `${withParticle(weather.place, '은', '는')} 찾지 못했어요. 시나 구 이름으로 말해 주세요.`
+  if (row?.kind === 'noPlace' && weather.place) return `${weather.place} 지역을 찾지 못했어요. 시, 군, 구 이름을 말해 주세요.`
   return TRY_LATER
 }
 

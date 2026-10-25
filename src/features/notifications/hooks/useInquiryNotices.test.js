@@ -107,7 +107,7 @@ test('서버 오류면 문의 알림만 빠지고 다른 알림은 그대로', a
   handlers.support_inquiries = { select: () => ({ data: null, error: { message: 'x' } }) }
   const view = await mount(cloud('u-fail'))
   try {
-    assert.ok(view.titles().includes('일상점검표가 의무화되었습니다'))
+    assert.ok(view.titles().includes('출발 전 일상점검표 작성이 의무화되었습니다'))
     assert.equal(view.titles().includes('문의에 답변이 도착했습니다'), false)
   } finally { await view.cleanup() }
 })

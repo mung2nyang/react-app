@@ -74,8 +74,8 @@ test('입금 완료를 누르면 저장 1회', async () => {
 
 test('문구에 거래처·달·건수(0원 제외)·금액, 버튼은 [입금 완료]', async () => {
   const { asked } = await runPayGroup(false)
-  assert.equal(asked[0].message, '한진 10월분 입금 완료 처리')
-  assert.equal(asked[0].options?.message, '미수 2건, 450,000원을 모두 입금 완료로 바꿉니다. 되돌리기는 한 건씩만 할 수 있습니다.')
+  assert.equal(asked[0].message, '한진의 10월 미수금을 모두 입금 완료로 처리할까요?')
+  assert.equal(asked[0].options?.message, '미수 2건, 450,000원입니다. 취소하려면 각 건을 하나씩 처리해야 합니다.')
   assert.equal(asked[0].options?.confirmLabel, '입금 완료')
   assert.equal(asked[0].options?.danger, undefined)
 })
