@@ -2,7 +2,7 @@
 const API_URL = 'https://api.x.ai/v1/chat/completions'
 const MODEL = 'grok-4.20-0309-non-reasoning'
 const TIMEOUT_MS = 15000
-// 답이 끝없이 길어지는 걸 막는 상한 — 칸 서른한 개가 다 차도 넉넉하게.
+// 답이 끝없이 길어지는 걸 막는 상한 — 칸 서른두 개가 다 차도 넉넉하게.
 const MAX_OUTPUT_TOKENS = 500
 
 /** 키 없음·AI 회사 장애 — 잠시 뒤 다시. */
@@ -12,7 +12,7 @@ export type ParseInput = { text: string, today: string, clientNames: Array<strin
 
 const INSTRUCTION = [
   '너는 화물차 기사의 운행일지 앱 비서다. 기사가 말한 한국어 문장 하나를 받아 종류와 칸을 JSON으로만 돌려준다.',
-  'kind: 운행은 call, 고정 노선 운행은 fixed, 기름값·수리비·타이어·통행료 같은 돈 쓴 일은 expense, 매출·기록·일지를 묻는 말은 question, 거래처를 새로 등록하는 말은 client, 거래처에 미수금 문자를 보내려는 말은 sms, 날씨를 묻는 말은 weather, 일상점검표를 모두 양호로 처리하라는 말은 inspection, 그 밖(뉴스·인사·잡담)은 unknown.',
+  'kind: 운행은 call, 고정 노선 운행은 fixed, 기름값·수리비·타이어·통행료 같은 돈 쓴 일은 expense, 매출·기록·일지를 묻는 말은 question, 거래처를 새로 등록하는 말은 client, 거래처에 미수금 문자를 보내려는 말은 sms, 날씨를 묻는 말은 weather, 일상점검표를 모두 양호로 처리하라는 말은 inspection, 그날을 휴무로 하거나 휴무를 취소하려는 말은 dayOff, 그 밖(뉴스·인사·잡담)은 unknown.',
   '지명 두 개가 나오면 "에서"가 없어도 운행이다. 예: "어제 수원 화성 15만" → call, 수원→화성, 150000.',
   'fixed는 말에 "고정"이 들어 있을 때만이다 — 지명이 고정 노선 목록과 같아도 "고정"이 없으면 call. 예: "평택 용인 고정 2번 뛰었어" → fixed, fixedCount 2, fixedRoute 평택 → 용인. "오늘 고정 3번" → fixed, fixedCount 3, fixedRoute null. "평택 용인" → call.',
   'fixed일 때 date·fixedCount·fixedRoute만 채우고 나머지는 null. fixedCount는 횟수 정수(말하지 않았으면 null), fixedRoute는 고정 노선 목록의 이름 그대로 — 목록에 없거나 노선을 말하지 않았으면 null. fixed가 아니면 두 칸은 null.',
@@ -27,6 +27,8 @@ const INSTRUCTION = [
   '예: "한진에 미수금 문자 보내줘, 문구 1번으로" → sms, 한진, smsTemplate 1. "씨제이 7월분 미수금 문자" → sms, 씨제이, smsMonth 7월 값. "롯데에 입금 요청 문자" → sms, 롯데, smsTemplate 2. "한진 미수금 얼마 남았어" → question, unpaid.',
   'inspection은 말에 "점검"이 들어 있고 점검표 전체를 모두·다·전부 양호(이상 없음)로 처리하라는 말일 때만이다 — 일부 항목이나 불량을 말하면 unknown. inspection일 때 date만 채우고 나머지는 null.',
   '예: "오늘 점검표 모두 양호" → inspection, 오늘 날짜. "어제 일상점검 다 양호야" → inspection, 어제 날짜. "점검표 브레이크 불량" → unknown.',
+  'dayOff는 말에 "휴무"나 "쉬"가 들어 있을 때만이다. dayOff일 때 date(아래 "날짜 표"의 YYYY-MM-DD — 내일·모레·글피 같은 앞날도 표에서 그대로, 날짜 말이 없으면 오늘)와 dayOffCancel(휴무를 취소하는 말이면 true, 휴무로 하는 말이면 false)만 채우고 나머지는 null. dayOff가 아니면 dayOffCancel은 null.',
+  '예: "오늘 휴무" → dayOff, 오늘 날짜, dayOffCancel false. "내일 쉬어" → dayOff, 내일 날짜, false. "오늘 휴무 취소" → dayOff, 오늘 날짜, true. "휴게소에서 밥 먹었어" → unknown.',
   'call·expense·question·fixed·client·sms·inspection일 때만 나머지 칸을 채운다. date는 아래 "날짜 표"에서 그대로 골라 YYYY-MM-DD로 — 직접 계산하지 마라. 날짜 말이 없거나 내일·모레 같은 앞날이면 오늘.',
   '"10월 15일"처럼 월·일만 말하면 올해 그 날짜. "지난주 금요일"은 지난주 줄, "지난 월요일"은 오늘 전에 가장 가까운 그 요일 줄, "이번 주 화요일"은 이번 주 줄.',
   'loadLoc은 상차지(출발), unloadLoc은 하차지(도착) — 들은 지명 그대로. 먼저 말한 지명이 상차지, 다음이 하차지.',
@@ -58,7 +60,7 @@ export function dateTable(today: string): string {
   const weekday = new Date(base).getUTCDay()
   const label = (time: number) => `${dateKeyOf(time)}(${WEEKDAYS[new Date(time).getUTCDay()]})`
   const lines = [`오늘: ${label(base)}`, `어제: ${label(base - DAY_MS)}`, `그제(그저께): ${label(base - 2 * DAY_MS)}`]
-  // 앞날은 날씨에만 쓴다(운행·지출은 index.ts가 오늘로 바꿈).
+  // 앞날은 날씨·휴무에만 쓴다(운행·지출은 answer.ts가 오늘로 바꿈).
   lines.push(`내일: ${label(base + DAY_MS)}`, `모레: ${label(base + 2 * DAY_MS)}`, `글피: ${label(base + 3 * DAY_MS)}`)
   for (let n = 3; n <= 6; n += 1) lines.push(`${n}일 전: ${label(base - n * DAY_MS)}`)
   // 한 주는 월요일부터 일요일까지.
@@ -84,7 +86,7 @@ export function monthTable(today: string): string {
 const RESPONSE_SCHEMA = {
   type: 'object',
   properties: {
-    kind: { type: 'string', enum: ['call', 'expense', 'question', 'fixed', 'client', 'sms', 'weather', 'inspection', 'unknown'] },
+    kind: { type: 'string', enum: ['call', 'expense', 'question', 'fixed', 'client', 'sms', 'weather', 'inspection', 'dayOff', 'unknown'] },
     date: { type: ['string', 'null'], description: 'YYYY-MM-DD' },
     loadLoc: { type: ['string', 'null'] },
     unloadLoc: { type: ['string', 'null'] },
@@ -115,12 +117,13 @@ const RESPONSE_SCHEMA = {
     smsTemplate: { type: ['integer', 'null'], enum: [1, 2, 3, null] },
     weatherDate: { type: ['string', 'null'], description: 'YYYY-MM-DD' },
     weatherPlace: { type: ['string', 'null'] },
+    dayOffCancel: { type: ['boolean', 'null'] },
   },
   required: [
     'kind', 'date', 'loadLoc', 'unloadLoc', 'fare', 'client', 'expenseType', 'cost', 'name', 'category', 'fuelType', 'payment',
     'questionType', 'periodUnit', 'periodValue', 'questionExpenseType', 'fixedCount', 'fixedRoute',
     'clientName', 'clientManager', 'clientPhone', 'paymentTerm', 'paymentTermValue', 'commType', 'commValue',
-    'smsClient', 'smsMonth', 'smsAll', 'smsTemplate', 'weatherDate', 'weatherPlace',
+    'smsClient', 'smsMonth', 'smsAll', 'smsTemplate', 'weatherDate', 'weatherPlace', 'dayOffCancel',
   ],
 }
 
