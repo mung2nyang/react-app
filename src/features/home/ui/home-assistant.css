@@ -116,15 +116,15 @@
 
 .home-assistant-send {
   flex-shrink: 0;
-  min-height: 44px;
+  min-height: var(--btn-height);
   padding: 8px 14px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--btn-radius);
   background: var(--primary-fill);
   color: #fff;
   font: inherit;
-  font-size: var(--fs-3);
-  font-weight: var(--fw-bold);
+  font-size: var(--btn-font);
+  font-weight: var(--btn-weight);
   cursor: pointer;
 }
 
@@ -163,15 +163,15 @@
 
 .home-assistant-action {
   justify-self: start;
-  min-height: 44px;
+  min-height: var(--btn-height);
   padding: 8px 18px;
   border: 0;
-  border-radius: 12px;
+  border-radius: var(--btn-radius);
   background: var(--primary-fill);
   color: #fff;
   font: inherit;
-  font-size: var(--fs-3);
-  font-weight: var(--fw-bold);
+  font-size: var(--btn-font);
+  font-weight: var(--btn-weight);
   cursor: pointer;
 }
 

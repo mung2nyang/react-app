@@ -40,7 +40,7 @@
 .admin-inquiry-textarea { width: 100%; margin: 0; box-sizing: border-box; resize: vertical; line-height: 1.5; text-align: left; }
 .admin-inquiry-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 .admin-inquiry-editor .admin-inquiry-actions { margin-top: 0; }
-.admin-inquiry-btn { min-height: 44px; padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-bg); color: var(--text-color); font: inherit; font-size: var(--fs-3); font-weight: var(--fw-bold); cursor: pointer; }
+.admin-inquiry-btn { min-height: var(--btn-height); padding: 8px 16px; border: 1px solid var(--border-color); border-radius: var(--btn-radius); background: var(--card-bg); color: var(--text-color); font: inherit; font-size: var(--btn-font); font-weight: var(--btn-weight); cursor: pointer; }
 .admin-inquiry-btn.primary { border-color: transparent; color: #fff; background: var(--primary-fill); }
 .admin-inquiry-btn:disabled { opacity: 0.5; cursor: default; }
 .admin-answer-templates { display: flex; flex-wrap: wrap; gap: 6px; }

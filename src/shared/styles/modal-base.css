@@ -28,12 +28,12 @@
 .modal-btn {
   flex: 1;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--btn-radius);
   border: none;
-  font-size: var(--fs-4);
-  font-weight: var(--fw-bold);
+  font-size: var(--btn-font);
+  font-weight: var(--btn-weight);
   cursor: pointer;
-  min-height: 44px;
+  min-height: var(--btn-height);
 }
 .modal-btn.confirm { background: var(--primary-fill); color: #fff; }
 .modal-btn.cancel { background: var(--input-bg); color: var(--text-color); border: 1px solid var(--border-color); }

@@ -16,6 +16,6 @@
 .boot-retry h1 { margin: 8px 0 0; font-size: var(--fs-7); }
 .boot-retry p { margin: 0; color: var(--sub-text-color); font-size: var(--fs-4); line-height: 1.5; }
 .boot-retry button {
-  margin-top: 12px; min-height: 48px; padding: 0 28px; border: 0; border-radius: 12px;
-  background: var(--primary-fill); color: #fff; font: inherit; font-weight: var(--fw-bold); cursor: pointer;
+  margin-top: 12px; min-height: var(--btn-height); padding: 0 28px; border: 0; border-radius: var(--btn-radius);
+  background: var(--primary-fill); color: #fff; font: inherit; font-size: var(--btn-font); font-weight: var(--btn-weight); cursor: pointer;
 }

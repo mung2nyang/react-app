@@ -20,13 +20,14 @@
 
 .personal-account-btn {
   width: 100%;
-  min-height: 44px;
+  min-height: var(--btn-height);
   border: none;
-  border-radius: 14px;
+  border-radius: var(--btn-radius);
   background: var(--primary-fill);
   color: #fff;
   font: inherit;
-  font-weight: var(--fw-heavy);
+  font-weight: var(--btn-weight);
+  font-size: var(--btn-font);
   cursor: pointer;
 }
 

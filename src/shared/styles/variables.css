@@ -22,6 +22,14 @@
   --title-3-size: var(--fs-3);
   --title-3-weight: var(--fw-bold);
   --radius-card: 20px;
+  --btn-radius: 12px;
+  --btn-height: 44px;
+  --btn-font: var(--fs-4);
+  --btn-weight: var(--fw-bold);
+  --btn-height-lg: 52px;
+  --btn-font-lg: var(--fs-5);
+  --btn-weight-lg: var(--fw-heavy);
+  --btn-font-sm: var(--fs-2);
   --bg-color: #eef1f5;
   --text-color: #2d3748;
   --sub-text-color: #5a6778;

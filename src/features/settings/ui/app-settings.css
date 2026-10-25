@@ -143,15 +143,15 @@
 }
 
 .fixed-route-preset-add-row button {
-  min-height: 40px;
+  min-height: var(--btn-height);
   padding: 0 12px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--btn-radius);
   background: var(--primary-fill);
   color: #fff;
   font: inherit;
-  font-weight: var(--fw-bold);
-  font-size: var(--fs-2);
+  font-weight: var(--btn-weight);
+  font-size: var(--btn-font-sm);
   cursor: pointer;
 }
 

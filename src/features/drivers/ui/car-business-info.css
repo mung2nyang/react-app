@@ -23,15 +23,15 @@
 .car-biz-owner-line span { display: block; }
 .car-biz-owner-line span + span { margin-top: 6px; }
 .car-biz-save {
-  min-height: 44px;
+  min-height: var(--btn-height);
   margin: 0;
   border: 1px solid var(--primary-fill);
-  border-radius: 12px;
+  border-radius: var(--btn-radius);
   background: var(--primary-fill);
   color: #ffffff;
   font: inherit;
-  font-size: var(--fs-floor);
-  font-weight: var(--fw-black);
+  font-size: var(--btn-font);
+  font-weight: var(--btn-weight);
   cursor: pointer;
 }
 .car-biz-save:disabled { opacity: 0.6; cursor: default; }
