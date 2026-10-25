@@ -15,6 +15,7 @@ let inspectionFetches = 0
 mock.module('../../../data/sync/dailyInspections.ts', {
   namedExports: {
     fetchDailyInspection: async () => { inspectionFetches += 1; return serverInspection },
+    saveDailyInspection: async () => {},
   },
 })
 beforeEach(() => { serverInspection = null; inspectionFetches = 0 })

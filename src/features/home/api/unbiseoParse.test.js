@@ -84,6 +84,21 @@ test('날씨 칸: 날짜·지역을 읽고, 칸이 없으면 알아듣지 못함
   assert.deepEqual(await requestUnbiseoParse({ text: '날씨', today: '2026-10-22', clientNames: [] }), { kind: 'error', message: NOT_UNDERSTOOD })
 })
 
+// 로드맵 24-J-2 — 점검표 칸 읽기: 날짜 모양이 틀리면 오늘, 칸이 없으면 알아듣지 못함.
+test('점검표 칸: 날짜를 읽고, 칸이 없으면 알아듣지 못함', async () => {
+  const ask = () => requestUnbiseoParse({ text: '점검표 모두 양호', today: '2026-10-22', clientNames: [] })
+  reply = async () => ({ data: { kind: 'inspection', inspection: { date: '2026-10-21' } }, error: null })
+  assert.deepEqual(await ask(), { kind: 'inspection', inspection: { date: '2026-10-21' } })
+  reply = async () => ({ data: { kind: 'inspection', inspection: { date: '어제', items: 'bad' } }, error: null })
+  assert.deepEqual(await ask(), { kind: 'inspection', inspection: { date: '2026-10-22' } })
+  /** @type {Array<JsonValue>} */
+  const odd = [{ kind: 'inspection' }, { kind: 'inspection', inspection: [] }, { kind: 'inspection', inspection: '2026-10-21' }]
+  for (const data of odd) {
+    reply = async () => ({ data, error: null })
+    assert.deepEqual(await ask(), { kind: 'error', message: NOT_UNDERSTOOD })
+  }
+})
+
 // 로드맵 24-C-2 — 지출 칸 읽기·문장.
 test('지출 칸을 그대로 돌려준다, 이상한 칸은 고쳐 담는다(날짜 모양 아니면 오늘, 모르는 종류는 정비, 금액 정수 아니면 없음)', async () => {
   const expense = { date: '2026-10-21', type: 'fuel', cost: 120000, name: '경유', category: '', fuelType: '주유', payment: '카드' }

@@ -32,6 +32,7 @@ export type UnbiseoResult =
   | { kind: 'client', client: UnbiseoClient }
   | { kind: 'sms', sms: UnbiseoSms }
   | { kind: 'weather', weather: UnbiseoWeather }
+  | { kind: 'inspection', inspection: { date: string } }
   | { kind: 'question', question: UnbiseoQuestion }
   | { kind: 'unknown' }
   | { kind: 'error', message: string }
@@ -122,6 +123,8 @@ export function readAnswer(data: JsonValue | undefined, today: string): UnbiseoR
   if (row.kind === 'sms') return sms ? { kind: 'sms', sms: readSms(sms) } : { kind: 'error', message: NOT_UNDERSTOOD }
   const weather = record(row.weather)
   if (row.kind === 'weather') return weather ? { kind: 'weather', weather: readWeather(weather, today) } : { kind: 'error', message: NOT_UNDERSTOOD }
+  const inspection = record(row.inspection)
+  if (row.kind === 'inspection') return inspection ? { kind: 'inspection', inspection: { date: dateOf(inspection, today) } } : { kind: 'error', message: NOT_UNDERSTOOD }
   const client = record(row.client)
   const clientDraft = row.kind === 'client' && client ? readClient(client) : null
   if (row.kind === 'client') return clientDraft ? { kind: 'client', client: clientDraft } : { kind: 'error', message: NOT_UNDERSTOOD }

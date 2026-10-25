@@ -13,7 +13,7 @@ function withRo(word: string): string {
   return final === 0 || final === 8 ? `${word}로` : `${word}으로`
 }
 
-function dateLabelOf(date: string, today: string): string {
+export function dateLabelOf(date: string, today: string): string {
   const [, month, day] = date.split('-').map(Number)
   return date === today ? '오늘' : `${month}월 ${day}일`
 }
@@ -68,6 +68,7 @@ export function describeExistingClient(name: string): string {
 }
 
 export const WEATHER_WAIT = '날씨를 알아보는 중…'
+export const INSPECTION_WAIT = '점검표를 확인하는 중…'
 
 /** 결과 한 문장(운행·지출·질문·관계없음·실패). 질문 답은 숫자를 내는 쪽(answerQuestion)이 만든다. */
 export function describeResult(result: UnbiseoResult, today: string, answerQuestion: (question: UnbiseoQuestion) => string): string {
@@ -78,6 +79,7 @@ export function describeResult(result: UnbiseoResult, today: string, answerQuest
   if (result.kind === 'sms') return result.sms.client ? `${result.sms.client}에 미수금 문자를 보낼게요.` : '미수금 문자를 보낼게요.'
   if (result.kind === 'question') return answerQuestion(result.question)
   if (result.kind === 'weather') return WEATHER_WAIT
+  if (result.kind === 'inspection') return INSPECTION_WAIT
   if (result.kind === 'unknown') return '운행 기록으로 알아듣지 못했어요. 다시 말해 주세요.'
   return result.message
 }

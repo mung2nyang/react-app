@@ -15,17 +15,19 @@ import type { UnbiseoCall, UnbiseoClient, UnbiseoExpense, UnbiseoFixed } from '.
 import type { UnbiseoSms } from '../api/unbiseoSms.ts'
 import { matchChoice } from '../api/unbiseoChoice.ts'
 import type { UnbiseoStep } from '../api/unbiseoChoice.ts'
-import { WEATHER_WAIT, describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
+import { INSPECTION_WAIT, WEATHER_WAIT, describeExistingClient, describeResult } from '../api/unbiseoSentence.ts'
+import { checkInspection, saveAllGood, savedSentence } from '../api/unbiseoInspection.ts'
+import type { UnbiseoInspectionSave } from '../api/unbiseoInspection.ts'
 import { requestWeatherSentence } from '../api/unbiseoWeather.ts'
 import { questionNumbers } from '../api/unbiseoNumbers.ts'
 import { describeQuestion } from '../api/unbiseoQuestion.ts'
 import useSpeechInput from './useSpeechInput.ts'
 import useSpeechOutput from './useSpeechOutput.ts'
 
-export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null, client: UnbiseoClient | null, sms: UnbiseoSms | null }
+export type UnbiseoAnswer = { said: string, sentence: string, call: UnbiseoCall | null, expense: UnbiseoExpense | null, fixed: UnbiseoFixed | null, client: UnbiseoClient | null, sms: UnbiseoSms | null, inspection: UnbiseoInspectionSave | null }
 
 function waiting(said: string, sentence: string): UnbiseoAnswer {
-  return { said, sentence, call: null, expense: null, fixed: null, client: null, sms: null }
+  return { said, sentence, call: null, expense: null, fixed: null, client: null, sms: null, inspection: null }
 }
 
 export default function useUnbiseoAssistant() {
@@ -43,6 +45,8 @@ export default function useUnbiseoAssistant() {
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [enabling, setEnabling] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const savingNow = useRef(false)
   const [answer, setAnswer] = useState<UnbiseoAnswer | null>(null)
   // 계정이 바뀌면 대화를 비우고, 앞 계정에서 보낸 답은 버린다.
   const [answerOwner, setAnswerOwner] = useState(ownerKey)
@@ -97,13 +101,17 @@ export default function useUnbiseoAssistant() {
     const asksWeather = result.kind === 'weather' && owner === currentOwner.current
     if (asksWeather) setAnswer(waiting(trimmed, WEATHER_WAIT))
     const weatherSentence = asksWeather && result.kind === 'weather' ? await requestWeatherSentence(result.weather, today) : ''
+    // 점검표는 그날 저장 여부까지 읽은 뒤 문장을 만든다.
+    const asksInspection = result.kind === 'inspection' && owner === currentOwner.current
+    if (asksInspection) setAnswer(waiting(trimmed, INSPECTION_WAIT))
+    const checked = asksInspection && result.kind === 'inspection' ? await checkInspection(owner, result.inspection.date, today, isDriver) : null
     setBusy(false)
     if (owner !== currentOwner.current) return
     // 이미 있는 이름이면 등록 버튼 없이 알린다.
     const heardClient = result.kind === 'client' ? result.client : null
     const existing = !!heardClient && clients.some((client) => (client.companyName || '').trim() === heardClient.name)
     // 질문 숫자는 매출·미수금 화면과 같은 함수로, 받은 그 순간 값에서.
-    const sentence = weatherSentence || (existing && heardClient ? describeExistingClient(heardClient.name) : describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver))))
+    const sentence = weatherSentence || checked?.sentence || (existing && heardClient ? describeExistingClient(heardClient.name) : describeResult(result, today, (question) => describeQuestion(question, today, isDriver, (asked) => questionNumbers(owner, asked, isDriver))))
     setAnswer({
       said: trimmed,
       sentence,
@@ -112,6 +120,7 @@ export default function useUnbiseoAssistant() {
       fixed: result.kind === 'fixed' ? result.fixed : null,
       client: existing ? null : heardClient,
       sms: result.kind === 'sms' ? result.sms : null,
+      inspection: checked?.save ?? null,
     })
     if (byVoice) voice.speak(sentence)
   }
@@ -129,12 +138,27 @@ export default function useUnbiseoAssistant() {
     setEnabling(false)
   }
 
+  // [저장하기] — 저장 중엔 잠그고, 그 사이 계정이 바뀌거나 다른 말을 보냈으면 결과를 붙이지 않는다.
+  async function saveInspection() {
+    const save = answer?.inspection
+    if (!save || savingNow.current) return
+    const owner = ownerKey
+    savingNow.current = true
+    setSaving(true)
+    const failed = await saveAllGood(save)
+    savingNow.current = false
+    setSaving(false)
+    if (owner !== currentOwner.current) return
+    if (failed) showToast(failed)
+    else setAnswer((shown) => (shown?.inspection === save ? { ...shown, sentence: savedSentence(save.date, todayWorkLogSelection(new Date()).dateKey), inspection: null } : shown))
+  }
+
   // [기록하기] 전에 일지와 같은 기준으로 계약 기간·휴무를 본다.
   const callDate = answer?.call?.date ?? answer?.expense?.date ?? answer?.fixed?.date
   const periodNotice = callDate && session?.accountType === 'employed_driver' ? assignmentPeriodNotice(callDate, myLink?.startDate, myLink?.endDate) : null
   const dayOff = !!callDate && isOffDay(workData[callDate])
 
-  return { loggedIn, text, setText, busy, answer, send, reportStep, speech, speaking: voice.speaking, stopSpeaking, callDetailOn, fixedOn, enabling, enableSetting, periodNotice, dayOff }
+  return { loggedIn, text, setText, busy, answer, send, reportStep, speech, speaking: voice.speaking, stopSpeaking, callDetailOn, fixedOn, enabling, enableSetting, saving, saveInspection, periodNotice, dayOff }
 }
 
 export type UnbiseoAssistant = ReturnType<typeof useUnbiseoAssistant>

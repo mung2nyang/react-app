@@ -7,7 +7,19 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { beforeEach, test } from 'node:test'
+import { beforeEach, mock, test } from 'node:test'
+
+// 점검표 서버 읽기·저장은 가짜로 — 그날 1장, 저장은 모아 둔다(멈춰 두기·실패 가능).
+const inspect = { record: null, holdFetch: null, holdSave: null, saveError: null, saved: [], fetched: [] }
+mock.module('../../../data/sync/dailyInspections.ts', {
+  namedExports: {
+    fetchDailyInspection: async (vehicleId, workDate) => { inspect.fetched.push({ vehicleId, workDate }); return inspect.holdFetch ? inspect.holdFetch : inspect.record },
+    saveDailyInspection: async (input) => { if (inspect.holdSave) await inspect.holdSave; if (inspect.saveError) throw inspect.saveError; inspect.saved.push(input) },
+    fetchMonthDailyInspections: async () => ({}),
+    fetchVehiclesDailyInspections: async () => ({}),
+    hasAnyDailyInspection: async () => false,
+  },
+})
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -15,8 +27,12 @@ const React = await import('react')
 const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { withSession } = await import('../../../testSupport/withSession.js')
+const { withToast } = await import('../../../testSupport/withToast.js')
 const { supabase } = await import('../../../data/cloud/supabaseClient.ts')
-const { commitClients, commitDrivers, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
+const { commitCars, commitClients, commitDrivers, commitProfile, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
+const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.ts')
+const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')
+const { SERVER_SAVE_FAIL } = await import('../../../shared/utils/failureMessages.js')
 const { readOwnerSettings } = await import('../../../data/store/ownerDataHooks.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
@@ -26,7 +42,8 @@ const { UnbiseoProvider } = await import('../hooks/unbiseoContext.ts')
 const calls = []
 let reply = async () => ({ data: null, error: null })
 supabase.functions = { invoke: async (name, options) => { calls.push({ name, body: options.body }); return reply() } }
-beforeEach(() => { calls.length = 0; reply = async () => ({ data: null, error: null }) })
+const toasts = []
+beforeEach(() => { calls.length = 0; toasts.length = 0; reply = async () => ({ data: null, error: null }) })
 
 const CLOUD = { userId: 'u-assistant', name: '보리', accountType: 'owner' }
 
@@ -34,7 +51,7 @@ async function mount(ownerKey, session, { open = true, props = {} } = {}) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  await act(async () => { root.render(withSession(React.createElement(UnbiseoProvider, { onOpenCall: props.onOpenAssistantCall || (() => {}) }, React.createElement(HomeAssistantBar)), { ownerKey, session })) })
+  await act(async () => { root.render(withToast(withSession(React.createElement(UnbiseoProvider, { onOpenCall: props.onOpenAssistantCall || (() => {}) }, React.createElement(HomeAssistantBar)), { ownerKey, session }), (message) => { toasts.push(message) })) })
   if (open) {
     const toggle = container.querySelector('.home-assistant-toggle')
     await act(async () => { toggle.click() })
@@ -584,5 +601,148 @@ test('날씨: 기다리는 동안 계정이 바뀌면 받아 온 날씨는 버�
     await act(async () => { root.unmount() })
     container.remove()
     restoreInvoke()
+  }
+})
+
+// 로드맵 24-J-2 — 점검표: 확인하는 동안 문구·잠김, [저장하기] → 일지 창과 같은 저장 → "저장했어요", 실패면 알림·버튼 남음, 두 번 눌림은 한 번만, 계정이 바뀌면 버림.
+const INSPECT_OWNER = 'u-assistant-inspect'
+const INSPECT_SESSION = { ...CLOUD, userId: INSPECT_OWNER }
+const WILL_SAVE = '오늘 일상점검표를 모두 양호로 저장할게요.'
+const SAVED = '오늘 일상점검표를 모두 양호로 저장했어요.'
+function inspectionSetup() {
+  Object.assign(inspect, { record: null, holdFetch: null, holdSave: null, saveError: null, saved: [], fetched: [] })
+  commitSettings(INSPECT_OWNER, normalizeSettings({ dailyInspectionOn: true }))
+  commitCars(INSPECT_OWNER, [{ id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' }])
+  commitProfile(INSPECT_OWNER, { ...EMPTY_PROFILE, name: '보리' })
+  reply = async () => ({ data: { kind: 'inspection', inspection: { date: todayWorkLogSelection(new Date()).dateKey } }, error: null })
+}
+const held = () => { let release = () => {}; const promise = new Promise((resolve) => { release = resolve }); return { promise, release } }
+const saveButton = (container) => [...container.querySelectorAll('.home-assistant-action')].find((button) => button.textContent === '저장하기') || null
+const resultOf = (container) => container.querySelector('.home-assistant-result')?.textContent
+const settle = () => act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
+
+test('점검표: 확인하는 동안 문구·입력 잠김 → [저장하기] → 저장 중 잠금·두 번 눌러도 한 번 → "저장했어요", 버튼 사라짐', async () => {
+  inspectionSetup()
+  const fetchHold = held()
+  inspect.holdFetch = fetchHold.promise
+  const view = await mount(INSPECT_OWNER, INSPECT_SESSION)
+  try {
+    await view.type('오늘 점검표 모두 양호')
+    await view.send()
+    assert.equal(resultOf(view.container), '점검표를 확인하는 중…')
+    assert.equal(view.container.querySelector('.home-assistant-input')?.disabled, true)
+    assert.equal(saveButton(view.container), null)
+    await act(async () => { fetchHold.release(null) })
+    await settle()
+    const today = todayWorkLogSelection(new Date()).dateKey
+    assert.deepEqual(inspect.fetched, [{ vehicleId: 'veh-main', workDate: today }])
+    assert.equal(resultOf(view.container), WILL_SAVE)
+    assert.equal(view.container.querySelector('.home-assistant-input')?.disabled, false)
+    const saveHold = held()
+    inspect.holdSave = saveHold.promise
+    await act(async () => { saveButton(view.container).click(); saveButton(view.container).click() })
+    assert.equal(saveButton(view.container)?.disabled, true, '저장 중 잠금')
+    await act(async () => { saveHold.release() })
+    await settle()
+    assert.deepEqual(inspect.saved, [{ vehicleId: 'veh-main', workDate: today, items: allGoodItems(), actionNote: '', inspectorName: '보리' }], '한 번만, 일지 창과 같은 몸통')
+    assert.equal(resultOf(view.container), SAVED)
+    assert.equal(saveButton(view.container), null)
+    assert.deepEqual(toasts, [])
+  } finally { await view.cleanup() }
+})
+
+test('점검표: 저장 실패면 일지 창과 같은 알림이 뜨고 문장·버튼은 그대로', async () => {
+  inspectionSetup()
+  inspect.saveError = new Error('')
+  const view = await mount(INSPECT_OWNER, INSPECT_SESSION)
+  const errors = mock.method(console, 'error', () => {})
+  try {
+    await view.type('오늘 점검표 모두 양호')
+    await view.send()
+    await act(async () => { saveButton(view.container).click() })
+    await settle()
+    assert.deepEqual(toasts, [SERVER_SAVE_FAIL])
+    assert.equal(resultOf(view.container), WILL_SAVE)
+    assert.equal(saveButton(view.container)?.disabled, false, '다시 누를 수 있음')
+  } finally { errors.mock.restore(); await view.cleanup() }
+})
+
+test('점검표: 이미 저장된 날·설정 꺼짐은 문장만, 버튼 없음', async () => {
+  inspectionSetup()
+  inspect.record = { items: allGoodItems(), actionNote: '', inspectorName: '보리' }
+  const view = await mount(INSPECT_OWNER, INSPECT_SESSION)
+  try {
+    await view.type('오늘 점검표 모두 양호')
+    await view.send()
+    assert.equal(resultOf(view.container), '오늘 일상점검표는 이미 저장되어 있어요.')
+    assert.equal(saveButton(view.container), null)
+    commitSettings(INSPECT_OWNER, normalizeSettings({ dailyInspectionOn: false }))
+    inspect.fetched = []
+    await view.type('오늘 점검표 모두 양호')
+    await view.send()
+    assert.equal(resultOf(view.container), '앱 설정에서 일상점검표 사용을 켜면 쓸 수 있어요.')
+    assert.equal(saveButton(view.container), null)
+    assert.deepEqual(inspect.fetched, [], '꺼져 있으면 서버를 읽지 않음')
+  } finally { await view.cleanup() }
+})
+
+test('점검표: 마이크로 물으면 확인 뒤 문장만 읽고, 저장 뒤 문장은 읽지 않는다', async () => {
+  inspectionSetup()
+  let last = null
+  window.webkitSpeechRecognition = class { constructor() { last = this } start() {} stop() { this.onend?.() } abort() {} }
+  window.speechSynthesis = { speak() {}, cancel() {} }
+  window.SpeechSynthesisUtterance = class { constructor(text) { this.text = text } }
+  const view = await mount(INSPECT_OWNER, INSPECT_SESSION, { open: false })
+  try {
+    await act(async () => { view.container.querySelector('.home-assistant-mic-btn').click() })
+    await act(async () => {
+      last.onresult({ results: [[{ transcript: '오늘 점검표 모두 양호' }]] })
+      last.onend()
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+    await settle()
+    const voiced = () => calls.filter((call) => call.name === 'unbiseo-voice').map((call) => call.body.text)
+    assert.deepEqual(voiced(), [WILL_SAVE])
+    await act(async () => { saveButton(view.container).click() })
+    await settle()
+    assert.equal(resultOf(view.container), SAVED)
+    assert.deepEqual(voiced(), [WILL_SAVE], '저장 뒤 문장은 읽지 않음')
+  } finally {
+    await view.cleanup()
+    delete window.webkitSpeechRecognition
+    delete window.speechSynthesis
+    delete window.SpeechSynthesisUtterance
+  }
+})
+
+test('점검표: 저장하는 동안 계정이 바뀌면 결과도 알림도 붙이지 않는다', async () => {
+  inspectionSetup()
+  const saveHold = held()
+  inspect.holdSave = saveHold.promise
+  inspect.saveError = new Error('x')
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  const render = (ownerKey, session) => root.render(withToast(withSession(React.createElement(UnbiseoProvider, { onOpenCall: () => {} }, React.createElement(HomeAssistantBar)), { ownerKey, session }), (message) => { toasts.push(message) }))
+  const errors = mock.method(console, 'error', () => {})
+  try {
+    await act(async () => { render(INSPECT_OWNER, INSPECT_SESSION) })
+    await act(async () => { container.querySelector('.home-assistant-toggle').click() })
+    const input = container.querySelector('.home-assistant-input')
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set
+    await act(async () => { setter.call(input, '오늘 점검표 모두 양호'); input.dispatchEvent(new window.Event('input', { bubbles: true })) })
+    await act(async () => { container.querySelector('.home-assistant-send').click(); await new Promise((resolve) => setTimeout(resolve, 0)) })
+    await settle()
+    assert.equal(container.querySelector('.home-assistant-result')?.textContent, WILL_SAVE)
+    await act(async () => { saveButton(container).click() })
+    await act(async () => { render('u-other', { ...CLOUD, userId: 'u-other' }) })
+    await act(async () => { saveHold.release() })
+    await settle()
+    assert.equal(container.querySelector('.home-assistant-result'), null, '다른 계정 카드에 앞 계정 결과가 안 뜸')
+    assert.deepEqual(toasts, [], '앞 계정 실패 알림도 안 뜸')
+  } finally {
+    errors.mock.restore()
+    await act(async () => { root.unmount() })
+    container.remove()
   }
 })
