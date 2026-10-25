@@ -32,7 +32,7 @@ export default function AuthIntroView({ onGuest, onGoogle, busy = false }) {
             <img src={BANNER} alt="" className="auth-logo-img" />
             <span className="auth-logo-text">운행일지</span>
           </div>
-          <p className="auth-intro-eyebrow">간편한 차량 운행 관리</p>
+          <p className="auth-intro-eyebrow">간편한 화물 차량 운행 관리</p>
           <div className="auth-heading-box">
             <h1>운행 기록을<br />간편하게 관리하세요</h1>
             <p className="auth-desc-text">매일의 운행 내역을 쉽고 빠르게 기록해 보세요.</p>

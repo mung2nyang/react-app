@@ -74,7 +74,7 @@ test('첫 화면에 소개 문구와 약관 안내가 있고 약관 문서 이�
   const view = await render()
   try {
     assert.equal(view.container.querySelector('h1')?.textContent, '운행 기록을간편하게 관리하세요')
-    assert.equal(view.container.querySelector('.auth-intro-eyebrow')?.textContent, '간편한 차량 운행 관리')
+    assert.equal(view.container.querySelector('.auth-intro-eyebrow')?.textContent, '간편한 화물 차량 운행 관리')
     assert.equal(view.container.querySelector('.auth-desc-text')?.textContent, '매일의 운행 내역을 쉽고 빠르게 기록해 보세요.')
     const terms = view.container.querySelector('.auth-intro-terms')
     assert.equal(terms?.textContent?.replace(/\s+/g, ' ').trim(), '최초 로그인 시 서비스 이용약관 및 개인정보 처리방침, 위치기반서비스 이용약관에 동의하는 것으로 간주합니다.')
