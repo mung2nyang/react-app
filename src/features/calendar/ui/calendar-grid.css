@@ -10,7 +10,7 @@
   padding: 14px 10px 6px;
   border: 1px solid var(--border-color);
   border-bottom: 0;
-  border-radius: 24px 24px 0 0;
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
   background-color: var(--card-bg);
   box-shadow: var(--shadow-sm);
   clip-path: inset(-12px -12px 0 -12px);
@@ -19,7 +19,7 @@
 .main-page .header + .calendar-grid {
   margin-top: -1px; /* 소수점 경계에 생기는 실선 틈 메움 */
   border-top: 0;
-  border-radius: 0 0 24px 24px;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
   padding-top: 10px;
   clip-path: inset(0 -12px -12px -12px); /* 위로 번지는 그림자가 이음새 선처럼 보여 자름 */
 }
@@ -35,7 +35,7 @@
   margin: 0 auto 10px;
   background-color: var(--card-bg);
   padding: 16px 10px;
-  border-radius: 24px;
+  border-radius: var(--radius-card);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
 }

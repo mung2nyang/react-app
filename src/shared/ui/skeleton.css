@@ -22,7 +22,7 @@
   background-color: var(--card-bg);
   box-shadow: var(--shadow-sm);
 }
-.skeleton-group { display: grid; gap: 10px; padding: 16px 14px; border-radius: 18px; }
+.skeleton-group { display: grid; gap: 10px; padding: 16px 14px; border-radius: var(--radius-card); }
 .skeleton-group .skeleton-bar:nth-child(2) { width: 85%; }
 .skeleton-group .skeleton-bar:nth-child(3) { width: 60%; }
 
@@ -44,7 +44,7 @@
   gap: 12px;
   min-height: 94px;
   padding: 15px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-card);
 }
 .skeleton-heading { width: 28%; height: 16px; margin: 14px 0 15px; }
 .skeleton-shortcuts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
@@ -55,12 +55,12 @@
 .skeleton-dot { flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px; }
 
 /* 매출 */
-.skeleton-revenue-top { margin-bottom: 12px; padding: 18px; border-radius: 24px; }
+.skeleton-revenue-top { margin-bottom: 12px; padding: 18px; border-radius: var(--radius-card); }
 .skeleton-date-nav { width: 72%; height: 44px; margin: 0 auto 14px; border-radius: 12px; }
 .skeleton-tab { flex: 1; height: 44px; border-radius: 12px; }
 .skeleton-scope-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); }
 .skeleton-scope { flex: 1; height: 40px; border-radius: 10px; }
-.skeleton-summary { display: grid; align-content: start; gap: 16px; min-height: 163px; margin-bottom: 12px; padding: 24px; border-radius: 24px; }
+.skeleton-summary { display: grid; align-content: start; gap: 16px; min-height: 163px; margin-bottom: 12px; padding: 24px; border-radius: var(--radius-card); }
 
 .skeleton-bar::after {
   content: '';

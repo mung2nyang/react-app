@@ -2,7 +2,7 @@
 
 .revenue-year-list {
   border: 1px solid var(--border-color);
-  border-radius: 24px;
+  border-radius: var(--radius-card);
   background: var(--card-bg);
   overflow: hidden;
 }

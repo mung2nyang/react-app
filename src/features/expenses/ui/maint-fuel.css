@@ -9,7 +9,7 @@
   margin-bottom: 12px;
   padding: 18px;
   border: 1px solid var(--border-color);
-  border-radius: 24px;
+  border-radius: var(--radius-card);
   background-color: var(--card-bg);
   box-shadow: var(--shadow-sm);
 }
@@ -81,7 +81,7 @@
   padding: 16px 14px 14px;
   margin-bottom: 12px;
   border: 1px solid var(--border-color);
-  border-radius: 24px;
+  border-radius: var(--radius-card);
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
   text-align: left;

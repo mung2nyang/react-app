@@ -1,6 +1,6 @@
 /* 메시지 설정 화면 — side-menu.css에서 이동(MessageSettingsPage 전용). */
 
-.message-settings-section { margin-bottom: 10px; padding: 14px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--card-bg); box-shadow: var(--shadow-sm); }
+.message-settings-section { margin-bottom: 10px; padding: 14px; border: 1px solid var(--border-color); border-radius: var(--radius-card); background: var(--card-bg); box-shadow: var(--shadow-sm); }
 .message-settings-heading { margin-bottom: 10px; }
 .message-settings-heading h3, .message-settings-heading p, .message-settings-variables { margin: 0; }
 .message-settings-heading h3 { color: var(--text-color); font-size: var(--title-2-size); font-weight: var(--title-2-weight); }

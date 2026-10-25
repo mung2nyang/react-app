@@ -4,7 +4,7 @@
   margin-top: 12px;
   padding: 16px 8px;
   border: 1px solid var(--border-color);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
 }

@@ -6,7 +6,7 @@
   margin-bottom: 12px;
   padding: 18px 18px 16px;
   border: 1px solid var(--border-color);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
   color: var(--text-color);

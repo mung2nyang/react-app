@@ -22,6 +22,7 @@
   --title-2-weight: var(--fw-heavy);
   --title-3-size: var(--fs-3);
   --title-3-weight: var(--fw-bold);
+  --radius-card: 20px;
   --bg-color: #eef1f5;
   --text-color: #2d3748;
   --sub-text-color: #5a6778;

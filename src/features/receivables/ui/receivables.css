@@ -179,7 +179,7 @@
   margin-bottom: 18px;
   padding: 18px;
   border: 1px solid var(--border-color);
-  border-radius: 18px;
+  border-radius: var(--radius-card);
   background: var(--card-bg);
   box-shadow: var(--shadow-sm);
 }

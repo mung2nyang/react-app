@@ -9,7 +9,7 @@
   min-height: 94px;
   padding: 15px 16px;
   border: 1px solid var(--border-color);
-  border-radius: 20px;
+  border-radius: var(--radius-card);
   background: var(--card-bg);
   color: var(--text-color);
   box-shadow: var(--shadow-sm);
