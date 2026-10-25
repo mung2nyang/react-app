@@ -25,7 +25,7 @@
   display: block;
   margin-bottom: 8px;
   color: var(--text-color);
-  font-size: 0.85rem;
+  font-size: var(--fs-3);
   font-weight: var(--fw-strong);
 }
 
@@ -123,7 +123,7 @@
   background: transparent;
   color: var(--text-color);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--fs-3);
   font-weight: var(--fw-regular);
   text-align: right; /* 숫자를 단위(% · 원) 바로 옆에 */
 }

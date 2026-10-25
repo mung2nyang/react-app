@@ -12,7 +12,7 @@
 }
 .car-biz-card h3 { margin: 0; color: var(--text-color); font-size: var(--fs-3); font-weight: var(--fw-black); }
 .car-biz-card .form-group { margin: 0; }
-.car-biz-card .form-group label { display: block; margin-bottom: 8px; color: var(--text-color); font-size: 0.85rem; font-weight: var(--fw-strong); text-align: left; }
+.car-biz-card .form-group label { display: block; margin-bottom: 8px; color: var(--text-color); font-size: var(--fs-3); font-weight: var(--fw-strong); text-align: left; }
 .car-biz-card .input-box { text-align: left; }
 .car-biz-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .car-biz-toggle > div { min-width: 0; text-align: left; }

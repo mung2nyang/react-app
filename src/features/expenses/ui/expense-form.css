@@ -18,7 +18,7 @@
 /* 입력 라벨 공통: 0.85rem·750·흰색 (운행 일지 라벨과 동일) */
 .modal-content.expense-form-content .form-group > label {
   color: var(--text-color);
-  font-size: 0.85rem;
+  font-size: var(--fs-3);
   font-weight: var(--fw-strong);
 }
 

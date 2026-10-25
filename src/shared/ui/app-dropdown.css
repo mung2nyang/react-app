@@ -14,7 +14,7 @@
   background: transparent;
   color: var(--text-color);
   font: inherit;
-  font-size: 17px;
+  font-size: var(--fs-6);
   font-weight: var(--fw-bold);
   cursor: pointer;
 }

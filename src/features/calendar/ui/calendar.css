@@ -89,13 +89,13 @@
 }
 .sub-car-log-banner-title {
   font-weight: var(--fw-semibold);
-  font-size: 0.95rem;
+  font-size: var(--fs-4);
 }
 .sub-car-log-banner-back {
   border: none;
   background: transparent;
   color: var(--accent-color, #2563eb);
-  font-size: 0.85rem;
+  font-size: var(--fs-3);
   cursor: pointer;
   text-decoration: underline;
 }

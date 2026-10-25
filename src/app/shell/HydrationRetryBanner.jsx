@@ -13,7 +13,7 @@ const bannerStyle = {
   padding: '10px 16px',
   background: '#fff3cd',
   color: '#664d03',
-  fontSize: '13px',
+  fontSize: 'var(--fs-2)',
   borderBottom: '1px solid #ffe69c',
 }
 
@@ -24,7 +24,7 @@ const buttonStyle = {
   border: '1px solid #664d03',
   background: 'transparent',
   color: '#664d03',
-  fontSize: '13px',
+  fontSize: 'var(--fs-2)',
   cursor: 'pointer',
 }
 

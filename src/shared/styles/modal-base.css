@@ -16,9 +16,9 @@
   background: var(--card-bg);
   text-align: center;
 }
-.modal-title { font-size: 1.05rem; font-weight: var(--fw-black); color: var(--primary-color); margin-bottom: 12px; }
+.modal-title { font-size: var(--fs-6); font-weight: var(--fw-black); color: var(--primary-color); margin-bottom: 12px; }
 .confirm-modal-text {
-  font-size: 0.95rem;
+  font-size: var(--fs-4);
   margin: 0;
   white-space: pre-wrap;
   line-height: 1.4;

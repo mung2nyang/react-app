@@ -34,7 +34,7 @@
 .call-vat-check input:checked::after {
   content: '✓';
   color: #fff;
-  font-size: 12px;
+  font-size: var(--fs-floor);
   font-weight: var(--fw-heavy);
   line-height: 1;
 }

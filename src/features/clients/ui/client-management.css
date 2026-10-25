@@ -135,7 +135,7 @@
 
 .car-option-copy label {
   color: var(--text-color);
-  font-size: 0.85rem;
+  font-size: var(--fs-3);
   font-weight: var(--fw-strong);
 }
 

@@ -113,7 +113,7 @@
   border-radius: 50%;
   background: var(--card-bg);
   color: var(--sub-text-color);
-  font-size: 13px;
+  font-size: var(--fs-2);
   cursor: pointer;
 }
 
