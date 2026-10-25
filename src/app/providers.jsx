@@ -14,19 +14,3 @@ export function PendingWriteRetryBridge() {
 
   return null
 }
-
-/**
- * body.account-flow-active 클래스 토글 전담 브리지. App.jsx가 document.body를 직접
- * 만지지 않도록 격리한다 — InlineExpandHost류 raw DOM 조작 패턴이 새 코드에 다시
- * 생기지 않게 하기 위함.
- * @param {{ active: boolean }} props
- * @returns {null}
- */
-export function AccountFlowBodyClass({ active }) {
-  useEffect(() => {
-    document.body.classList.toggle('account-flow-active', active)
-    return () => document.body.classList.remove('account-flow-active')
-  }, [active])
-
-  return null
-}

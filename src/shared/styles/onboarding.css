@@ -17,7 +17,7 @@
   color: var(--primary-color);
 }
 .onboarding-logo-img { height: 38px; object-fit: contain; }
-.onboarding-logo-text { color: #fff; font-size: var(--fs-6); font-family: 'Jua', sans-serif; font-weight: var(--fw-regular); letter-spacing: -.5px; }
+.onboarding-logo-text { color: var(--text-color); font-size: var(--fs-6); font-family: 'Jua', sans-serif; font-weight: var(--fw-regular); letter-spacing: -.5px; }
 
 .onboarding-heading h1 {
   margin: 0 0 14px;

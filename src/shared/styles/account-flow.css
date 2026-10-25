@@ -1,16 +1,4 @@
-/* 계정 화면 틀(어두운 바탕 값·컨테이너·페이지)과 로그인 첫 화면·단추. 입력 단계는 auth-form.css, 처음 정보 입력은 onboarding.css. */
-
-body.account-flow-active {
-  min-height: 100dvh;
-  --bg-color: #1e1e1e;
-  --card-bg: #393939;
-  --input-bg: #393939;
-  --border-color: #4a4a4a;
-  --text-color: #ffffff;
-  --sub-text-color: #adadad;
-  background: var(--bg-color);
-  color: var(--text-color);
-}
+/* 계정 화면 틀(컨테이너·페이지)과 로그인 첫 화면·단추. 색은 variables.css 공통 값. 입력 단계는 auth-form.css, 처음 정보 입력은 onboarding.css. */
 
 .container.account-flow-container {
   min-height: 100dvh;
@@ -45,7 +33,7 @@ body.account-flow-active {
 }
 
 .auth-logo-img { width: 39px; height: 30px; object-fit: contain; }
-.auth-logo-text { color: #fff; font-family: 'Jua', sans-serif; font-weight: var(--fw-regular); letter-spacing: -.5px; }
+.auth-logo-text { color: var(--text-color); font-family: 'Jua', sans-serif; font-weight: var(--fw-regular); letter-spacing: -.5px; }
 
 .auth-intro-bottom {
   display: flex;
@@ -56,7 +44,7 @@ body.account-flow-active {
 
 .auth-btn-stack { display: grid; gap: 12px; }
 
-/* 구글 로그인 버튼 — 로그인 화면은 늘 어두워서 구글 규칙의 어두운 테마 색 사용 */
+/* 구글 로그인 버튼 — 테마에 따라 구글 규칙의 밝은/어두운 버튼 색 */
 .auth-google-btn {
   display: flex;
   align-items: center;
@@ -64,10 +52,10 @@ body.account-flow-active {
   gap: 12px;
   width: 100%;
   min-height: 60px;
-  border: 1px solid #8e918f;
+  border: 1px solid var(--google-btn-border);
   border-radius: 18px;
-  background: #131314;
-  color: #e3e3e3;
+  background: var(--google-btn-bg);
+  color: var(--google-btn-text);
   font: inherit;
   font-size: var(--fs-5);
   font-weight: var(--fw-bold);

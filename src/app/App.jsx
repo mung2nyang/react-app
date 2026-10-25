@@ -11,7 +11,7 @@ import { ensureProfileRow } from '../data/cloud/supabaseClient.ts'
 import { endCloudSession } from '../data/cloud/cloudSession.ts'
 import { hydrateFromSupabase } from '../data/hydrate/hydrate.ts'
 import { ownerKeyFromSession } from '../data/cloud/appSession.ts'
-import { AccountFlowBodyClass, PendingWriteRetryBridge } from './providers.jsx'
+import { PendingWriteRetryBridge } from './providers.jsx'
 import AuthRoute from './routes/AuthRoute.jsx'
 import AppShell from './shell/AppShell.jsx'
 import RequireSession from './routes/RequireSession.jsx'
@@ -52,7 +52,6 @@ export default function App() {
     guestLoadFailed,
     ownerKey,
     cars,
-    inAccountFlow,
     goHome,
     handleLogout,
   } = useAppSession()
@@ -65,7 +64,6 @@ export default function App() {
     <ToastProvider value={showToast}>
     <SessionProvider value={sessionValue}>
       <PendingWriteRetryBridge />
-      <AccountFlowBodyClass active={inAccountFlow} />
 
       {/* 로그인·처음 정보 입력 화면도 그리다 오류가 나면 빈 화면 대신 안내(로드맵 55). 로그인 뒤 화면은 AppShell 안쪽 안내가 먼저 잡는다. */}
       <PageLoadErrorBoundary resetKey={location.pathname}>

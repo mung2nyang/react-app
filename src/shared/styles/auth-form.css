@@ -38,7 +38,7 @@
   align-items: center;
   gap: 6px;
   justify-self: center;
-  color: #fff;
+  color: var(--text-color);
   font-size: var(--fs-6);
   font-weight: var(--fw-black);
 }

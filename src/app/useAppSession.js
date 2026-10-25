@@ -105,9 +105,10 @@ export function useAppSession() {
   }, [ownerKey])
 
   useEffect(() => {
-    if (booting) return // 부트 중엔 세션을 몰라 비회원(라이트) 설정이라 덮지 않는다(10-L)
+    // 부트 중·계정 화면은 덮지 않고 마지막 테마를 둔다(로그아웃해도 라이트로 바뀌지 않게).
+    if (booting || inAccountFlow) return
     applyTheme(practiceSettings.theme)
-  }, [booting, practiceSettings.theme, location.pathname])
+  }, [booting, inAccountFlow, practiceSettings.theme, location.pathname])
 
   useEffect(() => {
     if (!toast) return undefined
@@ -139,7 +140,6 @@ export function useAppSession() {
     guestLoadFailed: !!session?.guestMode && loadFailedOwner === ownerKey,
     ownerKey,
     cars,
-    inAccountFlow,
     goHome,
     handleLogout,
   }
