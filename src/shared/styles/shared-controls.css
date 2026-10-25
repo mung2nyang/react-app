@@ -11,8 +11,8 @@
 }
 
 .summary-title {
-  font-size: var(--fs-4);
-  font-weight: var(--fw-bold);
+  font-size: var(--title-2-size);
+  font-weight: var(--title-2-weight);
   color: var(--sub-text-color);
   margin-bottom: 14px;
   display: flex;
@@ -64,8 +64,8 @@
 
 .modal-section-title {
   margin-bottom: 12px;
-  font-size: var(--fs-4);
-  font-weight: var(--fw-heavy);
+  font-size: var(--title-2-size);
+  font-weight: var(--title-2-weight);
   color: var(--text-color);
 }
 

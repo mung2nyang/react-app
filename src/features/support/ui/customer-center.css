@@ -6,7 +6,7 @@
 .support-tab.active { color: #fff; background: var(--primary-fill); }
 .support-panel { display: grid; gap: 9px; }
 .support-card { padding: 22px 20px; border: 1px solid var(--border-color); border-radius: 22px; background: var(--card-bg); }
-.support-card h3 { margin: 0 0 7px; font-size: var(--fs-6); }
+.support-card h3 { margin: 0 0 7px; font-size: var(--title-2-size); font-weight: var(--title-2-weight); }
 .support-card p { margin: 0; color: var(--sub-text-color); font-size: var(--fs-3); line-height: 1.55; }
 .faq-item { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%; padding: 17px 16px; overflow: hidden; border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-color); background: var(--card-bg); text-align: left; font: inherit; cursor: pointer; }
 .faq-item span { font-size: var(--fs-4); font-weight: var(--fw-bold); }

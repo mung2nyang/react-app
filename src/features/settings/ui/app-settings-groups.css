@@ -4,8 +4,8 @@
 .app-settings-page .settings-group-title {
   margin: 18px 4px 8px;
   color: var(--sub-text-color);
-  font-size: var(--fs-2);
-  font-weight: var(--fw-bold);
+  font-size: var(--title-3-size);
+  font-weight: var(--title-3-weight);
   text-align: left;
 }
 

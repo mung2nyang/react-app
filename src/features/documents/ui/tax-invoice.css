@@ -105,8 +105,8 @@
 
 .tax-invoice-entry-head strong {
   color: var(--text-color);
-  font-size: var(--fs-4);
-  font-weight: var(--fw-black);
+  font-size: var(--title-2-size);
+  font-weight: var(--title-2-weight);
 }
 
 .tax-invoice-entry-card .car-sub-text {

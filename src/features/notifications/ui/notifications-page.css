@@ -16,8 +16,8 @@
 .notif-settings-title {
   margin: 0 0 4px;
   color: var(--sub-text-color);
-  font-size: var(--fs-3);
-  font-weight: var(--fw-bold);
+  font-size: var(--title-3-size);
+  font-weight: var(--title-3-weight);
 }
 
 .notif-settings-row {

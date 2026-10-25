@@ -32,8 +32,8 @@
   gap: 8px;
   margin-bottom: 9px;
   color: var(--primary-color);
-  font-size: var(--fs-4);
-  font-weight: var(--fw-heavy);
+  font-size: var(--title-2-size);
+  font-weight: var(--title-2-weight);
 }
 
 .work-log-page .modal-section-title::before {

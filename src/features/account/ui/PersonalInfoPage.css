@@ -33,8 +33,8 @@
 /* .setting-section h3(margin-bottom:10px)보다 구체적으로 덮어 제목-설명 간격 축소 */
 .personal-info-page .personal-card-heading h3 {
   margin: 0 0 2px;
-  font-size: var(--fs-4);
-  font-weight: var(--fw-heavy);
+  font-size: var(--title-2-size);
+  font-weight: var(--title-2-weight);
 }
 
 .personal-info-page .personal-card-heading p {

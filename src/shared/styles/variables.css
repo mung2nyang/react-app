@@ -16,6 +16,12 @@
   --fw-strong: 750;
   --fw-heavy: 800;
   --fw-black: 900;
+  --title-1-size: var(--fs-7);
+  --title-1-weight: var(--fw-heavy);
+  --title-2-size: var(--fs-5);
+  --title-2-weight: var(--fw-heavy);
+  --title-3-size: var(--fs-3);
+  --title-3-weight: var(--fw-bold);
   --bg-color: #eef1f5;
   --text-color: #2d3748;
   --sub-text-color: #5a6778;
