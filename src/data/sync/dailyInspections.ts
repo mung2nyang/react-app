@@ -8,6 +8,8 @@ import type { InspectionItems } from '../../domain/dailyInspectionItems.ts'
 
 export type DailyInspection = { items: InspectionItems, actionNote: string, inspectorName: string }
 
+export const DELETE_FAIL = '일상점검표를 지우지 못했습니다.'
+
 /** 그 차량·날짜 점검표 1장. 없으면 null. */
 export async function fetchDailyInspection(vehicleId: string | number, workDate: string): Promise<DailyInspection | null> {
   const { data, error } = await supabase
@@ -46,6 +48,18 @@ export async function saveDailyInspection({ vehicleId, workDate, items, actionNo
   }, { onConflict: 'vehicle_id,work_date' })
   assertSessionStillCurrent(captured)
   if (error) throw error
+}
+
+/** 그 차량·날짜 점검표 지우기. 권한이 막으면 서버가 오류 없이 0줄을 지우므로 0줄도 실패로 본다. */
+export async function deleteDailyInspection({ vehicleId, workDate }: { vehicleId: string | number, workDate: string }) {
+  if (!getCloudUserId()) throw new Error('로그인 후 지울 수 있습니다.')
+  const blocked = blockedReasonForCloudWrite(String(vehicleId))
+  if (blocked) throw new Error(blocked)
+  const captured = captureSession()
+  const { data, error } = await supabase.from('daily_inspections').delete().eq('vehicle_id', vehicleId).eq('work_date', workDate).select('id')
+  assertSessionStillCurrent(captured)
+  if (error) throw error
+  if (!Array.isArray(data) || data.length === 0) throw new Error(DELETE_FAIL)
 }
 
 /**

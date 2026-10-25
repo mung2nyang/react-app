@@ -2,7 +2,7 @@
 // 일지 화면의 일상점검표 안내 줄(피그마 1번) — 그 차량 스위치 켜짐·휴무 아님·로그인·차량이 서버에 있을 때만.
 // 열 때 서버에서 그날 1장을 읽어 "작성 필요 [+ 입력]" / "작성 완료 [보기]"를 보이고, 누르면 점검표 모달.
 import { useEffect, useState } from 'react'
-import { fetchDailyInspection, saveDailyInspection } from '../../../data/sync/dailyInspections.ts'
+import { deleteDailyInspection, fetchDailyInspection, saveDailyInspection } from '../../../data/sync/dailyInspections.ts'
 import { vehicleSupabaseIdForLog } from '../../../data/sync/mainDayLogRouting.ts'
 import { useOwnerCars } from '../../../data/store/ownerDataHooks.ts'
 import { useOwnerProfile } from '../../../data/store/ownerProfileDriversHooks.ts'
@@ -12,10 +12,12 @@ import './daily-inspection-loading.css'
 import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
+import { confirmDialog } from '../../../shared/ui/confirmDialog.jsx'
 
 /** @typedef {import('../../../data/sync/dailyInspections.ts').DailyInspection} DailyInspection */
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
+const DELETED_TOAST = '일상점검표를 지웠습니다.'
 /** @type {{ status: 'loading', record: DailyInspection|null }} */
 const LOADING = { status: 'loading', record: null }
 
@@ -82,6 +84,23 @@ export default function DailyInspectionNotice({ logId, dateKey, month, day, enab
     }
   }
 
+  // 지우기는 확인 창을 거쳐 서버에서 지운 뒤 "작성 필요"로 돌린다.
+  async function remove() {
+    if (vehicleId == null) return false
+    const ok = await confirmDialog({ title: '점검표를 지울까요?', message: `모든 항목이 비어 있어 ${month}월 ${day}일 점검표가 지워집니다. 되돌릴 수 없습니다.`, confirmLabel: '지우기', cancelLabel: '취소', danger: true })
+    if (!ok) return false
+    try {
+      await deleteDailyInspection({ vehicleId, workDate: dateKey })
+      setResult({ key: loadKey, status: 'ready', record: null })
+      showToast?.(DELETED_TOAST)
+      return true
+    } catch (error) {
+      console.error('[DailyInspectionNotice] 지우기 실패:', error)
+      showToast?.(error instanceof Error && error.message ? error.message : SAVE_FAIL_TOAST)
+      return false
+    }
+  }
+
   return (
     <>
       <div className="daily-inspection-notice">
@@ -103,7 +122,7 @@ export default function DailyInspectionNotice({ logId, dateKey, month, day, enab
         )}
       </div>
       {modalOpen && (
-        <DailyInspectionModal title={title} record={load.record} inspectorName={inspectorName} onClose={() => setModalOpen(false)} onSave={save} />
+        <DailyInspectionModal title={title} record={load.record} inspectorName={inspectorName} onClose={() => setModalOpen(false)} onSave={save} onDelete={remove} />
       )}
     </>
   )

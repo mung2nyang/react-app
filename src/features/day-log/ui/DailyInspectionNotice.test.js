@@ -16,10 +16,17 @@ let failFetch = false
 let holdFetch = null
 /** @type {Array<Record<string, unknown>>} */
 let saved = []
+/** @type {Array<{ vehicleId: string|number, workDate: string }>} */
+let deleted = []
+/** @type {Error|null} */
+let deleteError = null
+/** @type {Promise<null>|null} */
+let holdDelete = null
 mock.module('../../../data/sync/dailyInspections.ts', {
   namedExports: {
     fetchDailyInspection: async () => { if (holdFetch) return holdFetch; if (failFetch) throw new Error('down'); return serverRecord },
     saveDailyInspection: async (/** @type {Record<string, unknown>} */ input) => { saved.push(input) },
+    deleteDailyInspection: async (/** @type {{ vehicleId: string|number, workDate: string }} */ input) => { if (holdDelete) await holdDelete; if (deleteError) throw deleteError; deleted.push(input) },
   },
 })
 
@@ -34,6 +41,7 @@ const { default: DailyInspectionNotice } = await import('./DailyInspectionNotice
 const { commitCars, commitProfile } = await import('../../../data/store/commitHelpers.ts')
 const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.ts')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')
+const { SERVER_SAVE_FAIL } = await import('../../../shared/utils/failureMessages.js')
 
 const OWNER = 'di-notice-owner'
 
@@ -42,6 +50,9 @@ beforeEach(() => {
   failFetch = false
   holdFetch = null
   saved = []
+  deleted = []
+  deleteError = null
+  holdDelete = null
   commitCars(OWNER, [
     { id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' },
     { id: 'c-sub', type: 'sub', number: '77사7777', supabaseId: 'veh-sub', driverName: '박기사' },
@@ -202,6 +213,128 @@ test('불러오기 실패 → "불러오지 못했습니다 [다시 시도]" →
     await view.click('다시 시도')
     assert.ok(view.text().includes('일상점검표 작성이 필요합니다.'))
   } finally {
+    await view.cleanup()
+  }
+})
+
+// 로드맵 112 — 지우기: 저장된 점검표를 수정에서 다 비우고 [저장] → 확인 창 → 지우기. 처음 입력은 지금처럼 막음.
+/** @param {boolean} answer @param {Array<string>} asked */
+function fakeConfirm(answer, asked) {
+  const original = window.confirm
+  window.confirm = (/** @type {string|undefined} */ message) => { asked.push(String(message)); return answer }
+  return () => { window.confirm = original }
+}
+
+/** 저장된 점검표 보기 → 연필 → [모두 양호]를 다시 눌러 전부 해제. @param {Awaited<ReturnType<typeof render>>} view */
+async function clearAll(view) {
+  await view.click('보기')
+  await view.click('수정')
+  await view.click('모두 양호')
+  assert.equal(document.body.querySelectorAll('.di-choice.is-selected').length, 0, '전부 해제')
+}
+
+test('다 비우고 [저장] → 확인 창 [취소]면 수정 화면에 그대로, [지우기]면 지우고 창 닫힘·알림·"작성이 필요합니다"', async () => {
+  serverRecord = { items: allGoodItems(), actionNote: '', inspectorName: '김기사' }
+  const view = await render()
+  /** @type {Array<string>} */
+  const asked = []
+  let restore = fakeConfirm(false, asked)
+  try {
+    await clearAll(view)
+    await view.click('저장')
+    assert.deepEqual(asked, ['점검표를 지울까요?\n모든 항목이 비어 있어 10월 1일 점검표가 지워집니다. 되돌릴 수 없습니다.'])
+    assert.deepEqual(deleted, [], '취소면 안 지움')
+    assert.ok(document.body.querySelector('.di-choice'), '수정 화면 그대로')
+    assert.deepEqual(view.toasts, [])
+    restore()
+    restore = fakeConfirm(true, asked)
+    await view.click('저장')
+    assert.deepEqual(deleted, [{ vehicleId: 'veh-main', workDate: '2026-10-01' }])
+    assert.equal(saved.length, 0, '저장이 아니라 지우기')
+    assert.equal(document.body.querySelector('.daily-inspection-modal'), null, '창 닫힘')
+    assert.deepEqual(view.toasts, ['일상점검표를 지웠습니다.'])
+    assert.ok(view.text().includes('일상점검표 작성이 필요합니다.'))
+    await view.click('+ 입력')
+    await view.click('모두 양호')
+    await view.click('저장')
+    assert.equal(saved.length, 1, '지운 날에 다시 저장')
+  } finally {
+    restore()
+    await view.cleanup()
+  }
+})
+
+test('지우기 실패(서버 오류·0줄)면 실패 알림, 수정 화면에 남고 안내 줄은 그대로', async () => {
+  serverRecord = { items: allGoodItems(), actionNote: '', inspectorName: '김기사' }
+  const view = await render()
+  const restore = fakeConfirm(true, [])
+  const errors = mock.method(console, 'error', () => {})
+  try {
+    await clearAll(view)
+    deleteError = new Error('일상점검표를 지우지 못했습니다.')
+    await view.click('저장')
+    deleteError = new Error('')
+    await view.click('저장')
+    assert.deepEqual(view.toasts, ['일상점검표를 지우지 못했습니다.', SERVER_SAVE_FAIL])
+    assert.ok(document.body.querySelector('.di-choice'), '수정 화면 그대로')
+    await view.click('취소')
+    await view.click('닫기')
+    assert.ok(view.text().includes('10월 1일 일상점검표 작성이 완료되었습니다.'), '안내 줄 그대로')
+  } finally {
+    errors.mock.restore()
+    restore()
+    await view.cleanup()
+  }
+})
+
+test('지우는 동안 [저장]이 잠기고 두 번 눌러도 한 번만 지운다', async () => {
+  serverRecord = { items: allGoodItems(), actionNote: '', inspectorName: '김기사' }
+  const view = await render()
+  const restore = fakeConfirm(true, [])
+  try {
+    await clearAll(view)
+    /** @type {() => void} */
+    let release = () => {}
+    holdDelete = new Promise((resolve) => { release = () => resolve(null) })
+    const saveButton = /** @type {HTMLButtonElement} */ (document.body.querySelector('.modal-btn.confirm'))
+    await act(async () => { saveButton.click(); saveButton.click() })
+    assert.equal(saveButton.disabled, true, '지우는 중 잠금')
+    await act(async () => { release(); await new Promise((resolve) => setTimeout(resolve, 0)) })
+    assert.equal(deleted.length, 1)
+  } finally {
+    restore()
+    await view.cleanup()
+  }
+})
+
+test('처음 입력·일부만 고른 수정은 지금처럼 "모든 항목을 선택해 주세요."(지우지 않음), 조치 기록만 써도 항목이 다 비면 지우기', async () => {
+  const asked = /** @type {Array<string>} */ ([])
+  const restore = fakeConfirm(true, asked)
+  let view = await render()
+  try {
+    await view.click('+ 입력')
+    await view.click('저장')
+    assert.deepEqual(view.toasts, ['모든 항목을 선택해 주세요.'])
+    await view.cleanup()
+    serverRecord = { items: allGoodItems(), actionNote: '', inspectorName: '김기사' }
+    view = await render()
+    await view.click('보기')
+    await view.click('수정')
+    const firstGood = /** @type {HTMLButtonElement} */ (document.body.querySelector('.di-choice.good.is-selected'))
+    await act(async () => { firstGood.click() })
+    await view.click('저장')
+    assert.deepEqual(view.toasts, ['모든 항목을 선택해 주세요.'], '일부만 비면 막음')
+    await view.click('모두 양호')
+    await view.click('모두 양호')
+    const note = /** @type {HTMLTextAreaElement} */ (document.body.querySelector('.di-note'))
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set
+    await act(async () => { setter?.call(note, '메모만'); note.dispatchEvent(new window.Event('input', { bubbles: true })) })
+    await view.click('저장')
+    assert.equal(asked.length, 1, '항목이 다 비면 조치 기록이 있어도 지우기')
+    assert.equal(deleted.length, 1)
+    assert.equal(saved.length, 0)
+  } finally {
+    restore()
     await view.cleanup()
   }
 })

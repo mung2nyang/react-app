@@ -1,8 +1,8 @@
 // @ts-check
 // 일상점검표 모달 — 입력·보기 한 창(피그마 2·3번). 입력 모드는 바깥 클릭으로 안 닫힘(8번 규칙), 보기 모드는 닫힘.
 // 연필로 들어온 수정 중 [취소]는 보기로 돌아가고, 처음 입력 중 [취소]는 창을 닫는다.
-import { useState } from 'react'
-import { DAILY_INSPECTION_SECTIONS, INSPECTION_RESULT_LABEL, allGoodItems, isInspectionComplete } from '../../../domain/dailyInspectionItems.ts'
+import { useRef, useState } from 'react'
+import { DAILY_INSPECTION_SECTIONS, INSPECTION_RESULT_LABEL, allGoodItems, isInspectionComplete, isInspectionEmpty } from '../../../domain/dailyInspectionItems.ts'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { useToast } from '../../../shared/hooks/useToast.js'
 
@@ -18,15 +18,17 @@ const INCOMPLETE_TOAST = '모든 항목을 선택해 주세요.'
  *   inspectorName: string,
  *   onClose: () => void,
  *   onSave: (next: { items: InspectionItems, actionNote: string }) => Promise<boolean>,
+ *   onDelete: () => Promise<boolean>,
  * }} props
  */
-export default function DailyInspectionModal({ title, record, inspectorName, onClose, onSave }) {
+export default function DailyInspectionModal({ title, record, inspectorName, onClose, onSave, onDelete }) {
   const showToast = useToast()
   const [mode, setMode] = useState(/** @type {'input'|'view'} */ (record ? 'view' : 'input'))
   const [fromView, setFromView] = useState(false)
   const [items, setItems] = useState(/** @type {InspectionItems} */ ({}))
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
+  const savingNow = useRef(false)
   const editing = mode === 'input'
   const signer = editing ? inspectorName : (record?.inspectorName || inspectorName)
 
@@ -58,10 +60,14 @@ export default function DailyInspectionModal({ title, record, inspectorName, onC
   }
 
   async function save() {
-    if (saving) return
-    if (!isInspectionComplete(items)) { showToast?.(INCOMPLETE_TOAST); return }
+    if (savingNow.current) return
+    // 저장된 점검표를 다 비우고 저장하면 지운다(처음 입력은 지금처럼 막음).
+    const removing = fromView && !!record && isInspectionEmpty(items)
+    if (!removing && !isInspectionComplete(items)) { showToast?.(INCOMPLETE_TOAST); return }
+    savingNow.current = true
     setSaving(true)
-    const ok = await onSave({ items, actionNote: note })
+    const ok = removing ? await onDelete() : await onSave({ items, actionNote: note })
+    savingNow.current = false
     setSaving(false)
     if (ok) onClose()
   }

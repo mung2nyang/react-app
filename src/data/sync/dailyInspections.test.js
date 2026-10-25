@@ -70,3 +70,44 @@ test('9-C-1 점검표가 1장이라도 있는지', async () => {
   handlers.daily_inspections = { select: () => ({ data: [], error: null }) }
   assert.equal(await hasAnyDailyInspection('veh-1'), false)
 })
+
+// 로드맵 112 — 지우기: 차량+날짜 1장, 저장과 같은 막기, 권한이 막아 0줄이면 실패.
+test('지우기: 차량·날짜로 지우고 지운 줄을 받는다', async () => {
+  beginSessionEpoch('driver-1', 'owner-1')
+  setHydration({ status: 'ready', userId: 'driver-1', ownerKey: 'owner-1' })
+  const { deleteDailyInspection } = await import('./dailyInspections.ts')
+  /** @type {Array<import('../../testSupport/fakeSupabaseClient.js').EqFilters>} */
+  const filters = []
+  handlers.daily_inspections = { delete: (f) => { filters.push(/** @type {import('../../testSupport/fakeSupabaseClient.js').EqFilters} */ (f)); return { data: [{ id: 'a' }], error: null } } }
+  await deleteDailyInspection({ vehicleId: 'veh-1', workDate: '2026-10-25' })
+  assert.deepEqual(filters, [{ vehicle_id: 'veh-1', work_date: '2026-10-25' }])
+})
+
+test('지우기 실패: 서버 오류는 던지고, 0줄(권한 없음·이미 없음)은 "지우지 못했습니다"로 던진다', async () => {
+  beginSessionEpoch('driver-1', 'owner-1')
+  setHydration({ status: 'ready', userId: 'driver-1', ownerKey: 'owner-1' })
+  const { deleteDailyInspection, DELETE_FAIL } = await import('./dailyInspections.ts')
+  const input = { vehicleId: 'veh-1', workDate: '2026-10-25' }
+  handlers.daily_inspections = { delete: () => ({ data: null, error: { message: 'down' } }) }
+  await assert.rejects(() => deleteDailyInspection(input), (error) => error instanceof Error ? true : (/** @type {{ message?: string }} */ (error)).message === 'down')
+  handlers.daily_inspections = { delete: () => ({ data: [], error: null }) }
+  await assert.rejects(() => deleteDailyInspection(input), new RegExp(DELETE_FAIL))
+  handlers.daily_inspections = { delete: () => ({ data: null, error: null }) }
+  await assert.rejects(() => deleteDailyInspection(input), new RegExp(DELETE_FAIL), '줄 정보가 없어도 실패')
+  assert.equal(DELETE_FAIL, '일상점검표를 지우지 못했습니다.')
+})
+
+test('지우기 막기: 로그인 안 함·서버 값 받는 중이면 서버를 부르지 않고 던진다, 지우는 사이 계정이 바뀌면 던진다', async () => {
+  const { deleteDailyInspection } = await import('./dailyInspections.ts')
+  const input = { vehicleId: 'veh-1', workDate: '2026-10-25' }
+  let deletes = 0
+  handlers.daily_inspections = { delete: () => { deletes += 1; return { data: [{ id: 'a' }], error: null } } }
+  await assert.rejects(() => deleteDailyInspection(input), /로그인/)
+  beginSessionEpoch('driver-1', 'owner-1')
+  setHydration({ status: 'hydrating', userId: 'driver-1', ownerKey: 'owner-1' })
+  await assert.rejects(() => deleteDailyInspection(input))
+  assert.equal(deletes, 0)
+  setHydration({ status: 'ready', userId: 'driver-1', ownerKey: 'owner-1' })
+  handlers.daily_inspections = { delete: () => { endCloudSession(); return { data: [{ id: 'a' }], error: null } } }
+  await assert.rejects(() => deleteDailyInspection(input))
+})

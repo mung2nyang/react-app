@@ -50,6 +50,11 @@ export function isInspectionComplete(items: InspectionItems) {
   return DAILY_INSPECTION_KEYS.every((key) => items[key] === 'good' || items[key] === 'bad')
 }
 
+/** 11항목이 모두 비었는지(수정에서 다 비우고 저장하면 지우기). */
+export function isInspectionEmpty(items: InspectionItems) {
+  return DAILY_INSPECTION_KEYS.every((key) => items[key] !== 'good' && items[key] !== 'bad')
+}
+
 /** 서버에서 읽은 값을 아는 항목키·양호/불량만 남겨 좁힌다. */
 export function sanitizeInspectionItems(raw: JsonValue | undefined): InspectionItems {
   const items: InspectionItems = {}
