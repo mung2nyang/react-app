@@ -58,6 +58,7 @@
 }
 
 .settings-title {
+  margin: 0;
   font-size: var(--title-1-size);
   font-weight: var(--title-1-weight);
 }

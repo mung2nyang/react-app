@@ -52,6 +52,7 @@ test('onBack이 없으면 뒤로가기 대신 빈 자리, 제목·메뉴는 그�
     assert.equal(Boolean(view.back), false, '뒤로가기 버튼이 없어야 한다')
     assert.equal(view.header?.children.length, 3, '왼쪽 빈 자리 + 제목 + 메뉴 세 칸이어야 제목이 가운데에 남는다')
     assert.equal(view.header?.querySelector('.settings-title')?.textContent, '매출')
+    assert.equal(view.header?.querySelector('h1.settings-title')?.textContent, '매출')
     assert.ok(view.menu, '메뉴 버튼은 그대로')
   } finally {
     await view.cleanup()

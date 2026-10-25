@@ -19,11 +19,11 @@ export default function PageHeader({ title, onBack, onOpenMenu, titleExtra }) {
       )}
       {titleExtra ? (
         <div className="modal-title-stack">
-          <div className="settings-title">{title}</div>
+          <h1 className="settings-title">{title}</h1>
           {titleExtra}
         </div>
       ) : (
-        <div className="settings-title">{title}</div>
+        <h1 className="settings-title">{title}</h1>
       )}
       {onOpenMenu ? (
         <button type="button" className="icon-btn top-menu-btn" title="메뉴" onClick={onOpenMenu}>
