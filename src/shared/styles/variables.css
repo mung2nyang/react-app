@@ -9,6 +9,13 @@
   --fs-5: 1rem;
   --fs-6: 1.08rem;
   --fs-7: 1.18rem;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-strong: 750;
+  --fw-heavy: 800;
+  --fw-black: 900;
   --bg-color: #eef1f5;
   --text-color: #2d3748;
   --sub-text-color: #5a6778;

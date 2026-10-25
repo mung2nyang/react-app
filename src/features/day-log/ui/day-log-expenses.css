@@ -81,7 +81,7 @@
   color: var(--text-color);
   text-align: left;
   font-size: var(--fs-6);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 
 /* 일지 비용 위젯 기본 규칙 — side-menu.css에서 이동(day-log 전용). */
@@ -94,7 +94,7 @@
   color: var(--text-color);
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   cursor: pointer;
 }
 

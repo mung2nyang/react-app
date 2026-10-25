@@ -45,7 +45,7 @@
   border: 1px solid var(--sunday-color);
   border-radius: 12px;
   font-size: var(--fs-4);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .unpaid-summary-card svg {
@@ -88,7 +88,7 @@
   background: color-mix(in srgb, var(--card-bg, #fff) 88%, var(--accent-color, #2563eb) 12%);
 }
 .sub-car-log-banner-title {
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   font-size: 0.95rem;
 }
 .sub-car-log-banner-back {

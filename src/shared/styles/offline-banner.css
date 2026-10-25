@@ -13,7 +13,7 @@
   background-color: var(--danger-fill);
   color: #fff;
   font-size: var(--fs-3);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   text-align: left;
   word-break: keep-all;
 }

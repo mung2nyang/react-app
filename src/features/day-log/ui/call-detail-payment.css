@@ -7,7 +7,7 @@
   margin: 4px 0 2px;
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
 }
 
@@ -35,7 +35,7 @@
   content: '✓';
   color: #fff;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   line-height: 1;
 }
 

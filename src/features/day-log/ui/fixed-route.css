@@ -41,7 +41,7 @@
   right: 10px;
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   white-space: nowrap;
   pointer-events: none;
 }
@@ -63,7 +63,7 @@
   color: var(--text-color);
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   cursor: pointer;
 }
 
@@ -102,12 +102,12 @@
   padding: 6px 12px;
   color: var(--text-color);
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .fixed-route-chip-select .fixed-route-chip-count {
   color: var(--primary-color);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   margin-left: 4px;
 }
 

@@ -26,7 +26,7 @@
   background: var(--primary-fill);
   color: #fff;
   font: inherit;
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   cursor: pointer;
 }
 
@@ -49,7 +49,7 @@
 .setting-section h3 {
   margin: 0 0 10px;
   font-size: var(--fs-3);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 
 /* 스위치는 체크박스를 숨겨 그림으로 그리므로, 키보드 위치 표시를 그림에 준다. */
@@ -69,7 +69,7 @@
 }
 
 .setting-item > label:first-child {
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   font-size: var(--fs-4);
 }
 
@@ -99,7 +99,7 @@
   color: var(--text-color);
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: 750;
+  font-weight: var(--fw-strong);
   cursor: pointer;
 }
 
@@ -122,7 +122,7 @@
   background: transparent;
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .maint-fuel-tabs .toggle-btn.active-work {
@@ -165,6 +165,6 @@
   transform: translateY(-50%);
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   pointer-events: none;
 }

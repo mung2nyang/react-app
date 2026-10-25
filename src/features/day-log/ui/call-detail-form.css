@@ -7,7 +7,7 @@
   border-bottom: 0;
   color: var(--primary-color);
   font-size: var(--fs-4);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   text-align: left;
 }
 
@@ -22,7 +22,7 @@
   color: var(--primary-color);
   font: inherit;
   font-size: var(--fs-3);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
 }
 
@@ -70,11 +70,11 @@
 .work-log-page .fixed-route-input-row > label {
   color: var(--text-color);
   font-size: 0.85rem;
-  font-weight: 750;
+  font-weight: var(--fw-strong);
 }
 
-.work-log-page .call-detail-panel label.load-label { color: var(--primary-color); font-weight: 800; }
-.work-log-page .call-detail-panel label.unload-label { color: var(--sunday-color); font-weight: 800; }
+.work-log-page .call-detail-panel label.load-label { color: var(--primary-color); font-weight: var(--fw-heavy); }
+.work-log-page .call-detail-panel label.unload-label { color: var(--sunday-color); font-weight: var(--fw-heavy); }
 
 .work-log-page .call-inline-field {
   display: grid;
@@ -179,7 +179,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: var(--fs-2);
-  font-weight: 400;
+  font-weight: var(--fw-regular);
 }
 
 .work-log-page .app-temporal-trigger.has-value .app-temporal-value {
@@ -222,7 +222,7 @@
 
 .call-inline-field label {
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .input-with-suffix {
@@ -252,7 +252,7 @@
   overflow: hidden;
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   white-space: nowrap;
   pointer-events: none;
 }
@@ -273,7 +273,7 @@
   color: var(--text-color);
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
 }
 

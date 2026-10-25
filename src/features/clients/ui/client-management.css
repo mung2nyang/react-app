@@ -40,14 +40,14 @@
 .client-card-title strong {
   color: var(--text-color);
   font-size: var(--fs-4);
-  font-weight: 850;
+  font-weight: var(--fw-black);
 }
 
 .client-card-title span,
 .client-card-badges span {
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
-  font-weight: 650;
+  font-weight: var(--fw-bold);
 }
 
 .client-modal-header {
@@ -136,7 +136,7 @@
 .car-option-copy label {
   color: var(--text-color);
   font-size: 0.85rem;
-  font-weight: 750;
+  font-weight: var(--fw-strong);
 }
 
 .car-option-copy p {

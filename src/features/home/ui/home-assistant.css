@@ -51,14 +51,14 @@
 .home-assistant-name {
   color: var(--text-color);
   font-size: var(--fs-4);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 
 .home-assistant-hint {
   overflow: hidden;
   color: var(--sub-text-color);
   font-size: var(--fs-3);
-  font-weight: 650;
+  font-weight: var(--fw-bold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -124,7 +124,7 @@
   color: #fff;
   font: inherit;
   font-size: var(--fs-3);
-  font-weight: 750;
+  font-weight: var(--fw-strong);
   cursor: pointer;
 }
 
@@ -152,7 +152,7 @@
   margin: 0;
   color: var(--text-color);
   font-size: var(--fs-4);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   line-height: 1.5;
 }
 
@@ -171,7 +171,7 @@
   color: #fff;
   font: inherit;
   font-size: var(--fs-3);
-  font-weight: 750;
+  font-weight: var(--fw-strong);
   cursor: pointer;
 }
 

@@ -15,7 +15,7 @@
   color: var(--text-color);
   font: inherit;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
 }
 
@@ -110,7 +110,7 @@
   border: 1px solid var(--border-color);
   background-color: var(--input-bg);
   font-size: var(--fs-3);
-  font-weight: 400;
+  font-weight: var(--fw-regular);
   text-align: center;
 }
 

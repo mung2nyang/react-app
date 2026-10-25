@@ -34,7 +34,7 @@
 .linked-driver-profile-card > div:last-child > span {
   color: var(--text-color);
   font-size: var(--fs-floor);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 .linked-driver-profile-card em {
   padding: 4px 7px;
@@ -43,7 +43,7 @@
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
   font-style: normal;
-  font-weight: 850;
+  font-weight: var(--fw-black);
 }
 .linked-driver-profile-card em.active {
   background: color-mix(in srgb, #40a36f 14%, var(--card-bg));
@@ -59,7 +59,7 @@
   background: var(--hover-bg);
   color: var(--primary-color);
   font-size: var(--fs-3);
-  font-weight: 900;
+  font-weight: var(--fw-black);
 }
 .linked-driver-chip-row { display: flex; gap: 8px; margin: 12px 0; }
 .linked-driver-profile-actions { display: flex; align-items: center; gap: 8px; }
@@ -72,7 +72,7 @@
   border-radius: 10px;
   padding: 11px 8px;
   font-size: var(--fs-3);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
 }
 #linkedDriverSettlementSummary .date-navigator {
@@ -124,7 +124,7 @@
 }
 /* 보리 검증 지적(2026-09-17) — "N건 · 차량번호"를 거래처명과 굵기 통일 */
 .linked-driver-client-head-row span {
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 .linked-driver-invoice-card {
   margin-bottom: 12px;
@@ -151,7 +151,7 @@
 .linked-driver-invoice-money strong small {
   margin-right: 6px;
   font-size: var(--fs-floor);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   color: var(--sub-text-color);
 }
 

@@ -26,7 +26,7 @@
   padding-top: 4px;
   color: var(--primary-color);
   font-size: var(--fs-4);
-  font-weight: 850;
+  font-weight: var(--fw-black);
 }
 
 .call-detail-section {

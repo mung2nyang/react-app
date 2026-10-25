@@ -13,7 +13,7 @@
   padding: 14px 24px;
   border-radius: 30px;
   font-size: var(--fs-4);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   z-index: 2000;
   text-align: center;
   word-break: keep-all; /* 단어 중간에서 줄을 바꾸지 않는다 */

@@ -2,47 +2,47 @@
    .faq-item/.support-detail은 두 화면이 같이 쓴다. */
 .customer-center-page { padding-bottom: 110px; text-align: left; }
 .support-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0 14px; padding: 5px; border-radius: 14px; background: var(--input-bg); }
-.support-tab { min-height: 44px; padding: 7px 4px; border: 0; border-radius: 10px; background: transparent; color: var(--sub-text-color); font: inherit; font-size: var(--fs-floor); font-weight: 750; cursor: pointer; }
+.support-tab { min-height: 44px; padding: 7px 4px; border: 0; border-radius: 10px; background: transparent; color: var(--sub-text-color); font: inherit; font-size: var(--fs-floor); font-weight: var(--fw-strong); cursor: pointer; }
 .support-tab.active { color: #fff; background: var(--primary-fill); }
 .support-panel { display: grid; gap: 9px; }
 .support-card { padding: 22px 20px; border: 1px solid var(--border-color); border-radius: 22px; background: var(--card-bg); }
 .support-card h3 { margin: 0 0 7px; font-size: var(--fs-6); }
 .support-card p { margin: 0; color: var(--sub-text-color); font-size: var(--fs-3); line-height: 1.55; }
 .faq-item { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; width: 100%; padding: 17px 16px; overflow: hidden; border: 1px solid var(--border-color); border-radius: 16px; color: var(--text-color); background: var(--card-bg); text-align: left; font: inherit; cursor: pointer; }
-.faq-item span { font-size: var(--fs-4); font-weight: 700; }
+.faq-item span { font-size: var(--fs-4); font-weight: var(--fw-bold); }
 .faq-item i { color: var(--primary-color); font-size: var(--fs-7); font-style: normal; }
-.support-detail { display: none; grid-column: 1 / -1; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border-color); color: var(--sub-text-color); font-size: var(--fs-3); font-weight: 500; line-height: 1.6; }
+.support-detail { display: none; grid-column: 1 / -1; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--border-color); color: var(--sub-text-color); font-size: var(--fs-3); font-weight: var(--fw-medium); line-height: 1.6; }
 .faq-item.open .support-detail { display: block; }
 .support-panel-empty { padding: 32px 16px; border: 1px solid var(--border-color); border-radius: 16px; color: var(--sub-text-color); font-size: var(--fs-3); text-align: center; display: grid; gap: 12px; justify-items: center; }
 .inquiry-form { display: grid; gap: 14px; padding: 20px; border: 1px solid var(--border-color); border-radius: 22px; background: var(--card-bg); }
-.inquiry-form label { display: grid; gap: 8px; font-size: var(--fs-3); font-weight: 750; text-align: left; }
+.inquiry-form label { display: grid; gap: 8px; font-size: var(--fs-3); font-weight: var(--fw-strong); text-align: left; }
 .inquiry-form .input-box { width: 100%; margin: 0; box-sizing: border-box; text-align: left; }
-.inquiry-form .app-dropdown-trigger { font-weight: 750; }
+.inquiry-form .app-dropdown-trigger { font-weight: var(--fw-strong); }
 .inquiry-form textarea { resize: vertical; line-height: 1.5; }
 .my-inquiries-list { display: grid; gap: 10px; }
 .my-inquiry-card { padding: 16px; border: 1px solid var(--border-color); border-radius: 16px; background: var(--card-bg); text-align: left; }
 .my-inquiry-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.my-inquiry-type { padding: 3px 9px; border-radius: 999px; background: var(--input-bg); color: var(--sub-text-color); font-size: var(--fs-floor); font-weight: 750; }
-.my-inquiry-status { padding: 3px 9px; border-radius: 999px; font-size: var(--fs-floor); font-weight: 750; }
+.my-inquiry-type { padding: 3px 9px; border-radius: 999px; background: var(--input-bg); color: var(--sub-text-color); font-size: var(--fs-floor); font-weight: var(--fw-strong); }
+.my-inquiry-status { padding: 3px 9px; border-radius: 999px; font-size: var(--fs-floor); font-weight: var(--fw-strong); }
 .my-inquiry-status.pending { color: var(--sub-text-color); background: var(--input-bg); }
 .my-inquiry-status.answered { color: #fff; background: var(--primary-fill); }
 .my-inquiry-title { display: block; margin-bottom: 6px; font-size: var(--fs-4); }
 .my-inquiry-content { margin: 0; color: var(--sub-text-color); font-size: var(--fs-3); line-height: 1.55; white-space: pre-wrap; }
 .my-inquiry-date { margin-top: 8px; color: var(--sub-text-color); font-size: var(--fs-floor); }
 .my-inquiry-answer { margin-top: 12px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent); }
-.my-inquiry-answer-label { display: block; margin-bottom: 4px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: 800; }
+.my-inquiry-answer-label { display: block; margin-bottom: 4px; color: var(--primary-color); font-size: var(--fs-floor); font-weight: var(--fw-heavy); }
 .my-inquiry-answer p { margin: 0; font-size: var(--fs-3); line-height: 1.55; white-space: pre-wrap; }
 /* 관리자 문의 화면(AdminInquiriesPage.tsx) 전용 — 카드 모양은 위 my-inquiry-*를 그대로 쓴다. */
-.admin-inquiry-count { padding: 2px 4px; color: var(--sub-text-color); font-size: var(--fs-3); font-weight: 750; text-align: left; }
+.admin-inquiry-count { padding: 2px 4px; color: var(--sub-text-color); font-size: var(--fs-3); font-weight: var(--fw-strong); text-align: left; }
 .admin-inquiry-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; color: var(--sub-text-color); font-size: var(--fs-floor); }
-.admin-inquiry-name { font-weight: 750; color: var(--text-color); }
+.admin-inquiry-name { font-weight: var(--fw-strong); color: var(--text-color); }
 .admin-inquiry-editor { display: grid; gap: 10px; margin-top: 12px; }
 .admin-inquiry-textarea { width: 100%; margin: 0; box-sizing: border-box; resize: vertical; line-height: 1.5; text-align: left; }
 .admin-inquiry-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 .admin-inquiry-editor .admin-inquiry-actions { margin-top: 0; }
-.admin-inquiry-btn { min-height: 44px; padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-bg); color: var(--text-color); font: inherit; font-size: var(--fs-3); font-weight: 750; cursor: pointer; }
+.admin-inquiry-btn { min-height: 44px; padding: 8px 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--card-bg); color: var(--text-color); font: inherit; font-size: var(--fs-3); font-weight: var(--fw-strong); cursor: pointer; }
 .admin-inquiry-btn.primary { border-color: transparent; color: #fff; background: var(--primary-fill); }
 .admin-inquiry-btn:disabled { opacity: 0.5; cursor: default; }
 .admin-answer-templates { display: flex; flex-wrap: wrap; gap: 6px; }
-.admin-answer-template { min-height: 36px; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 999px; background: var(--input-bg); color: var(--text-color); font: inherit; font-size: var(--fs-floor); font-weight: 750; cursor: pointer; }
+.admin-answer-template { min-height: 36px; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 999px; background: var(--input-bg); color: var(--text-color); font: inherit; font-size: var(--fs-floor); font-weight: var(--fw-strong); cursor: pointer; }
 .admin-answer-template:disabled { opacity: 0.5; cursor: default; }

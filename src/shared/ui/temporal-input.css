@@ -95,7 +95,7 @@
 .app-temporal-option[aria-selected="true"] {
   background: color-mix(in srgb, var(--primary-color) 18%, transparent);
   color: var(--primary-color);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 /* `centered` prop — 원본 콜상세/정비/주유 화면이 공통으로 쓰던 가운데 정렬 트리거.
@@ -111,7 +111,7 @@
   color: var(--sub-text-color);
   font-family: inherit;
   font-size: var(--fs-3);
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   text-align: center;
 }
 

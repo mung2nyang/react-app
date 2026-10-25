@@ -43,7 +43,7 @@
 
 .nav-item span {
   font-size: var(--fs-floor);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   white-space: nowrap;
 }
 

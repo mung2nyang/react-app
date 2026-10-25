@@ -17,7 +17,7 @@
   margin: 0 0 4px;
   color: var(--sub-text-color);
   font-size: var(--fs-3);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .notif-settings-row {
@@ -39,13 +39,13 @@
   gap: 2px;
   color: var(--text-color);
   font-size: var(--fs-4);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .notif-settings-hint {
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
 }
 
 .notif-list {
@@ -89,7 +89,7 @@
 
 .notif-item-copy strong {
   font-size: var(--fs-5);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 
 .notif-item-copy span {
@@ -119,11 +119,11 @@
   color: var(--sub-text-color);
   font: inherit;
   font-size: var(--fs-3);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
 }
 
 .notif-item-actions .notif-action-primary {
   color: var(--primary-color);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }

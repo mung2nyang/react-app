@@ -22,7 +22,7 @@
 }
 
 .revenue-year-row.total {
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   background: var(--input-bg);
 }
 
@@ -46,13 +46,13 @@
 .revenue-year-total span {
   color: var(--sub-text-color);
   font-size: var(--fs-3);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .revenue-year-total strong {
   color: var(--primary-color);
   font-size: var(--fs-5);
-  font-weight: 850;
+  font-weight: var(--fw-black);
 }
 
 .revenue-net-card {
@@ -116,7 +116,7 @@
 }
 
 .revenue-detail-amount {
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   white-space: nowrap;
 }
 

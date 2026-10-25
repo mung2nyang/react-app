@@ -40,10 +40,10 @@
   justify-self: center;
   color: #fff;
   font-size: var(--fs-6);
-  font-weight: 850;
+  font-weight: var(--fw-black);
 }
 
-.auth-brand-sm span { font-family: 'Jua', sans-serif; font-weight: 400; letter-spacing: -.5px; }
+.auth-brand-sm span { font-family: 'Jua', sans-serif; font-weight: var(--fw-regular); letter-spacing: -.5px; }
 .auth-logo-sm { height: 34px; object-fit: contain; }
 
 .auth-heading-box { margin-bottom: 28px; }
@@ -63,7 +63,7 @@
 
 .auth-form-fields { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
 .auth-field { display: flex; flex-direction: column; gap: 8px; }
-.auth-field label { color: var(--text-color); font-size: var(--fs-2); font-weight: 850; }
+.auth-field label { color: var(--text-color); font-size: var(--fs-2); font-weight: var(--fw-black); }
 
 .auth-input-box {
   width: 100%;
@@ -74,7 +74,7 @@
   background: var(--input-bg);
   color: var(--text-color);
   font-size: var(--fs-4);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   outline: none;
 }
 

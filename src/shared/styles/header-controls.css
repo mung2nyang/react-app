@@ -59,7 +59,7 @@
 
 .settings-title {
   font-size: var(--fs-7);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .icon-btn {

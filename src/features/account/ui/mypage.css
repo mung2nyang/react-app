@@ -56,7 +56,7 @@
 
 .mypage-profile-copy strong {
   font-size: var(--fs-5);
-  font-weight: 850;
+  font-weight: var(--fw-black);
 }
 
 .mypage-role-user-row {
@@ -69,7 +69,7 @@
   overflow: hidden;
   color: var(--sub-text-color);
   font-size: var(--fs-3);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -96,7 +96,7 @@
   color: var(--text-color);
   font: inherit;
   font-size: var(--fs-3);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   text-align: left;
   cursor: pointer;
   border-radius: 12px;
@@ -149,12 +149,12 @@
   color: var(--primary-color);
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   cursor: pointer;
 }
 .mypage-link-chip::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .mypage-link-chip::after { content: ''; position: absolute; inset: -6px 0; }
 
 .link-status-rows { display: grid; grid-template-columns: auto 1fr; gap: 10px 14px; margin: 6px 0 14px; font-size: var(--fs-3); text-align: left; }
-.link-status-rows dt { color: var(--sub-text-color); font-weight: 700; }
-.link-status-rows dd { margin: 0; font-weight: 800; overflow-wrap: anywhere; }
+.link-status-rows dt { color: var(--sub-text-color); font-weight: var(--fw-bold); }
+.link-status-rows dd { margin: 0; font-weight: var(--fw-heavy); overflow-wrap: anywhere; }

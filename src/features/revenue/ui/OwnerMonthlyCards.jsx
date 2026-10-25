@@ -67,7 +67,7 @@ export default function OwnerMonthlyCards({ detail, scope, variant = 'owner' }) 
             className="summary-value"
             style={{
               fontSize: 'var(--fs-7)',
-              fontWeight: 850,
+              fontWeight: 'var(--fw-black)',
               color: detail.netProfit < 0 ? 'var(--sunday-color)' : 'var(--primary-color)',
             }}
           >

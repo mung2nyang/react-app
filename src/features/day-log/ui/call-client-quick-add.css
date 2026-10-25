@@ -11,7 +11,7 @@
   border-radius: 999px;
   background: var(--input-bg);
   color: var(--text-color);
-  font-weight: 750;
+  font-weight: var(--fw-strong);
   cursor: pointer;
 }
 

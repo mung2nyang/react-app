@@ -44,7 +44,7 @@
   width: 100%;
   text-align: center;
   font-size: var(--fs-3);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   color: var(--sub-text-color);
   padding-bottom: 8px;
   position: relative;
@@ -60,7 +60,7 @@
   justify-content: flex-start;
   padding: 6px 2px;
   font-size: var(--fs-4);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   border-radius: 16px;
   border: none;
   background: transparent;
@@ -109,7 +109,7 @@
   border-radius: 8px;
   margin-top: 4px;
   font-size: var(--fs-floor);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   line-height: 1.25;
   white-space: nowrap;
 }
@@ -143,7 +143,7 @@
   border-radius: 999px;
   background-color: var(--primary-fill);
   color: #fff;
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 
 /* 줄이 아니라 숫자 모양을 동그라미 정중앙에 */

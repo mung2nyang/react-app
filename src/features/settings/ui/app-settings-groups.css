@@ -5,7 +5,7 @@
   margin: 18px 4px 8px;
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   text-align: left;
 }
 
@@ -73,7 +73,7 @@
   background: var(--input-bg);
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -93,7 +93,7 @@
 .settings-chip.on::before {
   content: '✓';
   margin-right: 5px;
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 
 .settings-chip:has(input:focus-visible) {

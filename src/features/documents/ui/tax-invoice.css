@@ -32,7 +32,7 @@
 
 .tax-invoice-guide-title {
   margin: 0 0 4px;
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   font-size: var(--fs-2);
   color: var(--text-color);
 }
@@ -73,7 +73,7 @@
   background: var(--input-bg);
   color: var(--sub-text-color);
   font-size: var(--fs-floor);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   margin-left: 4px;
 }
 
@@ -106,7 +106,7 @@
 .tax-invoice-entry-head strong {
   color: var(--text-color);
   font-size: var(--fs-4);
-  font-weight: 850;
+  font-weight: var(--fw-black);
 }
 
 .tax-invoice-entry-card .car-sub-text {
@@ -154,7 +154,7 @@
   color: var(--primary-color);
   font: inherit;
   font-size: var(--fs-floor);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   cursor: pointer;
 }
 

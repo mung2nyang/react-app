@@ -50,7 +50,7 @@
 
 .work-log-page .modal-section-title {
   font-size: var(--fs-5);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   color: var(--primary-color);
 }
 

@@ -21,7 +21,7 @@
 .mypage-section-heading h3 {
   color: var(--text-color);
   font-size: var(--fs-4);
-  font-weight: 850;
+  font-weight: var(--fw-black);
 }
 
 .mypage-section-heading p {
@@ -73,6 +73,6 @@
 
 .mypage-shortcut strong {
   font-size: var(--fs-2);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   line-height: 1.25;
 }

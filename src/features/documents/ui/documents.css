@@ -23,7 +23,7 @@
   color: var(--sub-text-color);
   font: inherit;
   font-size: var(--fs-floor);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
 }
 
@@ -73,13 +73,13 @@
 .doc-sheet-head th,
 .doc-sheet-table thead th {
   background: var(--input-bg);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 
 .doc-sheet-table .doc-sheet-item {
   width: 44%;
   text-align: left;
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   line-height: 1.35;
 }
 
@@ -88,7 +88,7 @@
 }
 
 .doc-mark {
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
 }
 
 .doc-mark.bad {
@@ -117,7 +117,7 @@
   color: #fff;
   font: inherit;
   font-size: var(--fs-floor);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   cursor: pointer;
 }
 

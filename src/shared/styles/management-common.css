@@ -69,7 +69,7 @@
   transition: background-color 0.2s, color 0.2s;
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 /* 마우스 있는 기기에서만 — 휴대폰은 누른 뒤 색이 남음(로드맵 18-C) */
@@ -124,7 +124,7 @@
   padding: 2px 6px;
   border-radius: 5px;
   font-size: var(--fs-floor);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   line-height: 1;
   border: 1px solid var(--sub-text-color);
   color: var(--sub-text-color);
@@ -139,7 +139,7 @@
 .empty-state {
   padding: 36px 20px;
   color: var(--sub-text-color);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   text-align: center;
   background-color: var(--card-bg);
   border-radius: 24px;

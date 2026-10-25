@@ -12,7 +12,7 @@
 
 .summary-title {
   font-size: var(--fs-4);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   color: var(--sub-text-color);
   margin-bottom: 14px;
   display: flex;
@@ -34,12 +34,12 @@
   padding-top: 12px;
   border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
   font-size: var(--fs-7);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   color: var(--primary-color);
 }
 
 .summary-value {
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   white-space: nowrap;
 }
 
@@ -57,7 +57,7 @@
   border: 1px solid var(--border-color);
   background-color: var(--input-bg);
   color: var(--text-color);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   font-size: var(--fs-4);
   cursor: pointer;
 }
@@ -65,7 +65,7 @@
 .modal-section-title {
   margin-bottom: 12px;
   font-size: var(--fs-4);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   color: var(--text-color);
 }
 
@@ -107,7 +107,7 @@
 
 .form-group label {
   font-size: var(--fs-3);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   color: var(--sub-text-color);
   padding-left: 4px;
 }
@@ -133,7 +133,7 @@
   color: var(--sub-text-color);
   font: inherit;
   font-size: var(--fs-floor);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
 }
 
@@ -141,7 +141,7 @@
 .segment-btn.active::before { background: var(--primary-fill); }
 .segment-btn.active {
   color: #fff;
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 /* 게스트 백업 버튼·상태 (§13) */
@@ -157,7 +157,7 @@
   border: 1px solid var(--border-color);
   background-color: var(--input-bg);
   color: var(--text-color);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   font-size: var(--fs-3);
   cursor: pointer;
   display: flex;

@@ -59,7 +59,7 @@
   box-shadow: var(--shadow-md);
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-  font-weight: 500;
+  font-weight: var(--fw-medium);
   line-height: 1.5;
   text-align: left;
   white-space: pre-line;

@@ -17,13 +17,13 @@
   color: var(--primary-color);
 }
 .onboarding-logo-img { height: 38px; object-fit: contain; }
-.onboarding-logo-text { color: #fff; font-size: var(--fs-6); font-family: 'Jua', sans-serif; font-weight: 400; letter-spacing: -.5px; }
+.onboarding-logo-text { color: #fff; font-size: var(--fs-6); font-family: 'Jua', sans-serif; font-weight: var(--fw-regular); letter-spacing: -.5px; }
 
 .onboarding-heading h1 {
   margin: 0 0 14px;
   color: var(--text-color);
   font-size: clamp(1.7rem, 7.5vw, 2.15rem);
-  font-weight: 850;
+  font-weight: var(--fw-black);
   line-height: 1.24;
   letter-spacing: -.035em;
 }
@@ -45,7 +45,7 @@
   color: var(--text-color);
   font: inherit;
   font-size: var(--fs-4);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
   text-align: left;
   cursor: pointer;
 }
@@ -64,7 +64,7 @@
   color: var(--sub-text-color);
   font: inherit;
   font-size: var(--fs-2);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   cursor: pointer;
   padding: 4px 0;
 }
@@ -73,7 +73,7 @@
   margin-bottom: 12px;
   color: var(--sub-text-color);
   font-size: var(--fs-2);
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 .onboarding-btn-primary {
   width: 100%;
@@ -84,7 +84,7 @@
   color: #fff;
   font: inherit;
   font-size: var(--fs-5);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   cursor: pointer;
 }
 .onboarding-btn-primary:disabled {
@@ -96,7 +96,7 @@
   margin: 8px 0 16px;
   color: var(--text-color);
   font-size: var(--fs-5);
-  font-weight: 800;
+  font-weight: var(--fw-heavy);
   text-align: center;
 }
 .onboarding-form-fields { display: flex; flex-direction: column; gap: 16px; }
