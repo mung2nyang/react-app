@@ -21,6 +21,8 @@
 .unbiseo-dock > * { pointer-events: auto; }
 
 .unbiseo-dock.left:not(.open) { align-items: flex-start; }
+/* + 버튼(management-add-fab)이 있는 화면에선 저장 위치와 상관없이 왼쪽 — 오른쪽 아래 + 버튼과 겹치지 않게. */
+body:has(.management-add-fab) .unbiseo-dock:not(.open) { align-items: flex-start; }
 
 /* 옮긴 높이 — 화면이 낮아져도 위 12px 안에 남게(8px 틈 + 52px 동그라미 + 12px). */
 .unbiseo-dock:not(.open) .unbiseo-dock-fab {
