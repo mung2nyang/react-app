@@ -1,4 +1,4 @@
-// 설정에 새 칸 unbiseoDockOn(운비서 버튼 띄우기)이 들어가도 이 휴대폰 설정 읽기가 형식 오류가 되지 않아야 한다.
+// 설정에 새 칸 unbiseoDockOn(운비서 버튼)이 들어가도 이 휴대폰 설정 읽기가 형식 오류가 되지 않아야 한다.
 import '../../testSupport/stubSupabaseClient.js'
 import '../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'

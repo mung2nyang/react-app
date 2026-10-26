@@ -85,7 +85,7 @@ export type FinanceSettings = {
   cargoTonnageOn?: boolean
   dailyInspectionOn?: boolean // 일상점검표 사용(메인 차량 — 기사차량은 subCarSettings)
   notifOff?: Array<string> // 알림 화면에서 끈 알림 종류(NOTIF_KINDS)
-  unbiseoDockOn?: boolean // 홈이 아닌 화면에 운비서 버튼 띄우기(기본 켜짐)
+  unbiseoDockOn?: boolean // 홈이 아닌 화면의 운비서 버튼(기본 켜짐)
   fixedRouteOn?: boolean
   fixedRoutePresets?: Array<{ id: string, loadLoc: string, unloadLoc: string }>
   runCountToggle?: boolean

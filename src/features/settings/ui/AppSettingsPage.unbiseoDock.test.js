@@ -1,4 +1,4 @@
-// 앱 설정의 "운비서 버튼 띄우기" 스위치: 로그인 계정 메인 설정에만, 처음 켜짐, 끄면 계정 설정 unbiseoDockOn=false.
+// 앱 설정의 "운비서 버튼" 스위치: 로그인 계정 메인 설정에만, 처음 켜짐, 끄면 계정 설정 unbiseoDockOn=false.
 import { register } from 'node:module'
 import { pathToFileURL } from 'node:url'
 
@@ -41,7 +41,7 @@ test('메인 앱 설정: 처음 켜짐, 끄면 계정 설정 unbiseoDockOn=false
   const view = await render('dock-setting-1', '/settings')
   try {
     const input = view.container.querySelector('#unbiseoDockToggle')
-    assert.ok(input instanceof window.HTMLInputElement, '운비서 버튼 띄우기 스위치가 있어야 한다')
+    assert.ok(input instanceof window.HTMLInputElement, '운비서 버튼 스위치가 있어야 한다')
     assert.equal(input.checked, true, '처음 값은 켜짐')
     await act(async () => { input.click() })
     assert.equal(readOwnerSettings('dock-setting-1').unbiseoDockOn, false)

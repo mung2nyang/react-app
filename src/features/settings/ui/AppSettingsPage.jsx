@@ -98,7 +98,7 @@ export default function AppSettingsPage({ onBack, onOpenMenu }) {
           )}
           {!logId && ownerKey !== 'guest' && (
             <div className="setting-item settings-theme-row">
-              <label htmlFor="unbiseoDockToggle">운비서 버튼 띄우기</label>
+              <label htmlFor="unbiseoDockToggle">운비서 버튼</label>
               <label className="switch">
                 <input id="unbiseoDockToggle" type="checkbox" checked={settings.unbiseoDockOn !== false} onChange={(e) => patch({ unbiseoDockOn: e.target.checked })} />
                 <span className="slider"></span>
