@@ -10,7 +10,7 @@ import { getPalletCount } from './day-record.ts'
 import type { DayRecordLike } from './day-record.ts'
 
 export type SupplierIdentity = { key?: string, biz?: SupplierBiz, carLabel?: string, carNumber?: string }
-export type DriverTrip = { type: 'call' | 'fixed', dateKey: string, client: string, loadLoc: string, unloadLoc: string, fare: number, vatExempt: boolean, platform?: string, distanceKm?: string | number, cargoTonnage?: string | number, paymentDueDate?: string, remarks?: string, fixedCount?: number }
+export type DriverTrip = { type: 'call' | 'fixed', dateKey: string, client: string, loadLoc: string, unloadLoc: string, fare: number, vatExempt: boolean, platform?: string, distanceKm?: string | number, cargoTonnage?: string | number, paymentDueDate?: string, remarks?: string, fixedCount?: number, palletFare?: number }
 
 /** 거래처 매출 계산서 원천 그룹(메인 + 기사차량 운행분). 계산서 종류는 매출뿐(기사 매입·수수료 발행 삭제, 2026-10-02) — flow는 저장 id 호환용. logKey('main'|차량번호)를 넘기면 그 차량 운행분만(서류 발급 차량별, 세금계산서 정리 ②). */
 export function getTaxInvoiceSourceGroups(monthKey: string, flow: 'sales' = 'sales', settings: FinanceSettings = {}, workDataByLogId: WorkDataByLogId = {}, logKey?: string) {
@@ -128,8 +128,9 @@ export function flattenLinkedDriverTrips(data: Record<string, DayRecordLike>, mo
     const fixedCount = Number(record.fixedCount || record.count || 0)
     const storedFare = parseCurrencyValue(record.fare || record.fixedFare || record.totalFare)
     const fixedFare = storedFare > 0 ? storedFare : computeFixedRouteFare(record, fixedRouteOpts)
+    const palletFare = storedFare > 0 || !fixedRouteOpts.subFixedOn || !fixedRouteOpts.activePalletOn ? 0 : getPalletCount(record) * fixedRouteOpts.palletUnitPrice
     if (fixedCount > 0 || fixedFare > 0) {
-      trips.push({ type: 'fixed', dateKey, client: '', loadLoc: '', unloadLoc: '', fare: fixedFare, vatExempt: false, fixedCount })
+      trips.push({ type: 'fixed', dateKey, client: '', loadLoc: '', unloadLoc: '', fare: fixedFare, vatExempt: false, fixedCount, palletFare })
     }
   })
   return trips.sort((a, b) => b.dateKey.localeCompare(a.dateKey))
@@ -158,14 +159,18 @@ export function getLinkedDriverClientInvoiceGroups(trips: Array<DriverTrip>, car
   const grouped: Record<string, { clientName: string, count: number, supplyAmount: number, taxAmount: number, trips: Array<DriverTrip> }> = {}
   /** 거래처 미지정 운행 — 계산서 대상 아님, 화면에 목록으로만 */
   const unassignedTrips: Array<DriverTrip> = []
-  trips.filter((t) => t.type === 'call').forEach((trip) => {
-    if (!trip.client) { unassignedTrips.push(trip); return }
+  // 고정 노선(파렛트 포함)도 그 차량 고정 노선 거래처 카드에 — 서류 발급 세금계산서와 같게, 건수는 고정 횟수만, 부가세는 고정·파렛트 따로.
+  const fixedClientName = getFixedRouteClient(ownerSettings, car?.number)?.companyName || ''
+  trips.forEach((trip) => {
+    const isFixed = trip.type === 'fixed'
+    const key = isFixed ? fixedClientName : trip.client
+    if (!key) { if (!isFixed) unassignedTrips.push(trip); return }
     if (trip.fare <= 0) return
-    const key = trip.client
-    if (!grouped[key]) grouped[key] = { clientName: trip.client, count: 0, supplyAmount: 0, taxAmount: 0, trips: [] }
-    grouped[key].count += 1
+    if (!grouped[key]) grouped[key] = { clientName: key, count: 0, supplyAmount: 0, taxAmount: 0, trips: [] }
+    const palletFare = isFixed ? trip.palletFare || 0 : 0
+    grouped[key].count += isFixed ? trip.fixedCount || 0 : 1
     grouped[key].supplyAmount += trip.fare
-    grouped[key].taxAmount += trip.vatExempt ? 0 : vatOf(trip.fare)
+    grouped[key].taxAmount += isFixed ? vatOf(trip.fare - palletFare) + vatOf(palletFare) : trip.vatExempt ? 0 : vatOf(trip.fare)
     grouped[key].trips.push(trip)
   })
   const groups = Object.values(grouped).map((g) => ({ ...g, totalAmount: g.supplyAmount + g.taxAmount, supplierBiz: supplier.biz, vehicleLabel: supplier.carLabel }))

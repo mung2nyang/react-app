@@ -2,7 +2,7 @@
 import { formatWon } from '../../../domain/money.ts'
 
 /**
- * @typedef {{ dateKey: string, loadLoc?: string, unloadLoc?: string, fare: number }} InvoiceTrip
+ * @typedef {{ type?: 'call' | 'fixed', dateKey: string, loadLoc?: string, unloadLoc?: string, fare: number, fixedCount?: number, palletFare?: number }} InvoiceTrip
  * @typedef {{
  *   clientName: string,
  *   count: number,
@@ -69,18 +69,24 @@ export default function ClientInvoiceGroups({ invoice }) {
   )
 }
 
-/** 운행 줄 목록: 날짜 상차지 → 하차지 · 운송료 */
+/** 운행 줄 목록: 날짜 상차지 → 하차지 · 운송료(고정 노선은 횟수로) */
 function TripList(/** @type {{ trips: Array<InvoiceTrip> }} */ { trips }) {
   return (
     <div className="linked-driver-client-trip-list">
       {trips.map((t, idx) => (
         <div key={`${t.dateKey}-${idx}`} className="linked-driver-client-trip-row">
           <span>
-            {t.dateKey.slice(5).replace('-', '/')} {t.loadLoc || '상차지'} → {t.unloadLoc || '하차지'}
+            {t.dateKey.slice(5).replace('-', '/')} {t.type === 'fixed' ? fixedLabel(t) : `${t.loadLoc || '상차지'} → ${t.unloadLoc || '하차지'}`}
           </span>
           <b>{formatWon(t.fare)}</b>
         </div>
       ))}
     </div>
   )
+}
+
+/** @param {InvoiceTrip} t */
+function fixedLabel(t) {
+  if (!t.fixedCount) return '파렛트'
+  return `고정 노선 ${t.fixedCount}회${t.palletFare ? ' + 파렛트' : ''}`
 }
