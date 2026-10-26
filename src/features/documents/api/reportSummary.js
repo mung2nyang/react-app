@@ -75,19 +75,22 @@ function withVehicleAccount(car, profile) {
  * @param {string} ownerKey
  * @param {number} year
  * @param {number} monthIndex
+ * @param {string} [logKey]
  */
-export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwnerExpenses(ownerKey), cars = readOwnerCars(ownerKey), practiceSettings = readOwnerSettings(ownerKey), workData = readOwnerWorkData(ownerKey), clients = readOwnerClients(ownerKey), profile = readOwnerProfile(ownerKey)) {
+export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwnerExpenses(ownerKey), cars = readOwnerCars(ownerKey), practiceSettings = readOwnerSettings(ownerKey), workData = readOwnerWorkData(ownerKey), clients = readOwnerClients(ownerKey), profile = readOwnerProfile(ownerKey), logKey = 'main') {
   void expenses
   const mainCar = (cars || []).find((car) => car.type === 'main') || cars[0] || null
   // 서브차량 내역서(차주 계정)·연동기사 본인 내역서는 그 차량 스코프 고정노선을 먼저 쓴다(없으면 차주 것 fallback).
   const fixedScopeKey = mainCar?.type === 'sub' ? String(mainCar.number || '') : ''
   const unitPrice = resolveFixedUnitPrice({ clients }, fixedScopeKey)
   const fixedRouteClient = getFixedRouteClient({ clients }, fixedScopeKey)
-  const showPallet = !!practiceSettings.fixedOn && !!fixedRouteClient?.palletOn
+  // 고정 노선 켜짐은 그 일지 기준 — 메인(연동 기사 본인 포함)은 fixedOn, 차주가 보는 기사 차량은 subFixedOn(달력과 같음).
+  const activeFixedOn = logKey === 'main' ? !!practiceSettings.fixedOn : !!practiceSettings.subFixedOn
+  const showPallet = activeFixedOn && !!fixedRouteClient?.palletOn
   const settled = monthSettlementSummary(workData, year, monthIndex, {
     unitPrice,
     fixedRouteClient,
-    activeFixedOn: !!practiceSettings.fixedOn,
+    activeFixedOn,
     clients,
   })
   const days = buildReportDayRows(workData, year, monthIndex, {

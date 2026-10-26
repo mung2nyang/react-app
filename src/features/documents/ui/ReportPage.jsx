@@ -53,8 +53,8 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
   const clients = useOwnerClients(ownerKey)
   const storedProfile = useOwnerProfile(ownerKey)
   const report = useMemo(
-    () => buildMonthReport(ownerKey, year, month, expenses, cars, practiceSettings, workData, clients, storedProfile),
-    [ownerKey, year, month, expenses, cars, practiceSettings, workData, clients, storedProfile],
+    () => buildMonthReport(ownerKey, year, month, expenses, cars, practiceSettings, workData, clients, storedProfile, logKey),
+    [ownerKey, year, month, expenses, cars, practiceSettings, workData, clients, storedProfile, logKey],
   )
   const clientOptions = useMemo(
     () => detailReportClientOptions(workData, year, month, clients),
