@@ -6,6 +6,7 @@ import { parseCurrencyValue, vatOf } from './money.ts'
 import { calculateDriverVehicleCommission, getDriverCarWorkData, getMonthlyDriverTotals, logData } from './financeCore.ts'
 import { driverShareBaseAmount, getMonthlyDriverClientCommission } from './driverShareBase.ts'
 import type { CarLike, DriverLinkLike, FinanceSettings, SupplierBiz, WorkDataByLogId } from './financeTypes.ts'
+import { getPalletCount } from './day-record.ts'
 import type { DayRecordLike } from './day-record.ts'
 
 export type SupplierIdentity = { key?: string, biz?: SupplierBiz, carLabel?: string, carNumber?: string }
@@ -44,6 +45,8 @@ export function getTaxInvoiceSourceGroups(monthKey: string, flow: 'sales' = 'sal
     const fixedRouteClientForInvoice = getFixedRouteClient(settings, source.logId)
     const fixedClientName = fixedRouteClientForInvoice?.companyName || ''
     const fixedUnitPrice = parseCurrencyValue(fixedRouteClientForInvoice?.fixedUnitPrice)
+    const palletOn = !!(source.logId === 'main' ? settings.fixedOn : settings.subFixedOn) && !!fixedRouteClientForInvoice?.palletOn
+    const palletUnitPrice = parseCurrencyValue(fixedRouteClientForInvoice?.palletPrice)
     const supplier = getVehicleSupplierIdentity(source.car, settings) as SupplierIdentity
     Object.entries(source.data || {}).forEach(([dateKey, record]) => {
       ;(record?.callDetails || []).forEach((detail) => {
@@ -68,6 +71,15 @@ export function getTaxInvoiceSourceGroups(monthKey: string, flow: 'sales' = 'sal
           group.taxAmount += vatOf(supplyAmount)
           if (supplier.carNumber) group.vehicleNumbers.add(supplier.carNumber)
         }
+      }
+
+      // 파렛트도 고정 노선 거래처 계산서에 — 달력·매출과 같은 조건(고정 노선 켜짐 + 거래처 파렛트 켜짐), 부가세는 날마다.
+      const palletAmount = getPalletCount(record) * palletUnitPrice
+      if (palletOn && palletAmount > 0 && fixedClientName && dateKey.startsWith(monthKey)) {
+        const group = getOrCreateGroup(fixedClientName, supplier, source.logId)
+        group.supplyAmount += palletAmount
+        group.taxAmount += vatOf(palletAmount)
+        if (supplier.carNumber) group.vehicleNumbers.add(supplier.carNumber)
       }
     })
   })

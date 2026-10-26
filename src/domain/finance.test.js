@@ -117,7 +117,7 @@ describe('같은 운행 픽스처 — 확정 금액', () => {
     // 세액은 공급가의 10%, 합계는 공급가+세액
     const expected = {
       sales: [
-        { supplyAmount: 630000, taxAmount: 63000, totalAmount: 693000, count: 5 },
+        { supplyAmount: 660000, taxAmount: 66000, totalAmount: 726000, count: 5 },
         { supplyAmount: 200000, taxAmount: 20000, totalAmount: 220000, count: 1 },
         { supplyAmount: 250000, taxAmount: 25000, totalAmount: 275000, count: 1 },
         // 부산33나1111(옛 "기사 직접 정산" 시험값)도 기사차량 운행분이라 늘 포함(2026-10-02 계산서 처리 방식 삭제)

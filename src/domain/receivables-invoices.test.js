@@ -105,7 +105,7 @@ describe('세금계산서 — 거래처 집계 확정 금액', () => {
   test('매출 그룹 공급가·세액·건수와 기록 ID', () => {
     const ours = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK)
     const expected = [
-      { clientName: '한진', supplyAmount: 630000, taxAmount: 63000, count: 5, recordId: 'sales|2026-05|한진__main' },
+      { clientName: '한진', supplyAmount: 660000, taxAmount: 66000, count: 5, recordId: 'sales|2026-05|한진__main' },
       { clientName: '대한', supplyAmount: 200000, taxAmount: 20000, count: 1, recordId: 'sales|2026-05|대한__서울12가3456' },
       { clientName: '한진', supplyAmount: 250000, taxAmount: 25000, count: 1, recordId: 'sales|2026-05|한진__서울12가3456' },
       { clientName: '직접', supplyAmount: 80000, taxAmount: 8000, count: 1, recordId: 'sales|2026-05|직접__부산33나1111' },
@@ -129,11 +129,11 @@ describe('세금계산서 — 거래처 집계 확정 금액', () => {
 
   test('작성 전 목록 금액이 그룹 합계와 같다', () => {
     const { draftEntries } = listTaxInvoiceEntries(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK, [])
-    // 630,000 + 200,000 + 250,000 + 80,000
-    assert.equal(draftEntries.reduce((sum, item) => sum + item.supplyAmount, 0), 1160000)
+    // 660,000(고정 500,000 + 콜 130,000 + 파렛트 30,000) + 200,000 + 250,000 + 80,000
+    assert.equal(draftEntries.reduce((sum, item) => sum + item.supplyAmount, 0), 1190000)
     const groups = getTaxInvoiceSourceGroups(MONTH_KEY, 'sales', FIXTURE_SETTINGS, FIXTURE_WORK)
     const entry = buildTaxInvoiceEntry(groups[0], MONTH_KEY, 'sales', [], FIXTURE_SETTINGS)
-    assert.equal(entry.supplyAmount, 630000)
+    assert.equal(entry.supplyAmount, 660000)
     assert.equal(entry.status, 'draft')
   })
 })
