@@ -15,7 +15,7 @@ import { StaleSessionError } from './saveErrors.ts'
 import { shouldCommitDayLogToCloud, vehicleSupabaseIdForLog } from './mainDayLogRouting.ts'
 import { parseEntityNumber } from '../cloud/cloudStorage.ts'
 import { removeDayLogOnServer } from './dailyLogRemoval.ts'
-import { upsertDailyLog } from './syncWorkData.ts'
+import { dailyLogRow } from './syncWorkData.ts'
 import { SERVER_SAVE_FAIL, SESSION_CHANGED_FAIL } from '../../shared/utils/failureMessages.js'
 
 const SAVE_FAIL_TOAST = SERVER_SAVE_FAIL
@@ -35,11 +35,10 @@ function clientIdByName(ownerKey: string): Map<string, number | string> {
   return map
 }
 
-/** 그 날짜 transport_details를 서버 값과 맞춘다(전량 교체). */
-async function replaceTransportDetails(userId: string, vehicleId: number | string, dailyLogId: number | string, workDate: string, record: DayRecordLike, byName: Map<string, number | string>) {
+/** 그 날짜 transport_details에 넣을 줄(서버가 전량 교체). */
+function transportDetailRows(userId: string, vehicleId: number | string, workDate: string, record: DayRecordLike, byName: Map<string, number | string>) {
   const callDetails = Array.isArray(record?.callDetails) ? record.callDetails : []
-  // 지우기·넣기를 서버 함수 한 번으로 — 중간에 끊겨도 그날 콜이 사라지지 않는다.
-  const { error } = await supabase.rpc('replace_transport_details', { p_daily_log_id: dailyLogId, p_rows: callDetails.map((detail, index) => ({
+  return callDetails.map((detail, index) => ({
     user_id: userId,
     vehicle_id: vehicleId,
     client_id: byName.get(detail?.client || '') || null,
@@ -54,17 +53,19 @@ async function replaceTransportDetails(userId: string, vehicleId: number | strin
     payments: Array.isArray(detail?.payments) ? detail.payments : [],
     commission_snapshot: detail?.commissionSnapshot || null,
     raw: detail,
-  })) })
-  if (error) throw error
+  }))
 }
 
 async function writeDayKeyToServer(userId: string, vehicleId: number | string, ownerKey: string, dateKey: string, previousData: Record<string, DayRecordLike>, nextData: Record<string, DayRecordLike>, captured: SessionCapture) {
   const hadBefore = !!previousData[dateKey]
   const record = nextData[dateKey]
   if (record) {
-    const dailyLogId = await upsertDailyLog(userId, vehicleId, dateKey, record)
-    assertSessionStillCurrent(captured)
-    await replaceTransportDetails(userId, vehicleId, dailyLogId, dateKey, record, clientIdByName(ownerKey))
+    // 하루 기록 줄과 콜 상세를 서버 함수 한 번으로 — 하나가 실패하면 둘 다 저장 전 그대로.
+    const { error } = await supabase.rpc('save_day_log', {
+      p_log: dailyLogRow(userId, vehicleId, dateKey, record),
+      p_rows: transportDetailRows(userId, vehicleId, dateKey, record, clientIdByName(ownerKey)),
+    })
+    if (error) throw error
     assertSessionStillCurrent(captured)
   } else if (hadBefore) {
     await removeDayLogOnServer(vehicleId, dateKey)

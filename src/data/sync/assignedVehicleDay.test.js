@@ -70,7 +70,7 @@ describe('서버 쓰기(commitMainDayLogToCloud)', () => {
     Object.assign(handlers, emptyOkHandlers())
     /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const upserts = []
-    handlers.daily_logs = { upsert: (row) => { upserts.push(row ?? null); return { data: { id: 5001 }, error: null } } }
+    handlers.rpc = { save_day_log: (args) => { upserts.push(args && typeof args === 'object' && !Array.isArray(args) ? args.p_log : null); return { data: 5001, error: null } } }
     handlers.maintenance_records = { select: () => ({ data: [{ id: 'm-1' }], error: null }) }
     beginSessionEpoch('u1', ownerKey)
     setHydration({ status: 'ready', userId: 'u1', ownerKey })

@@ -156,15 +156,17 @@ function requireHtmlInput(root, selector) {
   return /** @type {HTMLInputElement} */ (el)
 }
 
-function captureDailyLogUpserts() {
+/** 일지 서버 저장(save_day_log)의 하루 기록 줄 값을 모은다. shouldFail이 true면 그 호출을 던지게 한다. */
+function captureDayLogSaves(shouldFail = () => false) {
   /** @type {Array<{ work_date?: string, fixed_count?: number }>} */
   const rows = []
-  const previous = handlers.daily_logs
-  handlers.daily_logs = {
+  const previous = handlers.rpc
+  handlers.rpc = {
     ...(previous || {}),
-    upsert: (/** @type {{ work_date?: string, fixed_count?: number }} */ row) => {
-      rows.push(row)
-      return { data: { id: 9001 }, error: null }
+    save_day_log: (/** @type {{ p_log?: { work_date?: string, fixed_count?: number } }} */ args) => {
+      if (shouldFail()) throw new Error('save_day_log down (simulated)')
+      rows.push(args?.p_log || {})
+      return { data: 9001, error: null }
     },
   }
   return {
@@ -174,8 +176,8 @@ function captureDailyLogUpserts() {
       return rows.filter((row) => row.work_date === dateKey)
     },
     restore() {
-      if (previous) handlers.daily_logs = previous
-      else delete handlers.daily_logs
+      if (previous) handlers.rpc = previous
+      else delete handlers.rpc
     },
   }
 }
@@ -700,7 +702,7 @@ function seedPalletClient(ownerKey) {
   commitSettings(ownerKey, normalizeSettings({ fixedOn: true }))
 }
 
-/** daily_logs upsert가 실제로 나가려면 메인 차량 supabaseId가 필요하다. */
+/** 일지 서버 저장이 실제로 나가려면 메인 차량 supabaseId가 필요하다. */
 /** @param {string} ownerKey */
 function seedMainCar(ownerKey) {
   const cars = [
@@ -848,8 +850,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
   document.body.appendChild(container)
   const root = createTrackedRoot(container)
 
-  // 서버 실패는 콜 상세 교체 서버 함수를 던지게 해서 낸다(commitMainDayLogToCloud가
-  // daily_logs upsert 다음에 replace_transport_details를 부르다 실패 → Fail-Fast).
+  // 서버 실패는 일지 저장 서버 함수(save_day_log)를 던지게 해서 낸다(Fail-Fast).
   let serverShouldFail = false
   const prevDailyLogs = handlers.daily_logs
   const prevRpc = handlers.rpc
@@ -857,14 +858,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     ...(prevDailyLogs || {}),
     select: () => ({ data: [{ work_date: dateKey, vehicle_id: 501, is_off: false, fixed_count: 2, raw: { palletCount: 0, fixedRouteCounts: {} } }], error: null }),
   }
-  handlers.rpc = {
-    ...(prevRpc || {}),
-    replace_transport_details: () => {
-      if (serverShouldFail) throw new Error('replace_transport_details down (simulated)')
-      return { data: null, error: null }
-    },
-  }
-  const dailyLogs = captureDailyLogUpserts()
+  const dailyLogs = captureDayLogSaves(() => serverShouldFail)
   const errSpy = spyConsoleError('[commitMainDayLogToCloud] 일지 저장 실패:')
 
   try {
@@ -897,7 +891,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 upsert 실패는 
     await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '9') })
     await waitUntil(() => committedRecord(ownerKey, dateKey)?.fixedCount === 9, { timeoutMs: 2000 })
     assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 9)
-    assert.equal(dailyLogs.forDate(dateKey).length > upsertsBefore, true, '재편집이 그 날짜 daily_logs upsert를 냈어야 한다')
+    assert.equal(dailyLogs.forDate(dateKey).length > upsertsBefore, true, '재편집이 그 날짜 일지 서버 저장(save_day_log)을 냈어야 한다')
     assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false, '재저장 성공 뒤엔 확인 목록에서 내려가야 한다')
     assert.equal(pendingDayWriteCount(), 0)
     assert.equal(errSpy.count(), 1, '복구 성공 뒤 console.error가 늘면 안 된다')
@@ -925,14 +919,7 @@ test('로드맵 35 — 로그인 일지 서버 저장 실패 중 뒤로가기: �
     select: () => ({ data: [{ work_date: dateKey, vehicle_id: 501, is_off: false, fixed_count: 2, raw: { palletCount: 0, fixedRouteCounts: {} } }], error: null }),
   }
   let serverShouldFail = false
-  handlers.rpc = {
-    ...(prevRpc || {}),
-    replace_transport_details: () => {
-      if (serverShouldFail) throw new Error('replace_transport_details down (simulated)')
-      return { data: null, error: null }
-    },
-  }
-  const dailyLogs = captureDailyLogUpserts()
+  const dailyLogs = captureDayLogSaves(() => serverShouldFail)
   const errSpy = spyConsoleError('[commitMainDayLogToCloud] 일지 저장 실패:')
   const prevConfirm = window.confirm
   /** @type {Array<string>} */
@@ -994,7 +981,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 저장은 성공�
   const root = createTrackedRoot(container)
   const prevDailyLogs = handlers.daily_logs
   handlers.daily_logs = { ...(prevDailyLogs || {}), select: () => ({ data: [{ work_date: dateKey, vehicle_id: 501, is_off: false, fixed_count: 2, raw: { palletCount: 0, fixedRouteCounts: {} } }], error: null }) }
-  const dailyLogs = captureDailyLogUpserts()
+  const dailyLogs = captureDayLogSaves()
 
   const proto = Object.getPrototypeOf(localStorage)
   const originalSetItem = proto.setItem
@@ -1027,7 +1014,7 @@ test('슬라이스 D — 로그인 클라우드 일지: 서버 저장은 성공�
     assert.equal(pendingDayWriteCount(), 0, 'durable 큐에 새 항목이 없어야 한다')
     assert.equal(hasUnsafeRegistration(ownerKey, dateKey), false)
     assert.equal(localStorage.getItem(tombstoneKey), tombstoneRawBefore, '새 tombstone을 만들면 안 된다')
-    assert.equal(dailyLogs.forDate(dateKey).length, upsertsBefore + 1, '서버 daily_logs upsert는 나갔다')
+    assert.equal(dailyLogs.forDate(dateKey).length, upsertsBefore + 1, '일지 서버 저장(save_day_log)은 나갔다')
     assert.equal(errSpy.count(), 0)
 
     await act(async () => { setNativeInputValue(requireHtmlInput(container, '#modalFixedCountInput'), '9') })

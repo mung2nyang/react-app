@@ -27,7 +27,7 @@ const DK = '2026-05-10'
 function beginLoggedIn(userId, ownerKey, ready = true) {
   resetHandlers()
   Object.assign(handlers, emptyOkHandlers())
-  handlers.daily_logs = { upsert: () => ({ data: { id: 5001 }, error: null }) }
+  handlers.rpc = { save_day_log: () => ({ data: 5001, error: null }) }
   beginSessionEpoch(userId, ownerKey)
   setHydration({ status: ready ? 'ready' : 'failed', userId, ownerKey })
   commitCars(ownerKey, [{ id: 'car-main', type: 'main', number: '12가3456', supabaseId: 700 }])
@@ -53,7 +53,7 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
 
     const r = await persistReceivableWorkDataChange('rc-a', next)
     assert.equal(r.ok, true)
-    assert.equal(countOf('daily_logs', 'upsert'), 1)
+    assert.equal(countOf('rpc', 'save_day_log'), 1)
 
     const stored = readOwnerWorkData('rc-a')[DK]?.callDetails?.find((d) => d.id === FIXTURE_DETAIL_ID_MAY10_MAIN)
     assert.equal(getDetailPaymentSummary(stored).status, 'paid')
@@ -94,7 +94,7 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
 
   test('D — 서버 실패 시 Store 미변경(revert-and-confirm-fail)', async () => {
     beginLoggedIn('u-rc-d', 'rc-d')
-    handlers.daily_logs = { upsert: () => { throw new Error('network down') } }
+    handlers.rpc = { save_day_log: () => { throw new Error('network down') } }
     seedMain('rc-d', clone(FIXTURE_WORK.main))
     const prev = { main: readOwnerWorkData('rc-d') }
     const paid = markReceivableItemPaid(prev.main, DK, FIXTURE_DETAIL_ID_MAY10_MAIN)
@@ -106,12 +106,12 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
     endCloudSession()
   })
 
-  test('E — 세션 전환: upsert await 중 로그아웃하면 Store 미반영', async () => {
+  test('E — 세션 전환: 서버 함수 await 중 로그아웃하면 Store 미반영', async () => {
     beginLoggedIn('u-rc-e', 'rc-e')
     seedMain('rc-e', clone(FIXTURE_WORK.main))
     /** @type {() => void} */ let releaseUpsert = () => {}
     const gate = /** @type {Promise<void>} */ (new Promise((resolve) => { releaseUpsert = resolve }))
-    handlers.daily_logs = { upsert: () => gate.then(() => ({ data: { id: 5001 }, error: null })) }
+    handlers.rpc = { save_day_log: () => gate.then(() => ({ data: 5001, error: null })) }
     const prev = { main: readOwnerWorkData('rc-e') }
     const paid = markReceivableItemPaid(prev.main, DK, FIXTURE_DETAIL_ID_MAY10_MAIN)
     const promise = persistReceivableWorkDataChange('rc-e', { main: paid.data })
@@ -132,7 +132,7 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
     const paid = markReceivableItemPaid(prev.main, DK, FIXTURE_DETAIL_ID_MAY10_MAIN)
     const r = await persistReceivableWorkDataChange('rc-guest', { main: paid.data })
     assert.equal(r.ok, true)
-    assert.equal(countOf('daily_logs', 'upsert'), 0)
+    assert.equal(countOf('rpc', 'save_day_log'), 0)
     const detail = readOwnerWorkData('rc-guest')[DK]?.callDetails?.find((d) => d.id === FIXTURE_DETAIL_ID_MAY10_MAIN)
     assert.equal(getDetailPaymentSummary(detail).status, 'paid')
   })
@@ -149,7 +149,7 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
     const next = markMonthlyReceivablesPaid({ main }, settings, '한진', '2026-05')
     const r = await persistReceivableWorkDataChange('rc-g1', next)
     assert.equal(r.ok, true)
-    assert.equal(countOf('daily_logs', 'upsert'), 3)
+    assert.equal(countOf('rpc', 'save_day_log'), 3)
     assert.equal(getReceivableItems(settings, { main: readOwnerWorkData('rc-g1') }).length, 0)
     endCloudSession()
   })
@@ -157,11 +157,11 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
   test('G-2 — 2건 성공 후 3번째 실패: 부분 Store 반영 + 부분 토스트', async () => {
     beginLoggedIn('u-rc-g2', 'rc-g2')
     let upsertCount = 0
-    handlers.daily_logs = {
-      upsert: () => {
+    handlers.rpc = {
+      save_day_log: () => {
         upsertCount += 1
         if (upsertCount >= 3) throw new Error('third fails')
-        return { data: { id: 5000 + upsertCount }, error: null }
+        return { data: 5000 + upsertCount, error: null }
       },
     }
     const dateKeys = ['2026-05-10', '2026-05-12', '2026-05-14']
@@ -191,7 +191,7 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
 
   test('G-3 — 첫 건부터 실패: Store 변경 없음', async () => {
     beginLoggedIn('u-rc-g3', 'rc-g3')
-    handlers.daily_logs = { upsert: () => { throw new Error('fail immediately') } }
+    handlers.rpc = { save_day_log: () => { throw new Error('fail immediately') } }
     const main = {
       '2026-05-10': { callDetails: [{ id: 'g3-d1', client: '한진', fare: '50000', payments: [] }] },
       '2026-05-12': { callDetails: [{ id: 'g3-d2', client: '한진', fare: '60000', payments: [] }] },
@@ -219,11 +219,11 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
     let upsertCount = 0
     /** @type {() => void} */ let releaseThird = () => {}
     const thirdGate = /** @type {Promise<void>} */ (new Promise((resolve) => { releaseThird = resolve }))
-    handlers.daily_logs = {
-      upsert: () => {
+    handlers.rpc = {
+      save_day_log: () => {
         upsertCount += 1
-        if (upsertCount >= 3) return thirdGate.then(() => ({ data: { id: 5099 }, error: null }))
-        return { data: { id: 5000 + upsertCount }, error: null }
+        if (upsertCount >= 3) return thirdGate.then(() => ({ data: 5099, error: null }))
+        return { data: 5000 + upsertCount, error: null }
       },
     }
     const dateKeys = ['2026-05-10', '2026-05-12', '2026-05-14']
@@ -287,15 +287,15 @@ describe('64 receivables cloud commit — 기사 차량', () => {
     beginWithSubCar('u-rc-h1', 'rc-h1')
     /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const upserts = []
-    handlers.daily_logs = { upsert: (row) => { upserts.push(row ?? null); return { data: { id: 6001 }, error: null } } }
+    handlers.rpc = { save_day_log: (args) => { upserts.push(args && typeof args === 'object' && !Array.isArray(args) ? args.p_log : null); return { data: 6001, error: null } } }
     commitLogWorkData('rc-h1', PLATE, subLog('h1-d1'))
     const paid = markReceivableItemPaid(readOwnerLogWorkData('rc-h1', PLATE), SUB_DK, 'h1-d1')
     assert.ok(paid.data)
 
     const r = await persistReceivableWorkDataChange('rc-h1', { main: readOwnerWorkData('rc-h1'), [PLATE]: paid.data })
     assert.deepEqual(r, { ok: true, partial: false, toast: null })
-    assert.equal(countOf('daily_logs', 'upsert'), 1)
-    assert.equal(countOf('rpc', 'replace_transport_details'), 1)
+    assert.equal(countOf('rpc', 'save_day_log'), 1)
+    assert.equal(countOf('rpc', 'replace_transport_details'), 0)
     const row = /** @type {{ vehicle_id?: number, work_date?: string }} */ (upserts[0])
     assert.equal(row.vehicle_id, 701)
     assert.equal(row.work_date, SUB_DK)
@@ -305,7 +305,7 @@ describe('64 receivables cloud commit — 기사 차량', () => {
 
   test('H-2 — 기사 차량 서버 실패: Store 그대로, 실패 안내', async () => {
     beginWithSubCar('u-rc-h2', 'rc-h2')
-    handlers.daily_logs = { upsert: () => { throw new Error('network down') } }
+    handlers.rpc = { save_day_log: () => { throw new Error('network down') } }
     commitLogWorkData('rc-h2', PLATE, subLog('h2-d1'))
     const paid = markReceivableItemPaid(readOwnerLogWorkData('rc-h2', PLATE), SUB_DK, 'h2-d1')
 
@@ -326,10 +326,10 @@ describe('64 receivables cloud commit — 기사 차량', () => {
 
     /** @type {Array<number|undefined>} */
     const vehicleIds = []
-    handlers.daily_logs = {
-      upsert: (row) => {
-        vehicleIds.push(/** @type {{ vehicle_id?: number }} */ (row ?? {}).vehicle_id)
-        return { data: { id: 7000 + vehicleIds.length }, error: null }
+    handlers.rpc = {
+      save_day_log: (args) => {
+        vehicleIds.push(/** @type {{ vehicle_id?: number }} */ (args && typeof args === 'object' && !Array.isArray(args) ? args.p_log : {}).vehicle_id)
+        return { data: 7000 + vehicleIds.length, error: null }
       },
     }
     const ok = await persistReceivableWorkDataChange('rc-h3', next)
@@ -342,10 +342,10 @@ describe('64 receivables cloud commit — 기사 차량', () => {
     beginWithSubCar('u-rc-h3b', 'rc-h3b')
     seedMain('rc-h3b', clone(main))
     commitLogWorkData('rc-h3b', PLATE, subLog('h3-s1'))
-    handlers.daily_logs = {
-      upsert: (row) => {
-        if (/** @type {{ vehicle_id?: number }} */ (row ?? {}).vehicle_id === 701) throw new Error('sub fails')
-        return { data: { id: 7100 }, error: null }
+    handlers.rpc = {
+      save_day_log: (args) => {
+        if (/** @type {{ vehicle_id?: number }} */ (args && typeof args === 'object' && !Array.isArray(args) ? args.p_log : {}).vehicle_id === 701) throw new Error('sub fails')
+        return { data: 7100, error: null }
       },
     }
     const partial = await persistReceivableWorkDataChange('rc-h3b', next)
@@ -364,7 +364,7 @@ describe('64 receivables cloud commit — 기사 차량', () => {
     const paid = markReceivableItemPaid(readOwnerLogWorkData('rc-guest-sub', PLATE), SUB_DK, 'h4-d1')
     const r = await persistReceivableWorkDataChange('rc-guest-sub', { main: {}, [PLATE]: paid.data })
     assert.deepEqual(r, { ok: true, partial: false, toast: null })
-    assert.equal(countOf('daily_logs', 'upsert'), 0)
+    assert.equal(countOf('rpc', 'save_day_log'), 0)
     assert.equal(subStatus('rc-guest-sub', 'h4-d1'), 'paid')
   })
 })

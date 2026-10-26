@@ -30,7 +30,7 @@ function wait(ms) {
 }
 
 /**
- * daily_logs upsert를 붙잡아 두는 가짜 서버. gated 수만큼 앞 호출을 붙잡고 나머지는 바로 성공.
+ * 일지 저장 서버 함수(save_day_log)를 붙잡아 두는 가짜 서버. gated 수만큼 앞 호출을 붙잡고 나머지는 바로 성공.
  * @param {{ gated: number, failFirst?: boolean }} options
  */
 function holdUpserts({ gated, failFirst = false }) {
@@ -38,13 +38,13 @@ function holdUpserts({ gated, failFirst = false }) {
   const fixedCounts = []
   /** @type {Array<() => void>} */
   const releases = []
-  handlers.daily_logs = {
-    upsert: (row) => {
+  handlers.rpc = {
+    save_day_log: (args) => {
       const index = fixedCounts.length
-      fixedCounts.push(Number(/** @type {{ fixed_count?: number }} */ (row ?? {}).fixed_count))
+      fixedCounts.push(Number(/** @type {{ fixed_count?: number }} */ (args && typeof args === 'object' && !Array.isArray(args) ? args.p_log : {}).fixed_count))
       const result = () => {
         if (failFirst && index === 0) throw new Error('network down')
-        return { data: { id: 9000 + index }, error: null }
+        return { data: 9000 + index, error: null }
       }
       if (index >= gated) return result()
       return new Promise((resolve) => { releases.push(() => resolve(undefined)) }).then(result)
@@ -216,7 +216,7 @@ test('F-1 서버 저장 실패 → 날짜가 목록에, 다음 저장 성공 →
 
 test('F-2 화면을 닫는 것만으로는 지우지 않는다(닫을 때 다시 저장도 실패)', async () => {
   beginLoggedIn('u-f2', 'own-f2')
-  handlers.daily_logs = { upsert: () => { throw new Error('network down') } }
+  handlers.rpc = { save_day_log: () => { throw new Error('network down') } }
   const originalError = console.error
   console.error = () => {}
   try {
