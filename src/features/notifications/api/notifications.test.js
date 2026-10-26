@@ -141,4 +141,11 @@ describe('notifications — 오늘 운행일지 알림 (시간 게이트·미입
     commitBatch([{ domain: 'workData', ownerKey, value: { '2026-09-04': { fixedCount: 3 } } }], { persist: false })
     assert.ok(collectNotifications(ownerKey).some((item) => item.id === `today:${todayKey()}`))
   })
+
+  test('18시 이후: 파렛트만 있어도 알림이 없다', () => {
+    mock.timers.enable({ apis: ['Date'], now: new Date(2026, 8, 5, 20, 0, 0).getTime() })
+    const ownerKey = 'today-owner-pallet'
+    commitWorkData(ownerKey, { [todayKey()]: { palletCount: 3 } })
+    assert.equal(collectNotifications(ownerKey).some((item) => item.id.startsWith('today:')), false)
+  })
 })

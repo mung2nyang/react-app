@@ -106,14 +106,15 @@ export function collectNotifications(ownerKey = 'guest', session = null) {
     // 로그인 계정 일지는 메모리에만 있어 기기 저장소가 아닌 메모리(위 workDataByLogId)에서 읽는다.
     const workMap = /** @type {Record<string, JsonValue|undefined>} */ (workDataByLogId.main || {})
     const todayRecord = workMap[dateKey]
-    /** @type {{ isOff?: JsonValue, callDetails?: JsonValue, fixedCount?: JsonValue }|null} */
+    /** @type {{ isOff?: JsonValue, callDetails?: JsonValue, fixedCount?: JsonValue, palletCount?: JsonValue }|null} */
     const record = (todayRecord && typeof todayRecord === 'object' && !Array.isArray(todayRecord))
-      ? /** @type {{ isOff?: JsonValue, callDetails?: JsonValue, fixedCount?: JsonValue }} */ (todayRecord)
+      ? /** @type {{ isOff?: JsonValue, callDetails?: JsonValue, fixedCount?: JsonValue, palletCount?: JsonValue }} */ (todayRecord)
       : null
     const hasEntry = !!record && (
       !!record.isOff
       || (Array.isArray(record.callDetails) && record.callDetails.length > 0)
       || (parseInt(String(record.fixedCount ?? ''), 10) || 0) > 0
+      || (parseInt(String(record.palletCount ?? ''), 10) || 0) > 0
     )
     if (!hasEntry && !dismissed.has(todayId)) {
       items.push({
