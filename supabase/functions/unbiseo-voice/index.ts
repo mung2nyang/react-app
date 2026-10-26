@@ -1,10 +1,10 @@
-// 운비서 답 문장을 xAI 목소리(Iris)로 — 로그인한 사람만, 문장 내용은 기록에 안 남기고 글자 수만(로드맵 24-E2).
+// 운비서 답 문장을 xAI 목소리(Ara)로 — 로그인한 사람만, 문장 내용은 기록에 안 남기고 글자 수만(로드맵 24-E2).
 import { createClient } from 'npm:@supabase/supabase-js@2.112.3'
 
 type Json = string | number | boolean | null | Array<Json> | { [key: string]: Json }
 
 const API_URL = 'https://api.x.ai/v1/tts'
-const VOICE_ID = 'iris'
+const VOICE_ID = 'ara'
 const TEXT_MAX = 300
 const TIMEOUT_MS = 15000
 // 말소리라 낮은 비트레이트로 — 파일이 작아 휴대폰에서 빨리 받는다.
