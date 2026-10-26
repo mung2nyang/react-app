@@ -2,6 +2,7 @@
 /** @typedef {import('../../../domain/jsonTypes.ts').JsonValue} JsonValue */
 // 리포트 "요약" 화면 — 정보표·일자표·월간 정산 카드.
 import './report.css'
+import { ReportMonthSummaryCard } from './ReportMonthSummaryCard.jsx'
 /**
  * @typedef {Object} ReportDayRow
  * @property {number} day
@@ -99,6 +100,7 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
  *   fareByClient: Record<string, number>,
  *   commissionByClient: Record<string, number>,
  *   commissionLabelByClient: Record<string, string>,
+ *   palletFare?: number,
  *   vat: number,
  *   insuranceTotal?: number,
  *   total: number,
@@ -109,13 +111,8 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
  * @param {boolean} [props.isExporting]
  */
 export function ReportSummaryContent({ profile, car, report, dash, formatWon, distanceOn = false, isExporting = false }) {
-  const clientNames = Object.keys(report.fareByClient || {})
-  const baseFare = (Number(report.fixedBaseFare) || 0) + (Number(report.defaultBaseFare) || 0)
-  const showBaseFare = baseFare > 0 || clientNames.length === 0
   const days = Array.isArray(report.days) ? report.days : []
   const showPallet = !!report.showPallet
-  const tripCount = (Number(report.trips) || 0) + (Number(report.callTrips) || 0)
-  const showDistance = distanceOn && report.distanceKm > 0
 
   return (
     <>
@@ -146,54 +143,7 @@ export function ReportSummaryContent({ profile, car, report, dash, formatWon, di
         </tbody>
       </table>
       {renderSummaryDayTables(days, report.monthIndex, showPallet, isExporting)}
-      <div className="summary-card">
-        <div className="summary-title">
-          <span>월간 운송료 정산</span>
-          <span>총 {tripCount}회 운행</span>
-        </div>
-        {showDistance && (
-          <div className="summary-row">
-            <span>월간 총 운행거리</span>
-            <span className="summary-value">{report.distanceKm} km</span>
-          </div>
-        )}
-        {showBaseFare && (
-          <div className="summary-row">
-            <span>기본 운송료</span>
-            <span className="summary-value">{formatWon(baseFare)}</span>
-          </div>
-        )}
-        {clientNames.map((client) => (
-          <div key={client}>
-            <div className="summary-row">
-              <span>{client} 기본 운송료</span>
-              <span className="summary-value">{formatWon(report.fareByClient[client])}</span>
-            </div>
-            {(report.commissionByClient[client] || 0) > 0 && (
-              <div className="summary-row summary-client-commission-row">
-                <span className="summary-client-commission-label">
-                  {client} 수수료 ({report.commissionLabelByClient[client]})
-                </span>
-                <span className="summary-value">- {formatWon(report.commissionByClient[client])}</span>
-              </div>
-            )}
-          </div>
-        ))}
-        {(report.insuranceTotal || 0) > 0 && (
-          <div className="summary-row">
-            <span>산재보험료</span>
-            <span className="summary-value">- {formatWon(report.insuranceTotal || 0)}</span>
-          </div>
-        )}
-        <div className="summary-row">
-          <span>부가세 (공급가액 기준 10%)</span>
-          <span className="summary-value">{formatWon(report.vat)}</span>
-        </div>
-        <div className="summary-row total">
-          <span>계</span>
-          <span className="summary-value">{formatWon(report.total)}</span>
-        </div>
-      </div>
+      <ReportMonthSummaryCard report={report} formatWon={formatWon} distanceOn={distanceOn} />
     </>
   )
 }

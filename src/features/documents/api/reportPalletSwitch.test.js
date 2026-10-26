@@ -32,3 +32,9 @@ test('두 스위치가 같으면 일지 키와 상관없이 같다', () => {
   assert.deepEqual(pallet({ fixedOn: true, subFixedOn: true }, PLATE), pallet({ fixedOn: true, subFixedOn: true }, 'main'))
   assert.deepEqual(pallet({ fixedOn: false, subFixedOn: false }, PLATE), pallet({ fixedOn: false, subFixedOn: false }, 'main'))
 })
+
+test('월간 정산 파렛트 회수 청구액(palletFare)은 날짜 칸 파렛트 합과 같다', () => {
+  const report = buildMonthReport('test-report-pallet-switch', 2026, 9, [], SUB_CARS, { fixedOn: false, subFixedOn: true }, WORK, CLIENTS, {}, PLATE)
+  assert.equal(report.palletFare, 10000)
+  assert.equal(buildMonthReport('test-report-pallet-switch', 2026, 9, [], SUB_CARS, { fixedOn: true, subFixedOn: false }, WORK, CLIENTS, {}, PLATE).palletFare, 0)
+})
