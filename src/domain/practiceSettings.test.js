@@ -148,3 +148,10 @@ describe('§16 슬라이스 C — 서브차량별 설정(subCarSettings)', () =>
     assert.deepEqual(normalizeSettings({}).subCarSettings, {})
   })
 })
+
+describe('운비서 버튼 띄우기(unbiseoDockOn)', () => {
+  test('칸이 없는 옛 설정은 켜짐, 끈 값은 꺼짐 그대로', () => {
+    assert.equal(normalizeSettings({}).unbiseoDockOn, true)
+    assert.equal(normalizeSettings({ unbiseoDockOn: false }).unbiseoDockOn, false)
+  })
+})

@@ -44,7 +44,7 @@ const SETTINGS = plain(v.strictObject({
   fixedRouteOn: opt(bool), fixedRoutePresets: opt(v.array(ROUTE_PRESET)), runCountToggle: opt(bool), runCountPresets: opt(v.array(finiteNumber)),
   subFixedRouteOn: opt(bool), subFixedRoutePresets: opt(v.array(ROUTE_PRESET)), subRunCountToggle: opt(bool), subRunCountPresets: opt(v.array(finiteNumber)),
   pinnedLocations: opt(v.array(str)), subCarSettings: opt(plain(v.record(str, SUB_CAR_SETTINGS))),
-  dailyInspectionOn: opt(bool), notifOff: opt(v.array(str)),
+  dailyInspectionOn: opt(bool), notifOff: opt(v.array(str)), unbiseoDockOn: opt(bool),
 }))
 
 /** data/sync/profileSave.ts EMPTY_PROFILE + PersonalInfoPage 저장 필드와 동일하다. */

@@ -96,6 +96,15 @@ export default function AppSettingsPage({ onBack, onOpenMenu }) {
               </label>
             </div>
           )}
+          {!logId && ownerKey !== 'guest' && (
+            <div className="setting-item settings-theme-row">
+              <label htmlFor="unbiseoDockToggle">운비서 버튼 띄우기</label>
+              <label className="switch">
+                <input id="unbiseoDockToggle" type="checkbox" checked={settings.unbiseoDockOn !== false} onChange={(e) => patch({ unbiseoDockOn: e.target.checked })} />
+                <span className="slider"></span>
+              </label>
+            </div>
+          )}
           <div className="setting-item settings-calendar-row">
             <div className="settings-calendar-copy">
               <label>달력 일일 표시</label>

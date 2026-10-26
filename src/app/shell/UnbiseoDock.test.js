@@ -41,9 +41,9 @@ async function waitUntil(predicate, { timeoutMs = 3000, stepMs = 20 } = {}) {
   if (!predicate()) throw new Error('waitUntil timeout')
 }
 
-/** @param {string} ownerKey @param {string} path @param {boolean} [loggedIn] */
-async function renderShell(ownerKey, path, loggedIn = true) {
-  commitSettings(ownerKey, normalizeSettings({ callDetail: true }))
+/** @param {string} ownerKey @param {string} path @param {boolean} [loggedIn] @param {object} [settings] */
+async function renderShell(ownerKey, path, loggedIn = true, settings = {}) {
+  commitSettings(ownerKey, normalizeSettings({ callDetail: true, ...settings }))
   commitWorkData(ownerKey, {})
   window.history.replaceState(null, '', path)
   const session = loggedIn ? { userId: ownerKey, name: '보리', accountType: 'owner' } : null
@@ -131,6 +131,27 @@ test('저장된 왼쪽·높이가 다시 열 때 버튼에 적용, 카드는 늘
     await view.cleanup()
     localStorage.removeItem(DOCK_KEY)
   }
+})
+
+test('설정에서 운비서 버튼을 끄면 다른 화면에 안 뜨고, 펼친 카드도 끄면 사라졌다가 켜면 작게 다시 뜬다', async () => {
+  const owner = 'dock-setting-off'
+  const view = await renderShell(owner, '/app/revenue', true, { unbiseoDockOn: false })
+  const setDockOn = async (/** @type {boolean} */ on) => {
+    await act(async () => { commitSettings(owner, normalizeSettings({ callDetail: true, unbiseoDockOn: on })) })
+    await view.settle()
+  }
+  try {
+    assert.equal(view.dock(), null, '꺼진 설정이면 안 뜬다')
+    await setDockOn(true)
+    await waitUntil(() => !!view.dock())
+    await view.click(view.dock()?.querySelector('.unbiseo-dock-fab'))
+    assert.ok(view.dock()?.querySelector('.home-assistant-panel'), '누르면 카드')
+    await setDockOn(false)
+    assert.equal(view.dock(), null, '카드가 펼쳐져 있어도 끄면 사라진다')
+    await setDockOn(true)
+    assert.ok(view.dock()?.querySelector('.unbiseo-dock-fab'), '다시 켜면 작은 버튼')
+    assert.equal(view.dock()?.querySelector('.home-assistant-panel'), null, '카드는 접힌 채')
+  } finally { await view.cleanup() }
 })
 
 test('저장 값이 깨졌으면 기본 자리(오른쪽, 높이 0)', async () => {

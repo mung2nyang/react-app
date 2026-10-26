@@ -1,5 +1,7 @@
 // 홈이 아닌 화면에 떠 있는 운비서 캐릭터 버튼. 끌어서 옮기면 왼쪽·오른쪽 가장자리에 붙고, 누르면 아래 메뉴 위에 카드가 열리며 바로 듣는다.
-import type { CSSProperties } from 'react'
+import { useEffect, type CSSProperties } from 'react'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
+import { useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
 import { assetPath } from '../../../shared/utils/assetPath.js'
 import { useUnbiseo } from '../hooks/unbiseoContext.ts'
 import { useDockPosition } from '../hooks/useDockPosition.ts'
@@ -13,8 +15,16 @@ export default function UnbiseoDock() {
   const { assistant, openCall, dockOpen, setDockOpen } = useUnbiseo()
   const { speech } = assistant
   const { position, offset, fabRef, bind, justDragged } = useDockPosition()
+  const { ownerKey } = useSession()
+  const dockOn = useOwnerSettings(ownerKey).unbiseoDockOn !== false
+  // 설정에서 끄면 띄우지 않는다 — 열린 카드는 접고 듣기도 멈춘다.
+  useEffect(() => {
+    if (dockOn) return
+    setDockOpen(false)
+    if (speech.listening) speech.stop()
+  }, [dockOn, setDockOpen, speech])
   // 비회원은 띄우지 않는다 — 홈 카드에서 로그인 안내.
-  if (!assistant.loggedIn) return null
+  if (!assistant.loggedIn || !dockOn) return null
 
   // 받아쓰기 없는 휴대폰이면 글 칸만.
   function openAndListen() {

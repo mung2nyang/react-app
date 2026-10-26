@@ -38,6 +38,7 @@ const defaults = {
   subRunCountToggle: false,
   subRunCountPresets: [1, 2, 3, 4, 5],
   pinnedLocations: [],
+  unbiseoDockOn: true,
 }
 
 function asBool(value: JsonValue | undefined, fallback: boolean): boolean {
@@ -75,6 +76,7 @@ export function normalizeSettings(raw: FinanceSettings = {}): FinanceSettings {
     pinnedLocations: normalizePinnedLocations(raw.pinnedLocations),
     subCarSettings: normalizeSubCarSettingsMap(raw.subCarSettings, asBool(raw.subFixedOn, fixedOn)),
     notifOff: normalizeNotifOff(raw.notifOff),
+    unbiseoDockOn: asBool(raw.unbiseoDockOn, defaults.unbiseoDockOn),
   }
 }
 
