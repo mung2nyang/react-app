@@ -24,7 +24,9 @@ export type SyncContext = {
   idByDate: Map<string, string>
   legacyVehicleId: string | number | null // 옛 항목이 잘못 쌓여 있을 수 있는 칸(차주 메인 차량, 5-B-2)
   restoreMissing: boolean // 차주만 쓰는 칸(메인·미연동)이면 true
+  deletes: Array<ExpenseRowRef>
 }
+export type ExpenseRowRef = { table: string, id: string }
 
 const KIND_SPECS: Array<KindSpec> = [
   { kind: 'fuel', table: 'fuel_records', buildRow: buildFuelRecordRow, mapRow: expenseFromFuelRecord },
@@ -108,12 +110,11 @@ async function syncKind(spec: KindSpec, ctx: SyncContext) {
     if (updateError) throw updateError
   }
 
+  // 지우기는 모아 두었다가 모든 넣기·고치기 뒤에 한다 — 중간에 끊겨도 유실 대신 중복.
   for (const id of previousById.keys()) {
     if (nextIds.has(id)) continue
     const row = serverByItemId.get(id)
-    if (!row) continue
-    const { error: deleteError } = await supabase.from(spec.table).delete().eq('id', row.id)
-    if (deleteError) throw deleteError
+    if (row) ctx.deletes.push({ table: spec.table, id: row.id })
   }
 }
 
@@ -123,8 +124,22 @@ async function syncKind(spec: KindSpec, ctx: SyncContext) {
  * @param restoreMissing 차주만 쓰는 칸이면 true
  */
 export async function syncExpenseItemsForVehicle(userId: string, vehicleId: string | number, previous: Array<ExpenseItem>, next: Array<ExpenseItem>, workData: Record<string, JsonValue | undefined>, legacyVehicleId: string | number | null = null, restoreMissing = false) {
-  const ctx = { userId, vehicleId, previous, next, workData, legacyVehicleId, restoreMissing, idByDate: await dailyLogIdsByDate(vehicleId) }
+  await deleteExpenseRows(await upsertExpenseItemsForVehicle(userId, vehicleId, previous, next, workData, legacyVehicleId, restoreMissing))
+}
+
+/** 넣기·고치기만 하고, 지울 서버 행 목록을 돌려준다(지우기는 deleteExpenseRows). */
+export async function upsertExpenseItemsForVehicle(userId: string, vehicleId: string | number, previous: Array<ExpenseItem>, next: Array<ExpenseItem>, workData: Record<string, JsonValue | undefined>, legacyVehicleId: string | number | null = null, restoreMissing = false): Promise<Array<ExpenseRowRef>> {
+  const ctx: SyncContext = { userId, vehicleId, previous, next, workData, legacyVehicleId, restoreMissing, idByDate: await dailyLogIdsByDate(vehicleId), deletes: [] }
   for (const spec of KIND_SPECS) {
     await syncKind(spec, ctx)
+  }
+  return ctx.deletes
+}
+
+/** 모아 둔 서버 행을 지운다. */
+export async function deleteExpenseRows(rows: Array<ExpenseRowRef>) {
+  for (const row of rows) {
+    const { error } = await supabase.from(row.table).delete().eq('id', row.id)
+    if (error) throw error
   }
 }

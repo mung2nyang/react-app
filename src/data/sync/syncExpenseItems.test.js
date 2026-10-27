@@ -117,6 +117,18 @@ describe('syncExpenseItemsForVehicle — 로드맵 5-B-1 항목 단위 저장', 
     assert.deepEqual(events, ['fuel.insert:dl-1:seq=0'])
   })
 
+  test('정비 → 기타로 바뀐 항목은 기타에 먼저 넣고, 정비 줄은 그다음 지운다', async () => {
+    handlers.misc_expense_records.insert = () => { events.push('misc.insert'); return { data: null, error: null } }
+    await syncExpenseItemsForVehicle('driver-1', 'veh-1', [DRIVER_MAINT], [{ ...DRIVER_MAINT, kind: 'misc' }], {})
+    assert.deepEqual(events, ['misc.insert', 'maint.delete:srv-drv'])
+  })
+
+  test('기타 넣기가 실패하면 정비 줄을 지우지 않는다', async () => {
+    handlers.misc_expense_records.insert = () => ({ data: null, error: { message: 'insert down' } })
+    await assert.rejects(() => syncExpenseItemsForVehicle('driver-1', 'veh-1', [DRIVER_MAINT], [{ ...DRIVER_MAINT, kind: 'misc' }], {}))
+    assert.equal(countOf('maintenance_records', 'delete'), 0)
+  })
+
   test('5-B-2 옛 항목 옮기기: 메인 칸에도 없으면 상대가 지운 것이라 되살리지 않는다', async () => {
     /** @type {ExpenseItem} */
     const gone = { id: 'drv-f-gone', kind: 'fuel', date: '2026-09-10', cost: 1, vehicleNumber: '11가1111' }

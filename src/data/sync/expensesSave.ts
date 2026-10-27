@@ -11,7 +11,8 @@ import {
   getCloudOwnerKey,
   getCloudUserId,
 } from '../cloud/cloudSession.ts'
-import { syncExpenseItemsForVehicle } from './syncExpenseItems.ts'
+import { deleteExpenseRows, syncExpenseItemsForVehicle, upsertExpenseItemsForVehicle } from './syncExpenseItems.ts'
+import type { ExpenseRowRef } from './syncExpenseItems.ts'
 import { saveFailMessage } from '../../shared/utils/failureMessages.js'
 import type { ExpenseDraft, ExpenseItem } from '../../domain/expenseTypes.ts'
 
@@ -43,15 +44,17 @@ export async function saveExpenses(ownerKey: string, items: Array<ExpenseItem>) 
   const previousAll = (getState().expenses[ownerKey] || []) as Array<ExpenseItem>
   const previousByLog = new Map(planExpenseVehicleTargets(cars, drivers, previousAll).map((target) => [target.logId, target.expenses]))
   const mainVehicleId = targets.find((target) => target.logId === 'main')?.vehicleId ?? null
-  // 서브 칸 먼저·메인 나중 — 중간 실패 시 유실 대신 중복(불러올 때 id로 정리).
+  // 모든 칸 넣기·고치기 먼저, 지우기는 맨 뒤 — 중간 실패 시 유실 대신 중복(불러올 때 id로 정리).
+  const deletes: Array<ExpenseRowRef> = []
   for (const target of targets) {
     const ownIds = new Set(target.expenses.map((item) => item.id))
     // 내가 알던 항목 = 저장 전 이 칸 항목 + 이번에 다른 칸으로 간 항목(이 칸에 남은 옛 줄을 지운다).
     const previous = [...(previousByLog.get(target.logId) || []), ...next.filter((item) => !ownIds.has(item.id))]
     const linked = target.mode === 'items'
     // 연동 서브(5-B-2)는 메인 칸의 옛 항목을 옮겨 넣고, 차주만 쓰는 칸은 서버에서 빠진 항목을 다시 넣는다.
-    await syncExpenseItemsForVehicle((userId) as string, target.vehicleId, previous, target.expenses, logs[target.logId] || {}, linked ? mainVehicleId : null, !linked)
+    deletes.push(...await upsertExpenseItemsForVehicle((userId) as string, target.vehicleId, previous, target.expenses, logs[target.logId] || {}, linked ? mainVehicleId : null, !linked))
   }
+  await deleteExpenseRows(deletes)
   assertSessionStillCurrent(captured)
   commitExpenses(ownerKey, next)
 }
