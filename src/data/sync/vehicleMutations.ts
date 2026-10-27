@@ -69,10 +69,9 @@ export async function requestVehicleSave({ ownerKey, cars, draft, editingId, use
     return runOwnerSaveSerialized(ownerKey, async () => {
       try {
         const captured = captureSession()
-        if (renamedFrom && saved?.number && previous?.supabaseId) await renameSubVehicleOnServer(previous.supabaseId, saved.number, captured)
-        const remoteId = await upsertVehicleFromList(
-          (cloudUserId) as string, ownerKey, nextCars, (saved?.id) as string, captured,
-        )
+        const remoteId = renamedFrom && saved?.number && previous?.supabaseId
+          ? await renameSubVehicleOnServer((cloudUserId) as string, previous.supabaseId, saved, nextCars.indexOf(saved), captured)
+          : await upsertVehicleFromList((cloudUserId) as string, ownerKey, nextCars, (saved?.id) as string, captured)
         assertSessionStillCurrent(captured)
         const withId = remoteId != null
           ? nextCars.map((item) => (item.id === saved?.id ? { ...item, supabaseId: String(remoteId) } : item))

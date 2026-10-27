@@ -84,17 +84,23 @@ describe('66 기사 차량 번호 변경 — 묶인 것 옮기기', () => {
     assert.ok(storedSettings.subCarSettings?.[NEW]?.dailyInspectionOn)
   })
 
-  test('R-2 로그인: 서버 함수 1회 → 차량 저장 1회 → 화면 전부 새 번호', async () => {
+  test('R-2 로그인: 서버 함수 1회(나머지 칸 포함) → 차량 저장 따로 없음 → 화면 전부 새 번호', async () => {
     const owner = 'own-r2'
     beginLoggedIn(owner)
-    /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
+    /** @type {Array<{ p_vehicle_id?: string, p_new_number?: string, p_row?: { number?: string, type?: string, driver_name?: string } }>} */
     const rpcArgs = []
-    handlers.rpc = { rename_sub_vehicle: (args) => { rpcArgs.push(args ?? null); return { data: [{ old_number: OLD, new_number: NEW, clients_updated: 1 }], error: null } } }
+    handlers.rpc = { rename_and_save_sub_vehicle: (args) => { rpcArgs.push(/** @type {{ p_vehicle_id?: string, p_new_number?: string }} */ (args ?? {})); return { data: 'v-sub', error: null } } }
     seed(owner)
     const result = await rename(owner)
     assert.equal(result.failed, false)
-    assert.deepEqual(rpcArgs, [{ p_vehicle_id: 'v-sub', p_new_number: NEW }])
-    assert.equal(countOf('vehicles', 'update'), 1)
+    assert.equal(rpcArgs.length, 1)
+    assert.equal(rpcArgs[0].p_vehicle_id, 'v-sub')
+    assert.equal(rpcArgs[0].p_new_number, NEW)
+    assert.equal(rpcArgs[0].p_row?.number, NEW)
+    assert.equal(rpcArgs[0].p_row?.type, 'sub')
+    assert.equal(rpcArgs[0].p_row?.driver_name, '김')
+    assert.equal(countOf('rpc', 'rename_sub_vehicle'), 0)
+    assert.equal(countOf('vehicles', 'update'), 0)
     assertAllTagged(owner, NEW)
     endCloudSession()
   })
@@ -102,7 +108,7 @@ describe('66 기사 차량 번호 변경 — 묶인 것 옮기기', () => {
   test('R-3 로그인: 서버 함수가 거절하면 차량 저장 0회, 화면 옛 번호 그대로, 서버 문구 안내', async () => {
     const owner = 'own-r3'
     beginLoggedIn(owner)
-    handlers.rpc = { rename_sub_vehicle: () => ({ data: null, error: { code: 'P0001', message: '이미 등록된 차량번호입니다.' } }) }
+    handlers.rpc = { rename_and_save_sub_vehicle: () => ({ data: null, error: { code: 'P0001', message: '이미 등록된 차량번호입니다.' } }) }
     seed(owner)
     const spy = mock.method(console, 'error', () => {})
     const result = await rename(owner)
@@ -115,12 +121,11 @@ describe('66 기사 차량 번호 변경 — 묶인 것 옮기기', () => {
     endCloudSession()
   })
 
-  test('R-3b 로그인: 함수 성공·차량 저장 실패면 화면 옛 번호, 다시 저장하면 새 번호', async () => {
+  test('R-3b 로그인: 함수 하나가 실패하면 차량 저장 0회·화면 옛 번호, 다시 저장하면 새 번호', async () => {
     const owner = 'own-r3b'
     beginLoggedIn(owner)
     let rpcCount = 0
-    handlers.rpc = { rename_sub_vehicle: () => { rpcCount += 1; return { data: [], error: null } } }
-    handlers.vehicles = { ...handlers.vehicles, update: () => { throw new Error('network down') } }
+    handlers.rpc = { rename_and_save_sub_vehicle: () => { rpcCount += 1; if (rpcCount === 1) throw new Error('network down'); return { data: 'v-sub', error: null } } }
     seed(owner)
     const spy = mock.method(console, 'error', () => {})
     const failed = await rename(owner)
@@ -128,11 +133,12 @@ describe('66 기사 차량 번호 변경 — 묶인 것 옮기기', () => {
     spy.mock.restore()
     assert.equal(failed.failed, true)
     assert.equal(failed.toast, FAIL_FAST)
+    assert.equal(countOf('vehicles', 'update'), 0)
     assertAllTagged(owner, OLD)
-    handlers.vehicles = { ...handlers.vehicles, update: () => ({ data: null, error: null }) }
     const retried = await rename(owner)
     assert.equal(retried.failed, false)
     assert.equal(rpcCount, 2)
+    assert.equal(countOf('vehicles', 'update'), 0)
     assertAllTagged(owner, NEW)
     endCloudSession()
   })
@@ -149,6 +155,7 @@ describe('66 기사 차량 번호 변경 — 묶인 것 옮기기', () => {
     })
     assert.equal(result.failed, false)
     assert.equal(countOf('rpc', 'rename_sub_vehicle'), 0)
+    assert.equal(countOf('rpc', 'rename_and_save_sub_vehicle'), 0)
     assertAllTagged(owner, OLD)
     endCloudSession()
   })
@@ -156,7 +163,7 @@ describe('66 기사 차량 번호 변경 — 묶인 것 옮기기', () => {
   test('R-5 로그인: 번호를 바꾼 뒤 지출을 저장해도 그 차량 칸으로 간다(메인 칸 0건)', async () => {
     const owner = 'own-r5'
     beginLoggedIn(owner)
-    handlers.rpc = { rename_sub_vehicle: () => ({ data: [], error: null }) }
+    handlers.rpc = { rename_and_save_sub_vehicle: () => ({ data: 'v-sub', error: null }) }
     /** @type {Array<import('../store/atomicPersist.ts').JsonValue>} */
     const fuelRows = []
     handlers.daily_logs = { select: () => ({ data: [], error: null }), upsert: () => ({ data: { id: 'dl-1' }, error: null }) }

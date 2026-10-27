@@ -1,12 +1,14 @@
 // 기사 차량 번호를 바꾸면 그 번호에 묶인 일지·지출·전용 거래처·기사 연결·차량 설정을 새 번호로 함께 옮긴다.
-// 서버는 rename_sub_vehicle(DB 0022) 한 번으로 차량 번호·전용 거래처·설정 키를 같이 바꾼다.
+// 서버는 rename_and_save_sub_vehicle(DB 0029) 한 번으로 차량 번호·전용 거래처·설정 키를 같이 바꾼다.
 import { supabase } from '../cloud/supabaseClient.ts'
+import { buildVehicleRow } from '../cloud/cloudStorage.ts'
 import { getState } from '../store/app-store.ts'
 import { readLogWorkData, storageKeyForLog } from '../store/persist.ts'
 import { assertSessionStillCurrent } from '../cloud/cloudSession.ts'
 import { planPendingLogMove } from './logPendingLifecycle.ts'
 import type { DayRecordLike } from '../../domain/dayRecordTypes.ts'
 import type { BatchEntry } from '../store/app-store.ts'
+import type { CarLike } from '../../domain/financeTypes.ts'
 import type { JsonValue, KeyedWrite } from '../store/atomicPersist.ts'
 import type { SessionCapture } from './syncTypes.ts'
 
@@ -77,9 +79,14 @@ export function planRenamedPlateEntries(ownerKey: string, oldNumber: string, new
   return entries
 }
 
-/** 서버 차량 번호·전용 거래처·설정 키를 한 번에 바꾼다(셋 다 되거나 하나도 안 됨). */
-export async function renameSubVehicleOnServer(vehicleSupabaseId: string | number, newNumber: string, captured: SessionCapture) {
-  const { error } = await supabase.rpc('rename_sub_vehicle', { p_vehicle_id: vehicleSupabaseId, p_new_number: newNumber })
+/** 서버 차량 번호·전용 거래처·설정 키와 나머지 칸을 한 번에 저장한다(다 되거나 하나도 안 됨). */
+export async function renameSubVehicleOnServer(userId: string, vehicleSupabaseId: string | number, car: CarLike, index: number, captured: SessionCapture) {
+  const { error } = await supabase.rpc('rename_and_save_sub_vehicle', {
+    p_vehicle_id: vehicleSupabaseId,
+    p_new_number: car.number,
+    p_row: buildVehicleRow(userId, car, index),
+  })
   assertSessionStillCurrent(captured)
   if (error) throw error
+  return vehicleSupabaseId
 }
