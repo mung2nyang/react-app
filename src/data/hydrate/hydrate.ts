@@ -189,8 +189,10 @@ export async function retryHydrate() {
   const userId = getCloudUserId()
   const ownerKey = getCloudOwnerKey()
   if (!userId || !ownerKey) return undefined
-  const { fetchLinkedDriverLink } = await import('../sync/driverLinkRpc.ts')
-  const link = await fetchLinkedDriverLink(userId)
-  const employedDriver = !!(link?.owner_id && String(link.owner_id) === String(ownerKey))
+  const { checkLinkedDriverLink } = await import('../sync/driverLinkRpc.ts')
+  const check = await checkLinkedDriverLink(userId)
+  // 연동 확인이 실패하면 불러오지 않는다 — "연동 없음"으로 보면 기사 화면이 본인 빈 칸으로 덮인다.
+  if (!check.ok) throw new Error('연동 확인 실패')
+  const employedDriver = !!(check.link?.owner_id && String(check.link.owner_id) === String(ownerKey))
   return hydrateFromSupabase(userId, ownerKey, { employedDriver })
 }

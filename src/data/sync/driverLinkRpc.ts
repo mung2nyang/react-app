@@ -96,7 +96,7 @@ export async function checkLinkedDriverLink(userId: string): Promise<{ ok: true,
   return { ok: true, link: data ? (data) as DriverLinkRow : null }
 }
 
-/** 위 확인의 예전 모양(실패도 null) — 앱이 켜진 뒤 사용처(연동 해제·초대코드·다시 불러오기)는 그대로 쓴다. */
+/** 위 확인의 예전 모양(실패도 null) — 앱이 켜진 뒤 사용처(연동 해제·초대코드)는 그대로 쓴다. */
 export async function fetchLinkedDriverLink(userId: string): Promise<DriverLinkRow | null> {
   const result = await checkLinkedDriverLink(userId)
   return result.ok ? result.link : null
