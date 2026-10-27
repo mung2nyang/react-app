@@ -10,6 +10,7 @@ import {
   assertSessionStillCurrent,
   captureSession,
   getCloudUserId,
+  isSessionStillCurrent,
 } from '../cloud/cloudSession.ts'
 import { StaleSessionError } from './saveErrors.ts'
 import { shouldCommitDayLogToCloud, vehicleSupabaseIdForLog } from './mainDayLogRouting.ts'
@@ -147,7 +148,8 @@ export async function commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, pr
   }
 
   const failedDateKeys = dateKeys.filter((dateKey) => !appliedDateKeys.includes(dateKey))
-  if (appliedDateKeys.length > 0) commitLogWorkData(ownerKey, logId, partialNext)
+  // 세션이 바뀌었으면 반영하지 않는다 — 이전 계정 일지가 화면·기기에 남지 않게.
+  if (appliedDateKeys.length > 0 && isSessionStillCurrent(captured)) commitLogWorkData(ownerKey, logId, partialNext)
 
   const ok = failedDateKeys.length === 0
   const partial = appliedDateKeys.length > 0 && failedDateKeys.length > 0

@@ -214,7 +214,7 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
     endCloudSession()
   })
 
-  test('G-4 — 2건 성공 후 세션 전환: 부분 Store + SESSION_CHANGED 토스트', async () => {
+  test('G-4 — 2건 성공 후 세션 전환: Store 반영 없음 + SESSION_CHANGED 토스트', async () => {
     beginLoggedIn('u-rc-g4', 'rc-g4')
     let upsertCount = 0
     /** @type {() => void} */ let releaseThird = () => {}
@@ -247,8 +247,9 @@ describe('8-B receivables cloud commit — 시나리오 A~G', () => {
     assert.equal(r.partial, true)
     assert.equal(r.toast, SESSION_CHANGED)
     assert.deepEqual(r.appliedDateKeys, dateKeys.slice(0, 2))
-    assert.equal(getDetailPaymentSummary(readOwnerWorkData('rc-g4')['2026-05-10'].callDetails[0]).status, 'paid')
+    assert.equal(getDetailPaymentSummary(readOwnerWorkData('rc-g4')['2026-05-10'].callDetails[0]).status, 'unpaid')
     assert.equal(getDetailPaymentSummary(readOwnerWorkData('rc-g4')['2026-05-14'].callDetails[0]).status, 'unpaid')
+    assert.equal(localStorage.getItem('reactPracticeWorkData:rc-g4'), null)
   })
 })
 
