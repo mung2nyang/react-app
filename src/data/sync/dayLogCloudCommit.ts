@@ -5,6 +5,7 @@ import type { SessionCapture } from './syncTypes.ts'
 import { supabase } from '../cloud/supabaseClient.ts'
 import { getState } from '../store/app-store.ts'
 import { commitLogWorkData } from '../store/commitHelpers.ts'
+import { readOwnerLogWorkData } from '../store/ownerWorkDataHooks.ts'
 import {
   assertCloudWriteReady,
   assertSessionStillCurrent,
@@ -74,6 +75,16 @@ async function writeDayKeyToServer(userId: string, vehicleId: number | string, o
   }
 }
 
+/** 저장한 날짜만 지금 Store 위에 얹는다 — 그 사이 끝난 다른 날짜 저장을 되돌리지 않게. */
+function commitSavedDays(ownerKey: string, logId: string, nextData: Record<string, DayRecordLike>, dateKeys: string[]) {
+  const latest = { ...readOwnerLogWorkData(ownerKey, logId) }
+  for (const dateKey of dateKeys) {
+    if (nextData[dateKey]) latest[dateKey] = nextData[dateKey]
+    else delete latest[dateKey]
+  }
+  commitLogWorkData(ownerKey, logId, latest)
+}
+
 export function changedDayLogDateKeys(previousData: Record<string, DayRecordLike>, nextData: Record<string, DayRecordLike>): string[] {
   const keys = new Set([...Object.keys(previousData), ...Object.keys(nextData)])
   const changed: string[] = []
@@ -103,7 +114,7 @@ export async function commitMainDayLogToCloud({ ownerKey, logId, dateKey, previo
   try {
     await writeDayKeyToServer(userId, vehicleId, ownerKey, dateKey, previousData, nextData, captured)
     assertSessionStillCurrent(captured)
-    commitLogWorkData(ownerKey, logId, nextData)
+    commitSavedDays(ownerKey, logId, nextData, [dateKey])
     return { cloud: true, ok: true, toast: null }
   } catch (error) {
     if (error instanceof StaleSessionError) return { cloud: true, ok: false, toast: SESSION_CHANGED_TOAST }
@@ -128,7 +139,6 @@ export async function commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, pr
   }
 
   const captured = captureSession()
-  const partialNext = { ...previousData }
   const appliedDateKeys: string[] = []
   let staleSession = false
   let firstError: Error | null = null
@@ -137,8 +147,6 @@ export async function commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, pr
     try {
       await writeDayKeyToServer(userId, vehicleId, ownerKey, dateKey, previousData, nextData, captured)
       assertSessionStillCurrent(captured)
-      if (nextData[dateKey]) partialNext[dateKey] = nextData[dateKey]
-      else delete partialNext[dateKey]
       appliedDateKeys.push(dateKey)
     } catch (error) {
       if (error instanceof StaleSessionError) staleSession = true
@@ -149,7 +157,7 @@ export async function commitMainDayLogMapToCloud({ ownerKey, logId, dateKeys, pr
 
   const failedDateKeys = dateKeys.filter((dateKey) => !appliedDateKeys.includes(dateKey))
   // 세션이 바뀌었으면 반영하지 않는다 — 이전 계정 일지가 화면·기기에 남지 않게.
-  if (appliedDateKeys.length > 0 && isSessionStillCurrent(captured)) commitLogWorkData(ownerKey, logId, partialNext)
+  if (appliedDateKeys.length > 0 && isSessionStillCurrent(captured)) commitSavedDays(ownerKey, logId, nextData, appliedDateKeys)
 
   const ok = failedDateKeys.length === 0
   const partial = appliedDateKeys.length > 0 && failedDateKeys.length > 0
