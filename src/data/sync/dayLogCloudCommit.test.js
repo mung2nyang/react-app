@@ -130,30 +130,33 @@ describe('commitMainDayLogToCloud — 슬라이스 D Fail-Fast', () => {
     endCloudSession()
   })
 
-  test('빈 날 삭제: 서버 delete 후 Store에서 그 dateKey 제거, 새 tombstone 없음', async () => {
+  test('빈 날 삭제: 서버 함수 remove_day_log 1회 후 Store에서 그 dateKey 제거, 새 tombstone 없음', async () => {
     beginLoggedIn('u1', 'dlc-del')
+    handlers.rpc = { ...handlers.rpc, remove_day_log: () => ({ data: 'deleted', error: null }) }
     withDay('dlc-del', { fixedCount: 2, callDetails: [] })
 
     const r = await commitMainDayLogToCloud({ ownerKey: 'dlc-del', logId: 'main', dateKey: DK, previousData: { [DK]: { fixedCount: 2 } }, nextData: {} })
 
     assert.deepEqual(r, { cloud: true, ok: true, toast: null })
-    assert.equal(countOf('daily_logs', 'delete'), 1)
+    assert.equal(countOf('rpc', 'remove_day_log'), 1)
+    assert.equal(countOf('daily_logs', 'delete'), 0)
     assert.equal(countOf('rpc', 'save_day_log'), 0)
     assert.equal(getState().workLogs['dlc-del']?.main?.[DK], undefined, 'Store에서 그 dateKey가 빠져야 한다')
     assert.deepEqual(readJsonKey('workDataDeletedDates', 'dlc-del', {}), {}, '새 tombstone을 만들면 안 된다')
     endCloudSession()
   })
 
-  test('0-3-A 빈 날 저장: 그날 비용이 있으면 하루 기록 줄을 지우지 않고 빈 기록으로 남긴다(Store에선 빠짐)', async () => {
+  test('0-3-A 빈 날 저장: 서버가 빈 기록으로 남겨도(blanked) Store에선 빠진다', async () => {
     beginLoggedIn('u1', 'dlc-del-keep')
+    handlers.rpc = { ...handlers.rpc, remove_day_log: () => ({ data: 'blanked', error: null }) }
     withDay('dlc-del-keep', { fixedCount: 0, callDetails: [] })
-    handlers.maintenance_records = { select: () => ({ data: [{ id: 'm-1' }], error: null }) }
 
     const r = await commitMainDayLogToCloud({ ownerKey: 'dlc-del-keep', logId: 'main', dateKey: DK, previousData: { [DK]: { fixedCount: 0 } }, nextData: {} })
 
     assert.deepEqual(r, { cloud: true, ok: true, toast: null })
+    assert.equal(countOf('rpc', 'remove_day_log'), 1)
     assert.equal(countOf('daily_logs', 'delete'), 0, '비용이 묶인 줄을 지우면 서버가 비용까지 함께 지운다')
-    assert.equal(countOf('daily_logs', 'update'), 1)
+    assert.equal(countOf('daily_logs', 'update'), 0)
     assert.equal(getState().workLogs['dlc-del-keep']?.main?.[DK], undefined)
     endCloudSession()
   })
