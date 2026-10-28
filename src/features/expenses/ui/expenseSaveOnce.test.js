@@ -26,6 +26,7 @@ const { setHydration } = await import('../../../data/store/app-store.ts')
 const { commitCars, commitExpenses, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
 const { readOwnerExpenses } = await import('../../../data/store/ownerDataHooks.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
+const { panelGuardOnTop } = await import('../../../shared/utils/historyMoves.js')
 const { default: MaintFuelPage } = await import('./MaintFuelPage.jsx')
 const { default: MainPageRoute } = await import('../../../app/routes/MainPageRoute.jsx')
 
@@ -92,7 +93,12 @@ async function render(ownerKey, path) {
   }
   return {
     container, toasts, button, press, typeName,
-    async cleanup() { await act(async () => { root.unmount() }); container.remove() },
+    async cleanup() {
+      // 입력 칸 붙잡기 기록을 빼는 뒤로가기가 끝난 뒤 닫는다 — 늦게 끝나면 다음 테스트 주소를 일지로 되돌린다.
+      for (let i = 0; i < 100 && panelGuardOnTop(); i += 1) await flush()
+      await flush()
+      await act(async () => { root.unmount() }); container.remove()
+    },
   }
 }
 
