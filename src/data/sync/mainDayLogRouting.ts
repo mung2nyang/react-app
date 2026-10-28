@@ -26,3 +26,8 @@ export function shouldCommitDayLogToCloud(ownerKey: string, logId?: string) {
   if (!getCloudUserId()) return false
   return vehicleSupabaseIdForLog(ownerKey, logId) != null
 }
+
+/** 로그인 계정인데 이 일지를 저장할 서버 차량이 없음 — 로그인 기록은 휴대폰에 안 남아 그대로 두면 사라진다. */
+export function hasNoCloudVehicle(ownerKey: string, logId?: string) {
+  return !!getCloudUserId() && vehicleSupabaseIdForLog(ownerKey, logId) == null
+}

@@ -6,11 +6,11 @@ import { clearUnsafeRegistrationFailure, markUnsafeRegistrationFailure } from '.
 import { clearPendingDayWrite, registerPendingDayWrite } from '../../../data/sync/pendingWorkDataWrites.ts'
 import { saveLogWorkDataWithTombstoneCheck } from '../../../data/sync/workDataSave.ts'
 import { commitMainDayLogToCloud } from '../../../data/sync/dayLogCloudCommit.ts'
-import { shouldCommitDayLogToCloud } from '../../../data/sync/mainDayLogRouting.ts'
+import { hasNoCloudVehicle, shouldCommitDayLogToCloud } from '../../../data/sync/mainDayLogRouting.ts'
 import { readOwnerLogWorkData } from '../../../data/store/ownerDataHooks.ts'
 import { pruneDayDraft, registerDayDraft, releaseDayDraft } from '../../../data/sync/dayDraftActivity.ts'
 import { addFailedDayLogDate, removeFailedDayLogDate } from '../../../data/sync/failedDayLogDates.ts'
-import { DEVICE_SAVE_FAIL, SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
+import { DEVICE_SAVE_FAIL, NO_VEHICLE_SAVE_FAIL, SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /** @typedef {import('../../../data/sync/pendingWorkDataWritesTypes.ts').EffectivePatch} EffectivePatch */
 /** @typedef {Record<string, import('../../../domain/dayRecordTypes.ts').DayRecordLike>} WorkMap */
@@ -125,7 +125,9 @@ export function createDayDraftSaver({ ownerKey, logId, dateKey, draft: initialDr
     })
     const next = saveDayRecord(latest, dateKey, patch)
     if (!shouldCommitDayLogToCloud(ownerKey, logId)) {
-      commitLocal(latest, next, patch)
+      // 로그인 계정인데 저장할 서버 차량이 없으면 휴대폰에도 안 남으므로 실패로 알린다.
+      if (hasNoCloudVehicle(ownerKey, logId)) settleCloud({ ok: false, toast: NO_VEHICLE_SAVE_FAIL }, progress.draftRev, patch)
+      else commitLocal(latest, next, patch)
       return
     }
     // 로그인 메인 일지는 서버에 직접 1회, 성공 때만 Store 반영. 같은 날짜는 한 번에 하나 — 도는 중에 고치면 끝난 뒤 최신 draft로 한 번 더.

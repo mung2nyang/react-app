@@ -13,7 +13,8 @@ import {
 } from '../cloud/cloudSession.ts'
 import { deleteExpenseRows, syncExpenseItemsForVehicle, upsertExpenseItemsForVehicle } from './syncExpenseItems.ts'
 import type { ExpenseRowRef } from './syncExpenseItems.ts'
-import { saveFailMessage } from '../../shared/utils/failureMessages.js'
+import { NO_VEHICLE_SAVE_FAIL, saveFailMessage } from '../../shared/utils/failureMessages.js'
+import { hasNoCloudVehicle } from './mainDayLogRouting.ts'
 import type { ExpenseDraft, ExpenseItem } from '../../domain/expenseTypes.ts'
 
 export async function saveExpenses(ownerKey: string, items: Array<ExpenseItem>) {
@@ -67,6 +68,8 @@ function latestExpenses(ownerKey: string): Array<ExpenseItem> {
 export async function saveExpenseDraft(ownerKey: string, draft: ExpenseDraft, editingId: string | null): Promise<string | null> {
   const result = upsertExpense(latestExpenses(ownerKey), draft, editingId)
   if (result.error) return result.error
+  // 저장할 서버 차량이 없으면 화면에만 남으므로 저장하지 않고 알린다.
+  if (hasNoCloudVehicle(ownerKey, 'main')) return NO_VEHICLE_SAVE_FAIL
   try {
     await saveExpenses(ownerKey, result.items)
     return null

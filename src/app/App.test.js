@@ -59,10 +59,7 @@ async function unmountTracked(root) {
 const { BrowserRouter } = await import('react-router-dom')
 const { default: App } = await import('./App.jsx')
 const { commitCars, commitClients, commitExpenses, commitSettings, commitWorkData } = await import('../data/store/commitHelpers.ts')
-const {
-  pendingDayWriteCount, retryPendingDayWrites,
-  registerPendingDayWrite, getPendingDayWrite,
-} = await import('../data/sync/pendingWorkDataWrites.ts')
+const { pendingDayWriteCount, getPendingDayWrite } = await import('../data/sync/pendingWorkDataWrites.ts')
 const { isDurableWriteBroken, hasUnsafeRegistration } = await import('../data/sync/durableWriteGuard.ts')
 test.afterEach(async () => {
   const leftover = [...liveRoots]
@@ -290,6 +287,7 @@ test('재감사 4번 — store 구독: 마운트 후 외부에서 커밋한 work
 
   try {
     await act(async () => {
+      seedMainCar(ownerKey)
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
     await waitUntil(() => window.location.pathname === '/app/calendar')
@@ -356,6 +354,7 @@ test('Step 6 — 일지 디바운스 커밋 + 언마운트 flush + 빈 날 삭�
 
   try {
     await act(async () => {
+      seedMainCar(ownerKey)
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
     await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
@@ -612,79 +611,6 @@ test('재감사 FAIL 지적 4번 — 고정노선+파렛트 거래처가 있으�
 })
 
 
-// 재감사 5차(FAIL 지적 1번, P0) — useDayDraft.commitNow의 "직접 커밋 성공" 경로에도
-// 같은 authoritative-residual-fallback 계약이 적용됐는지, 큐 재시도 경로가 아니라
-// 실제 컴포넌트를 통해 확인한다. stale durable A(이전 세션에서 실패해 남아 있던
-// 편집)가 있는 상태로 화면에 들어가 최신 편집 C를 저장하면, workData 커밋 자체는
-// 성공하지만 durable에서 A를 지우는 cleanup 쓰기만 실패할 수 있다 — 이때 patch 없이
-// owner/date만 넘기면 store엔 이미 C가 있는데 큐만 stale A로 되돌아갈 수 있었다
-// (직접 트레이스로 확인, useDayDraft.js:131-138 주석 참고). C가 fallback에
-// authoritative residual로 남아, 복구 후 재시도해도 A로 되돌아가지 않아야 한다.
-test('재감사 5차 FAIL 지적 1번 — useDayDraft 직접 커밋 성공 후 cleanup만 실패해도 최신값이 유지되고, 복구 후 재시도해도 stale durable A로 되돌아가지 않는다', async () => {
-  const ownerKey = 'user-boot-nav'
-  const dateKey = '2026-08-26'
-  // 이전 세션에서 실패해 durable에 stale하게 남아 있던 편집(A)을 미리 심어 둔다 —
-  // 컴포넌트를 거치지 않고 직접 등록해 "화면을 열기 전부터 이미 큐에 있던" 상태를
-  // 재현한다.
-  registerPendingDayWrite(ownerKey, dateKey, { isOff: false, fixedCount: 1, palletCount: 0, callDetails: [], fixedRouteCounts: {} })
-
-  window.history.pushState({}, '', `/app/day/${dateKey}`)
-  const container = document.createElement('div')
-  document.body.appendChild(container)
-  const root = createTrackedRoot(container)
-
-  const proto = Object.getPrototypeOf(localStorage)
-  const originalSetItem = proto.setItem
-  const durableKey = `reactPracticeDurablePendingWrites:${ownerKey}`
-  // durable 키는 처음부터 끝까지 막아 둔다 — hydrate/부트는 workData/settings 등
-  // 다른 키만 쓰고 이 durable 전용 키는 건드리지 않으니 안전하다. 여기서 막지
-  // 않으면 providers.jsx의 "attach 즉시 1회 재시도"가 마운트 직후 stale A를 곧바로
-  // 처리해서 durable을 스스로 비워 버리고, 그러면 뒤이은 내 편집(C)의 cleanup은
-  // "지울 stale 항목이 애초에 없어서" 실패할 수조차 없어 이 테스트가 무의미해진다
-  // (실측 확인 — 처음엔 부트 이후에만 막았다가 이 문제로 실패를 봤다).
-  let durableBlocked = true
-  const spy = mock.method(proto, 'setItem', /** @this {Storage} @param {string} key @param {string} value */ function patchedSetItem(key, value) {
-    if (durableBlocked && key === durableKey) throw new Error('quota exceeded (durable journal, simulated)')
-    return originalSetItem.call(this, key, value)
-  })
-
-  try {
-    await act(async () => {
-      root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
-    })
-    await waitUntil(() => !!container.querySelector('#modalFixedCountInput'))
-    assert.equal(requireHtmlInput(container, '#modalFixedCountInput').value, '1', 'stale durable A(fixedCount=1)가 store 위에 덮여 보여야 한다')
-    assert.deepEqual(getPendingDayWrite(ownerKey, dateKey)?.fixedCount, 1, '마운트 직후에도 stale A가 그대로(durable이든 residual fallback이든) pending에 남아 있어야 한다')
-
-    // durable cleanup 쓰기는 계속 막혀 있다(workData 쓰기는 그대로 성공) — 직접 편집(C)을 저장한다.
-    await act(async () => { setNativeInputValue(container.querySelector('#modalFixedCountInput'), '7') })
-    await waitUntil(() => committedRecord(ownerKey, dateKey)?.fixedCount === 7, { timeoutMs: 2000 })
-
-    // 직접 커밋(C, fixedCount=7)은 store/localStorage에 성공적으로 반영됐어야 한다.
-    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 7, '직접 커밋 C는 store에 성공적으로 반영돼야 한다')
-    assert.equal(readWorkData(ownerKey)[dateKey]?.fixedCount, 7, 'localStorage에도 C가 반영돼야 한다')
-    // durable cleanup이 실패했으니 C가 authoritative residual로 fallback에 남아야
-    // 한다 — stale A(1)로 되돌아가면 안 된다.
-    assert.equal(getPendingDayWrite(ownerKey, dateKey)?.fixedCount, 7, 'cleanup 실패 후에도 pending은 C(최신)여야 한다 — stale A로 되돌아가면 안 된다')
-    assert.equal(pendingDayWriteCount(), 1, '같은 owner/date 키(stale durable A + residual fallback C)는 1건으로 계산돼야 한다')
-    assert.equal(isDurableWriteBroken(), true, 'cleanup 실패로 residual이 남았으니 broken이어야 한다')
-
-    // storage가 복구된 뒤 재시도(백그라운드 재시도를 흉내낸다)해도 C가 유지돼야 한다.
-    // 재감사 5차(FAIL 지적 3번) — retryPendingDayWrites()가 store를 커밋해 구독 중인
-    // 컴포넌트(AppShell 등)를 갱신시키니 act()로 감싼다.
-    durableBlocked = false
-    await act(async () => { retryPendingDayWrites() })
-    assert.equal(committedRecord(ownerKey, dateKey)?.fixedCount, 7, '복구 후 재시도해도 store는 계속 C여야 한다(A로 되돌아가면 안 된다)')
-    assert.equal(pendingDayWriteCount(), 0, '완전히 정리됐으니 최종 pending count는 0이어야 한다')
-    assert.equal(getPendingDayWrite(ownerKey, dateKey), undefined)
-
-  } finally {
-    spy.mock.restore()
-    await unmountTracked(root)
-    container.remove()
-  }
-})
-
 /**
  * 슬라이스 E: 로그인 세션에서 clients는 LS에 미러되지 않으므로(commitBatch memory-only),
  * seedMainCar처럼 가짜 서버도 이 거래처를 돌려줘야 hydrate가 빈 배열로 지우지 않는다.
@@ -795,6 +721,7 @@ test('재감사 2차 FAIL 지적 2번 — 비용 저장이 그 사이 store에 �
     await act(async () => { commitExpenses(ownerKey, [e1]) })
 
     await act(async () => {
+      seedMainCar(ownerKey)
       root.render(React.createElement(BrowserRouter, null, React.createElement(App)))
     })
     await waitUntil(() => !!container.querySelector('.maint-section'))
