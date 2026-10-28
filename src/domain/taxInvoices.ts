@@ -86,3 +86,25 @@ export function mergeTaxInvoiceRecords(localRecords: Array<InvoiceLike>, rows: A
 export function applyInsertedTaxInvoiceId(records: Array<InvoiceLike>, localId: string, supabaseId: string | number): Array<InvoiceLike> {
   return (records || []).map((item) => (item.id === localId ? { ...item, supabaseId } : item))
 }
+
+function replaceSuffix(value: string | undefined, suffix: string, next: string) {
+  return value && value.endsWith(suffix) ? value.slice(0, value.length - suffix.length) + next : undefined
+}
+
+/** 기사 차량 번호가 바뀌면 계산서 안의 옛 번호를 새 번호로(서버 rename_sub_vehicle과 같은 규칙). */
+export function renameTaxInvoicePlate(item: InvoiceLike, oldNumber: string, newNumber: string): InvoiceLike {
+  const changes: Partial<InvoiceLike> = {}
+  const id = replaceSuffix(item.id, `__${oldNumber}`, `__${newNumber}`)
+  if (id) changes.id = id
+  const partyKey = replaceSuffix(item.partyKey, `__${oldNumber}`, `__${newNumber}`)
+  if (partyKey) changes.partyKey = partyKey
+  if (item.carNumber === oldNumber) changes.carNumber = newNumber
+  if (item.logId === oldNumber) changes.logId = newNumber
+  const vehicleLabel = item.vehicleLabel === oldNumber ? newNumber : replaceSuffix(item.vehicleLabel, `, ${oldNumber}`, `, ${newNumber}`)
+  if (vehicleLabel) changes.vehicleLabel = vehicleLabel
+  if (item.supplierKey?.startsWith(`car:${oldNumber}:`)) changes.supplierKey = `car:${newNumber}:${item.supplierKey.slice(`car:${oldNumber}:`.length)}`
+  if (Array.isArray(item.vehicleNumbers) && item.vehicleNumbers.includes(oldNumber)) {
+    changes.vehicleNumbers = item.vehicleNumbers.map((plate) => (plate === oldNumber ? newNumber : plate))
+  }
+  return Object.keys(changes).length ? { ...item, ...changes } : item
+}

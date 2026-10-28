@@ -10,6 +10,7 @@ import {
   parseEntityNumber,
   resolveTaxInvoiceVehicleId,
   matchTaxInvoiceClientId,
+  renameTaxInvoicePlate,
 } from './taxInvoices.ts'
 
 /** @typedef {import('./financeTaxInvoiceEntries.ts').InvoiceLike} InvoiceLike */
@@ -97,5 +98,36 @@ describe('tax_invoices — 원본 finance-sync 컬럼·upsert 매핑', () => {
     assert.equal(merged.find((item) => item.id === 'sales|2026-05|한진')?.supabaseId, 'inv-1')
     assert.equal(merged.find((item) => item.id === 'sales|2026-05|초안만')?.status, 'draft')
     assert.equal(merged.length, 2)
+  })
+})
+
+describe('renameTaxInvoicePlate — 서버 rename_sub_vehicle과 같은 규칙', () => {
+  test('기사 차량 계산서는 번호가 든 7칸이 새 번호로(사업자명 있는 이름표 포함)', () => {
+    /** @type {InvoiceLike} */
+    const item = {
+      id: 'sales|2026-10|테스터거래처__99가9998', partyKey: '테스터거래처__99가9998', carNumber: '99가9998', logId: '99가9998',
+      vehicleLabel: '시험상사, 99가9998', supplierKey: 'car:99가9998:123-45-67890', vehicleNumbers: ['99가9998'], clientName: '테스터거래처', status: 'issued',
+    }
+    assert.deepEqual(renameTaxInvoicePlate(item, '99가9998', '99가0001'), {
+      id: 'sales|2026-10|테스터거래처__99가0001', partyKey: '테스터거래처__99가0001', carNumber: '99가0001', logId: '99가0001',
+      vehicleLabel: '시험상사, 99가0001', supplierKey: 'car:99가0001:123-45-67890', vehicleNumbers: ['99가0001'], clientName: '테스터거래처', status: 'issued',
+    })
+  })
+
+  test('번호만 있는 이름표·차주 공급자 키는 이름표만 바뀐다', () => {
+    /** @type {InvoiceLike} */
+    const item = { id: 'sales|2026-09|한진__99가9998', partyKey: '한진__99가9998', carNumber: '99가9998', vehicleLabel: '99가9998', supplierKey: 'owner:111' }
+    const next = renameTaxInvoicePlate(item, '99가9998', '99가0001')
+    assert.equal(next.vehicleLabel, '99가0001')
+    assert.equal(next.supplierKey, 'owner:111')
+  })
+
+  test('메인·다른 기사 차량 계산서는 같은 객체 그대로', () => {
+    /** @type {InvoiceLike} */
+    const main = { id: 'sales|2026-10|테스터거래처__main', partyKey: '테스터거래처__main', logId: 'fleet', vehicleLabel: '메인 차량', supplierKey: 'owner:111', vehicleNumbers: [] }
+    /** @type {InvoiceLike} */
+    const other = { id: 'sales|2026-10|한진__22가2222', partyKey: '한진__22가2222', carNumber: '22가2222', vehicleNumbers: ['22가2222'] }
+    assert.equal(renameTaxInvoicePlate(main, '99가9998', '99가0001'), main)
+    assert.equal(renameTaxInvoicePlate(other, '99가9998', '99가0001'), other)
   })
 })

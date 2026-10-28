@@ -6,6 +6,7 @@ import { getState } from '../store/app-store.ts'
 import { readLogWorkData, storageKeyForLog } from '../store/persist.ts'
 import { assertSessionStillCurrent } from '../cloud/cloudSession.ts'
 import { planPendingLogMove } from './logPendingLifecycle.ts'
+import { renameTaxInvoicePlate } from '../../domain/taxInvoices.ts'
 import type { DayRecordLike } from '../../domain/dayRecordTypes.ts'
 import type { BatchEntry } from '../store/app-store.ts'
 import type { CarLike } from '../../domain/financeTypes.ts'
@@ -51,7 +52,7 @@ function plate(value: string | undefined) {
   return String(value || '').trim()
 }
 
-/** 옛 번호를 가리키는 지출·전용 거래처·기사 연결·차량 설정을 새 번호로 바꾼 commitBatch 항목(바뀐 도메인만). */
+/** 옛 번호를 가리키는 지출·전용 거래처·기사 연결·차량 설정·계산서를 새 번호로 바꾼 commitBatch 항목(바뀐 도메인만). */
 export function planRenamedPlateEntries(ownerKey: string, oldNumber: string, newNumber: string): Array<BatchEntry> {
   const state = getState()
   const entries: Array<BatchEntry> = []
@@ -76,6 +77,9 @@ export function planRenamedPlateEntries(ownerKey: string, oldNumber: string, new
     const { [oldNumber]: _old, ...rest } = settings.subCarSettings
     entries.push({ domain: 'settings', ownerKey, value: { ...settings, subCarSettings: { ...rest, [newNumber]: carSettings } } })
   }
+  const invoices = state.invoices[ownerKey] || []
+  const renamedInvoices = invoices.map((item) => renameTaxInvoicePlate(item, oldNumber, newNumber))
+  if (renamedInvoices.some((item, index) => item !== invoices[index])) entries.push({ domain: 'invoices', ownerKey, value: renamedInvoices })
   return entries
 }
 
