@@ -103,3 +103,56 @@ test('다 채우면 저장 1번, 표시 없음', async () => {
     await view.cleanup()
   }
 })
+
+/** 풀어 주기 전까지 끝나지 않는 저장으로 창을 그린다. @param {object} initial */
+async function renderHeld(initial) {
+  /** @type {Array<() => void>} */
+  const releases = []
+  let calls = 0
+  function Harness() {
+    const [draft, setDraft] = React.useState(initial)
+    return React.createElement(DriverFormModal, {
+      draft, setDraft, editingId: null, drivers: [], assignableCars: [], cars: [], required: true, onCancel() {},
+      onSave: () => { calls += 1; return new Promise((resolve) => { releases.push(() => resolve(undefined)) }) },
+    })
+  }
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => { root.render(React.createElement(Harness)) })
+  const saveButton = /** @type {HTMLButtonElement} */ (container.querySelector('.modal-btn.confirm'))
+  return {
+    saveButton,
+    calls: () => calls,
+    async click() { await act(async () => { saveButton.click() }) },
+    async release() { await act(async () => { releases.splice(0).forEach((done) => done()) }) },
+    async cleanup() { await act(async () => { root.unmount() }); container.remove() },
+  }
+}
+
+test('저장 중에 [저장]을 또 눌러도 저장은 1번, 버튼은 "저장 중…"으로 잠김', async () => {
+  const view = await renderHeld({ ...FILLED, vehicleNumber: '77가7777', startDate: '2026-10-17' })
+  try {
+    await view.click()
+    await view.click()
+    assert.equal(view.calls(), 1)
+    assert.equal(view.saveButton.textContent, '저장 중…')
+    assert.equal(view.saveButton.disabled, true)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('저장이 끝나고 창이 남으면 잠금이 풀려 다시 누르면 1번 더', async () => {
+  const view = await renderHeld({ ...FILLED, vehicleNumber: '77가7777', startDate: '2026-10-17' })
+  try {
+    await view.click()
+    await view.release()
+    assert.equal(view.saveButton.textContent, '저장')
+    assert.equal(view.saveButton.disabled, false)
+    await view.click()
+    assert.equal(view.calls(), 2)
+  } finally {
+    await view.cleanup()
+  }
+})

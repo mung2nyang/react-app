@@ -1,5 +1,5 @@
 // @ts-check
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { assetPath } from '../../../shared/utils/assetPath.js'
 import { tonnageDigits, tonnageValue } from '../../../domain/formatPhone.ts'
 import ClearableInput from '../../../shared/ui/ClearableInput.jsx'
@@ -36,9 +36,19 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
   else if (step === 2) nextDisabled = wizard.paymentOn === null
   else if (step === 4) nextDisabled = (wizard.carNumber || '').trim().length < 2
 
-  function goNext() {
-    if (isLast) onFinish(wizard)
-    else setStepIndex(stepIndex + 1)
+  const [finishing, setFinishing] = useState(false)
+  // 마지막 단계 저장 중엔 다시 눌러도 무시 — 메인 차량이 두 번 등록되지 않게.
+  const busyRef = useRef(false)
+
+  async function goNext() {
+    if (!isLast) {
+      setStepIndex(stepIndex + 1)
+      return
+    }
+    if (busyRef.current) return
+    busyRef.current = true
+    setFinishing(true)
+    try { await onFinish(wizard) } finally { busyRef.current = false; setFinishing(false) }
   }
 
   return (
@@ -138,10 +148,10 @@ export default function OnboardingPage({ accountType: _accountType, onFinish }) 
         )}
 
         <div className="onboarding-bottom-group">
-          <button type="button" className="onboarding-skip-link" onClick={goNext}>건너뛰기 &gt;</button>
+          <button type="button" className="onboarding-skip-link" disabled={finishing} onClick={goNext}>건너뛰기 &gt;</button>
           <div className="onboarding-step-counter">{stepIndex + 1}/{STEP_SEQUENCE.length}</div>
-          <button type="button" className="onboarding-btn-primary" disabled={nextDisabled} onClick={goNext}>
-            {isLast ? '완료하기' : '다음'}
+          <button type="button" className="onboarding-btn-primary" disabled={nextDisabled || finishing} onClick={goNext}>
+            {finishing ? '저장 중…' : (isLast ? '완료하기' : '다음')}
           </button>
         </div>
       </div>

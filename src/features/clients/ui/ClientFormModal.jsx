@@ -1,5 +1,5 @@
 // @ts-check
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { checkClientDraft } from '../../../domain/clients.ts'
 import { BIZ_NUMBER_PLACEHOLDER, formatBizNumber, formatPhoneNumber } from '../../../domain/formatPhone.ts'
 import { needsPaymentTermValue, PAYMENT_TERMS } from '../../../domain/clients.ts'
@@ -30,7 +30,7 @@ function valueOf(draft, field) {
  * @param {import('react').Dispatch<import('react').SetStateAction<ClientDraft>>} props.setDraft
  * @param {string|null} props.editingId
  * @param {() => void} props.onCancel
- * @param {() => void} props.onSave
+ * @param {() => void|Promise<void>} props.onSave
  */
 export default function ClientFormModal({ draft, setDraft, editingId, onCancel, onSave }) {
   const termValueLabel = draft.paymentTerm === 'after_days' ? '며칠 후' : '날짜'
@@ -38,12 +38,19 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
   // 문제 칸 값을 고치기 시작하면 표시를 거둔다.
   const shown = problem && valueOf(draft, problem.field) === problem.value ? problem : null
 
-  function handleSave() {
+  const [saving, setSaving] = useState(false)
+  // 저장 중엔 다시 눌러도 무시 — 같은 거래처가 두 번 생기지 않게.
+  const busyRef = useRef(false)
+
+  async function handleSave() {
+    if (busyRef.current) return
     const found = checkClientDraft(draft)
     const inputId = found ? INPUT_IDS[found.field] : undefined
     if (!found || !inputId) {
       setProblem(null)
-      onSave()
+      busyRef.current = true
+      setSaving(true)
+      try { await onSave() } finally { busyRef.current = false; setSaving(false) }
       return
     }
     setProblem({ ...found, value: valueOf(draft, found.field) })
@@ -120,7 +127,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
       <ClientTradeFields draft={draft} setDraft={setDraft} problem={shown} />
       <div className="modal-btns">
         <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
-        <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
+        <button type="button" className="modal-btn confirm" disabled={saving} onClick={handleSave}>{saving ? '저장 중…' : '저장'}</button>
       </div>
     </ModalShell>
   )

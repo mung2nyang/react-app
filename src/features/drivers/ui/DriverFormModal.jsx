@@ -1,6 +1,6 @@
 // @ts-check
 // 기사 초대 폼 모달.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { checkDriverDraft } from '../../../domain/drivers.ts'
 import { buildDriverInviteSmsHref } from '../api/driverInviteSms.js'
 import { formatInviteCode, generateInviteCode } from '../../../domain/drivers.ts'
@@ -36,7 +36,7 @@ function valueOf(draft, field) {
  * @param {string} [props.ownerDisplayName]
  * @param {boolean} [props.required] 로그인 회원이면 true — 배정 차량·시작일이 꼭 필요하다
  * @param {() => void} props.onCancel
- * @param {() => void} props.onSave
+ * @param {() => void|Promise<void>} props.onSave
  */
 export default function DriverFormModal({ draft, setDraft, editingId, drivers, assignableCars, cars = [], ownerDisplayName, required = false, onCancel, onSave }) {
   const showToast = useToast()
@@ -44,11 +44,18 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
   // 문제 칸 값을 고치기 시작하면 표시를 거둔다.
   const shown = problem && valueOf(draft, problem.field) === problem.value ? problem : null
 
-  function handleSave() {
+  const [saving, setSaving] = useState(false)
+  // 저장 중엔 다시 눌러도 무시 — 같은 초대가 두 번 가지 않게.
+  const busyRef = useRef(false)
+
+  async function handleSave() {
+    if (busyRef.current) return
     const found = checkDriverDraft(draft, { editingId, items: drivers, cars, required })
     if (!found) {
       setProblem(null)
-      onSave()
+      busyRef.current = true
+      setSaving(true)
+      try { await onSave() } finally { busyRef.current = false; setSaving(false) }
       return
     }
     setProblem({ ...found, value: valueOf(draft, found.field) })
@@ -133,7 +140,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
       <p className="car-type-hint">한 차량은 한 기사에게만 배정할 수 있습니다. 종료일이 없으면 계속 배정됩니다. 메인 차량은 배정할 수 없습니다.</p>
       <div className="modal-btns">
         <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
-        <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
+        <button type="button" className="modal-btn confirm" disabled={saving} onClick={handleSave}>{saving ? '저장 중…' : '저장'}</button>
       </div>
     </ModalShell>
   )
