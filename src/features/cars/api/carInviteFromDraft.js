@@ -47,6 +47,8 @@ export async function saveInviteAfterVehicle({
   const vehicleNumber = saved?.number || inviteDraft.number
   if (!vehicleNumber) return null
   const startDate = inviteDraft.inviteStartDate || todayIsoDate()
+  // 차량 창에는 종료일 칸이 없어 기존 기사의 종료일을 그대로 넘긴다.
+  const existing = inviteDraft.inviteDriverId ? drivers.find((d) => d.id === inviteDraft.inviteDriverId) : null
   const result = upsertDriver(
     drivers,
     {
@@ -55,7 +57,7 @@ export async function saveInviteAfterVehicle({
       inviteCode: code,
       vehicleNumber,
       startDate,
-      endDate: '',
+      endDate: existing?.endDate || '',
     },
     /** @type {null|undefined} */ (inviteDraft.inviteDriverId || null),
     cars,
