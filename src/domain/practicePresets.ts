@@ -80,17 +80,22 @@ export function addRunCountPreset(settings: FinanceSettings, scope: 'main' | 'su
   return { settings: { ...settings, [key]: [...current, nextRunCountPreset(current)] } }
 }
 
-export function removeRunCountPreset(settings: FinanceSettings, scope: 'main' | 'sub', index: number): FinanceSettings {
+/** 값으로 찾아 지운다 — 앞 저장으로 순서가 바뀌어도 같은 버튼(1개 남으면 그대로). */
+export function removeRunCountPreset(settings: FinanceSettings, scope: 'main' | 'sub', count: number): FinanceSettings {
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
   const current = [...normalizeRunCountPresets(settings[key])]
-  if (current.length <= 1) return settings
+  const index = current.indexOf(count)
+  if (current.length <= 1 || index < 0) return settings
   current.splice(index, 1)
   return { ...settings, [key]: normalizeRunCountPresets(current) }
 }
 
-export function replaceRunCountPreset(settings: FinanceSettings, scope: 'main' | 'sub', index: number, value: JsonValue): FinanceSettings {
+/** 값으로 찾아 바꾼다 — 없으면 그대로. */
+export function replaceRunCountPreset(settings: FinanceSettings, scope: 'main' | 'sub', count: number, value: JsonValue): FinanceSettings {
   const key = scope === 'sub' ? 'subRunCountPresets' : 'runCountPresets'
   const current: Array<JsonValue> = [...normalizeRunCountPresets(settings[key])]
+  const index = current.indexOf(count)
+  if (index < 0) return settings
   current[index] = value
   return { ...settings, [key]: normalizeRunCountPresets(current) }
 }

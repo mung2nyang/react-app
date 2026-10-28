@@ -15,7 +15,7 @@ const MOVE_TOLERANCE_PX = 10
  * @param {Object} props
  * @param {'main'|'sub'} props.scope
  * @param {FinanceSettings} props.settings
- * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
+ * @param {(patch: import('../../../data/sync/settingsSave.ts').SettingsPatch) => void|Promise<void>} props.onPatch
  */
 export default function RunCountChips({ scope, settings, onPatch }) {
   const showToast = useToast()
@@ -67,8 +67,15 @@ export default function RunCountChips({ scope, settings, onPatch }) {
     if (start && Math.hypot((event.clientX || 0) - start.x, (event.clientY || 0) - start.y) > MOVE_TOLERANCE_PX) cancelPress()
   }
 
+  // 저장 차례가 왔을 때의 최신 설정에서 횟수 버튼 목록만 바꾼다.
+  /** @param {(current: FinanceSettings) => FinanceSettings} change */
+  function patchPresets(change) {
+    onPatch((current) => ({ [key]: change(current)[key] }))
+  }
+
   function confirmRemove() {
-    if (pendingIndex !== null) onPatch(removeRunCountPreset(settings, scope, pendingIndex))
+    const count = pendingIndex !== null ? presets[pendingIndex] : undefined
+    if (count !== undefined) patchPresets((current) => removeRunCountPreset(current, scope, count))
     setPendingIndex(null)
   }
 
@@ -78,7 +85,7 @@ export default function RunCountChips({ scope, settings, onPatch }) {
       showToast?.(result.error)
       return
     }
-    onPatch({ [key]: result.settings[key] })
+    patchPresets((current) => addRunCountPreset(current, scope).settings)
   }
 
   return (
@@ -102,7 +109,10 @@ export default function RunCountChips({ scope, settings, onPatch }) {
               onFocus={() => { if (!pointerActive.current) setEditingIndex(index) }}
               onBlur={(e) => {
                 setEditingIndex(null)
-                onPatch(replaceRunCountPreset(settings, scope, index, e.target.value))
+                const value = e.target.value
+                // 값이 그대로면 저장하지 않는다(삭제 창이 뜰 때 칸을 벗어나는 것 포함).
+                if (value.trim() === String(count)) return
+                patchPresets((current) => replaceRunCountPreset(current, scope, count, value))
               }}
               onPointerDown={(e) => startPress(index, e)}
               onPointerMove={movePress}

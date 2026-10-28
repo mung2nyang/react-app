@@ -12,7 +12,7 @@ import FixedRouteClientLink from './FixedRouteClientLink.jsx'
  * @param {'main'|'sub'} props.scope
  * @param {string} props.clientScopeKey 고정노선 거래처 스코프(docs/sot.md §4-4e)
  * @param {FinanceSettings} props.settings
- * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
+ * @param {(patch: import('../../../data/sync/settingsSave.ts').SettingsPatch) => void|Promise<void>} props.onPatch
  */
 export default function FixedRouteBlock({ scope, clientScopeKey, settings, onPatch }) {
   const isSub = scope === 'sub'

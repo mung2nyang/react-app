@@ -11,7 +11,7 @@ import { useToast } from '../../../shared/hooks/useToast.js'
  * @param {Object} props
  * @param {'main'|'sub'} props.scope
  * @param {FinanceSettings} props.settings
- * @param {(patch: Partial<FinanceSettings>) => void|Promise<void>} props.onPatch
+ * @param {(patch: import('../../../data/sync/settingsSave.ts').SettingsPatch) => void|Promise<void>} props.onPatch
  */
 export default function RoutePresetEditor({ scope, settings, onPatch }) {
   const showToast = useToast()
@@ -23,6 +23,12 @@ export default function RoutePresetEditor({ scope, settings, onPatch }) {
   const [problem, setProblem] = useState(/** @type {ReturnType<typeof checkRoutePreset>} */ (null))
   // 문제 칸을 채우면 표시를 거둔다.
   const shown = problem && checkRoutePreset(loadLoc, unloadLoc)?.field === problem.field ? problem : null
+
+  // 저장 차례가 왔을 때의 최신 설정에서 노선 목록만 바꾼다.
+  /** @param {(current: FinanceSettings) => FinanceSettings} change */
+  function patchPresets(change) {
+    onPatch((current) => ({ [key]: change(current)[key] }))
+  }
 
   function addRoute() {
     const found = checkRoutePreset(loadLoc, unloadLoc)
@@ -36,7 +42,7 @@ export default function RoutePresetEditor({ scope, settings, onPatch }) {
       showToast?.(result.error)
       return
     }
-    onPatch({ [key]: result.settings[key] })
+    patchPresets((current) => addFixedRoutePreset(current, scope, loadLoc, unloadLoc).settings)
     setLoadLoc('')
     setUnloadLoc('')
   }
@@ -52,7 +58,7 @@ export default function RoutePresetEditor({ scope, settings, onPatch }) {
         {presets.map((route) => (
           <div key={route.id} className="fixed-route-preset-row">
             <span>{route.loadLoc} → {route.unloadLoc}</span>
-            <button type="button" title="노선 삭제" aria-label={`${route.loadLoc} → ${route.unloadLoc} 노선 삭제`} onClick={() => onPatch(removeFixedRoutePreset(settings, scope, route.id))}>×</button>
+            <button type="button" title="노선 삭제" aria-label={`${route.loadLoc} → ${route.unloadLoc} 노선 삭제`} onClick={() => patchPresets((current) => removeFixedRoutePreset(current, scope, route.id))}>×</button>
           </div>
         ))}
       </div>

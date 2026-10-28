@@ -30,7 +30,8 @@ async function mount(presets) {
   document.body.appendChild(container)
   const root = createRoot(container)
   await act(async () => {
-    root.render(React.createElement(RunCountChips, { scope: 'main', settings, onPatch: (patch) => { patches.push(patch) } }))
+    // 함수로 넘기면 저장 창구처럼 이 설정에 적용한 결과를 기록한다.
+    root.render(React.createElement(RunCountChips, { scope: 'main', settings, onPatch: (patch) => { patches.push(typeof patch === 'function' ? patch(settings) : patch) } }))
   })
   return {
     container,
@@ -138,5 +139,27 @@ test('고친 뒤 칸을 벗어나면 저장되고 다시 읽기 전용', async (
     await act(async () => { target.blur() })
     assert.deepEqual(patches.at(-1)?.runCountPresets, [5, 2, 3])
     assert.equal(/** @type {HTMLInputElement} */ (chip(container, 0)).readOnly, true)
+  } finally { await cleanup() }
+})
+
+test('값을 바꾸지 않고 칸을 벗어나면 저장하지 않는다', async () => {
+  const { container, patches, cleanup } = await mount([1, 2, 3])
+  try {
+    await act(async () => { fire(chip(container, 1), 'pointerdown'); fire(chip(container, 1), 'pointerup') })
+    await act(async () => { /** @type {HTMLInputElement} */ (chip(container, 1)).blur() })
+    assert.equal(patches.length, 0)
+  } finally { await cleanup() }
+})
+
+test('길게 눌러 삭제 창이 뜨며 칸을 벗어나도 저장하지 않는다', async () => {
+  const { container, patches, cleanup } = await mount([1, 2, 3])
+  try {
+    const target = /** @type {HTMLInputElement} */ (chip(container, 2))
+    fire(target, 'pointerdown')
+    await act(async () => { target.focus() })
+    await act(async () => { await wait(700) })
+    await act(async () => { target.blur() })
+    assert.ok((container.textContent ?? '').includes('3회 버튼을 삭제하시겠습니까?'))
+    assert.equal(patches.length, 0)
   } finally { await cleanup() }
 })
