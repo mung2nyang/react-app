@@ -50,6 +50,18 @@ export async function syncTaxInvoices(userId: string, ownerKey: string, cars: Ar
       continue
     }
 
+    // 넣기 전에 같은 계산서가 서버에 있는지 본다 — 앞 저장이 중간에 끊겼거나 응답만 잃었으면 다시 넣지 않고 고친다.
+    const { data: found, error: findError } = await supabase
+      .from('tax_invoices').select('id').eq('user_id', userId).eq('raw->>id', String(item.id)).limit(1)
+    if (findError) throw findError
+    const existingId = Array.isArray(found) ? found[0]?.id : undefined
+    if (existingId != null) {
+      const { error } = await supabase.from('tax_invoices').update(row).eq('id', existingId)
+      if (error) throw error
+      next = applyInsertedTaxInvoiceId(next, item.id, existingId)
+      continue
+    }
+
     const { data, error } = await supabase.from('tax_invoices').insert(row).select('id').single()
     if (error) throw error
     next = applyInsertedTaxInvoiceId(next, item.id, data.id)
