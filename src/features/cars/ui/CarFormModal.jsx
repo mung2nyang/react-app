@@ -44,12 +44,13 @@ const INPUT_IDS = { number: 'newCarNumber', driverName: 'newDriverName', driverP
  * @param {import('react').Dispatch<import('react').SetStateAction<CarFormDraft>>} props.setDraft
  * @param {string|null} props.editingId
  * @param {() => void} props.onCancel
- * @param {() => void} props.onSave
+ * @param {() => void|Promise<void>} props.onSave
+ * @param {boolean} [props.saving] 저장 중이면 [저장] 잠금
  * @param {boolean} [props.cloud]
  * @param {Array<import('../../../domain/driverTypes.ts').DriverRecord>} [props.drivers]
  */
 export default function CarFormModal({
-  draft, setDraft, editingId, onCancel, onSave,
+  draft, setDraft, editingId, onCancel, onSave, saving = false,
   cloud = false, drivers = [],
 }) {
   const isSub = draft.type === 'sub'
@@ -185,7 +186,7 @@ export default function CarFormModal({
       )}
       <div className="modal-btns">
         <button type="button" className="modal-btn cancel" onClick={onCancel}>취소</button>
-        <button type="button" className="modal-btn confirm" onClick={handleSave}>저장</button>
+        <button type="button" className="modal-btn confirm" disabled={saving} onClick={handleSave}>{saving ? '저장 중…' : '저장'}</button>
       </div>
     </ModalShell>
   )

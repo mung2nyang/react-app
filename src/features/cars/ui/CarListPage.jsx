@@ -106,6 +106,7 @@ export default function CarListPage({ onBack, onOpenMenu }) {
           editingId={editingId}
           onCancel={() => { actions.cancelDisconnect(); setModalOpen(false) }}
           onSave={actions.save}
+          saving={actions.saving}
           cloud={cloud}
           drivers={drivers}
         />

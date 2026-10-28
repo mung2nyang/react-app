@@ -1,6 +1,6 @@
 // @ts-check
 // 차량 저장·연동 해제·삭제 흐름 — 서버 요청 순서와 알림 문구는 화면에서 옮긴 그대로.
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { validateDriverLinkFields } from '../../../domain/cars.ts'
 import { requestVehicleSave } from '../../../data/sync/vehicleMutations.ts'
@@ -23,6 +23,16 @@ export default function useCarListActions({ ownerKey, cars, drivers, cloud, draf
   const location = useLocation()
   const [pendingDelete, setPendingDelete] = useState(/** @type {CarLike|null} */ (null))
   const [pendingDisconnect, setPendingDisconnect] = useState(false)
+  const [saving, setSaving] = useState(false)
+  // 저장·연동 해제·삭제 중엔 다시 눌러도 무시 — 같은 차량이 두 번 등록되지 않게.
+  const busyRef = useRef(false)
+  /** @param {() => Promise<void>} run */
+  async function once(run) {
+    if (busyRef.current) return
+    busyRef.current = true
+    setSaving(true)
+    try { await run() } finally { busyRef.current = false; setSaving(false) }
+  }
 
   /** @returns {string|null} */
   function linkedDriverIdForDraft() {
@@ -121,13 +131,14 @@ export default function useCarListActions({ ownerKey, cars, drivers, cloud, draf
   }
 
   return {
-    save,
-    confirmDisconnect,
+    save: () => once(save),
+    saving,
+    confirmDisconnect: () => once(confirmDisconnect),
     cancelDisconnect: () => setPendingDisconnect(false),
     pendingDisconnect,
     askDelete: (/** @type {CarLike} */ car) => setPendingDelete(car),
     cancelDelete: () => setPendingDelete(null),
-    confirmRemove,
+    confirmRemove: () => once(confirmRemove),
     pendingDelete,
   }
 }
