@@ -64,7 +64,8 @@ export function buildCallDetail(draft: CallDetailDraft, existing?: CallDetailLik
       paymentDueDate: String(draft.paymentDueDate || '').trim(),
       workDate: dateKey,
       distanceType: existing?.distanceType || '',
-      linkedLoadIndex: existing?.linkedLoadIndex,
+      // 값 없는 칸은 저장 대기 검사가 거부하므로 원래 값이 있을 때만 이어받는다.
+      ...(existing?.linkedLoadIndex !== undefined ? { linkedLoadIndex: existing.linkedLoadIndex } : {}),
       departureTime: String(draft.departureTime ?? existing?.departureTime ?? '').trim(),
       arrivalTime: String(draft.arrivalTime ?? existing?.arrivalTime ?? '').trim(),
       platform: String(draft.platform ?? existing?.platform ?? '').trim(),
