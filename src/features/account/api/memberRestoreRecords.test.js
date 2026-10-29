@@ -90,6 +90,16 @@ test('거래처: 고정노선 연결 거래처가 이미 있으면 새 거래처
   assert.deepEqual(fresh.clients.map((item) => item.fixedRouteLinked), [true, false], '한 곳만')
 })
 
+test('거래처: 고정노선 연결은 차량 범위마다 한 곳 — 메인에 있어도 내 기사 차량 전용 첫 거래처는 연결된 채로', () => {
+  reset()
+  const out = pick({ clients: [
+    { id: 'cl-b', companyName: '금오물류', scopedToVehicleNumber: '34나5678', fixedRouteLinked: true, fixedUnitPrice: '100000' },
+    { id: 'cl-c', companyName: '금오물류2', scopedToVehicleNumber: ' 34나5678 ', fixedRouteLinked: true },
+    { id: 'cl-d', companyName: '메인물류', fixedRouteLinked: true },
+  ] })
+  assert.deepEqual(out.clients.map((item) => [item.id, item.fixedRouteLinked]), [['cl-b', true], ['cl-c', false], ['cl-d', false]])
+})
+
 test('지출: 같은 번호는 건너뛰고, 메인·내 서브만 — 연동·없는 차량은 건너뛴 수로 센다', () => {
   reset()
   const out = pick({ expenses: [

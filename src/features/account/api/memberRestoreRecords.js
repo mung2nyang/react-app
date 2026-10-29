@@ -59,13 +59,13 @@ function isRestorableExpense(item) {
 }
 
 /**
- * 지금 없는 것만 더한 거래처 목록(새 것은 옛 서버 번호 지움, 고정노선 연결은 한 곳만).
+ * 지금 없는 것만 더한 거래처 목록(새 것은 옛 서버 번호 지움, 고정노선 연결은 차량 범위마다 한 곳만).
  * @param {ClientLike[]} current @param {ClientLike[]} picked
  */
 function newClientsAgainst(current, picked) {
   const names = new Set(current.map((item) => nameKey(item.companyName)))
   const ids = new Set(current.map((item) => item.id))
-  let linkedTaken = current.some((item) => item.fixedRouteLinked)
+  const linkedScopes = new Set(current.filter((item) => item.fixedRouteLinked).map((item) => nameKey(item.scopedToVehicleNumber || '')))
   /** @type {ClientLike[]} */
   const out = []
   for (const { supabaseId: _old, ...client } of picked) {
@@ -73,8 +73,9 @@ function newClientsAgainst(current, picked) {
     if (!key || names.has(key) || ids.has(client.id)) continue
     names.add(key)
     ids.add(client.id)
-    if (client.fixedRouteLinked && linkedTaken) client.fixedRouteLinked = false
-    if (client.fixedRouteLinked) linkedTaken = true
+    const scope = nameKey(client.scopedToVehicleNumber || '')
+    if (client.fixedRouteLinked && linkedScopes.has(scope)) client.fixedRouteLinked = false
+    if (client.fixedRouteLinked) linkedScopes.add(scope)
     out.push(client)
   }
   return out
