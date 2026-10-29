@@ -27,7 +27,7 @@ export function isLinkedPlate(plate: string, drivers: Array<DriverRecord> | null
  */
 export function planExpenseVehicleTargets(cars: Array<CarLike> | null | undefined, drivers: Array<DriverRecord> | null | undefined, expenses: Array<ExpenseItem> | null | undefined): Array<ExpenseVehicleTarget> {
   const carList = Array.isArray(cars) ? cars : []
-  const mainCar = carList.find((car) => car.type === 'main' && car.supabaseId) || carList.find((car) => car.supabaseId)
+  const mainCar = carList.find((car) => car.type === 'main' && car.supabaseId)
   if (!mainCar?.supabaseId) return []
 
   const subTargets = new Map<string, ExpenseVehicleTarget>()

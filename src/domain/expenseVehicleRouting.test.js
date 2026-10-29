@@ -83,11 +83,7 @@ describe('planExpenseVehicleTargets — 로드맵 5-A', () => {
     assert.deepEqual(planExpenseVehicleTargets([SUB_LOCAL_ONLY], [], [fuel('a', '2026-08-01')]), [])
   })
 
-  test('기사 본인(차량이 배정 서브 1대뿐): 표시 없는 항목은 그 차량 칸 하나로 간다', () => {
-    const targets = planExpenseVehicleTargets([SUB], [], [fuel('d1', '2026-09-04')])
-    assert.equal(targets.length, 1)
-    assert.equal(targets[0].vehicleId, 802)
-    assert.equal(targets[0].logId, 'main')
-    assert.deepEqual(targets[0].expenses.map((item) => item.id), ['d1'])
+  test('메인 없이 기사 차량만 있는 차주: 대상 없음(기사 차량 칸으로 넘어가지 않는다)', () => {
+    assert.deepEqual(planExpenseVehicleTargets([SUB], [], [fuel('d1', '2026-09-04')]), [])
   })
 })

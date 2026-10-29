@@ -11,7 +11,10 @@ export function vehicleSupabaseIdForLog(ownerKey: string, logId = 'main'): numbe
   const cars = getState().cars[ownerKey]
   const list = Array.isArray(cars) ? cars : []
   if (!logId || logId === 'main') {
-    const main = list.find((car) => car.type === 'main' && car.supabaseId) || list.find((car) => car.supabaseId)
+    const userId = getCloudUserId()
+    // 연동 기사의 배정 차량은 종류가 기사 차량이라 메인이 없으면 그 차량을 쓴다. 차주는 메인 차량만.
+    const driverSession = !!userId && userId !== ownerKey
+    const main = list.find((car) => car.type === 'main' && car.supabaseId) || (driverSession ? list.find((car) => car.supabaseId) : undefined)
     return main?.supabaseId ?? null
   }
   const matched = list.find((car) => car.number === logId && car.supabaseId)

@@ -34,6 +34,7 @@ const { normalizeSettings } = await import('../../../domain/practiceSettings.ts'
 const { EMPTY_PROFILE } = await import('../../../data/sync/profileSave.ts')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')
 const { todayKey } = await import('../../../domain/expenses.ts')
+const { beginSessionEpoch, endCloudSession } = await import('../../../data/cloud/cloudSession.ts')
 
 const OWNER = 'doc-issue-owner'
 
@@ -135,6 +136,7 @@ test('휴무 날은 저장분이 있어도 미', async () => {
 test('연동 기사 앱처럼 메인 종류 차량이 없으면 첫 차량(배정 차량) 번호를 머리 칸에', async () => {
   commitSettings(OWNER, normalizeSettings({ dailyInspectionOn: true }))
   commitCars(OWNER, [{ id: 'c-assigned', type: 'sub', number: '11가1111', supabaseId: 'veh-assigned' }])
+  beginSessionEpoch('doc-issue-driver', OWNER)
   const view = await render()
   try {
     const head = view.container.querySelector('.doc-sheet-head')?.textContent || ''
@@ -142,6 +144,7 @@ test('연동 기사 앱처럼 메인 종류 차량이 없으면 첫 차량(배�
     assert.ok(head.includes('김운행'), '배정 차량 기사명이 비어 있으면 개인정보 성명')
   } finally {
     await view.cleanup()
+    endCloudSession()
   }
 })
 

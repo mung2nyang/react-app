@@ -330,10 +330,10 @@ describe('findMainCar', () => {
     assert.equal(findMainCar(cars).supabaseId, 2)
   })
 
-  test('main이 없으면 supabaseId가 있는 아무 차량이나 돌려준다', () => {
+  test('main이 없으면 기사 차량이 있어도 null', () => {
     /** @type {import('../../domain/financeTypes.ts').CarLike[]} */
     const cars = [{ type: 'sub', supabaseId: 7, number: '99하9999' }]
-    assert.equal(findMainCar(cars).supabaseId, 7)
+    assert.equal(findMainCar(cars), null)
   })
 
   test('supabaseId가 있는 차량이 하나도 없으면 null', () => {

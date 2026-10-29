@@ -73,7 +73,7 @@ export function mergeDriversFromRows(localDrivers: Array<LocalDriver>, mergedCar
 }
 
 export function findMainCar(cars: Array<LocalCar>) {
-  return (cars || []).find((car) => car.type === 'main' && car.supabaseId) || (cars || []).find((car) => car.supabaseId) || null
+  return (cars || []).find((car) => car.type === 'main' && car.supabaseId) || null
 }
 
 /**
