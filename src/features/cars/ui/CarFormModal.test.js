@@ -119,7 +119,7 @@ test('로드맵 61 — 매출제 %면 "기사 몫 기준" 보임(기본 운송�
   } finally { await view.cleanup() }
 })
 
-test('로드맵 61 — 저장된 기준으로 열면 그 값, 월급제·건당·메인 차량이면 드롭다운 숨김(값은 그대로)', async () => {
+test('로드맵 61 — 저장된 기준으로 열면 그 값, 월급제·메인 차량이면 드롭다운 숨김(값은 그대로)', async () => {
   const opened = await render({ ...SUB, driverShareBase: 'afterClientCommission' })
   try {
     assert.equal(opened.container.querySelector('#newCarShareBase')?.textContent?.includes('거래처 수수료 뗀 뒤'), true)
@@ -130,7 +130,7 @@ test('로드맵 61 — 저장된 기준으로 열면 그 값, 월급제·건당�
     await act(async () => { revenue?.click() })
     assert.equal(opened.container.querySelector('#newCarShareBase')?.textContent?.includes('거래처 수수료 뗀 뒤'), true, '다시 매출제면 그 값 그대로')
   } finally { await opened.cleanup() }
-  for (const draft of [{ ...SUB, commType: 'direct' }, { ...SUB, driverPayMode: 'salary' }, { ...EMPTY }]) {
+  for (const draft of [{ ...SUB, driverPayMode: 'salary' }, { ...EMPTY }]) {
     const view = await render(draft)
     try { assert.equal(view.container.querySelector('#newCarShareBase'), null, JSON.stringify([draft.type, draft.commType, draft.driverPayMode])) } finally { await view.cleanup() }
   }

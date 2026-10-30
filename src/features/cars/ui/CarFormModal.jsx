@@ -165,7 +165,7 @@ export default function CarFormModal({
             </div>
             <FieldError problem={shown} field="driverSalaryAmount" inputId="newCarSettlementValue" />
           </div>
-          {!isSalary && draft.commType !== 'direct' && <CarShareBaseField value={draft.driverShareBase} onChange={(next) => setDraft({ ...draft, driverShareBase: next })} />}
+          {!isSalary && <CarShareBaseField value={draft.driverShareBase} onChange={(next) => setDraft({ ...draft, driverShareBase: next })} />}
           <hr className="car-modal-divider" />
           <CarDriverIncomeFields draft={draft} setDraft={setDraft} />
         </>

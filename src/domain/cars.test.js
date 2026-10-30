@@ -144,6 +144,12 @@ describe('차량 저장 — 기사명·정산·수수료', () => {
     assert.equal(result.cars[0].commission, '15')
   })
 
+  test('옛 건당 값이 와도 비율로 저장한다', () => {
+    const result = upsertCar([], { number: '서울12가3456', type: 'sub', driverPayMode: 'revenue', commType: 'direct', commission: '15' })
+    assert.equal(result.error, undefined)
+    assert.equal(result.cars[0].commType, 'percent')
+  })
+
   test('월급제인데 급여액이 없으면 거절한다', () => {
     const result = upsertCar([], {
       number: '서울12가3456',

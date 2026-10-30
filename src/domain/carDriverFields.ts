@@ -49,7 +49,6 @@ export function driverFieldsFromDraft(draft: CarUpsertDraft, type: 'main' | 'sub
       insuranceOn: false,
     }
   }
-  const commType = draft.commType === 'direct' ? 'direct' : 'percent'
   const driverPayMode = draft.driverPayMode === 'salary' ? 'salary' : 'revenue'
   const commEnabled = driverPayMode === 'revenue'
   const driverSalaryAmount = String(draft.driverSalaryAmount || '').replace(/\D/g, '')
@@ -59,7 +58,7 @@ export function driverFieldsFromDraft(draft: CarUpsertDraft, type: 'main' | 'sub
     driverPayMode,
     driverSalaryAmount: driverPayMode === 'salary' ? driverSalaryAmount : '',
     commEnabled,
-    commType,
+    commType: 'percent',
     commission: commEnabled ? String(draft.commission || '').trim() : '',
     driverShareBase: draft.driverShareBase === 'afterClientCommission' ? 'afterClientCommission' : 'gross',
     ...driverIncomeFieldsFromDraft(draft),

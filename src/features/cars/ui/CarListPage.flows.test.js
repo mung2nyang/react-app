@@ -181,3 +181,29 @@ test('일지에서 열린 차량 번호를 바꿔 저장하면 그 일지 주소
     await view.cleanup()
   }
 })
+
+test('옛 건당 기사 차량은 수수료 빈 칸으로 열리고 기사 몫 기준이 보인다, 비율 차량은 저장된 값', async () => {
+  const ownerKey = 'flow-direct'
+  beginSessionEpoch(ownerKey, ownerKey)
+  commitCars(ownerKey, [
+    { id: 'car-main', number: '11가1111', type: 'main' },
+    { id: 'car-direct', number: '22나2222', type: 'sub', driverPayMode: 'revenue', commEnabled: true, commType: 'direct', commission: '5000' },
+    { id: 'car-pct', number: '33다3333', type: 'sub', driverPayMode: 'revenue', commEnabled: true, commType: 'percent', commission: '10' },
+  ])
+  commitDrivers(ownerKey, [])
+  const view = await render(ownerKey)
+  try {
+    /** @param {string} number */
+    const open = async (number) => {
+      await view.click(view.card(number)?.querySelector('[title="수정"]'))
+      const input = /** @type {HTMLInputElement|null} */ (view.container.querySelector('#newCarSettlementValue'))
+      const shown = { value: input?.value, shareBase: !!view.container.querySelector('#newCarShareBase') }
+      await view.click(view.button('취소'))
+      return shown
+    }
+    assert.deepEqual(await open('22나2222'), { value: '', shareBase: true })
+    assert.deepEqual(await open('33다3333'), { value: '10', shareBase: true })
+  } finally {
+    await view.cleanup()
+  }
+})

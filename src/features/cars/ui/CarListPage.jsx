@@ -68,8 +68,9 @@ export default function CarListPage({ onBack, onOpenMenu }) {
       driverPayMode: car.driverPayMode || 'revenue',
       driverSalaryAmount: car.driverSalaryAmount != null ? String(car.driverSalaryAmount) : '',
       commEnabled: !!car.commEnabled,
-      commType: car.commType === 'direct' ? 'direct' : 'percent',
-      commission: String(car.commission ?? ''),
+      commType: 'percent',
+      // 옛 건당 자료는 수수료 빈 칸으로 연다.
+      commission: car.commType === 'direct' ? '' : String(car.commission ?? ''),
       ...driverIncomeDraftFromCar(car), driverShareBase: resolveDriverShareBase(car),
       inviteCode: linked?.inviteCode || (car.type === 'sub' && cloud ? generateInviteCode(drivers) : ''),
       inviteStartDate: linked?.startDate || todayIsoDate(),
