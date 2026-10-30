@@ -482,3 +482,31 @@ describe('세금계산서 — 휴무 날은 콜·고정 노선·파렛트 모두
     assert.equal(groups.reduce((sum, group) => sum + group.taxAmount, 0), calendar.vat)
   })
 })
+
+describe('기사 정산 운행 횟수 — 공차·묶인 혼짐은 빼고 달력과 같은 규칙', () => {
+  const PLATE = '44라4444'
+  /** @type {import('./financeTypes.ts').CarLike} */
+  const car = { type: 'sub', number: PLATE, commEnabled: true, commType: 'percent', commission: '10', shareRevenueWithOwner: true }
+  const link = { id: 'l1', vehicleNumber: PLATE, assignmentStart: '2026-10-01', status: 'linked' }
+  const day = {
+    callDetails: [
+      { id: 'a', client: '한진', fare: '100000', distanceType: '편도' },
+      { id: 'b', client: '한진', fare: '5000', distanceType: '공차' },
+      { id: 'c', client: '한진', fare: '20000', distanceType: '혼짐', linkedLoadIndex: '0' },
+      { id: 'd', client: '한진', fare: '30000', distanceType: '혼짐', linkedLoadIndex: 'pending' },
+    ],
+  }
+  const work = { '2026-10-07': day }
+
+  test('공차와 다른 운행에 묶인 혼짐은 횟수에서 빼고 금액에는 넣는다', () => {
+    const totals = getMonthlyDriverTotals(work, '2026-10', link)
+    assert.equal(totals.count, 2)
+    assert.equal(totals.grossAmount, 155000)
+  })
+
+  test('기사 관리 건수가 달력 운행 횟수와 같다', () => {
+    const detail = getLinkedDriverSettlementDetail(work, '2026-10', link, car, { cars: [car] })
+    const calendar = monthSettlementSummary(work, 2026, 9, { logId: PLATE, car })
+    assert.equal(detail.tripCount, calendar.trips + calendar.callTrips)
+  })
+})

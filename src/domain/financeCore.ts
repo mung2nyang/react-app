@@ -9,7 +9,7 @@ import { isDateWithinAssignment } from './drivers.ts'
 import { parseCurrencyValue } from './money.ts'
 import type { CallDetailLike } from './callDetail.ts'
 import type { CarLike, DriverLinkLike, FinanceSettings, WorkDataByLogId } from './financeTypes.ts'
-import type { DayRecordLike } from './day-record.ts'
+import { callCountsAsTrip, type DayRecordLike } from './day-record.ts'
 
 export function logData(workDataByLogId: WorkDataByLogId, logId: string) {
   if (!workDataByLogId) return {}
@@ -99,7 +99,7 @@ export function getMonthlyDriverTotals(data: Record<string, DayRecordLike>, mont
       if (!isDateWithinAssignment(workDate, link?.assignmentStart, link?.assignmentEnd)) return
       grossAmount += parseCurrencyValue(detail.fare)
       insuranceAmount += parseCurrencyValue((detail as { insuranceFee?: string | number }).insuranceFee)
-      count += 1
+      if (callCountsAsTrip(detail)) count += 1
     })
     const storedFare = parseCurrencyValue(record.fare || record.fixedFare || record.totalFare)
     grossAmount += storedFare > 0 ? storedFare : computeFixedRouteFare(record, fixedRouteOpts)

@@ -70,21 +70,17 @@ export function backfillCallDetailIds(record: DayRecordLike | undefined): { reco
   return { record: { ...record, callDetails }, changed: true }
 }
 
+/** 콜 한 건이 운행 횟수에 들어가는지 — 공차·다른 운행에 묶인 혼짐은 빼고, 묶일 운행을 안 고른 혼짐은 넣는다. */
+export function callCountsAsTrip(detail: CallDetailLike | null | undefined) {
+  const type = detail?.distanceType || ''
+  if (type === '공차') return false
+  if (type === '혼짐') return detail?.linkedLoadIndex === 'pending' || detail?.linkedLoadIndex === '-1' || detail?.linkedLoadIndex === undefined
+  return true
+}
+
 export function countCallTrips(record: DayRecordLike | null | undefined) {
   if (!record || record.isOff) return 0
-  let count = 0
-  getCallDetails(record).forEach((detail) => {
-    const type = detail?.distanceType || ''
-    if (type === '공차') return
-    if (type === '혼짐') {
-      if (detail.linkedLoadIndex === 'pending' || detail.linkedLoadIndex === '-1' || detail.linkedLoadIndex === undefined) {
-        count += 1
-      }
-      return
-    }
-    count += 1
-  })
-  return count
+  return getCallDetails(record).filter(callCountsAsTrip).length
 }
 
 export function dayTripCount(record: DayRecordLike | null | undefined) {
