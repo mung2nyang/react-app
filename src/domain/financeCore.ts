@@ -108,10 +108,9 @@ export function getMonthlyDriverTotals(data: Record<string, DayRecordLike>, mont
   return { grossAmount, insuranceAmount, count }
 }
 
-export function calculateDriverVehicleCommission(car: CarLike, grossAmount: number, count: number) {
-  if (!car?.commEnabled || !car.commission) return 0
-  const tripCount = Number(count) || 0
-  if (car.commType === 'direct') return tripCount > 0 ? parseCurrencyValue(car.commission) * tripCount : 0
+export function calculateDriverVehicleCommission(car: CarLike, grossAmount: number) {
+  // 옛 건당 자료는 수수료 미설정으로 읽는다(기사 몫 0원).
+  if (!car?.commEnabled || !car.commission || car.commType === 'direct') return 0
   return Math.floor(grossAmount * (parseFloat(String(car.commission)) || 0) / 100)
 }
 

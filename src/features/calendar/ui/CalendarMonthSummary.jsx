@@ -21,11 +21,11 @@ function clientCommInfo(setting) {
 }
 
 /**
- * 라벨 "3456 차량 10%" / "3456 차량 건당 5,000원" → 설정 부분만, 기사 몫 기준(로드맵 61)에 맞는 설명.
+ * 라벨 "3456 차량 10%" → 설정 부분만, 기사 몫 기준에 맞는 설명.
  * @param {string} label @param {'gross'|'afterClientCommission'} base
  */
 function subCarCommInfo(label, base) {
-  const setting = label.replace(/^\S+ 차량 (?=건당 |\d)/, '')
+  const setting = label.replace(/^\S+ 차량 (?=\d)/, '')
   const shown = setting && setting !== label ? `(${setting})` : ''
   const from = base === 'afterClientCommission' ? '거래처 수수료를 뺀 운송료에서' : '운송료 전체에서'
   return `차량 관리에서 설정한 이 차량의 수수료${shown}입니다. ${from} 계산해 차감합니다.`

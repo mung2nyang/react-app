@@ -22,7 +22,7 @@ export function dateLabel(date) {
 
 /**
  * driverSelf 상단 카드 라벨: 월급제 → "이번 달 월급", 매출제(%) →
- * "이번 달 정산액 N%", 매출제(건당·비율 미확정) → "이번 달 정산액".
+ * "이번 달 정산액 N%", 매출제(비율 미설정) → "이번 달 정산액".
  * (차주 화면의 "당월 순이익"과 구분)
  * @param {{ label?: string, payMode?: string|null }|null|undefined} settlement
  */

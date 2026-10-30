@@ -157,8 +157,8 @@ describe('monthSettlementSummary', () => {
       unitPrice: 10000,
       car: directCar,
     })
-    assert.equal(dir.subCarComm, 15000)
-    assert.match(dir.subCarCommLabel, /3456 차량 건당 5,000원/)
+    assert.equal(dir.subCarComm, 0, '옛 건당 자료는 수수료 미설정')
+    assert.doesNotMatch(dir.subCarCommLabel, /건당/)
   })
 
   test('6. 실거리 — 콜상세 distanceKm 있음 vs dailyDistance 폴백', () => {

@@ -126,11 +126,9 @@ export function monthSettlementSummary(workData: Record<string, DayRecordLike>, 
   let subCarComm = 0
   let subCarCommLabel = '기사 차량 수수료'
   if (logId !== 'main' && car) {
-    subCarComm = calculateDriverVehicleCommission(car, driverShareBaseAmount(car, fare + palletFare, commissionTotal), trips + callTrips)
+    subCarComm = calculateDriverVehicleCommission(car, driverShareBaseAmount(car, fare + palletFare, commissionTotal))
     if (car.commEnabled && car.commission) {
-      subCarCommLabel = car.commType === 'direct'
-        ? `${getShortCarNum(car.number)} 차량 건당 ${parseCurrencyValue(car.commission).toLocaleString()}원`
-        : `${getShortCarNum(car.number)} 차량 ${parseFloat(String(car.commission)) || 0}%`
+      subCarCommLabel = `${getShortCarNum(car.number)} 차량 ${parseFloat(String(car.commission)) || 0}%`
     }
   }
 

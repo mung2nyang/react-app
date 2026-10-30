@@ -141,7 +141,7 @@ export function flattenLinkedDriverTrips(data: Record<string, DayRecordLike>, mo
 export function getLinkedDriverSettlementDetail(data: Record<string, DayRecordLike>, monthKey: string, link: DriverLinkLike, car: CarLike, settings: FinanceSettings = {}) {
   const totals = getMonthlyDriverTotals(data, monthKey, link, settings)
   const base = driverShareBaseAmount(car, totals.grossAmount, getMonthlyDriverClientCommission(data, monthKey, link, settings))
-  const commissionAmount = calculateDriverVehicleCommission(car, base, totals.count)
+  const commissionAmount = calculateDriverVehicleCommission(car, base)
   const insuranceAmount = car?.insuranceOn ? totals.insuranceAmount : 0
   const finalAmount = Math.max(0, totals.grossAmount - commissionAmount - insuranceAmount)
   const trips = flattenLinkedDriverTrips(data, monthKey, link, settings)

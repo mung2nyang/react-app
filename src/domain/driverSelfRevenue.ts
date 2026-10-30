@@ -16,7 +16,7 @@ const EMPTY_BUCKET = { total: 0, items: [] as Array<{ date: string, label: strin
 
 function settlementLabelForCar(car: CarLike, shareAmount: number) {
   if (car.driverPayMode === 'salary') return '기사 정산(월급)'
-  if (shareAmount > 0 && car.commType !== 'direct' && car.commission) {
+  if (shareAmount > 0 && car.commission) {
     const rate = String(car.commission).replace(/%/g, '').trim()
     if (rate) return `기사 정산(${rate}%)`
   }
@@ -49,7 +49,7 @@ export function getDriverSelfMonthlyDetail(monthKey: string, settings: FinanceSe
     const ownData = logData(workDataByLogId, 'main')
     const totals = getMonthlyDriverTotals(ownData, monthKey, link, settings)
     const base = driverShareBaseAmount(assigned, totals.grossAmount, getMonthlyDriverClientCommission(ownData, monthKey, link, settings))
-    const commission = calculateDriverVehicleCommission(assigned, base, totals.count)
+    const commission = calculateDriverVehicleCommission(assigned, base)
     const settlementAmount = getDriverSettlementAmount(assigned, commission)
     const deductions = getDriverIncomeDeductions(assigned, settlementAmount)
     settlementTotal = deductions.driverNet

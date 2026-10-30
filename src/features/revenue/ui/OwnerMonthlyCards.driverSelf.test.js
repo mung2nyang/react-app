@@ -21,7 +21,7 @@ describe('driverSelfNetProfitLabel', () => {
     assert.equal(driverSelfNetProfitLabel({ label: '기사 정산(15%)' }), '이번 달 정산액 15%')
   })
 
-  test('매출제(건당·비율 미확정) → 퍼센트 없이 이번 달 정산액', () => {
+  test('매출제(비율 미설정) → 퍼센트 없이 이번 달 정산액', () => {
     assert.equal(driverSelfNetProfitLabel({ label: '기사 정산' }), '이번 달 정산액')
   })
 

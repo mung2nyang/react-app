@@ -47,10 +47,9 @@ describe('기사 몫 기준 — 네 화면 같은 값', () => {
     assert.deepEqual(fourScreens(carWith({ driverShareBase: 'afterClientCommission' })), { calendar: 270000, revenue: 270000, management: 270000, driverSelf: 270000 })
   })
 
-  test('건당 기사 몫은 기준과 무관', () => {
+  test('옛 건당 자료는 네 화면 모두 기사 몫 0원', () => {
     const direct = { commType: 'direct', commission: '50000' }
-    assert.deepEqual(fourScreens(carWith({ ...direct, driverShareBase: 'afterClientCommission' })), fourScreens(carWith(direct)))
-    assert.equal(fourScreens(carWith(direct)).management, 50000)
+    assert.deepEqual(fourScreens(carWith(direct)), { calendar: 0, revenue: 0, management: 0, driverSelf: 0 })
   })
 })
 

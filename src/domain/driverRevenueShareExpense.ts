@@ -46,7 +46,7 @@ export function getMonthlyDriverRevenueShareExpense(monthKey: string, settings: 
     const carData = getDriverCarWorkData(car, workDataByLogId)
     const totals = getMonthlyDriverTotals(carData, monthKey, link, settings, car.number)
     const base = driverShareBaseAmount(car, totals.grossAmount, getMonthlyDriverClientCommission(carData, monthKey, link, settings, car.number))
-    const amount = calculateDriverVehicleCommission(car, base, totals.count)
+    const amount = calculateDriverVehicleCommission(car, base)
     if (amount <= 0) continue
 
     const outside = link ? getMonthlyDriverTotals(carData, monthKey, null, settings, car.number).grossAmount - totals.grossAmount : 0
@@ -76,7 +76,7 @@ export function getMonthlyDriverInsuranceOwnerShare(monthKey: string, settings: 
     const carData = getDriverCarWorkData(car, workDataByLogId)
     const totals = getMonthlyDriverTotals(carData, monthKey, link, settings, car.number)
     const base = driverShareBaseAmount(car, totals.grossAmount, getMonthlyDriverClientCommission(carData, monthKey, link, settings, car.number))
-    const commission = calculateDriverVehicleCommission(car, base, totals.count)
+    const commission = calculateDriverVehicleCommission(car, base)
     const amount = getDriverIncomeDeductions(car, getDriverSettlementAmount(car, commission)).insuranceOwnerShare
     if (amount <= 0) continue
 

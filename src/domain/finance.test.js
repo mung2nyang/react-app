@@ -143,10 +143,9 @@ describe('같은 운행 픽스처 — 확정 금액', () => {
     assert.equal(getOverdueReceivableItems(FIXTURE_SETTINGS, FIXTURE_WORK, new Date('2026-08-25')).length, 1)
   })
 
-  test('수수료 경계: 운행 0건이면 건당 수수료 0', () => {
+  test('옛 건당 자료는 수수료 미설정 — 운행이 있어도 기사 몫 0', () => {
     const car = { commEnabled: true, commType: 'direct', commission: '20,000' }
-    assert.equal(calculateDriverVehicleCommission(car, 0, 0), 0)
-    assert.equal(calculateDriverVehicleCommission(car, 0, 3), 60000)
+    assert.equal(calculateDriverVehicleCommission(car, 100000), 0)
   })
 
   test('거래처 운임 수수료 스냅샷', () => {

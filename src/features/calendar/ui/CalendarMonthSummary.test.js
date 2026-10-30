@@ -239,12 +239,12 @@ test('로드맵 12번: 기사차량 수수료가 있을 때만 그 줄에 (i), �
   } finally {
     await none.cleanup()
   }
-  const shown = await renderSummary(emptySummary({ subCarComm: 8000, subCarCommLabel: '3456 차량 건당 5,000원', vat: 0, total: 0 }))
+  const shown = await renderSummary(emptySummary({ subCarComm: 8000, subCarCommLabel: '3456 차량 10%', vat: 0, total: 0 }))
   try {
     const btn = infoButton(shown.container, '기사 차량 수수료')
     assert.ok(btn)
     await act(async () => { btn.click() })
-    assert.ok((shown.container.querySelector('.summary-info-text')?.textContent || '').includes('이 차량의 수수료(건당 5,000원)입니다'))
+    assert.ok((shown.container.querySelector('.summary-info-text')?.textContent || '').includes('이 차량의 수수료(10%)입니다'))
   } finally {
     await shown.cleanup()
   }
