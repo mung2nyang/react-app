@@ -2,10 +2,8 @@
 import {
   getDetailReportClientContact,
   getReportShareCompanyName,
-  reportBaseFileName,
 } from '../api/report.js'
 import { fillReportShareMessagePattern, getReportShareMessagePattern } from '../../../data/sync/messageTemplates.ts'
-import { buildReportExportFile } from '../api/reportExport.js'
 import ShareFileModal from './ShareFileModal.jsx'
 import { useSession } from '../../../data/cloud/sessionContext.ts'
 import { useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
@@ -16,27 +14,17 @@ const NO_CONTACT = '문자로 보내려면 [세부 내역]에서 거래처를 �
 
 /**
  * @param {Object} props
- * @param {{ current: HTMLElement | null }} props.exportRef
+ * @param {(type: 'pdf'|'image') => Promise<File>} props.buildFile
  * @param {'summary'|'detail'} props.viewMode
  * @param {string} props.clientFilter
  * @param {Array<ClientLike>|null|undefined} props.clients
- * @param {number} props.year
- * @param {number} props.month 0-based
  * @param {() => void} props.onClose
  */
-export default function ReportShareModal({ exportRef, viewMode, clientFilter, clients, year, month, onClose }) {
+export default function ReportShareModal({ buildFile, viewMode, clientFilter, clients, onClose }) {
   const { ownerKey } = useSession()
   const pattern = getReportShareMessagePattern(useOwnerSettings(ownerKey))
-  const baseFileName = reportBaseFileName(viewMode, year, month, clientFilter)
   const companyName = getReportShareCompanyName(viewMode, clientFilter)
   const contact = getDetailReportClientContact(viewMode, clientFilter, clients)
-
-  /** @param {'pdf'|'image'} type */
-  async function buildFile(type) {
-    const element = exportRef.current
-    if (!element) throw new Error('내역서를 만들지 못했습니다. 창을 닫았다가 다시 시도해 주세요.')
-    return buildReportExportFile(element, type, baseFileName)
-  }
 
   return (
     <ShareFileModal

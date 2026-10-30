@@ -40,9 +40,7 @@ function mountModal(props = {}) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
-  const exportEl = document.createElement('div')
-  const exportRef = { current: exportEl }
-  return { container, root, exportRef, props }
+  return { container, root, props }
 }
 
 /**
@@ -65,16 +63,14 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
   })
 
   test('렌더: 카카오톡/문자 2섹션, PDF·이미지 버튼 4개', async () => {
-    const { container, root, exportRef } = mountModal()
+    const { container, root } = mountModal()
     try {
       await act(async () => {
         root.render(React.createElement(ReportShareModal, {
-          exportRef,
+          buildFile: async () => fakeFile,
           viewMode: 'summary',
           clientFilter: 'ALL',
           clients: [],
-          year: 2026,
-          month: 8,
           onClose: () => {},
         }))
       })
@@ -94,16 +90,14 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
     let closeCount = 0
     /** @type {string[]} */
     const toasts = []
-    const { container, root, exportRef } = mountModal()
+    const { container, root } = mountModal()
     try {
       await act(async () => {
         root.render(withToast(React.createElement(ReportShareModal, {
-          exportRef,
+          buildFile: async () => fakeFile,
           viewMode: 'summary',
           clientFilter: 'ALL',
           clients: [{ id: 'c1', companyName: '한진', phone: '010-1111-2222' }],
-          year: 2026,
-          month: 8,
           onClose: () => { closeCount += 1 },
         }), (/** @type {string} */ m) => { toasts.push(m) }))
       })
@@ -131,16 +125,14 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
       writable: true,
       value: undefined,
     })
-    const { container, root, exportRef } = mountModal()
+    const { container, root } = mountModal()
     try {
       await act(async () => {
         root.render(withToast(React.createElement(ReportShareModal, {
-          exportRef,
+          buildFile: async () => fakeFile,
           viewMode: 'summary',
           clientFilter: 'ALL',
           clients: [],
-          year: 2026,
-          month: 8,
           onClose: () => { closeCount += 1 },
         }), (/** @type {string} */ m) => { toasts.push(m) }))
       })
@@ -188,16 +180,14 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
       writable: true,
       value: () => true,
     })
-    const { container, root, exportRef } = mountModal()
+    const { container, root } = mountModal()
     try {
       await act(async () => {
         root.render(React.createElement(ReportShareModal, {
-          exportRef,
+          buildFile: async () => fakeFile,
           viewMode: 'detail',
           clientFilter: '한진',
           clients: [{ id: 'c1', companyName: '한진', phone: '010-1111-2222' }],
-          year: 2026,
-          month: 8,
           onClose: () => { closeCount += 1 },
         }))
       })

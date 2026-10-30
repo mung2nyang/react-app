@@ -13,10 +13,16 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
 // 내려받기 테스트용 가짜 html2pdf — 그리는 동안 pdf-export-mode가 붙어 있었는지 적어 둔다.
 const html2pdfCalls = /** @type {Array<string>} */ ([])
+/** 그리기 시작할 때 날짜 표가 두 줄(내보내기 모양)이었는지 */
+const layoutAtFrom = /** @type {Array<string>} */ ([])
 const canvasFail = { on: false }
 const fakeWorker = {
   set() { return fakeWorker },
-  from() { html2pdfCalls.push(document.body.classList.contains('pdf-export-mode') ? 'from(내보내기 모드)' : 'from'); return fakeWorker },
+  from() {
+    html2pdfCalls.push(document.body.classList.contains('pdf-export-mode') ? 'from(내보내기 모드)' : 'from')
+    layoutAtFrom.push(document.querySelector('.report-split-container') ? '두 줄' : '한 줄')
+    return fakeWorker
+  },
   async save() { html2pdfCalls.push('save') },
   async outputPdf() { html2pdfCalls.push('outputPdf'); return new Blob(['%PDF'], { type: 'application/pdf' }) },
   toCanvas() { return fakeWorker },
@@ -231,6 +237,42 @@ test('PDF 저장도 파일을 만들어 링크로 내려받는다(파일 이름 
     assert.ok(html2pdfCalls.includes('outputPdf'), '파일로 만들기')
     assert.equal(html2pdfCalls.includes('save'), false, 'html2pdf 자체 저장은 안 씀')
   } finally {
+    await view.cleanup()
+  }
+})
+
+test('[공유] 파일도 내려받기와 같은 두 줄 날짜 표로 만들고, 끝나면 화면은 한 줄로 돌아온다', async () => {
+  const view = await renderForDownload('report-share-layout')
+  const shareDesc = Object.getOwnPropertyDescriptor(navigator, 'share')
+  Reflect.deleteProperty(navigator, 'share')
+  try {
+    await act(async () => {
+      commitWorkData('report-share-layout', {
+        '2026-10-05': { isOff: false, callDetails: [{ id: 'c1', client: '거래처', fare: 30000 }] },
+        '2026-10-06': { isOff: false, callDetails: [{ id: 'c2', client: '거래처', fare: 40000 }] },
+      })
+    })
+    assert.equal(view.container.querySelector('.report-split-container'), null, '화면은 한 줄')
+    layoutAtFrom.length = 0
+    await view.saveAs('PDF 다운로드')
+    assert.deepEqual(layoutAtFrom, ['두 줄'], '내려받기는 두 줄')
+    layoutAtFrom.length = 0
+    view.toasts.length = 0
+    await act(async () => { buttonByText(view.container, '공유').click() })
+    const kakaoPdf = [...view.container.querySelectorAll('.report-share-channel')]
+      .find((el) => el.textContent?.includes('카카오톡으로 보내기'))
+      ?.querySelector('button')
+    assert.ok(kakaoPdf instanceof window.HTMLButtonElement)
+    await act(async () => { kakaoPdf.click() })
+    for (let i = 0; i < 100 && !view.toasts.some((m) => m.includes('파일 공유를 할 수 없습니다')); i += 1) {
+      // eslint-disable-next-line no-await-in-loop -- 폴링 대기라 순차 await가 맞다.
+      await act(async () => { await new Promise((resolve) => { setTimeout(resolve, 20) }) })
+    }
+    assert.ok(view.toasts.some((m) => m.includes('파일 공유를 할 수 없습니다')), '공유 파일을 다 만듦')
+    assert.deepEqual(layoutAtFrom, ['두 줄'], '공유도 두 줄')
+    assert.equal(view.container.querySelector('.report-split-container'), null, '끝나면 화면은 한 줄')
+  } finally {
+    if (shareDesc) Object.defineProperty(navigator, 'share', shareDesc)
     await view.cleanup()
   }
 })

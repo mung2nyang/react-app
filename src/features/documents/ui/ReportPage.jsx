@@ -37,6 +37,7 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
   const { logId: rawLogId } = useParams()
   const logKey = (logIdProp ?? (rawLogId ? decodeURIComponent(rawLogId) : undefined)) || 'main'
   const [shareOpen, setShareOpen] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const [confirmType, setConfirmType] = useState(/** @type {'pdf'|'image'|null} */ (null))
   const [viewMode, setViewMode] = useState(/** @type {'summary'|'detail'} */ ('summary'))
   const [clientFilter, setClientFilter] = useState('ALL')
@@ -74,6 +75,17 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
   }
 
   const { saving, download } = useFileDownload(buildFile, '운송비 내역서')
+
+  // [공유] 파일도 내려받기와 같은 내보내기 모양(날짜 표 두 줄)으로 만든다.
+  /** @param {'pdf'|'image'} type */
+  async function buildShareFile(type) {
+    setSharing(true)
+    try {
+      return await buildFile(type)
+    } finally {
+      setSharing(false)
+    }
+  }
 
   function openDetailPicker() {
     setPickerValue(clientFilter)
@@ -117,7 +129,7 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
             dash={dash}
             formatWon={formatWon}
             distanceOn={!!resolveLogSettings(practiceSettings, logKey).distanceOn}
-            isExporting={saving !== null}
+            isExporting={saving !== null || sharing}
           />
         )}
       </div>
@@ -153,12 +165,10 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
       )}
       {shareOpen && (
         <ReportShareModal
-          exportRef={exportRef}
+          buildFile={buildShareFile}
           viewMode={viewMode}
           clientFilter={clientFilter}
           clients={clients}
-          year={year}
-          month={month}
           onClose={() => setShareOpen(false)}
         />
       )}
