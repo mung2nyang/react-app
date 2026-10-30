@@ -92,6 +92,19 @@
   text-align: center;
 }
 
+.app-temporal-clear {
+  display: block;
+  min-height: 36px;
+  margin: 6px 0 0 auto;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--sub-text-color);
+  font: inherit;
+  font-size: var(--fs-3);
+}
+
 .app-temporal-option[aria-selected="true"] {
   background: color-mix(in srgb, var(--primary-color) 18%, transparent);
   color: var(--primary-color);

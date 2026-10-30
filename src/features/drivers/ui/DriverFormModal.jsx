@@ -133,7 +133,7 @@ export default function DriverFormModal({ draft, setDraft, editingId, drivers, a
         </div>
         <div className="form-group">
           <label htmlFor="drvEnd">계약 종료일</label>
-          <TemporalInput type="date" id="drvEnd" value={draft.endDate || ''} onChange={(e) => setDraft({ ...draft, endDate: e.target.value })} {...dateInvalid('endDate', 'drvEnd')} />
+          <TemporalInput type="date" id="drvEnd" clearable value={draft.endDate || ''} onChange={(e) => setDraft({ ...draft, endDate: e.target.value })} {...dateInvalid('endDate', 'drvEnd')} />
           <FieldError problem={shown} field="endDate" inputId="drvEnd" />
         </div>
       </div>

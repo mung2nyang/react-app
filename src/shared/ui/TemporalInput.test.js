@@ -119,3 +119,44 @@ test('D-0: 트리거가 뷰포트 우측 끝을 넘어가면 메뉴가 왼쪽으
     if (originalClientWidth) Object.defineProperty(window.document.documentElement, 'clientWidth', originalClientWidth)
   }
 })
+
+/** @param {object} props */
+async function openMenu(props) {
+  const { container, root } = mountTarget()
+  const calls = /** @type {Array<string>} */ ([])
+  await act(async () => {
+    root.render(React.createElement(TemporalInput, { id: 'c1', onChange: (/** @type {{ target: { value: string } }} */ e) => calls.push(e.target.value), ...props }))
+  })
+  await act(async () => { container.querySelector('.app-temporal-trigger').click() })
+  return {
+    container, calls,
+    clearButton: () => document.body.querySelector('.app-temporal-clear'),
+    async cleanup() { await act(async () => { root.unmount() }); container.remove() },
+  }
+}
+
+test('지우기 칸: 값이 있으면 창에 [지우기], 누르면 빈 값으로 바꾸고 닫힘', async () => {
+  const view = await openMenu({ type: 'time', value: '09:00', clearable: true })
+  try {
+    const button = view.clearButton()
+    assert.ok(button, '[지우기] 단추')
+    assert.equal(button.textContent, '지우기')
+    await act(async () => { button.click() })
+    assert.deepEqual(view.calls, [''])
+    assert.equal(view.container.querySelector('.app-temporal-trigger').getAttribute('aria-expanded'), 'false')
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('지우기 칸이어도 값이 없으면 [지우기] 없음, 지우기 칸이 아니면 값이 있어도 없음', async () => {
+  for (const props of [{ type: 'date', value: '', clearable: true }, { type: 'date', value: '2026-09-14' }]) {
+    const view = await openMenu(props)
+    try {
+      assert.ok(document.body.querySelector('.app-temporal-menu'), '창은 열림')
+      assert.equal(view.clearButton(), null)
+    } finally {
+      await view.cleanup()
+    }
+  }
+})

@@ -25,8 +25,9 @@ const GAP = 7
  * @param {boolean} [props.centered] 트리거 값을 가운데 정렬(원본 콜상세·정비·주유 공통 스타일).
  * @param {boolean} [props.invalid] 입력이 잘못된 칸 — 단추에 빨간 표시(FieldError.jsx)
  * @param {string} [props.describedBy] 칸 아래 오류 문구 id
+ * @param {boolean} [props.clearable] 값이 있을 때 고르기 창에 [지우기](비워도 되는 칸만)
  */
-export default function TemporalInput({ type, id, value, onChange, className = '', min, max, disabled = false, centered = false, invalid = false, describedBy }) {
+export default function TemporalInput({ type, id, value, onChange, className = '', min, max, disabled = false, centered = false, invalid = false, describedBy, clearable = false }) {
   const menuId = useId()
   const [open, setOpen] = useState(false)
   const [cursor, setCursor] = useState(() => parseCursor(type, value))
@@ -109,6 +110,12 @@ export default function TemporalInput({ type, id, value, onChange, className = '
     triggerRef.current?.focus()
   }
 
+  function clear() {
+    commit('')
+    setOpen(false)
+    triggerRef.current?.focus()
+  }
+
   const label = !value ? (type === 'date' ? '날짜 선택' : '시간 선택') : type === 'date' ? value.replaceAll('-', '.') : value
 
   return (
@@ -152,6 +159,7 @@ export default function TemporalInput({ type, id, value, onChange, className = '
           {type === 'date'
             ? <DateColumns cursor={cursor} min={min} max={max} onCursor={setCursor} onSelectDay={selectDay} />
             : <TimeColumns cursor={cursor} onCommitHour={commitHour} onSelectMinute={selectMinute} />}
+          {clearable && value && <button type="button" className="app-temporal-clear" onClick={clear}>지우기</button>}
         </div>,
         document.body
       )}
