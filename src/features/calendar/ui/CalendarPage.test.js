@@ -364,6 +364,38 @@ test('슬라이스 B: 서브 달력은 해당 차량 workData·subPaymentOn·수
   }
 })
 
+test('서브 달력 실 운행거리는 그 차량 계기판 설정을 따른다(메인 꺼짐·서브 켜짐)', async () => {
+  const ownerKey = 'test-calendar-sub-distance'
+  const plate = '서울88가8888'
+  commitCars(ownerKey, [
+    { id: 'main-1', type: 'main', number: '서울00가0000' },
+    { id: 'sub-1', type: 'sub', number: plate, logEnabled: true },
+  ])
+  commitClients(ownerKey, [])
+  commitSettings(ownerKey, normalizeSettings({ distanceOn: false, subCarSettings: { [plate]: { distanceOn: true } } }))
+  commitLogWorkData(ownerKey, plate, {
+    '2026-08-12': { isOff: false, callDetails: [{ id: 'sub-call-d', client: '거래처', fare: 30000, distanceKm: '30' }] },
+  })
+
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  try {
+    await act(async () => {
+      root.render(React.createElement(
+        MemoryRouter,
+        { initialEntries: [`/app/logs/${encodeURIComponent(plate)}?y=2026&m=7`] },
+        withSession(React.createElement(CalendarPage, { logId: plate, onSelectDay: () => {} }), { ownerKey }),
+      ))
+    })
+    assert.ok(container.textContent.includes('실 운행거리'), '서브 계기판 켜짐이면 거리 줄')
+    assert.ok(container.textContent.includes('30 km'))
+  } finally {
+    await act(async () => { root.unmount() })
+    container.remove()
+  }
+})
+
 test('메인 fixedOn:false + 고정횟수 → 달력 고정운임이 0이 아님(매출과 동일)', async () => {
   const ownerKey = 'test-calendar-fixedon-false-main'
   const dateKey = '2026-08-20'

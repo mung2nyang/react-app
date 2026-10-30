@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { buildCalendarCells, getYearOptions } from '../../../domain/calendar.ts'
 import { searchParamsForViewDate, viewDateFromSearchParams } from '../../../domain/calendarViewDate.ts'
 import { monthCallUnpaidTotal } from '../../../domain/day-record.ts'
+import { resolveLogSettings } from '../../../domain/carSettingsScope.ts'
 import CalendarHeader from './CalendarHeader.jsx'
 import CalendarGrid from './CalendarGrid.jsx'
 import CalendarMonthSummary from './CalendarMonthSummary.jsx'
@@ -41,8 +42,7 @@ export default function CalendarPage({
     ownerKey, logId, clientScopeKey, year, month,
   })
   const paymentOn = isMain ? !!settings.paymentOn : !!settings.subPaymentOn
-  // 서브차량 실거리: subDistanceOn 설정이 없어 메인만.
-  const distanceOn = isMain && !!settings.distanceOn
+  const distanceOn = !!resolveLogSettings(settings, logId).distanceOn
 
   const cells = useMemo(() => buildCalendarCells(viewDate), [viewDate])
   const unpaidTotal = useMemo(() => monthCallUnpaidTotal(workData, year, month), [workData, year, month])

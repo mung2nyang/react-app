@@ -31,7 +31,8 @@ const { createRoot } = await import('react-dom/client')
 const { act } = React
 const { MemoryRouter } = await import('react-router-dom')
 const { default: ReportPage } = await import('./ReportPage.jsx')
-const { commitClients, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
+const { commitCars, commitClients, commitLogWorkData, commitSettings, commitWorkData } = await import('../../../data/store/commitHelpers.ts')
+const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 
 /**
  * @param {string} ownerKey
@@ -232,4 +233,40 @@ test('PDF 저장도 파일을 만들어 링크로 내려받는다(파일 이름 
   } finally {
     await view.cleanup()
   }
+})
+
+/** @param {string} ownerKey @param {boolean} mainOn @param {boolean} subOn */
+async function subReportText(ownerKey, mainOn, subOn) {
+  const plate = '서울77가7777'
+  commitCars(ownerKey, [
+    { id: 'main-1', type: 'main', number: '서울00가0000' },
+    { id: 'sub-1', type: 'sub', number: plate, logEnabled: true },
+  ])
+  commitClients(ownerKey, [])
+  commitSettings(ownerKey, normalizeSettings({ distanceOn: mainOn, subCarSettings: { [plate]: { distanceOn: subOn } } }))
+  commitLogWorkData(ownerKey, plate, {
+    '2026-08-12': { isOff: false, callDetails: [{ id: 'sub-call-d', client: '거래처', fare: 30000, distanceKm: '30' }] },
+  })
+  const container = document.createElement('div')
+  document.body.appendChild(container)
+  const root = createRoot(container)
+  await act(async () => {
+    root.render(React.createElement(
+      MemoryRouter,
+      { initialEntries: ['/app/report'] },
+      withSession(React.createElement(ReportPage, { logId: plate, viewDate: new Date(2026, 7, 1), onChangeMonth: () => {} }), { ownerKey }),
+    ))
+  })
+  const text = container.textContent || ''
+  await act(async () => { root.unmount() })
+  container.remove()
+  return text
+}
+
+test('기사 차량 내역서 운행거리 줄은 그 차량 계기판 설정을 따른다', async () => {
+  const subOnly = await subReportText('report-sub-distance-on', false, true)
+  assert.ok(subOnly.includes('월간 총 운행거리'), '메인 꺼짐·기사 차량 켜짐 → 보임')
+  assert.ok(subOnly.includes('30 km'))
+  const mainOnly = await subReportText('report-sub-distance-off', true, false)
+  assert.equal(mainOnly.includes('월간 총 운행거리'), false, '메인 켜짐·기사 차량 꺼짐 → 안 보임')
 })

@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { formatWon } from '../../../domain/money.ts'
+import { resolveLogSettings } from '../../../domain/carSettingsScope.ts'
 import { dash, reportBaseFileName } from '../api/report.js'
 import { buildReportExportFile } from '../api/reportExport.js'
 import useFileDownload from '../hooks/useFileDownload.js'
@@ -115,7 +116,7 @@ export default function ReportPage({ logId: logIdProp, onBack, onOpenMenu, tabs,
             report={report}
             dash={dash}
             formatWon={formatWon}
-            distanceOn={!!practiceSettings.distanceOn}
+            distanceOn={!!resolveLogSettings(practiceSettings, logKey).distanceOn}
             isExporting={saving !== null}
           />
         )}
