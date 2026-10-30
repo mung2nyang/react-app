@@ -12,7 +12,7 @@ import { getFixedRouteCommissionAmount } from './fixedRouteCommission.ts'
 import { selectExpensesForScope, sweepExpenseItems } from './financeOwnerExpenseSweep.ts'
 import type { FinanceSettings, WorkDataByLogId } from './financeTypes.ts'
 import type { ExpenseLike } from './financeOwnerExpenseSweep.ts'
-import type { DayRecordLike } from './day-record.ts'
+import { getRecordTotalDistance, type DayRecordLike } from './day-record.ts'
 
 // 비용은 financeOwnerExpenseSweep이 맡는다 — expenses(차주 본인)와 driverExpenses(기사 차량)를 섞지 않고 record의 비용 필드는 읽지 않는다(Q3).
 /** @param mainFixedScopeKey 메인 소스의 고정노선 스코프 키 — 연동기사 본인 세션(일지는 main, 거래처는 배정 차량 스코프)만 넘긴다 */
@@ -52,6 +52,7 @@ export function getOwnerMonthlyFinanceDetail(monthKey: string, scope = 'owner', 
       if (!dateKey.startsWith(monthKey) || !record || typeof record !== 'object') return
 
       if (!record.isOff) {
+        distanceKm += getRecordTotalDistance(record)
         if (Number(record.fixedCount) > 0) {
           const count = Number(record.fixedCount) || 0
           tripCount += count
@@ -91,7 +92,6 @@ export function getOwnerMonthlyFinanceDetail(monthKey: string, scope = 'owner', 
           const insurance = parseCurrencyValue(detail?.insuranceFee)
           if (insurance > 0) insuranceByClient.set(clientLabel, (insuranceByClient.get(clientLabel) || 0) + insurance)
 
-          distanceKm += parseCurrencyValue(detail?.distanceKm)
           durationMinutes += getCallDetailDurationMinutes(detail)
         })
       }

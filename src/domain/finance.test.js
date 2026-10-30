@@ -509,3 +509,19 @@ describe('기사 정산 운행 횟수 — 공차·묶인 혼짐은 빼고 달력
     assert.equal(detail.tripCount, calendar.trips + calendar.callTrips)
   })
 })
+
+describe('운행 거리 — 매출과 달력이 같은 규칙', () => {
+  const work = {
+    '2026-09-01': { callDetails: [{ fare: '0', distanceKm: '12.5' }, { fare: '0', distanceKm: '7.5' }], dailyDistance: 999 },
+    '2026-09-02': { callDetails: [{ fare: '0' }], dailyDistance: 30 },
+    '2026-09-03': { isOff: true, callDetails: [{ fare: '0', distanceKm: '100' }], dailyDistance: 100 },
+  }
+
+  test('소수점 그대로, 콜 상세 거리가 있으면 그 합·없으면 하루 거리, 휴무 날은 뺌', () => {
+    assert.equal(getOwnerMonthlyFinanceDetail('2026-09', 'owner', {}, { main: work }).distanceKm, 50)
+  })
+
+  test('같은 자료로 달력 정산 카드 거리와 같다', () => {
+    assert.equal(getOwnerMonthlyFinanceDetail('2026-09', 'owner', {}, { main: work }).distanceKm, monthSettlementSummary(work, 2026, 8).distanceKm)
+  })
+})

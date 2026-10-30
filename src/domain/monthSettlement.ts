@@ -1,7 +1,7 @@
 // 월간 운송료 정산 공용 순수 계산.
 // §6: 헬퍼+본문이 한 계산 경로라 분리하면 항상 같이 읽게 됨(~210줄 허용).
 import { getShortCarNum } from './cars.ts'
-import { countCallTrips, getCallDetails, getFixedCount, getPalletCount } from './day-record.ts'
+import { countCallTrips, getCallDetails, getFixedCount, getPalletCount, getRecordTotalDistance } from './day-record.ts'
 import { monthTotal } from './expenses.ts'
 import { calculateDriverVehicleCommission, getCallDetailCommissionAmount } from './financeCore.ts'
 import { driverShareBaseAmount, resolveDriverShareBase } from './driverShareBase.ts'
@@ -13,16 +13,6 @@ import type { ClientLike } from './clientTypes.ts'
 import type { DayRecordLike } from './dayRecordTypes.ts'
 import type { ExpenseItem } from './expenseTypes.ts'
 import type { CarLike } from './financeTypes.ts'
-
-/** 원본 getRecordTotalDistance — 이 파일 전용. */
-function getRecordTotalDistance(record: DayRecordLike | null | undefined) {
-  const details = getCallDetails(record)
-  const hasDetailDistance = details.some((d) => String(d?.distanceKm ?? '').trim() !== '')
-  if (hasDetailDistance) {
-    return details.reduce((sum, d) => sum + (parseFloat(String(d?.distanceKm)) || 0), 0)
-  }
-  return parseFloat(String(record?.dailyDistance ?? '')) || 0
-}
 
 /** expensesForVehicleDay와 같은 차량 태그 동등비교. */
 function expensesForVehicle(expenses: Array<ExpenseItem>, logId: string) {

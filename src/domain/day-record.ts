@@ -87,6 +87,16 @@ export function dayTripCount(record: DayRecordLike | null | undefined) {
   return getFixedCount(record) + countCallTrips(record)
 }
 
+/** 하루 운행 거리(km) — 콜 상세에 거리가 하나라도 있으면 그 합, 없으면 하루 거리(dailyDistance). */
+export function getRecordTotalDistance(record: DayRecordLike | null | undefined) {
+  const details = getCallDetails(record)
+  const hasDetailDistance = details.some((d) => String(d?.distanceKm ?? '').trim() !== '')
+  if (hasDetailDistance) {
+    return details.reduce((sum, d) => sum + (parseFloat(String(d?.distanceKm)) || 0), 0)
+  }
+  return parseFloat(String(record?.dailyDistance ?? '')) || 0
+}
+
 export function callFareTotal(record: DayRecordLike | null | undefined) {
   if (!record || record.isOff) return 0
   return getCallDetails(record).reduce((sum, detail) => sum + parseCurrencyValue(detail.fare), 0)
