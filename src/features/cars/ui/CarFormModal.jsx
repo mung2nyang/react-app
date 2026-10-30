@@ -134,7 +134,7 @@ export default function CarFormModal({
             <label htmlFor="newCarSettlementValue">정산</label>
             <p className="car-settlement-mode-guide">
               {isSalary
-                ? '기사에게 건별 또는 월별로 지급할 고정 금액을 설정합니다.'
+                ? '기사에게 월별로 지급할 고정 금액을 설정합니다.'
                 : '이 차량의 매출 중 기사에게 지급할 비율을 설정합니다.'}
             </p>
             <div className="car-commission-value">
