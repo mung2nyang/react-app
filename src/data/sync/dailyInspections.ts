@@ -4,6 +4,7 @@ import { supabase } from '../cloud/supabaseClient.ts'
 import { sanitizeInspectionItems } from '../../domain/dailyInspectionItems.ts'
 import { fetchAllRows } from '../cloud/fetchAllRows.ts'
 import { assertSessionStillCurrent, blockedReasonForCloudWrite, captureSession, getCloudUserId } from '../cloud/cloudSession.ts'
+import { notifyDailyInspectionChanged } from './dailyInspectionChanges.ts'
 import type { InspectionItems } from '../../domain/dailyInspectionItems.ts'
 
 export type DailyInspection = { items: InspectionItems, actionNote: string, inspectorName: string }
@@ -48,6 +49,7 @@ export async function saveDailyInspection({ vehicleId, workDate, items, actionNo
   }, { onConflict: 'vehicle_id,work_date' })
   assertSessionStillCurrent(captured)
   if (error) throw error
+  notifyDailyInspectionChanged({ vehicleId, workDate, saved: true })
 }
 
 /** 그 차량·날짜 점검표 지우기. 권한이 막으면 서버가 오류 없이 0줄을 지우므로 0줄도 실패로 본다. */
@@ -60,6 +62,7 @@ export async function deleteDailyInspection({ vehicleId, workDate }: { vehicleId
   assertSessionStillCurrent(captured)
   if (error) throw error
   if (!Array.isArray(data) || data.length === 0) throw new Error(DELETE_FAIL)
+  notifyDailyInspectionChanged({ vehicleId, workDate, saved: false })
 }
 
 /**

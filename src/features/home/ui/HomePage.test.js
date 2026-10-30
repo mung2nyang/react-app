@@ -34,6 +34,7 @@ const { commitCars, commitClients, commitExpenses, commitLogWorkData, commitSett
 const { todayWorkLogSelection } = await import('../../../domain/calendar.ts')
 const { normalizeSettings } = await import('../../../domain/practiceSettings.ts')
 const { allGoodItems } = await import('../../../domain/dailyInspectionItems.ts')
+const { notifyDailyInspectionChanged } = await import('../../../data/sync/dailyInspectionChanges.ts')
 
 /**
  * @param {string} ownerKey
@@ -270,6 +271,31 @@ test('2단계 — 할 일: 일상점검 켜짐·서버에 오늘 점검표 없�
     assert.equal(done.container.querySelector('.home-todo-empty')?.textContent, '할 일 없음')
   } finally {
     await done.cleanup()
+  }
+})
+
+test('할 일: 같은 화면에서 오늘 점검표를 저장하면 다시 읽지 않고 "미작성"이 사라짐, 다른 차량·날짜 알림은 그대로', async () => {
+  const ownerKey = 'test-home-inspection-change'
+  const { dateKey } = todayWorkLogSelection()
+  commitCars(ownerKey, [{ id: 'c-main', type: 'main', number: '12가3456', supabaseId: 'veh-main' }])
+  commitSettings(ownerKey, normalizeSettings({ dailyInspectionOn: true }))
+  const view = await renderHome(ownerKey, () => {})
+  try {
+    await act(async () => { await Promise.resolve() })
+    assert.deepEqual(texts(view.container, '.home-todo-row'), ['오늘 일상점검표 미작성 ›'])
+    await act(async () => {
+      notifyDailyInspectionChanged({ vehicleId: 'veh-other', workDate: dateKey, saved: true })
+      notifyDailyInspectionChanged({ vehicleId: 'veh-main', workDate: '2000-01-01', saved: true })
+    })
+    assert.deepEqual(texts(view.container, '.home-todo-row'), ['오늘 일상점검표 미작성 ›'], '다른 차량·날짜는 그대로')
+    await act(async () => { notifyDailyInspectionChanged({ vehicleId: 'veh-main', workDate: dateKey, saved: true }) })
+    assert.equal(view.container.querySelector('.home-todo-row'), null, '저장하면 바로 사라져야 한다')
+    assert.equal(view.container.querySelector('.home-todo-empty')?.textContent, '할 일 없음')
+    await act(async () => { notifyDailyInspectionChanged({ vehicleId: 'veh-main', workDate: dateKey, saved: false }) })
+    assert.deepEqual(texts(view.container, '.home-todo-row'), ['오늘 일상점검표 미작성 ›'], '지우면 다시 보여야 한다')
+    assert.equal(inspectionFetches, 1, '서버는 처음 한 번만 읽는다')
+  } finally {
+    await view.cleanup()
   }
 })
 

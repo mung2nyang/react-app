@@ -111,3 +111,28 @@ test('지우기 막기: 로그인 안 함·서버 값 받는 중이면 서버를
   handlers.daily_inspections = { delete: () => { endCloudSession(); return { data: [{ id: 'a' }], error: null } } }
   await assert.rejects(() => deleteDailyInspection(input))
 })
+
+test('저장·지우기 성공 뒤에만 알림: 저장은 "있음", 지우기는 "없음", 실패·막힘은 알림 없음', async () => {
+  const { deleteDailyInspection } = await import('./dailyInspections.ts')
+  const { subscribeDailyInspectionChanges } = await import('./dailyInspectionChanges.ts')
+  /** @type {Array<import('./dailyInspectionChanges.ts').DailyInspectionChange>} */
+  const changes = []
+  const unsubscribe = subscribeDailyInspectionChanges((change) => { changes.push(change) })
+  try {
+    const save = { vehicleId: 'veh-1', workDate: '2026-10-30', items: {}, actionNote: '', inspectorName: '' }
+    const remove = { vehicleId: 'veh-1', workDate: '2026-10-30' }
+    await assert.rejects(() => saveDailyInspection(save), /로그인/)
+    beginSessionEpoch('driver-1', 'owner-1')
+    setHydration({ status: 'ready', userId: 'driver-1', ownerKey: 'owner-1' })
+    handlers.daily_inspections = { upsert: () => ({ data: null, error: { message: 'down' } }), delete: () => ({ data: [], error: null }) }
+    await assert.rejects(() => saveDailyInspection(save))
+    await assert.rejects(() => deleteDailyInspection(remove))
+    assert.deepEqual(changes, [], '실패하면 알림 없음')
+    handlers.daily_inspections = { upsert: () => ({ data: null, error: null }), delete: () => ({ data: [{ id: 'a' }], error: null }) }
+    await saveDailyInspection(save)
+    await deleteDailyInspection(remove)
+    assert.deepEqual(changes, [{ vehicleId: 'veh-1', workDate: '2026-10-30', saved: true }, { vehicleId: 'veh-1', workDate: '2026-10-30', saved: false }])
+  } finally {
+    unsubscribe()
+  }
+})
