@@ -123,3 +123,21 @@ test('73-4: 비회원 연달아 → 둘 다 기기에 저장', async () => {
   assert.equal(settings.timeOn, true)
   assert.deepEqual(settings.pinnedLocations, ['부산'])
 })
+
+test('로그인, 문자 문구를 저장한 뒤 다른 스위치를 저장해도 서버로 보내는 설정에 문구가 남는다', async () => {
+  const ownerKey = 'own-message-templates'
+  beginReady(ownerKey)
+  const server = holdProfileUpserts()
+  const first = savePracticeSettings(ownerKey, { messageTemplates: ['가', '나', '다'], reportShareMessage: '내역서' })
+  await wait(10)
+  server.releases[0]?.()
+  await first
+  const second = savePracticeSettings(ownerKey, { timeOn: true })
+  await wait(10)
+  server.releases[1]?.()
+  await second
+  assert.deepEqual(field(server.sent[1], 'messageTemplates'), ['가', '나', '다'])
+  assert.equal(field(server.sent[1], 'reportShareMessage'), '내역서')
+  assert.deepEqual(readOwnerSettings(ownerKey).messageTemplates, ['가', '나', '다'])
+  endCloudSession()
+})

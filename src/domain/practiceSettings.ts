@@ -46,6 +46,15 @@ function asBool(value: JsonValue | undefined, fallback: boolean): boolean {
   return fallback
 }
 
+// 문자 문구는 바꾼 것만 둔다(없으면 기본 문구) — 모양이 틀리면 칸을 만들지 않는다.
+function pickMessageTemplates(raw: JsonValue | undefined): { messageTemplates?: [string, string, string] } {
+  if (!Array.isArray(raw) || raw.length !== 3 || !raw.every((item) => typeof item === 'string' && item.trim())) return {}
+  return { messageTemplates: [String(raw[0]).trim(), String(raw[1]).trim(), String(raw[2]).trim()] }
+}
+
+function pickReportShareMessage(raw: JsonValue | undefined): { reportShareMessage?: string } {
+  return typeof raw === 'string' && raw.trim() ? { reportShareMessage: raw.trim() } : {}
+}
 
 export function normalizeSettings(raw: FinanceSettings = {}): FinanceSettings {
   const inputMode = raw.inputMode === 'fare' ? 'fare' : 'count'
@@ -77,6 +86,8 @@ export function normalizeSettings(raw: FinanceSettings = {}): FinanceSettings {
     subCarSettings: normalizeSubCarSettingsMap(raw.subCarSettings, asBool(raw.subFixedOn, fixedOn)),
     notifOff: normalizeNotifOff(raw.notifOff),
     unbiseoDockOn: asBool(raw.unbiseoDockOn, defaults.unbiseoDockOn),
+    ...pickMessageTemplates(raw.messageTemplates),
+    ...pickReportShareMessage(raw.reportShareMessage),
   }
 }
 

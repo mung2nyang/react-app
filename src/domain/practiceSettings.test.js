@@ -155,3 +155,24 @@ describe('운비서 버튼(unbiseoDockOn)', () => {
     assert.equal(normalizeSettings({ unbiseoDockOn: false }).unbiseoDockOn, false)
   })
 })
+
+describe('문자 문구(messageTemplates·reportShareMessage)', () => {
+  test('바꾼 문구는 앞뒤 빈칸을 지우고 남긴다', () => {
+    const out = normalizeSettings({ messageTemplates: [' 가 ', '나', '다'], reportShareMessage: ' 내역서 ' })
+    assert.deepEqual(out.messageTemplates, ['가', '나', '다'])
+    assert.equal(out.reportShareMessage, '내역서')
+  })
+
+  test('칸이 없거나 모양이 틀리면 칸 자체를 만들지 않는다', () => {
+    for (const raw of [
+      {},
+      { messageTemplates: ['가', '나'], reportShareMessage: '' },
+      { messageTemplates: ['가', ' ', '다'], reportShareMessage: '   ' },
+      { messageTemplates: /** @type {never} */ (['가', '나', 3]), reportShareMessage: /** @type {never} */ (5) },
+    ]) {
+      const out = normalizeSettings(raw)
+      assert.equal('messageTemplates' in out, false, JSON.stringify(raw))
+      assert.equal('reportShareMessage' in out, false, JSON.stringify(raw))
+    }
+  })
+})
