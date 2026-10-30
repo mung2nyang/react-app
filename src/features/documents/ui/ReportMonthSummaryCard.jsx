@@ -1,5 +1,5 @@
 // @ts-check
-// 운송비 내역서 요약의 "월간 운송료 정산" 카드 — 거래처별 운송료·파렛트·산재·부가세·계.
+// 운송비 내역서 요약의 "월간 운송료 정산" 카드 — 거래처별 운송료·파렛트·부가세·계.
 
 /**
  * @param {Object} props
@@ -14,7 +14,6 @@
  *   commissionLabelByClient: Record<string, string>,
  *   palletFare?: number,
  *   vat: number,
- *   insuranceTotal?: number,
  *   total: number,
  * }} props.report
  * @param {(value: number|string) => string} props.formatWon
@@ -65,12 +64,6 @@ export function ReportMonthSummaryCard({ report, formatWon, distanceOn = false }
         <div className="summary-row">
           <span>파렛트 회수 청구액</span>
           <span className="summary-value">{formatWon(report.palletFare || 0)}</span>
-        </div>
-      )}
-      {(report.insuranceTotal || 0) > 0 && (
-        <div className="summary-row">
-          <span>산재보험료</span>
-          <span className="summary-value">- {formatWon(report.insuranceTotal || 0)}</span>
         </div>
       )}
       <div className="summary-row">

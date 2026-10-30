@@ -386,7 +386,7 @@ describe('buildDetailReport — 부가세는 콜 상세 건마다 버림, 면세
   })
 })
 
-describe('운송비 내역서 — 콜 상세 산재보험료를 줄로 보이고 합계에서 뺀다(로드맵 40)', () => {
+describe('운송비 내역서 — 회사 제출용이라 콜 상세 산재보험료를 줄로 넣지 않고 계에서도 빼지 않는다', () => {
   const PROFILE = {
     bizName: '', bizRepresentative: '', bizNumber: '', bizAddress: '', bizType: '', bizItem: '', bizEmail: '',
     name: '차주', phone: '', bankName: '', accountNumber: '', accountHolder: '',
@@ -395,19 +395,18 @@ describe('운송비 내역서 — 콜 상세 산재보험료를 줄로 보이고
     '2026-09-01': { callDetails: [{ client: '한진', fare: 100000, insuranceFee: '1,000' }, { client: '대한', fare: 50000, insuranceFee: '500' }] },
   }
 
-  test('요약 내역서: insuranceTotal을 넘기고 total에서 뺀다', () => {
+  test('요약 내역서: insuranceTotal 없음, 계 = 운송료 + 부가세(산재 안 뺌)', () => {
     const report = buildMonthReport('test-month-report-insurance', 2026, 8, [], [{ id: 'm1', type: 'main', number: '12가3456' }], { fixedOn: true }, workData, [], PROFILE)
-    assert.equal(report.insuranceTotal, 1500)
-    assert.equal(report.total, 150000 + 15000 - 1500)
+    assert.equal('insuranceTotal' in report, false)
+    assert.equal(report.total, 150000 + 15000)
   })
 
-  test('세부 내역서: 거래처 필터에 맞는 건만 빼고 grandTotal에서 뺀다', () => {
+  test('세부 내역서: insuranceTotal 없음, 전체·거래처 필터 모두 계에서 산재 안 뺌', () => {
     const all = buildDetailReport(workData, 2026, 8, 'ALL', {})
-    assert.equal(all.insuranceTotal, 1500)
-    assert.equal(all.grandTotal, 150000 + 15000 - 1500)
+    assert.equal('insuranceTotal' in all, false)
+    assert.equal(all.grandTotal, 150000 + 15000)
     const hanjin = buildDetailReport(workData, 2026, 8, '한진', {})
-    assert.equal(hanjin.insuranceTotal, 1000)
-    assert.equal(hanjin.grandTotal, 100000 + 10000 - 1000)
+    assert.equal(hanjin.grandTotal, 100000 + 10000)
   })
 })
 

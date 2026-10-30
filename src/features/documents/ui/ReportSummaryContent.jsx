@@ -102,7 +102,6 @@ function renderSummaryDayTables(days, monthIndex, showPallet, isExporting) {
  *   commissionLabelByClient: Record<string, string>,
  *   palletFare?: number,
  *   vat: number,
- *   insuranceTotal?: number,
  *   total: number,
  * }} props.report
  * @param {(value: JsonValue|undefined) => string} props.dash

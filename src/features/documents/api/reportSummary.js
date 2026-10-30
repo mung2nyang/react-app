@@ -115,9 +115,9 @@ export function buildMonthReport(ownerKey, year, monthIndex, expenses = readOwne
     fareByClient: settled.fareByClient,
     commissionByClient: settled.commissionByClient,
     commissionLabelByClient: settled.commissionLabelByClient,
-    insuranceTotal: settled.insuranceTotal,
     palletFare: settled.palletFare,
     vat: settled.vat,
-    total: settled.total,
+    // 운송비 내역서는 회사 제출용이라 콜 상세 산재보험료를 줄·계에 넣지 않는다.
+    total: settled.total + settled.insuranceTotal,
   }
 }
