@@ -76,10 +76,12 @@ export function getCallDetailCommissionAmount(detail: CallDetailLike, fare: numb
 // 고정노선 운행(fixedCount)은 그날 기록에 금액이 저장 안 되고 단가×횟수로 매번
 // 계산된다(clients.ts computeFixedRouteFare, getOwnerMonthlyFinanceDetail과 공식
 // 공유) — settings 없이는 이 계산을 못 하므로 인자로 받는다(없으면 고정노선 운행이 0으로 잡힌다).
-export function getMonthlyDriverTotals(data: Record<string, DayRecordLike>, monthKey: string, link: DriverLinkLike | null = null, settings: FinanceSettings = {}) {
-  const fixedRouteClient = getFixedRouteClient(settings, link?.vehicleNumber)
+// scopeKey: 고정 노선 거래처를 찾을 차량 번호(없으면 연동 정보의 차량 번호).
+export function getMonthlyDriverTotals(data: Record<string, DayRecordLike>, monthKey: string, link: DriverLinkLike | null = null, settings: FinanceSettings = {}, scopeKey?: string) {
+  const key = scopeKey || link?.vehicleNumber
+  const fixedRouteClient = getFixedRouteClient(settings, key)
   const fixedRouteOpts = {
-    fixedUnitPrice: resolveFixedUnitPrice(settings, link?.vehicleNumber),
+    fixedUnitPrice: resolveFixedUnitPrice(settings, key),
     palletUnitPrice: parseCurrencyValue(fixedRouteClient?.palletPrice),
     subFixedOn: !!settings.subFixedOn,
     activePalletOn: !!fixedRouteClient?.palletOn,

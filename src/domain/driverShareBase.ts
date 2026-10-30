@@ -20,9 +20,11 @@ export function driverShareBaseAmount(car: CarLike | null | undefined, grossAmou
 }
 
 /** 그달 계약 기간 안 운행의 거래처 수수료 합(콜 상세 + 고정노선) — getMonthlyDriverTotals와 같은 날짜·기간 거르기. */
-export function getMonthlyDriverClientCommission(data: Record<string, DayRecordLike> | null | undefined, monthKey: string, link: DriverLinkLike | null = null, settings: FinanceSettings = {}) {
-  const fixedRouteClient = getFixedRouteClient(settings, link?.vehicleNumber)
-  const fixedUnitPrice = resolveFixedUnitPrice(settings, link?.vehicleNumber)
+// scopeKey: 고정 노선 거래처를 찾을 차량 번호(없으면 연동 정보의 차량 번호).
+export function getMonthlyDriverClientCommission(data: Record<string, DayRecordLike> | null | undefined, monthKey: string, link: DriverLinkLike | null = null, settings: FinanceSettings = {}, scopeKey?: string) {
+  const key = scopeKey || link?.vehicleNumber
+  const fixedRouteClient = getFixedRouteClient(settings, key)
+  const fixedUnitPrice = resolveFixedUnitPrice(settings, key)
   let total = 0
   Object.entries(data || {}).forEach(([dateKey, record]) => {
     if (!dateKey.startsWith(monthKey) || !record || typeof record !== 'object' || record.isOff) return

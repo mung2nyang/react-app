@@ -4,6 +4,10 @@ import { describe, test } from 'node:test'
 import { getMonthlyDriverInsuranceOwnerShare, getMonthlyDriverRevenueShareExpense } from './driverRevenueShareExpense.ts'
 import { getOwnerMonthlyFinanceDetail } from './financeOwnerDetail.ts'
 import { FIXTURE_EXPENSES, FIXTURE_SETTINGS, FIXTURE_WORK, MONTH_KEY } from './finance.fixtures.ts'
+import { getFixedRouteClient, resolveFixedUnitPrice } from './clients.ts'
+import { getDriverIncomeDeductions } from './driverIncomeDeductions.ts'
+import { getLinkedDriverSettlementDetail } from './financeTaxInvoiceGroups.ts'
+import { monthSettlementSummary } from './monthSettlement.ts'
 
 // 산재 규칙 재설계(로드맵 4-2): 매출제 정산액은 산재를 빼지 않은 기사 몫 전체이고, 산재보험료는 기사 정산액 기준
 // 월 단위로 따로 계산한다(건별 산재 합계는 더 쓰지 않는다).
@@ -160,3 +164,52 @@ describe('기사 급여 계약 기간 — 연동 중 계약만, 기간·계약 �
   })
 })
 
+
+describe('기사 급여·산재 차주 몫 — 차량 전용 고정 노선 단가와 기사 몫 기준', () => {
+  const MONTH = '2026-10'
+  const PLATE = '33다3333'
+  const ownerFixed = { id: 'c-o', companyName: '차주고정', fixedRouteLinked: true, fixedUnitPrice: '250000', commEnabled: true, commType: 'percent', commValue: '20' }
+  const scopedFixed = { id: 'c-s', companyName: '기사고정', fixedRouteLinked: true, fixedUnitPrice: '100000', commEnabled: true, commType: 'percent', commValue: '10', scopedToVehicleNumber: PLATE }
+  const clients = [ownerFixed, scopedFixed]
+  /** @type {import('./financeTypes.ts').CarLike} */
+  const car = { type: 'sub', number: PLATE, driverName: '미연동', driverPayMode: 'revenue', commEnabled: true, commType: 'percent', commission: '10', shareRevenueWithOwner: true }
+  const work = { [PLATE]: { '2026-10-05': { fixedCount: 1 } } }
+  /** @param {import('./financeTypes.ts').CarLike} target */
+  const calendar = (target) => monthSettlementSummary(work[PLATE], 2026, 9, {
+    logId: PLATE, unitPrice: resolveFixedUnitPrice({ clients }, PLATE), fixedRouteClient: getFixedRouteClient({ clients }, PLATE), clients, car: target,
+  })
+
+  test('미연동 차량은 그 차량 전용 단가로 기사 급여를 계산한다 — 달력 정산과 같다', () => {
+    const result = getMonthlyDriverRevenueShareExpense(MONTH, { cars: [car], clients }, [car], work)
+    assert.equal(result.total, 10000)
+    assert.equal(result.total, calendar(car).subCarComm)
+
+    /** @type {import('./financeTypes.ts').CarLike} */
+    const afterComm = { ...car, driverShareBase: 'afterClientCommission' }
+    const after = getMonthlyDriverRevenueShareExpense(MONTH, { cars: [afterComm], clients }, [afterComm], work)
+    assert.equal(after.total, 9000)
+    assert.equal(after.total, calendar(afterComm).subCarComm)
+  })
+
+  test('연동 차량의 계약 밖 운송료도 그 차량 전용 단가로 계산한다', () => {
+    const linkedWork = { [PLATE]: { '2026-10-05': { fixedCount: 1 }, '2026-10-15': { fixedCount: 1 } } }
+    const driverLinks = [{ id: 'l1', vehicleNumber: PLATE, assignmentStart: '2026-10-12', status: 'linked' }]
+    const result = getMonthlyDriverRevenueShareExpense(MONTH, { cars: [car], clients, driverLinks }, [car], linkedWork)
+    assert.equal(result.total, 10000)
+    assert.equal(result.items[0].label, '미연동 (10/12~), 계약 밖 운송료 100,000원 제외')
+  })
+
+  test('산재 차주 몫은 "수수료 뗀 뒤" 기사 몫 기준으로 계산한다 — 기사 관리 정산과 같은 기준', () => {
+    const plate = '44라4444'
+    /** @type {import('./financeTypes.ts').CarLike} */
+    const shareCar = { type: 'sub', number: plate, driverName: '연동', driverPayMode: 'revenue', commEnabled: true, commType: 'percent', commission: '30', driverShareBase: 'afterClientCommission', insuranceOn: true, driverIncomeType: 'business', shareRevenueWithOwner: true }
+    const link = { id: 'l2', vehicleNumber: plate, assignmentStart: '2026-10-01', status: 'linked' }
+    const settings = { cars: [shareCar], clients: [{ id: 'c-h', companyName: '한진', commEnabled: true, commType: 'percent', commValue: '10' }], driverLinks: [link] }
+    const shareWork = { [plate]: { '2026-10-07': { callDetails: [{ id: 'a', client: '한진', fare: 1000000 }] } } }
+    const result = getMonthlyDriverInsuranceOwnerShare(MONTH, settings, [shareCar], shareWork)
+    assert.equal(result.total, 1689)
+    const detail = getLinkedDriverSettlementDetail(shareWork[plate], MONTH, link, shareCar, settings)
+    assert.equal(detail.commissionAmount, 270000)
+    assert.equal(result.total, getDriverIncomeDeductions(shareCar, detail.commissionAmount).insuranceOwnerShare)
+  })
+})
