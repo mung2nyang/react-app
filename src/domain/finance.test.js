@@ -454,15 +454,15 @@ describe('세금계산서 — 휴무 날은 콜·고정 노선·파렛트 모두
   const rows = (/** @type {Record<string, Record<string, import('./day-record.ts').DayRecordLike>>} */ work) => (
     getTaxInvoiceSourceGroups('2026-10', 'sales', settings, work)
       .map((group) => [group.partyKey, group.supplyAmount, group.taxAmount, group.count])
-      .sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+      .sort((a, b) => (String(a[0]) < String(b[0]) ? -1 : 1))
   )
 
   test('메인·기사 차량 모두 휴무 날은 빠지고, 휴무 날 콜만 있던 거래처는 묶음이 없다', () => {
     assert.deepEqual(rows({ main, [SUB.number]: main }), [
-      [`대한__${SUB.number}`, 100000, 10000, 1],
       ['대한__main', 100000, 10000, 1],
-      [`한진__${SUB.number}`, 260000, 26000, 1],
+      [`대한__${SUB.number}`, 100000, 10000, 1],
       ['한진__main', 260000, 26000, 1],
+      [`한진__${SUB.number}`, 260000, 26000, 1],
     ])
   })
 
