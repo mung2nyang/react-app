@@ -118,6 +118,11 @@ describe('§16 슬라이스 C — 서브차량별 설정(subCarSettings)', () =>
     })
   })
 
+  test('저장값 없는 기사 차량 기본값도 고정 노선이 꺼져 있으면 callDetail 켬', () => {
+    assert.equal(defaultCarSettings(false).callDetail, true)
+    assert.equal(defaultCarSettings(true).callDetail, false)
+  })
+
   test('subFixedOn이 꺼져 있으면 메인과 동일하게 callDetail을 강제로 켠다', () => {
     assert.equal(normalizeCarSettings({ callDetail: false }, false).callDetail, true)
     assert.equal(normalizeCarSettings({ callDetail: false }, true).callDetail, false)

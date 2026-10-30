@@ -107,8 +107,8 @@ export function normalizeCarSettings(raw: Partial<SubCarPracticeSettings> = {}, 
   }
 }
 
-export function defaultCarSettings(): SubCarPracticeSettings {
-  return normalizeCarSettings()
+export function defaultCarSettings(subFixedOn = true): SubCarPracticeSettings {
+  return normalizeCarSettings({}, subFixedOn)
 }
 
 function normalizeSubCarSettingsMap(raw: JsonValue | undefined, subFixedOn: boolean): Record<string, SubCarPracticeSettings> {

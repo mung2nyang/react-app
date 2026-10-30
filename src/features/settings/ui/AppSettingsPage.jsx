@@ -33,8 +33,8 @@ export default function AppSettingsPage({ onBack, onOpenMenu }) {
   const cars = useOwnerCars(ownerKey)
   const drivers = useOwnerDrivers(ownerKey)
   const carLabel = logId ? resolveDriverOrPlateLabel(logId, drivers, cars) : ''
-  const carSettings = logId ? (settings.subCarSettings?.[logId] || defaultCarSettings()) : defaultCarSettings()
   const fixedOn = logId ? !!settings.subFixedOn : !!settings.fixedOn
+  const carSettings = logId ? (settings.subCarSettings?.[logId] || defaultCarSettings(fixedOn)) : defaultCarSettings()
   // 고정노선 거래처 스코프: 서브차량 = logId, 연동기사 본인 = 배정 차량(MainPageRoute와 같은 규칙), 차주 메인 = 없음.
   const clientScopeKey = logId || (session?.linkedOwnerId ? (cars[0]?.number || 'main') : '')
 
@@ -55,7 +55,7 @@ export default function AppSettingsPage({ onBack, onOpenMenu }) {
   function patchActive(nextPatch) {
     if (!logId) return patch(nextPatch)
     return patch((current) => ({
-      subCarSettings: { ...(current.subCarSettings || {}), [logId]: { ...(current.subCarSettings?.[logId] || defaultCarSettings()), ...nextPatch } },
+      subCarSettings: { ...(current.subCarSettings || {}), [logId]: { ...(current.subCarSettings?.[logId] || defaultCarSettings(current.subFixedOn ?? true)), ...nextPatch } },
     }))
   }
 

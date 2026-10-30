@@ -39,6 +39,12 @@ describe('resolveLogSettings (차량별 설정 스코프)', () => {
     assert.equal(scoped.inputMode, 'count')
   })
 
+  test('저장값 없는 서브차량도 고정 노선이 꺼져 있으면 세부 입력 켬', () => {
+    const fixedOff = normalizeSettings({ subFixedOn: false })
+    assert.equal(resolveLogSettings(fixedOff, '99나9999').callDetail, true)
+    assert.equal(resolveLogSettings(base, '99나9999').callDetail, false)
+  })
+
   test('결제·고정노선·자주 쓰는 위치 등 공용값은 서브차량에서도 그대로다', () => {
     const scoped = resolveLogSettings(base, '12가3456')
     assert.equal(scoped.paymentOn, true)
