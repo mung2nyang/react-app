@@ -5,13 +5,15 @@ import {
   getDefaultReportShareMessagePattern,
   getMessageTemplatePatterns,
   getReportShareMessagePattern,
-  resetMessageTemplateSettings,
-  saveMessageTemplateSettings,
 } from '../../../data/sync/messageTemplates.ts'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
+import { useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
+import { savePracticeSettings } from '../../../data/sync/settingsSave.ts'
 import PageHeader from '../../../shared/ui/PageHeader.jsx'
 import FieldError, { focusField, invalidProps } from '../../../shared/ui/FieldError.jsx'
 import './message-settings.css'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { SERVER_SAVE_FAIL } from '../../../shared/utils/failureMessages.js'
 
 /**
  * @param {Object} props
@@ -19,23 +21,20 @@ import { useToast } from '../../../shared/hooks/useToast.js'
  */
 export default function MessageSettingsPage({ onBack }) {
   const showToast = useToast()
-  const initial = getMessageTemplatePatterns()
+  const { ownerKey } = useSession()
+  const settings = useOwnerSettings(ownerKey)
+  const initial = getMessageTemplatePatterns(settings)
   const [unpaid, setUnpaid] = useState(initial[0])
   const [paymentRequest, setPaymentRequest] = useState(initial[1])
   const [tripComplete, setTripComplete] = useState(initial[2])
-  const [reportShare, setReportShare] = useState(getReportShareMessagePattern())
+  const [reportShare, setReportShare] = useState(getReportShareMessagePattern(settings))
   const [problemId, setProblemId] = useState('')
   const values = { msgUnpaid: unpaid, msgPaymentRequest: paymentRequest, msgTripComplete: tripComplete, msgReportShare: reportShare }
   // 위에서부터 첫 빈 칸 하나. 그 칸을 채우면 표시를 거둔다.
   const emptyId = Object.keys(values).find((id) => !values[/** @type {keyof typeof values} */ (id)].trim()) || ''
   const shown = problemId && problemId === emptyId ? { field: problemId, message: '문구를 입력해 주세요.' } : null
 
-  function handleSave() {
-    const unpaidMessage = unpaid.trim()
-    const paymentRequestMessage = paymentRequest.trim()
-    const tripCompleteMessage = tripComplete.trim()
-    const reportMessage = reportShare.trim()
-
+  async function handleSave() {
     setProblemId(emptyId)
     if (emptyId) {
       focusField(emptyId)
@@ -43,20 +42,23 @@ export default function MessageSettingsPage({ onBack }) {
     }
 
     try {
-      saveMessageTemplateSettings([unpaidMessage, paymentRequestMessage, tripCompleteMessage], reportMessage)
+      await savePracticeSettings(ownerKey, {
+        messageTemplates: [unpaid.trim(), paymentRequest.trim(), tripComplete.trim()],
+        reportShareMessage: reportShare.trim(),
+      })
       showToast?.('문자 문구를 저장했습니다.')
     } catch (error) {
       console.error('문자 문구 저장 실패:', error)
-      showToast?.('문자 문구를 저장하지 못했습니다.')
+      showToast?.(SERVER_SAVE_FAIL)
     }
   }
 
-  function handleReset() {
+  async function handleReset() {
     try {
-      resetMessageTemplateSettings()
+      await savePracticeSettings(ownerKey, { messageTemplates: undefined, reportShareMessage: undefined })
     } catch (error) {
       console.error('기본 문자 문구 복원 실패:', error)
-      showToast?.('기본 문구를 복원하지 못했습니다.')
+      showToast?.(SERVER_SAVE_FAIL)
       return
     }
     const defaults = getDefaultMessageTemplatePatterns()

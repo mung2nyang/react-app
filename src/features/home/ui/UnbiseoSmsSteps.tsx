@@ -121,7 +121,7 @@ export default function UnbiseoSmsSteps({ sms, onStep }: Props) {
 
     done.push(MESSAGE_TEMPLATE_TITLES[template - 1])
     const phone = smsPhone(ownerKey, client)
-    const body = smsBody(template, client, pick, picked, today)
+    const body = smsBody(ownerKey, template, client, pick, picked, today)
     const noPhone = `${client}에 등록된 연락처가 없어요. 거래처 화면에서 넣어 주세요.`
     // [문자 열기]는 말로 열지 않는다 — 사람이 누른다.
     return {

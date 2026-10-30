@@ -4,14 +4,16 @@ import { pathToFileURL } from 'node:url'
 
 register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)
 
+import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, describe, test } from 'node:test'
 import {
   fillMessageTemplatePattern,
   getDefaultMessageTemplatePatterns,
-  saveMessageTemplateSettings,
 } from '../../../data/sync/messageTemplates.ts'
+import { commitSettings } from '../../../data/store/commitHelpers.ts'
+import { normalizeSettings } from '../../../domain/practiceSettings.ts'
 
 const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globalThis)
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true
@@ -44,7 +46,7 @@ function mountSheet(props = {}) {
 
 describe('MessageTemplateSheet — 문자 양식 3종 + ②-1 설정 반영', () => {
   beforeEach(() => {
-    localStorage.clear()
+    commitSettings('guest', normalizeSettings({}))
   })
 
   test('기본 문구: 제목 3종 순서 + 미수금 안내 본문이 채워져 보인다', async () => {
@@ -76,14 +78,14 @@ describe('MessageTemplateSheet — 문자 양식 3종 + ②-1 설정 반영', ()
     }
   })
 
-  test('커스텀 저장 문구가 시트 미리보기에 반영된다', async () => {
+  test('계정 설정의 문구가 시트 미리보기에 반영된다', async () => {
     /** @type {[string, string, string]} */
     const custom = [
       '커스텀미수 {거래처} {운행구간} {운송료}',
       '커스텀입금 {운행구간} {운송료}',
       '커스텀완료 {거래처} {운행구간}',
     ]
-    saveMessageTemplateSettings(custom, '내역서')
+    commitSettings('guest', normalizeSettings({ messageTemplates: custom }))
     const { container, root } = mountSheet()
     try {
       await act(async () => {

@@ -4,14 +4,15 @@ import { pathToFileURL } from 'node:url'
 
 register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.url)
 
+import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
 import { beforeEach, describe, mock, test } from 'node:test'
 import {
   fillReportShareMessagePattern,
-  getDefaultMessageTemplatePatterns,
-  saveMessageTemplateSettings,
 } from '../../../data/sync/messageTemplates.ts'
+import { commitSettings } from '../../../data/store/commitHelpers.ts'
+import { normalizeSettings } from '../../../domain/practiceSettings.ts'
 
 const reactActEnv = /** @type {{ IS_REACT_ACT_ENVIRONMENT?: boolean }} */ (globalThis)
 reactActEnv.IS_REACT_ACT_ENVIRONMENT = true
@@ -60,7 +61,7 @@ function findChannelButton(root, sectionTitle, buttonLabel) {
 
 describe('ReportShareModal — 카카오톡/문자 공유', () => {
   beforeEach(() => {
-    localStorage.clear()
+    commitSettings('guest', normalizeSettings({}))
   })
 
   test('렌더: 카카오톡/문자 2섹션, PDF·이미지 버튼 4개', async () => {
@@ -163,8 +164,8 @@ describe('ReportShareModal — 카카오톡/문자 공유', () => {
     }
   })
 
-  test('카카오톡: 커스텀 내역서 공유 문구가 navigator.share text에 반영', async () => {
-    saveMessageTemplateSettings(getDefaultMessageTemplatePatterns(), '커스텀공유 {거래처} 확인요망')
+  test('카카오톡: 계정 설정의 내역서 공유 문구가 navigator.share text에 반영', async () => {
+    commitSettings('guest', normalizeSettings({ reportShareMessage: '커스텀공유 {거래처} 확인요망' }))
     let closeCount = 0
     /** @type {Array<{ files: Array<File>, title: string, text: string }>} */
     const shareCalls = []

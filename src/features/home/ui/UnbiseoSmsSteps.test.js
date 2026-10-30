@@ -7,7 +7,7 @@ register(pathToFileURL('./src/testSupport/jsxLoaderHook.mjs').href, import.meta.
 import '../../../testSupport/stubSupabaseClient.js'
 import '../../../testSupport/setupDom.js'
 import assert from 'node:assert/strict'
-import { before, beforeEach, test } from 'node:test'
+import { before, test } from 'node:test'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -29,7 +29,6 @@ let reply = async () => ({ data: null, error: null })
 /** @type {Array<string>} */
 const calls = []
 supabase.functions = { invoke: async (/** @type {string} */ name) => { calls.push(name); return reply() } }
-beforeEach(() => { localStorage.removeItem('messageTemplateCustomBodies') })
 
 before(() => {
   commitSettings(OWNER, normalizeSettings({ fixedOn: true, subFixedOn: true }))

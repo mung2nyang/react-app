@@ -67,16 +67,16 @@ test('{운행구간}: 달 "5월분 3건"(다른 해는 연도), 전체 "전체 n
   assert.equal(smsRouteLabel({ kind: 'items', keys: [] }, [hanjin[0]], TODAY), '5월 10일 상차지 → 하차지', '빈 지명')
 })
 
-test('문구 = 이 휴대폰 문구를 일지 문자 창 함수로 채움, {운송료}는 고른 건의 남은 합계', () => {
-  localStorage.removeItem('messageTemplateCustomBodies')
+test('문구 = 계정 설정의 문구를 일지 문자 창 함수로 채움, {운송료}는 고른 건의 남은 합계', () => {
+  const base = normalizeSettings({ fixedOn: true, subFixedOn: true })
   const hanjin = smsClientItems(readSmsItems(OWNER), '한진').list
   const pick = /** @type {const} */ ({ kind: 'month', month: '2026-05' })
-  assert.equal(smsBody(1, '한진', pick, hanjin, TODAY), '안녕하세요, 한진 담당자님. 5월분 3건 운송료 130,000원이 미수 상태입니다. 확인 부탁드립니다.')
-  assert.equal(smsBody(2, '한진', pick, hanjin, TODAY), '안녕하세요. 5월분 3건 운송 건 운송료 130,000원 입금 부탁드립니다. 감사합니다.')
-  localStorage.setItem('messageTemplateCustomBodies', JSON.stringify(['{거래처} {운행구간} {운송료}원 확인', '', '']))
+  assert.equal(smsBody(OWNER, 1, '한진', pick, hanjin, TODAY), '안녕하세요, 한진 담당자님. 5월분 3건 운송료 130,000원이 미수 상태입니다. 확인 부탁드립니다.')
+  assert.equal(smsBody(OWNER, 2, '한진', pick, hanjin, TODAY), '안녕하세요. 5월분 3건 운송 건 운송료 130,000원 입금 부탁드립니다. 감사합니다.')
+  commitSettings(OWNER, normalizeSettings({ ...base, messageTemplates: ['{거래처} {운행구간} {운송료}원 확인', '입금', '완료'] }))
   try {
-    assert.equal(smsBody(1, '한진', { kind: 'all' }, hanjin, TODAY), '한진 전체 3건 130,000원 확인', '바꾼 문구')
-  } finally { localStorage.removeItem('messageTemplateCustomBodies') }
+    assert.equal(smsBody(OWNER, 1, '한진', { kind: 'all' }, hanjin, TODAY), '한진 전체 3건 130,000원 확인', '바꾼 문구')
+  } finally { commitSettings(OWNER, base) }
 })
 
 test('연락처: 같은 이름 거래처의 연락처, 없으면 빈 값', () => {

@@ -5,6 +5,8 @@ import './message-template.css'
 import ModalShell from '../../../shared/ui/ModalShell.jsx'
 import { buildSmsHref } from '../../../domain/smsHref.ts'
 import { useToast } from '../../../shared/hooks/useToast.js'
+import { useSession } from '../../../data/cloud/sessionContext.ts'
+import { useOwnerSettings } from '../../../data/store/ownerDataHooks.ts'
 
 /** @typedef {import('./dayLogTypes.js').CallDetailLike} CallDetailLike */
 /** @typedef {import('./dayLogTypes.js').ClientLike} ClientLike */
@@ -17,10 +19,12 @@ import { useToast } from '../../../shared/hooks/useToast.js'
  */
 export default function MessageTemplateSheet({ item, client, onClose }) {
   const showToast = useToast()
+  const { ownerKey } = useSession()
+  const settings = useOwnerSettings(ownerKey)
   const fare = parseCurrencyValue(item.fare).toLocaleString('ko-KR')
   const route = `${item.loadLoc || '상차지'} → ${item.unloadLoc || '하차지'}`
   const company = item.client || '거래처'
-  const templates = getMessageTemplatePatterns().map((pattern, index) => ({
+  const templates = getMessageTemplatePatterns(settings).map((pattern, index) => ({
     title: MESSAGE_TEMPLATE_TITLES[index],
     body: fillMessageTemplatePattern(pattern, { company, route, fare }),
   }))

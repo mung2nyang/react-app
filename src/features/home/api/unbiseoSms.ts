@@ -5,7 +5,7 @@ import type { JsonValue } from '../../../domain/jsonTypes.ts'
 import { groupByClientMonth } from '../../../domain/receivables.ts'
 import { buildFinanceSettings } from '../../../data/sync/ownerFinance.ts'
 import { fillMessageTemplatePattern, getMessageTemplatePatterns } from '../../../data/sync/messageTemplates.ts'
-import { readOwnerClients, readOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.ts'
+import { readOwnerClients, readOwnerSettings, readOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.ts'
 
 export type UnbiseoSms = { client: string, month: string, all: boolean, template: 1 | 2 | 3 | null }
 /** 어떤 건으로 보낼지 — 달 묶음·남은 전체·직접 고른 건(itemKey 목록) */
@@ -82,9 +82,9 @@ export function smsRouteLabel(pick: SmsPick, picked: Array<ReceivableItemLike>, 
   return picked.length > 1 ? `${first} 외 ${picked.length - 1}건` : first
 }
 
-/** 이 휴대폰의 문구(바꾼 문구가 없으면 기본)를 일지 문자 창과 같은 함수로 채운다. */
-export function smsBody(template: 1 | 2 | 3, client: string, pick: SmsPick, picked: Array<ReceivableItemLike>, today: string): string {
-  const pattern = getMessageTemplatePatterns()[template - 1]
+/** 계정 설정의 문구(바꾼 문구가 없으면 기본)를 일지 문자 창과 같은 함수로 채운다. */
+export function smsBody(ownerKey: string, template: 1 | 2 | 3, client: string, pick: SmsPick, picked: Array<ReceivableItemLike>, today: string): string {
+  const pattern = getMessageTemplatePatterns(readOwnerSettings(ownerKey))[template - 1]
   return fillMessageTemplatePattern(pattern, { company: client, route: smsRouteLabel(pick, picked, today), fare: sumOf(picked).toLocaleString('ko-KR') })
 }
 

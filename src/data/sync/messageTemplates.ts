@@ -1,5 +1,5 @@
-const CUSTOM_BODIES_KEY = 'messageTemplateCustomBodies'
-const REPORT_SHARE_KEY = 'reportShareMessagePattern'
+import type { FinanceSettings } from '../../domain/financeTypes.ts'
+
 /** 문구 1~3 이름 — 일지 문자 창·운비서 문자가 같이 쓴다. */
 export const MESSAGE_TEMPLATE_TITLES = ['미수금 안내', '입금 요청', '운행 완료']
 
@@ -11,39 +11,18 @@ export function getDefaultMessageTemplatePatterns(): [string, string, string] {
   ]
 }
 
-export function getMessageTemplatePatterns(): [string, string, string] {
-  const defaults = getDefaultMessageTemplatePatterns()
-  try {
-    const saved = JSON.parse(localStorage.getItem(CUSTOM_BODIES_KEY) || 'null')
-    if (!Array.isArray(saved) || saved.length !== defaults.length) return defaults
-    return (
-      defaults.map((body, index) => String(saved[index] || body))
-    ) as [string, string, string]
-  } catch {
-    return defaults
-  }
+/** 계정 설정의 문구 1~3, 바꾼 문구가 없으면 기본. */
+export function getMessageTemplatePatterns(settings: FinanceSettings): [string, string, string] {
+  return settings.messageTemplates || getDefaultMessageTemplatePatterns()
 }
 
 export function getDefaultReportShareMessagePattern(): string {
   return '안녕하세요, {거래처} 담당자님. 운송비 내역서입니다. 확인 부탁드립니다.'
 }
 
-export function getReportShareMessagePattern(): string {
-  try {
-    return localStorage.getItem(REPORT_SHARE_KEY)?.trim() || getDefaultReportShareMessagePattern()
-  } catch {
-    return getDefaultReportShareMessagePattern()
-  }
-}
-
-export function saveMessageTemplateSettings(patterns: [string, string, string], reportMessage: string) {
-  localStorage.setItem(CUSTOM_BODIES_KEY, JSON.stringify(patterns))
-  localStorage.setItem(REPORT_SHARE_KEY, reportMessage)
-}
-
-export function resetMessageTemplateSettings() {
-  localStorage.removeItem(CUSTOM_BODIES_KEY)
-  localStorage.removeItem(REPORT_SHARE_KEY)
+/** 계정 설정의 내역서 공유 문구, 없으면 기본. */
+export function getReportShareMessagePattern(settings: FinanceSettings): string {
+  return settings.reportShareMessage || getDefaultReportShareMessagePattern()
 }
 
 export function fillMessageTemplatePattern(pattern: string, values: { company: string, route: string, fare: string }): string {
