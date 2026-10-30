@@ -49,6 +49,8 @@ export function getTaxInvoiceSourceGroups(monthKey: string, flow: 'sales' = 'sal
     const palletUnitPrice = parseCurrencyValue(fixedRouteClientForInvoice?.palletPrice)
     const supplier = getVehicleSupplierIdentity(source.car, settings) as SupplierIdentity
     Object.entries(source.data || {}).forEach(([dateKey, record]) => {
+      // 휴무 날은 콜·고정 노선·파렛트 모두 빼기(다른 합계와 같음).
+      if (record?.isOff) return
       ;(record?.callDetails || []).forEach((detail) => {
         const workDate = detail.workDate || dateKey
         const clientName = (detail.client || '').trim()

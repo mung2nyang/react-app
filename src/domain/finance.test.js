@@ -443,3 +443,42 @@ describe('매출 — 콜 상세 산재보험료는 수입에서 뺀다(로드맵
   })
 })
 
+
+describe('세금계산서 — 휴무 날은 콜·고정 노선·파렛트 모두 뺀다(sot 4-13)', () => {
+  const HANJIN = { id: 'c1', companyName: '한진', fixedRouteLinked: true, fixedUnitPrice: '250,000', palletOn: true, palletPrice: '5,000' }
+  const SUB = { type: 'sub', number: '서울99가1111' }
+  const settings = { cars: [SUB], clients: [HANJIN], fixedOn: true, subFixedOn: true }
+  const workDay = { callDetails: [{ client: '대한', fare: 100000 }], fixedCount: 1, palletCount: 2 }
+  const offDay = { isOff: true, callDetails: [{ client: '대한', fare: 70000 }, { client: '휴무만', fare: 30000 }], fixedCount: 2, palletCount: 3 }
+  const main = { '2026-10-05': workDay, '2026-10-06': offDay }
+  const rows = (/** @type {Record<string, Record<string, import('./day-record.ts').DayRecordLike>>} */ work) => (
+    getTaxInvoiceSourceGroups('2026-10', 'sales', settings, work)
+      .map((group) => [group.partyKey, group.supplyAmount, group.taxAmount, group.count])
+      .sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+  )
+
+  test('메인·기사 차량 모두 휴무 날은 빠지고, 휴무 날 콜만 있던 거래처는 묶음이 없다', () => {
+    assert.deepEqual(rows({ main, [SUB.number]: main }), [
+      [`대한__${SUB.number}`, 100000, 10000, 1],
+      ['대한__main', 100000, 10000, 1],
+      [`한진__${SUB.number}`, 260000, 26000, 1],
+      ['한진__main', 260000, 26000, 1],
+    ])
+  })
+
+  test('휴무를 끄면 다시 들어간다', () => {
+    const back = { ...main, '2026-10-06': { ...offDay, isOff: false } }
+    assert.deepEqual(rows({ main: back }), [
+      ['대한__main', 170000, 17000, 2],
+      ['한진__main', 775000, 77500, 3],
+      ['휴무만__main', 30000, 3000, 1],
+    ])
+  })
+
+  test('달력 정산과 같은 금액', () => {
+    const calendar = monthSettlementSummary(main, 2026, 9, { unitPrice: 250000, fixedRouteClient: HANJIN, activeFixedOn: true, clients: [HANJIN] })
+    const groups = getTaxInvoiceSourceGroups('2026-10', 'sales', settings, { main })
+    assert.equal(groups.reduce((sum, group) => sum + group.supplyAmount, 0), calendar.fare + calendar.palletFare)
+    assert.equal(groups.reduce((sum, group) => sum + group.taxAmount, 0), calendar.vat)
+  })
+})
