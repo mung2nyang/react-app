@@ -136,7 +136,7 @@ export function saveDayRecord(data: Record<string, DayRecordLike>, dateKey: stri
   const count = off ? 0 : Math.max(0, parseInt(String(fixedCount), 10) || 0)
   const prev = next[dateKey] || {}
   const details = dedupeCallDetailsById(Array.isArray(callDetails) ? callDetails : getCallDetails(prev))
-  const routeCounts = getFixedRouteCounts({
+  const routeCounts = off ? {} : getFixedRouteCounts({
     fixedRouteCounts: fixedRouteCounts !== undefined ? fixedRouteCounts : prev.fixedRouteCounts,
   })
   // palletCount도 파렛트 섹션이 꺼져 있으면 0으로 정규화(fixedCount와 같은 규칙,

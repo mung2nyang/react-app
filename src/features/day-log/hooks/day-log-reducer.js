@@ -46,11 +46,17 @@ export function initDayLogState(record) {
       // backfillCallDetailIds로 이미 전부 id를 채운 뒤라 항상 있다 — 위 함수 docblock에
       // 적힌 계약을 타입으로도 명시한다(단언 하나, object/any 경유 아님).
       callDetails: /** @type {Array<import('../ui/dayLogTypes.js').CallDetailLike>} */ (structuredClone(getCallDetails({ callDetails: record?.callDetails }))),
-      fixedRouteCounts: structuredClone(record?.fixedRouteCounts || {}),
+      fixedRouteCounts: off ? {} : structuredClone(record?.fixedRouteCounts || {}),
     },
     editingCallId: null,
     callFormOpen: false,
   }
+}
+
+// 휴무를 켜면 운행 횟수·노선 칩 횟수·파렛트를 0으로(끄면 휴무만 끔).
+/** @param {boolean} off @returns {Partial<DayDraft>} */
+export function dayOffPatch(off) {
+  return off ? { isOff: true, fixedCount: 0, palletCount: 0, fixedRouteCounts: {} } : { isOff: false }
 }
 
 /**

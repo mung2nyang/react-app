@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useToast } from '../../../shared/hooks/useToast.js'
 import { confirmOffWithCalls } from '../ui/OffToggle.jsx'
+import { dayOffPatch } from './day-log-reducer.js'
 
 /** @typedef {{ off: boolean }} AssistantDayOff */
 
@@ -11,7 +12,7 @@ import { confirmOffWithCalls } from '../ui/OffToggle.jsx'
  * @param {AssistantDayOff|null} args.assistantDayOff 주소 상태에서 받은 값(지워지면 null)
  * @param {string} [args.assistantCallKey] 이동 키(location.key) — 같은 날짜에서 또 넘기면 바뀜
  * @param {{ isOff: boolean, fixedCount: number, callDetails: Array<object> }} args.draft
- * @param {(patch: { isOff?: boolean, fixedCount?: number }) => void} args.patchDraft
+ * @param {(patch: { isOff?: boolean, fixedCount?: number, palletCount?: number, fixedRouteCounts?: Record<string, number> }) => void} args.patchDraft
  * @param {number} args.month
  * @param {number} args.day
  */
@@ -34,7 +35,7 @@ export default function useAssistantDayOff({ assistantDayOff, assistantCallKey, 
     if (draft.isOff === off) return
     void (async () => {
       if (!(await confirmOffWithCalls(off, draft.callDetails.length)) || !alive.current) return
-      patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })
+      patchDraft(dayOffPatch(off))
       showToast?.(off ? `${month}월 ${day}일을 휴무로 바꿨습니다.` : `${month}월 ${day}일 휴무를 취소했습니다.`)
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 새로 넘긴 값이 생길 때만

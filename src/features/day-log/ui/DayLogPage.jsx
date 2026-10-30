@@ -9,6 +9,7 @@ import { locationShortcutList } from '../../../domain/locationShortcuts.ts'
 import { confirmLeaveIfUnsafe } from '../../../data/sync/durableWriteGuard.ts'
 import { useOwnerDrivers, useOwnerWorkData, useOwnerWorkDataByLogId } from '../../../data/store/ownerDataHooks.ts'
 import { useDayDraft } from '../hooks/useDayDraft.js'
+import { dayOffPatch } from '../hooks/day-log-reducer.js'
 import { useExpenseForm } from '../hooks/useExpenseForm.js'
 import useCallDetailActions from '../hooks/useCallDetailActions.js'
 import { bindInlinePanelActions } from './inlinePanelActions.js'
@@ -111,7 +112,7 @@ export default function DayLogPage({ month, day, dateKey, clients, settings, onC
         onBack={onClose ? handleClose : undefined}
         onOpenMenu={onOpenMenu}
       />
-      <OffToggle isOff={draft.isOff} callCount={draft.callDetails.length} onChange={(off) => patchDraft({ isOff: off, fixedCount: off ? 0 : draft.fixedCount })} />
+      <OffToggle isOff={draft.isOff} callCount={draft.callDetails.length} onChange={(off) => patchDraft(dayOffPatch(off))} />
       <div className={`modal-work-details${draft.isOff ? ' is-off' : ''}`}>
         {settings.fixedOn && (
           <div className="modal-section fixed-route-section">

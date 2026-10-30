@@ -135,6 +135,17 @@ describe('횟수×단가 + 콜상세 운임', () => {
     assert.equal(summary.fixedFare, 0)
   })
 
+  test('휴무로 저장하면 노선 칩 횟수도 비운다', () => {
+    const data = saveDayRecord({}, dateKey, { isOff: true, fixedCount: 2, palletCount: 3, fixedRouteCounts: { r1: 2 } })
+    assert.deepEqual(data[dateKey]?.fixedRouteCounts, {})
+    assert.equal(data[dateKey]?.palletCount, 0)
+  })
+
+  test('휴무 아닌 날은 노선 칩 횟수를 그대로 저장한다', () => {
+    const data = saveDayRecord({}, dateKey, { fixedCount: 2, fixedRouteCounts: { r1: 2 } })
+    assert.deepEqual(data[dateKey]?.fixedRouteCounts, { r1: 2 })
+  })
+
   test('원본 getMonthlyFareRevenue와 같은 값이 나온다', () => {
     const added = upsertCallDetail([], { fare: '100,000', client: '한진', vatExempt: false }, -1, dateKey, clients)
     const data = saveDayRecord({}, dateKey, { fixedCount: 2, callDetails: added.items })

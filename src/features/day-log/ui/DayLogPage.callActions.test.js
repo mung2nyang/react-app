@@ -167,3 +167,23 @@ test('횟수를 바꾸면 제목 아래 운송료 합계가 바로 바뀐다', a
     await view.cleanup()
   }
 })
+
+test('휴무를 켰다 끄면 노선 칩 횟수·파렛트·운행 횟수가 모두 0', async () => {
+  const clients = [{ id: 'cl', companyName: '고정거래처', fixedRouteLinked: true, fixedUnitPrice: 50000, palletOn: true, palletPrice: 5000 }]
+  const view = await render('daylog-off-reset', [], clients)
+  const input = (/** @type {string} */ sel) => /** @type {HTMLInputElement|null} */ (view.container.querySelector(sel))?.value
+  try {
+    await view.click(view.container.querySelector('.fixed-route-chip-select'))
+    await view.click(view.container.querySelector('.fixed-route-chip-select'))
+    await view.type('#modalPalletCount', '3')
+    assert.equal(view.container.querySelector('.fixed-route-chip-count')?.textContent, '2회')
+    await view.click(view.button('휴무'))
+    await view.click(view.button('휴무'))
+    assert.equal(view.container.querySelector('.fixed-route-chip-count'), null, '칩 횟수 없음')
+    assert.equal(input('#modalPalletCount'), '', '파렛트 빈 칸')
+    assert.equal(input('#modalFixedCountInput'), '', '운행 횟수 0')
+    assert.equal(view.container.querySelector('.day-fare-total')?.textContent || '', '', '합계 0원')
+  } finally {
+    await view.cleanup()
+  }
+})

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
-import { dayLogReducer, initDayLogState } from './day-log-reducer.js'
+import { dayLogReducer, dayOffPatch, initDayLogState } from './day-log-reducer.js'
 
 describe('initDayLogState — store record을 로컬 draft로 복제', () => {
   test('record가 없으면(신규 날짜) 빈 draft', () => {
@@ -35,6 +35,11 @@ describe('initDayLogState — store record을 로컬 draft로 복제', () => {
     const state = initDayLogState({ isOff: true, fixedCount: 5, palletCount: 2 })
     assert.equal(state.draft.fixedCount, 0)
     assert.equal(state.draft.palletCount, 0)
+  })
+
+  test('휴무 기록을 열면 노선 칩 횟수도 비운다', () => {
+    const state = initDayLogState({ isOff: true, fixedCount: 0, fixedRouteCounts: { r1: 2 } })
+    assert.deepEqual(state.draft.fixedRouteCounts, {})
   })
 })
 
@@ -81,5 +86,15 @@ describe('dayLogReducer — patchDraft/openCallForm/closeCallForm', () => {
     const state = initDayLogState(undefined)
     const next = dayLogReducer(state, { type: 'unknown' })
     assert.equal(next, state)
+  })
+})
+
+describe('dayOffPatch — 휴무 단추·운비서 휴무가 같이 쓰는 값', () => {
+  test('휴무를 켜면 운행 횟수·노선 칩 횟수·파렛트 0', () => {
+    assert.deepEqual(dayOffPatch(true), { isOff: true, fixedCount: 0, palletCount: 0, fixedRouteCounts: {} })
+  })
+
+  test('휴무를 끄면 휴무만 끈다', () => {
+    assert.deepEqual(dayOffPatch(false), { isOff: false })
   })
 })
