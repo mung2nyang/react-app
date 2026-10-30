@@ -43,6 +43,7 @@ export default function ScopedClientsList({ scopeKey, listId, notice }) {
           editingId={scoped.editingId}
           onCancel={scoped.closeModal}
           onSave={scoped.save}
+          clients={scoped.scopedClients}
         />
       )}
       {scoped.pendingDelete && (

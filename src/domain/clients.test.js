@@ -228,3 +228,39 @@ describe('checkClientDraft — 저장 전 입력 검사가 어느 칸인지까�
     assert.equal(checkClientDraft({ companyName: '', commEnabled: true, commValue: '' })?.field, 'companyName')
   })
 })
+
+describe('checkClientDraft — 같은 범위 같은 이름 막기', () => {
+  const DUP = { field: 'companyName', message: '같은 이름의 거래처가 이미 있습니다.' }
+  const clients = [
+    { id: 'a', companyName: '한진' },
+    { id: 'b', companyName: '대한', scopedToVehicleNumber: '22가2222' },
+    { id: 'c', companyName: '제일', scopedToVehicleNumber: '22가2222' },
+    { id: 'd', companyName: '제일', scopedToVehicleNumber: '22가2222' },
+  ]
+
+  test('새 거래처: 같은 범위 같은 이름(앞뒤 빈칸 무시)은 막음, 저장 함수도 막음', () => {
+    assert.deepEqual(checkClientDraft({ companyName: ' 한진 ' }, clients), DUP)
+    assert.deepEqual(checkClientDraft({ companyName: '대한', scopedToVehicleNumber: '22가2222' }, clients), DUP)
+    const result = upsertClient(clients, { companyName: '한진' })
+    assert.equal(result.error, DUP.message)
+    assert.equal(result.clients, clients)
+  })
+
+  test('다른 범위의 같은 이름은 허용', () => {
+    assert.equal(checkClientDraft({ companyName: '대한' }, clients), null)
+    assert.equal(checkClientDraft({ companyName: '한진', scopedToVehicleNumber: '22가2222' }, clients), null)
+    assert.equal(checkClientDraft({ companyName: '대한', scopedToVehicleNumber: '33다3333' }, clients), null)
+  })
+
+  test('고치기: 다른 거래처 이름으로 바꾸면 막고, 자기 이름 그대로면 통과', () => {
+    assert.deepEqual(checkClientDraft({ companyName: '제일', scopedToVehicleNumber: '22가2222' }, clients, 'b'), DUP)
+    assert.equal(checkClientDraft({ companyName: '대한', scopedToVehicleNumber: '22가2222', managerName: '김' }, clients, 'b'), null)
+  })
+
+  test('이미 겹친 거래처는 이름을 안 바꾸면 고칠 수 있음', () => {
+    assert.equal(checkClientDraft({ companyName: '제일', scopedToVehicleNumber: '22가2222' }, clients, 'c'), null)
+    const result = upsertClient(clients, { companyName: '제일', scopedToVehicleNumber: '22가2222', managerName: '박' }, 'c')
+    assert.equal(result.error, undefined)
+    assert.equal(result.clients.find((client) => client.id === 'c')?.managerName, '박')
+  })
+})

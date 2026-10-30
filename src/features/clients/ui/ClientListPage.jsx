@@ -113,7 +113,7 @@ export default function ClientListPage({ onBack, onOpenMenu }) {
       </div>
       <button type="button" className="management-add-fab" onClick={() => openAdd()}>+ 추가</button>
       {modalOpen && (
-        <ClientFormModal draft={draft} setDraft={setDraft} editingId={editingId} onCancel={() => setModalOpen(false)} onSave={save} />
+        <ClientFormModal draft={draft} setDraft={setDraft} editingId={editingId} onCancel={() => setModalOpen(false)} onSave={save} clients={clients} />
       )}
       {pendingDelete && (
         <ConfirmModal title="이 거래처를 삭제하시겠습니까?" confirmLabel="삭제" danger onCancel={() => setPendingDelete(null)} onConfirm={confirmRemove} />

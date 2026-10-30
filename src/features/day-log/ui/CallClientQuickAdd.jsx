@@ -66,6 +66,7 @@ export default function CallClientQuickAdd({ clients, logId = 'main', onClientAd
           editingId={null}
           onCancel={() => setModalOpen(false)}
           onSave={save}
+          clients={clients}
         />
       )}
     </>

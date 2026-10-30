@@ -17,12 +17,12 @@ const { default: ClientFormModal } = await import('./ClientFormModal.jsx')
 
 const EMPTY = { companyName: '', managerName: '', phone: '', bizNumber: '', paymentTerm: 'next_month_end', paymentTermValue: '', commEnabled: false, commType: 'percent', commValue: '' }
 
-/** @param {object} initial */
-async function render(initial) {
+/** @param {object} initial @param {object} [extra] */
+async function render(initial, extra = {}) {
   const saves = []
   function Harness() {
     const [draft, setDraft] = React.useState(initial)
-    return React.createElement(ClientFormModal, { draft, setDraft, editingId: null, onCancel() {}, onSave: () => saves.push(draft) })
+    return React.createElement(ClientFormModal, { draft, setDraft, editingId: null, onCancel() {}, onSave: () => saves.push(draft), ...extra })
   }
   const container = document.createElement('div')
   document.body.appendChild(container)
@@ -139,6 +139,23 @@ test('저장이 끝나고 창이 남으면 잠금이 풀려 다시 누르면 1�
     assert.equal(view.saveButton.disabled, false)
     await view.click()
     assert.equal(view.calls(), 2)
+  } finally {
+    await view.cleanup()
+  }
+})
+
+test('같은 범위에 같은 이름이 있으면 저장 안 함 — 거래처명 칸 표시, 기사 차량 전용 같은 이름은 상관없음', async () => {
+  const clients = [{ id: 'c1', companyName: '한진' }, { id: 'c2', companyName: '대한', scopedToVehicleNumber: '22가2222' }]
+  const view = await render({ ...EMPTY, companyName: ' 한진 ' }, { clients })
+  try {
+    await view.save()
+    const input = /** @type {HTMLInputElement} */ (view.container.querySelector('#clientCompanyName'))
+    assert.equal(view.saves.length, 0)
+    assert.equal(input.getAttribute('aria-invalid'), 'true')
+    assert.equal(view.container.querySelector('#clientCompanyName-error')?.textContent, '같은 이름의 거래처가 이미 있습니다.')
+    await typeInto(input, '대한')
+    await view.save()
+    assert.equal(view.saves.length, 1)
   } finally {
     await view.cleanup()
   }

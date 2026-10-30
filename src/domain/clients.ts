@@ -44,8 +44,16 @@ function paymentTermOf(draft: ClientDraft) {
 }
 
 /** 저장 전 입력 검사 — 맨 처음 문제 칸과 문구, 문제 없으면 null(거래처 창 칸 표시와 upsertClient가 같이 씀). */
-export function checkClientDraft(draft: ClientDraft): { field: 'companyName' | 'paymentTermValue' | 'commValue' | 'fixedUnitPrice' | 'palletPrice', message: string } | null {
-  if (!String(draft.companyName || '').trim()) return { field: 'companyName', message: '거래처명을 입력해 주세요.' }
+export function checkClientDraft(draft: ClientDraft, clients: Array<ClientLike> = [], editingId: string | null = null): { field: 'companyName' | 'paymentTermValue' | 'commValue' | 'fixedUnitPrice' | 'palletPrice', message: string } | null {
+  const name = String(draft.companyName || '').trim()
+  if (!name) return { field: 'companyName', message: '거래처명을 입력해 주세요.' }
+  // 같은 범위(차주 일반 또는 같은 기사 차량)에 같은 이름이 있으면 막는다 — 이미 겹친 거래처는 이름을 안 바꾸면 고칠 수 있다.
+  const scope = String(draft.scopedToVehicleNumber || '').trim()
+  const editing = editingId ? (clients || []).find((client) => client.id === editingId) : null
+  const keepsName = !!editing && String(editing.companyName || '').trim() === name
+  if (!keepsName && (clients || []).some((client) => client.id !== editingId && (client.scopedToVehicleNumber || '') === scope && String(client.companyName || '').trim() === name)) {
+    return { field: 'companyName', message: '같은 이름의 거래처가 이미 있습니다.' }
+  }
   const paymentTerm = paymentTermOf(draft)
   const paymentTermValue = String(draft.paymentTermValue || '').trim()
   if (needsPaymentTermValue(paymentTerm)) {
@@ -62,7 +70,7 @@ export function checkClientDraft(draft: ClientDraft): { field: 'companyName' | '
 }
 
 export function upsertClient(clients: Array<ClientLike>, draft: ClientDraft, editingId: string | null = null) {
-  const problem = checkClientDraft(draft)
+  const problem = checkClientDraft(draft, clients, editingId)
   if (problem) return { error: problem.message, clients }
 
   const companyName = String(draft.companyName || '').trim()

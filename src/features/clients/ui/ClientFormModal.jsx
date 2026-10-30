@@ -31,8 +31,9 @@ function valueOf(draft, field) {
  * @param {string|null} props.editingId
  * @param {() => void} props.onCancel
  * @param {() => void|Promise<void>} props.onSave
+ * @param {Array<import('../../../domain/clientTypes.ts').ClientLike>} [props.clients] 같은 이름 검사용
  */
-export default function ClientFormModal({ draft, setDraft, editingId, onCancel, onSave }) {
+export default function ClientFormModal({ draft, setDraft, editingId, onCancel, onSave, clients = [] }) {
   const termValueLabel = draft.paymentTerm === 'after_days' ? '며칠 후' : '날짜'
   const [problem, setProblem] = useState(/** @type {(ClientProblem & { value: string })|null} */ (null))
   // 문제 칸 값을 고치기 시작하면 표시를 거둔다.
@@ -44,7 +45,7 @@ export default function ClientFormModal({ draft, setDraft, editingId, onCancel, 
 
   async function handleSave() {
     if (busyRef.current) return
-    const found = checkClientDraft(draft)
+    const found = checkClientDraft(draft, clients, editingId)
     const inputId = found ? INPUT_IDS[found.field] : undefined
     if (!found || !inputId) {
       setProblem(null)
